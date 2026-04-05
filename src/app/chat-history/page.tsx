@@ -73,7 +73,7 @@ export default function ChatHistoryPage() {
       localStorage.setItem('opsradar_visitor_email', emailAddr)
 
       // Calculate statistics
-      const totalMsgs = conversations.reduce((sum, c) => sum + c.messages.length, 0)
+      const totalMsgs = conversations.reduce((sum: number, c: any) => sum + c.messages.length, 0)
       const dates = conversations.map(c => new Date(c.created_at))
       const firstChat = dates.length > 0 ? formatDate(new Date(Math.min(...dates.getTime()))) : ''
       const lastChat = dates.length > 0 ? formatDate(new Date(Math.max(...dates.getTime()))) : ''
