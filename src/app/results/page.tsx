@@ -1,0 +1,1841 @@
+'use client'
+
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
+import AnimatedNumber from '../components/AnimatedNumber'
+import RevealSection from '../components/RevealSection'
+import { supabase } from '../../lib/supabase'
+import { Button } from '<npm>/components/ui/button'
+import { Badge } from '<npm>/components/ui/badge'
+import { motion } from 'framer-motion'
+import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
+import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
+import GlowCard from '<npm>/components/animations/GlowCard'
+import TypewriterText from '<npm>/components/animations/TypewriterText'
+import CountUp from '<npm>/components/animations/CountUp'
+import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const UNLOCK_KEY = 'opsradar_blueprint_unlocked'
+
+const BUILD_PRICE = {
+  easy:    { range: '$1,500 – $2,500', delivery: 'Delivered in 5–7 days' },
+  medium:  { range: '$2,500 – $4,000', delivery: 'Delivered in 7–14 days' },
+  complex: { range: '$4,000 – $7,000', delivery: 'Delivered in 14–21 days' },
+} as const
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Opportunity = {
+  rank: number
+  title: string
+  hard_truth?: string
+  current_process?: string
+  automated_process?: string
+  solution?: string
+  technical_flow?: string
+  monthly_savings?: number
+  problem?: string
+  annual_savings?: number
+  quick_win?: boolean
+  hours_saved_weekly: number
+  difficulty: 'easy' | 'medium' | 'complex'
+  tools_connected?: string[]
+  tools_involved?: string[]
+  n8n_nodes?: string[]
+  build_time_days?: number
+  implementation_steps: string[]
+}
+
+type LaborArbitrageBreakdown = {
+  estimated_hourly_rate?: number
+  hours_wasted_on_low_value_weekly?: number
+  annual_labor_waste?: number
+  explanation?: string
+}
+
+type ContextSwitchingAnalysis = {
+  tools_count?: number
+  estimated_daily_switches?: number
+  time_lost_daily_minutes?: number
+  annual_cost?: number
+}
+
+type OnboardingAssessment = {
+  current_state?: string
+  time_per_client_current?: string
+  time_per_client_automated?: string
+  revenue_impact?: string
+}
+
+type Benchmarks = {
+  hours_wasted_vs_average?: {
+    their_hours: number
+    industry_average: number
+    percent_difference: number
+    verdict: string
+  }
+  ops_cost_ratio?: {
+    their_ratio_percent: number
+    healthy_ratio_percent: number
+    verdict: string
+  }
+  automation_maturity?: {
+    their_score: number
+    category: string
+    percentile: string
+  }
+}
+
+type AuditResult = {
+  executive_summary?: string
+  estimated_monthly_waste?: number
+  estimated_annual_waste?: number
+  automation_readiness_score?: number
+  labor_arbitrage_breakdown?: LaborArbitrageBreakdown
+  context_switching_analysis?: ContextSwitchingAnalysis
+  onboarding_assessment?: OnboardingAssessment
+  benchmarks?: Benchmarks
+  summary?: {
+    total_hours_saved_weekly?: number
+    total_annual_cost_savings?: number
+    automation_readiness_score?: number
+    headline?: string
+  }
+  opportunities: Opportunity[]
+  roadmap?: {
+    phase_1_quick_wins?: string
+    phase_2_core_systems?: string
+    phase_3_intelligence_layer?: string
+    path_to_vision?: string
+  }
+  priority_roadmap?: {
+    week_1?: string
+    month_1?: string
+    month_3?: string
+  }
+  tools_analysis: {
+    current_stack_rating: number
+    missing_integrations?: string[]
+    redundant_tools?: string[]
+    biggest_friction_point?: string
+    recommended_additions?: string[]
+  }
+}
+
+type NormalizedRoadmap = { week_1: string; month_1: string; month_3: string }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const DIFF_CONFIG = {
+  easy:    { label: 'Easy',    pill: 'text-emerald-400', bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.25)' },
+  medium:  { label: 'Medium',  pill: 'text-amber-400',   bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)'  },
+  complex: { label: 'Complex', pill: 'text-red-400',     bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   },
+}
+
+const RANK_COLORS: Record<number, string> = {
+  1: '#3b82f6', 2: '#06b6d4', 3: '#8b5cf6', 4: '#10b981', 5: '#f59e0b',
+}
+const rankColor = (r: number) => RANK_COLORS[r] ?? '#6b7280'
+
+function fmtMoney(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1000)      return `$${(n / 1000).toFixed(0)}K`
+  return `$${n.toLocaleString()}`
+}
+
+// ─── Section label ────────────────────────────────────────────────────────────
+
+function SectionLabel({ num, text }: { num: string; text: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="font-mono text-[10px] font-bold tracking-[3px] text-on-surface-variant/30">{num}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[2.5px] text-secondary">{text}</span>
+    </div>
+  )
+}
+
+// ─── Divider ─────────────────────────────────────────────────────────────────
+
+function Divider() {
+  return (
+    <div
+      className="h-px w-full"
+      style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(173,198,255,0.2) 30%, rgba(76,215,246,0.15) 70%, transparent 100%)' }}
+    />
+  )
+}
+
+// ─── Technical flow chain ────────────────────────────────────────────────────
+
+function TechnicalFlow({ flow }: { flow: string }) {
+  const steps = flow.split(/\s*→\s*/).filter(Boolean)
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+      {steps.map((step, i) => (
+        <div key={i} className="flex items-center gap-1.5 shrink-0">
+          <span
+            className="px-3 py-[5px] rounded-[7px] text-[11px] font-medium whitespace-nowrap"
+            style={{
+              background: 'rgba(59,130,246,0.07)',
+              border: '1px solid rgba(59,130,246,0.2)',
+              color: 'rgba(255,255,255,0.75)',
+            }}
+          >
+            {step}
+          </span>
+          {i < steps.length - 1 && (
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'rgba(59,130,246,0.45)', flexShrink: 0 }}>
+              <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Lock icon ────────────────────────────────────────────────────────────────
+
+function LockIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
+      <rect x="3" y="8" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+// ─── Locked section ───────────────────────────────────────────────────────────
+
+function LockedSection({
+  unlocked, onUnlock, children,
+}: {
+  unlocked: boolean
+  onUnlock: () => void
+  children: React.ReactNode
+}) {
+  if (unlocked) return <>{children}</>
+
+  return (
+    <div className="relative rounded-[14px] overflow-hidden">
+      <div
+        style={{
+          filter: 'blur(5px)',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          opacity: 0.55,
+          transition: 'filter 0.5s ease, opacity 0.5s ease',
+        }}
+      >
+        {children}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center locked-overlay-animated">
+        <div
+          className="flex flex-col items-center gap-3 px-6 py-5 text-center rounded-[16px]"
+          style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.14)' }}
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[#adc6ff]"
+            style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}
+          >
+            <LockIcon size={16} />
+          </div>
+          <p className="text-[12px] font-semibold text-on-surface/90 max-w-[230px] leading-[1.55]">
+            Book a free strategy call to unlock your full implementation blueprint
+          </p>
+          <Button
+            onClick={onUnlock}
+            variant="outline"
+            className="px-4 py-2 h-auto rounded-[8px] text-[12px] font-bold text-primary border-primary/22 bg-primary/9 hover:bg-primary/15 hover:text-primary"
+          >
+            Unlock Full Blueprint →
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Readiness ring ───────────────────────────────────────────────────────────
+
+function ReadinessRing({ score }: { score: number }) {
+  const r = 80
+  const circ = 2 * Math.PI * r
+  const [progress, setProgress] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setTimeout(() => setProgress(score), 300); io.unobserve(el) } },
+      { threshold: 0.4 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [score])
+
+  const offset = circ - (progress / 100) * circ
+  const color  = score >= 60 ? '#10b981' : score >= 30 ? '#f59e0b' : '#ef4444'
+  const label  = score >= 60 ? 'Strong readiness' : score >= 30 ? 'Room to improve' : 'Urgent action needed'
+  const ring2  = score >= 60 ? '#10b98140' : score >= 30 ? '#f59e0b40' : '#ef444440'
+
+  return (
+    <div ref={ref} className="flex flex-col items-center gap-5">
+      <div className="relative w-[200px] h-[200px]">
+        <div className="absolute inset-[-12px] rounded-full opacity-20 blur-[24px] pointer-events-none" style={{ background: color }} />
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 184 184">
+          <circle cx="92" cy="92" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
+          <circle cx="92" cy="92" r={r} fill="none" stroke={ring2} strokeWidth="12" />
+          <circle
+            cx="92" cy="92" r={r}
+            fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={offset}
+            className="ring-glow"
+            style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1)', filter: `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 4px ${color})` }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+          <span className="font-headline text-[54px] font-extrabold leading-none tabular-nums" style={{ color, textShadow: `0 0 24px ${color}80` }}>{score}</span>
+          <span className="text-[11px] font-semibold tracking-[2px] text-on-surface-variant/40 uppercase">/100</span>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="font-headline text-[17px] font-bold text-on-surface">Automation Readiness Score</p>
+        <p className="text-[13px] mt-1 font-medium" style={{ color }}>{label}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Stack rating bar ─────────────────────────────────────────────────────────
+
+function StackRatingBar({ rating }: { rating: number }) {
+  const [w, setW] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setTimeout(() => setW(rating * 10), 200); io.unobserve(el) } },
+      { threshold: 0.5 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [rating])
+
+  const color = rating >= 7 ? '#10b981' : rating >= 5 ? '#3b82f6' : '#f59e0b'
+
+  return (
+    <div ref={ref} className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-medium text-on-surface-variant">Current Stack Efficiency</p>
+        <p className="font-headline text-[20px] font-bold tabular-nums" style={{ color }}>
+          {rating}<span className="text-[13px] font-normal text-on-surface-variant">/10</span>
+        </p>
+      </div>
+      <div className="h-[6px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${w}%`,
+            background: `linear-gradient(90deg, ${color}80, ${color})`,
+            boxShadow: `0 0 12px ${color}60`,
+            transition: 'width 1.2s cubic-bezier(0.34,1.56,0.64,1)',
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── Labor Arbitrage Section ──────────────────────────────────────────────────
+
+function LaborArbitrageSection({ data }: { data: LaborArbitrageBreakdown }) {
+  const stats = [
+    { label: 'Estimated Hourly Rate', value: data.estimated_hourly_rate ? `$${data.estimated_hourly_rate}/hr` : '—', color: '#f59e0b' },
+    { label: 'Hours Wasted / Week', value: data.hours_wasted_on_low_value_weekly ? `${data.hours_wasted_on_low_value_weekly}h` : '—', color: '#f87171' },
+    { label: 'Annual Labor Waste', value: data.annual_labor_waste ? fmtMoney(data.annual_labor_waste) : '—', color: '#f87171' },
+  ]
+
+  return (
+    <RevealSection>
+      <section>
+        <SectionLabel num="04" text="Labor Arbitrage" />
+        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
+          Where Your Skilled Team Does Low-Value Work
+        </h2>
+        <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-6 max-w-[520px]">
+          Skilled labor performing repetitive tasks is the most expensive leak in any agency.
+        </p>
+
+        <div className="grid sm:grid-cols-3 gap-4 mb-4">
+          {stats.map(({ label, value, color }) => (
+            <div
+              key={label}
+              className="p-5 rounded-[16px]"
+              style={{ background: `${color}08`, border: `1px solid ${color}20` }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[2px] mb-3" style={{ color: `${color}bb` }}>{label}</p>
+              <p className="font-headline text-[clamp(22px,3vw,30px)] font-extrabold tabular-nums leading-none" style={{ color, textShadow: `0 0 20px ${color}60` }}>
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {data.explanation && (
+          <div
+            className="p-5 rounded-[16px] relative overflow-hidden"
+            style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}
+          >
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">The Math</p>
+            <p className="text-[14px] text-on-surface-variant leading-[1.7] pl-2">{data.explanation}</p>
+          </div>
+        )}
+      </section>
+    </RevealSection>
+  )
+}
+
+// ─── Context Switching Section ────────────────────────────────────────────────
+
+function ContextSwitchingSection({ data }: { data: ContextSwitchingAnalysis }) {
+  const stats = [
+    { label: 'Tools in Stack',         value: data.tools_count ? `${data.tools_count}` : '—',                 unit: 'tools',    color: '#8b5cf6' },
+    { label: 'Daily Context Switches', value: data.estimated_daily_switches ? `${data.estimated_daily_switches}` : '—', unit: 'switches', color: '#a78bfa' },
+    { label: 'Time Lost Daily',        value: data.time_lost_daily_minutes ? `${data.time_lost_daily_minutes}` : '—',   unit: 'min/day',  color: '#f87171' },
+    { label: 'Annual Cost',            value: data.annual_cost ? fmtMoney(data.annual_cost) : '—',             unit: 'per year', color: '#f87171' },
+  ]
+
+  return (
+    <RevealSection>
+      <section>
+        <SectionLabel num="05" text="Context Switching Tax" />
+        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
+          The Hidden Cost of Jumping Between Tools
+        </h2>
+        <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-6 max-w-[520px]">
+          Each tool switch costs 15–23 minutes of refocus time. It compounds fast.
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {stats.map(({ label, value, unit, color }) => (
+            <div
+              key={label}
+              className="p-5 rounded-[16px] flex flex-col gap-2"
+              style={{ background: `${color}08`, border: `1px solid ${color}20` }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[2px]" style={{ color: `${color}bb` }}>{label}</p>
+              <p className="font-headline text-[clamp(24px,3vw,32px)] font-extrabold tabular-nums leading-none" style={{ color, textShadow: `0 0 20px ${color}60` }}>
+                {value}
+              </p>
+              <p className="text-[11px] text-on-surface-variant/50">{unit}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </RevealSection>
+  )
+}
+
+// ─── Benchmark Section ───────────────────────────────────────────────────────
+
+const VERDICT_CONFIG: Record<string, { color: string; label: string; border: string; bg: string }> = {
+  critical:       { color: '#ef4444', label: 'Critical',       border: 'rgba(239,68,68,0.3)',   bg: 'rgba(239,68,68,0.1)'   },
+  'above average':{ color: '#ef4444', label: 'Above Average',  border: 'rgba(239,68,68,0.3)',   bg: 'rgba(239,68,68,0.1)'   },
+  average:        { color: '#f59e0b', label: 'On Par',         border: 'rgba(245,158,11,0.3)',  bg: 'rgba(245,158,11,0.1)'  },
+  'below average':{ color: '#10b981', label: 'Below Average',  border: 'rgba(16,185,129,0.3)',  bg: 'rgba(16,185,129,0.1)'  },
+}
+
+function getVerdictConfig(verdict: string) {
+  return VERDICT_CONFIG[verdict.toLowerCase()] ?? { color: '#6b7280', label: verdict, border: 'rgba(107,114,128,0.3)', bg: 'rgba(107,114,128,0.1)' }
+}
+
+function BenchmarkBar({
+  label, theirValue, avgValue, theirDisplay, avgDisplay, higherIsBetter, animDelay = 0,
+}: {
+  label: string
+  theirValue: number
+  avgValue: number
+  theirDisplay: string
+  avgDisplay: string
+  higherIsBetter: boolean
+  animDelay?: number
+}) {
+  const max = Math.max(theirValue, avgValue, 0.001)
+  const theirPct = (theirValue / max) * 100
+  const avgPct   = (avgValue   / max) * 100
+  const theirIsGood = higherIsBetter ? theirValue >= avgValue : theirValue <= avgValue
+  const theirColor  = theirIsGood
+    ? '#10b981'
+    : theirValue > avgValue * 1.4 || (!higherIsBetter && theirValue > avgValue * 1.2)
+      ? '#ef4444'
+      : '#f59e0b'
+
+  return (
+    <div className="space-y-4">
+      <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/50">{label}</p>
+
+      {/* Their bar */}
+      <div className="space-y-1.5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[11px] text-on-surface-variant">Your agency</span>
+          <span className="font-headline font-extrabold text-[18px] tabular-nums" style={{ color: theirColor }}>
+            {theirDisplay}
+          </span>
+        </div>
+        <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+          <motion.div
+            className="h-full rounded-full"
+            initial={{ width: 0 }}
+            whileInView={{ width: `${theirPct}%` }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: animDelay }}
+            style={{ background: theirColor, boxShadow: `0 0 10px ${theirColor}70` }}
+          />
+        </div>
+      </div>
+
+      {/* Industry avg bar */}
+      <div className="space-y-1.5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[11px] text-on-surface-variant/50">Industry average</span>
+          <span className="text-[15px] font-semibold tabular-nums text-on-surface-variant/60">{avgDisplay}</span>
+        </div>
+        <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+          <motion.div
+            className="h-full rounded-full"
+            initial={{ width: 0 }}
+            whileInView={{ width: `${avgPct}%` }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: animDelay + 0.15 }}
+            style={{ background: 'rgba(255,255,255,0.14)' }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BenchmarkSection({ data }: { data: Benchmarks }) {
+  const h    = data.hours_wasted_vs_average
+  const ops  = data.ops_cost_ratio
+  const mat  = data.automation_maturity
+
+  const matCategory = mat?.category ?? ''
+  const matColor =
+    matCategory.toLowerCase().includes('intelligent') ? '#10b981' :
+    matCategory.toLowerCase().includes('systematized') ? '#22d3ee' :
+    matCategory.toLowerCase().includes('partially') ? '#f59e0b' : '#ef4444'
+
+  const opsBad = ops ? ops.their_ratio_percent > ops.healthy_ratio_percent : false
+
+  return (
+    <FadeInOnScroll>
+      <RevealSection>
+        <section>
+          <SectionLabel num="03" text="Industry Benchmarks" />
+          <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
+            How You Compare
+          </h2>
+          <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
+            Benchmarked against agencies your size. Numbers don&apos;t lie.
+          </p>
+
+          <div className="grid sm:grid-cols-3 gap-4">
+
+            {/* Hours wasted */}
+            {h && (
+              <div
+                className="p-6 rounded-[18px] space-y-5"
+                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+              >
+                <BenchmarkBar
+                  label="Hours Wasted / Week"
+                  theirValue={h.their_hours}
+                  avgValue={h.industry_average}
+                  theirDisplay={`${h.their_hours}h`}
+                  avgDisplay={`${h.industry_average}h avg`}
+                  higherIsBetter={false}
+                  animDelay={0.1}
+                />
+                {(() => {
+                  const vc = getVerdictConfig(h.verdict)
+                  return (
+                    <div className="flex items-center gap-2 pt-1">
+                      <span
+                        className="px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        style={{ background: vc.bg, border: `1px solid ${vc.border}`, color: vc.color }}
+                      >
+                        {vc.label}
+                      </span>
+                      {Math.abs(h.percent_difference) > 1 && (
+                        <span className="text-[11px] text-on-surface-variant/50">
+                          {h.percent_difference > 0 ? '+' : ''}{Math.round(h.percent_difference)}% vs avg
+                        </span>
+                      )}
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
+
+            {/* Ops cost ratio */}
+            {ops && (
+              <div
+                className="p-6 rounded-[18px] space-y-5"
+                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+              >
+                <BenchmarkBar
+                  label="Ops Time Ratio"
+                  theirValue={ops.their_ratio_percent}
+                  avgValue={ops.healthy_ratio_percent}
+                  theirDisplay={`${ops.their_ratio_percent}%`}
+                  avgDisplay={`${ops.healthy_ratio_percent}% healthy`}
+                  higherIsBetter={false}
+                  animDelay={0.25}
+                />
+                <div className="pt-1">
+                  <span
+                    className="px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    style={{
+                      background: opsBad ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+                      border: opsBad ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(16,185,129,0.3)',
+                      color: opsBad ? '#ef4444' : '#10b981',
+                    }}
+                  >
+                    {opsBad ? 'Ops-Heavy' : 'Healthy'}
+                  </span>
+                  <p className="text-[11px] text-on-surface-variant/50 mt-2 leading-[1.6]">{ops.verdict}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Automation maturity */}
+            {mat && (
+              <div
+                className="p-6 rounded-[18px] space-y-4"
+                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/50">Automation Maturity</p>
+
+                {/* Score arc / big number */}
+                <div className="flex items-end gap-3">
+                  <span
+                    className="font-headline text-[48px] font-extrabold leading-none tabular-nums"
+                    style={{ color: matColor, textShadow: `0 0 24px ${matColor}60` }}
+                  >
+                    <CountUp target={mat.their_score} duration={1.4} />
+                  </span>
+                  <span className="text-[14px] text-on-surface-variant/40 mb-1">/100</span>
+                </div>
+
+                {/* Maturity track */}
+                <div className="space-y-2">
+                  <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+                    <motion.div
+                      className="h-full rounded-full"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${mat.their_score}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                      style={{ background: `linear-gradient(90deg, #ef4444, #f59e0b 40%, ${matColor})`, boxShadow: `0 0 10px ${matColor}60` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[9px] text-on-surface-variant/30 font-mono">
+                    <span>Manual Chaos</span>
+                    <span>Intelligent Ops</span>
+                  </div>
+                </div>
+
+                <div className="pt-1 space-y-1.5">
+                  <span
+                    className="inline-block px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    style={{ background: `${matColor}18`, border: `1px solid ${matColor}40`, color: matColor }}
+                  >
+                    {mat.category}
+                  </span>
+                  <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">{mat.percentile}</p>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </section>
+      </RevealSection>
+    </FadeInOnScroll>
+  )
+}
+
+// ─── Onboarding Assessment Section ───────────────────────────────────────────
+
+function OnboardingAssessmentSection({
+  data, unlocked, onUnlock,
+}: {
+  data: OnboardingAssessment
+  unlocked: boolean
+  onUnlock: () => void
+}) {
+  return (
+    <RevealSection>
+      <section>
+        <SectionLabel num="07" text="Onboarding Assessment" />
+        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
+          Client Onboarding Audit
+        </h2>
+
+        <LockedSection unlocked={unlocked} onUnlock={onUnlock}>
+          <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+            <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
+            <div className="p-6 space-y-5">
+
+              {data.current_state && (
+                <div
+                  className="p-4 rounded-[12px]"
+                  style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                {data.time_per_client_current && (
+                  <div
+                    className="p-4 rounded-[12px]"
+                    style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
+                    <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
+                  </div>
+                )}
+                {data.time_per_client_automated && (
+                  <div
+                    className="p-4 rounded-[12px]"
+                    style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
+                    <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
+                  </div>
+                )}
+              </div>
+
+              {data.revenue_impact && (
+                <div
+                  className="p-4 rounded-[12px]"
+                  style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </LockedSection>
+      </section>
+    </RevealSection>
+  )
+}
+
+// ─── Opportunity card ─────────────────────────────────────────────────────────
+
+function OpportunityCard({
+  opp, unlocked, onUnlock, onGetBuilt,
+}: {
+  opp: Opportunity
+  unlocked: boolean
+  onUnlock: () => void
+  onGetBuilt: () => void
+}) {
+  const diff        = DIFF_CONFIG[opp.difficulty] ?? DIFF_CONFIG.medium
+  const color       = rankColor(opp.rank)
+  const annualValue = opp.annual_savings ?? ((opp.monthly_savings ?? 0) * 12)
+  const monthlyVal  = opp.monthly_savings ?? (annualValue > 0 ? Math.round(annualValue / 12) : 0)
+  const problemText = opp.hard_truth ?? opp.problem
+  const isHardTruth = !!opp.hard_truth
+  const solutionText = opp.automated_process ?? opp.solution
+  const tools        = opp.tools_connected ?? opp.tools_involved ?? []
+  const buildPrice   = BUILD_PRICE[opp.difficulty] ?? BUILD_PRICE.medium
+
+  const hasLockedContent =
+    !!opp.current_process ||
+    !!solutionText ||
+    (opp.n8n_nodes && opp.n8n_nodes.length > 0) ||
+    (opp.implementation_steps?.length > 0) ||
+    tools.length > 0
+
+  return (
+    <div
+      className="rounded-[18px] overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-surface-container border border-outline-variant/10"
+      style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+    >
+      <div className="h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}00 65%)` }} />
+
+      {/* Header */}
+      <div className="p-6 pb-0">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 min-w-0">
+            <div
+              className="w-11 h-11 rounded-[12px] flex items-center justify-center font-headline text-[18px] font-extrabold shrink-0"
+              style={{
+                background: `linear-gradient(135deg, ${color}22 0%, ${color}08 100%)`,
+                border: `1.5px solid ${color}40`,
+                color,
+                boxShadow: `0 0 20px ${color}25, inset 0 0 12px ${color}08`,
+              }}
+            >
+              {opp.rank}
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-headline text-[17px] font-bold text-on-surface leading-snug">{opp.title}</h3>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                {opp.quick_win && (
+                  <Badge variant="outline" className="h-auto px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-400/10 border-emerald-400/25 text-emerald-400">
+                    Quick Win
+                  </Badge>
+                )}
+                <Badge
+                  variant="outline"
+                  className={`h-auto px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-wider ${diff.pill}`}
+                  style={{ background: diff.bg, border: `1px solid ${diff.border}` }}
+                >
+                  {diff.label}
+                </Badge>
+                {opp.build_time_days != null && (
+                  <Badge
+                    variant="outline"
+                    className="h-auto px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-wider text-sky-400"
+                    style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)' }}
+                  >
+                    {opp.build_time_days}d build
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ROI stats */}
+          <div className="flex gap-5 shrink-0 text-right">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant mb-0.5">Saved/Week</p>
+              <p className="font-headline text-[22px] font-extrabold leading-none tabular-nums" style={{ color }}>
+                {opp.hours_saved_weekly}h
+              </p>
+            </div>
+            {monthlyVal > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant mb-0.5">Monthly</p>
+                <p className="font-headline text-[22px] font-extrabold leading-none tabular-nums text-on-surface">
+                  {fmtMoney(monthlyVal)}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-4">
+        {/* Hard truth (always visible) */}
+        {problemText && (
+          <div
+            className="p-4 rounded-[12px]"
+            style={isHardTruth
+              ? { background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }
+              : { background: 'rgba(173,198,255,0.03)', border: '1px solid rgba(173,198,255,0.08)' }
+            }
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[2px] mb-2" style={{ color: isHardTruth ? '#f87171' : 'rgba(194,198,214,0.5)' }}>
+              {isHardTruth ? 'The Hard Truth' : 'The Problem'}
+            </p>
+            <p className="text-[13px] leading-[1.7]" style={{ color: isHardTruth ? '#e0e2ee' : '#c2c6d6' }}>{problemText}</p>
+          </div>
+        )}
+
+        {/* Build price (always visible — selling point) */}
+        <div
+          className="p-4 rounded-[12px]"
+          style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.18)' }}
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">OpsRadar Build Price</p>
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <p className="font-headline text-[20px] font-extrabold text-emerald-400 leading-none">{buildPrice.range}</p>
+            <p className="text-[12px] text-on-surface-variant">{buildPrice.delivery}</p>
+          </div>
+        </div>
+
+        {/* Workflow diagram (always visible teaser) */}
+        {opp.technical_flow && (
+          <div className="pt-1">
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-3">Automation Flow</p>
+            <WorkflowDiagram technicalFlow={opp.technical_flow} />
+          </div>
+        )}
+
+        {/* Locked: technical details */}
+        {hasLockedContent && (
+          <LockedSection unlocked={unlocked} onUnlock={onUnlock}>
+            <div className="space-y-4">
+              {/* Current process */}
+              {opp.current_process && (
+                <div
+                  className="p-4 rounded-[12px]"
+                  style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.12)' }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2">Currently</p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{opp.current_process}</p>
+                </div>
+              )}
+
+              {/* Solution / automated process */}
+              {solutionText && (
+                <div
+                  className="p-4 rounded-[12px]"
+                  style={{ background: `${color}07`, border: `1px solid ${color}20` }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] mb-2" style={{ color }}>
+                    {opp.automated_process ? 'Automated Process' : 'The Solution'}
+                  </p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{solutionText}</p>
+                </div>
+              )}
+
+              {/* n8n nodes */}
+              {opp.n8n_nodes && opp.n8n_nodes.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">n8n Nodes</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {opp.n8n_nodes.map((node) => (
+                      <span
+                        key={node}
+                        className="text-[11px] px-2.5 py-[4px] rounded-[6px] font-medium"
+                        style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', color: '#c4b5fd' }}
+                      >
+                        {node}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Implementation steps */}
+              {opp.implementation_steps?.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-3">Implementation Steps</p>
+                  <div className="space-y-2.5">
+                    {opp.implementation_steps.map((step, i) => (
+                      <div key={i} className="flex gap-3 items-start">
+                        <span
+                          className="mt-[2px] w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 tabular-nums"
+                          style={{ background: `${color}15`, border: `1px solid ${color}30`, color }}
+                        >
+                          {i + 1}
+                        </span>
+                        <p className="text-[13px] text-on-surface-variant leading-[1.65]">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tool chips */}
+              {tools.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {tools.map((t) => (
+                    <span
+                      key={t}
+                      className="text-[11px] px-2.5 py-[4px] rounded-[6px] text-on-surface-variant"
+                      style={{ background: 'rgba(173,198,255,0.05)', border: '1px solid rgba(173,198,255,0.12)' }}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </LockedSection>
+        )}
+
+        {/* Get this built CTA */}
+        <div className="pt-3 mt-1 border-t border-[rgba(255,255,255,0.05)]">
+          <Button
+            onClick={onGetBuilt}
+            variant="outline"
+            className="h-auto px-4 py-2 rounded-[8px] text-[12px] font-semibold text-sky-400 border-sky-400/20 bg-sky-400/7 hover:bg-sky-400/13 hover:border-sky-400/40 hover:text-sky-400"
+          >
+            Get This Built →
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Build request modal ──────────────────────────────────────────────────────
+
+function BuildRequestModal({
+  oppTitle, contactName, contactEmail, auditId, onClose,
+}: {
+  oppTitle:     string
+  contactName:  string
+  contactEmail: string
+  auditId:      string | null
+  onClose:      () => void
+}) {
+  const [form, setForm]     = useState({ name: contactName, email: contactEmail, budget: '', timeline: '', notes: '' })
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [errMsg, setErrMsg] = useState('')
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  const canSubmit = form.name.trim() && form.email.trim() && form.budget && form.timeline
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!canSubmit) return
+    setStatus('submitting')
+    try {
+      const res = await fetch('/api/build-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audit_id: auditId, automation_title: oppTitle, ...form }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error ?? 'Failed to submit')
+      }
+      setStatus('success')
+    } catch (err) {
+      setErrMsg(err instanceof Error ? err.message : 'Something went wrong')
+      setStatus('error')
+    }
+  }
+
+  const inputStyle = { background: 'rgba(28,32,40,1)', border: '1px solid rgba(66,71,84,0.4)', color: '#e0e2ee' }
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ background: 'rgba(5,8,16,0.82)', backdropFilter: 'blur(10px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="w-full sm:max-w-[520px] rounded-t-[22px] sm:rounded-[22px] overflow-hidden bg-surface-container border border-outline-variant/20"
+        style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}
+      >
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa)' }} />
+        <div className="p-6 sm:p-7">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h2 className="font-headline font-bold text-[19px] text-on-surface tracking-[-0.02em]">Get This Built</h2>
+              <p className="text-[12px] text-on-surface-variant mt-0.5">We&apos;ll scope it and get back to you within 24 hours.</p>
+            </div>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon-sm"
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high shrink-0 ml-4 rounded-[8px]"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2l10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </Button>
+          </div>
+
+          {status === 'success' ? (
+            <div className="text-center py-8">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <path d="M4 11l5 5 9-9" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 className="font-headline font-bold text-[18px] text-on-surface mb-2">Request Received!</h3>
+              <p className="text-[13px] text-on-surface-variant leading-[1.7] max-w-[320px] mx-auto">
+                We&apos;ll get back to you within 24 hours with a scoped plan and cost estimate.
+              </p>
+              <Button onClick={onClose} variant="outline" className="mt-6 px-6 py-2.5 h-auto rounded-[10px] text-[13px] font-semibold border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:border-outline-variant/40 bg-transparent">
+                Close
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">Automation</label>
+                <div className="px-3.5 py-2.5 rounded-[10px] text-[13px] font-medium text-[rgba(255,255,255,0.75)]" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                  {oppTitle}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {(['name', 'email'] as const).map(field => (
+                  <div key={field}>
+                    <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">
+                      {field === 'name' ? 'Your Name' : 'Email'}
+                    </label>
+                    <input
+                      type={field === 'email' ? 'email' : 'text'} required
+                      value={form[field]}
+                      onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                      className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none transition-colors duration-150"
+                      style={inputStyle}
+                      onFocus={e => (e.currentTarget.style.borderColor = 'rgba(173,198,255,0.4)')}
+                      onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(66,71,84,0.4)')}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { field: 'budget',   label: 'Budget Range', opts: ['Under $1K', '$1K–$3K', '$3K–$5K', '$5K+'] },
+                  { field: 'timeline', label: 'Timeline',     opts: ['This week', 'This month', 'No rush'] },
+                ].map(({ field, label, opts }) => (
+                  <div key={field}>
+                    <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">{label}</label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={form[field as 'budget' | 'timeline']}
+                        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                        className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface outline-none appearance-none transition-colors duration-150"
+                        style={inputStyle}
+                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.45)')}
+                        onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                      >
+                        <option value="" disabled style={{ background: '#0d1229' }}>Select…</option>
+                        {opts.map(o => <option key={o} value={o} style={{ background: '#0d1229' }}>{o}</option>)}
+                      </select>
+                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11" height="11" viewBox="0 0 11 11" fill="none" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">
+                  Notes <span className="font-normal normal-case tracking-normal text-[rgba(255,255,255,0.18)]">(optional)</span>
+                </label>
+                <textarea
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder="Any specific requirements or things to know…"
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none resize-none transition-colors duration-150"
+                  style={inputStyle}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.45)')}
+                  onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                />
+              </div>
+              {status === 'error' && <p className="text-[12px] text-[#f87171]">{errMsg}</p>}
+              <Button
+                type="submit"
+                disabled={!canSubmit || status === 'submitting'}
+                className="w-full py-3 h-auto rounded-[12px] font-bold text-[14px] text-white border-0"
+                style={{ background: 'linear-gradient(135deg, #adc6ff 0%, #a78bfa 100%)' }}
+              >
+                {status === 'submitting' ? 'Sending…' : 'Submit Request →'}
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Unlock section ───────────────────────────────────────────────────────────
+
+function UnlockSection({
+  auditId, onUnlocked,
+}: {
+  auditId: string | null
+  onUnlocked: () => void
+}) {
+  const [emailInput,    setEmailInput]    = useState('')
+  const [emailStatus,   setEmailStatus]   = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [bookedClicked, setBookedClicked] = useState(false)
+
+  function handleBookedUnlock() {
+    localStorage.setItem(UNLOCK_KEY, '1')
+    onUnlocked()
+  }
+
+  async function handleEmailUnlock(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const email = emailInput.trim()
+    if (!email) return
+    setEmailStatus('submitting')
+    try {
+      if (auditId) {
+        await supabase.from('audits').update({ email }).eq('id', auditId)
+      }
+      localStorage.setItem(UNLOCK_KEY, '1')
+      setEmailStatus('success')
+      setTimeout(onUnlocked, 800)
+    } catch {
+      setEmailStatus('error')
+    }
+  }
+
+  const inputStyle = { background: 'rgba(28,32,40,1)', border: '1px solid rgba(66,71,84,0.4)', color: '#e0e2ee' }
+
+  return (
+    <RevealSection>
+      <section className="rounded-[22px] overflow-hidden bg-surface-container border-2 border-primary/25 shadow-[0_0_60px_rgba(173,198,255,0.07)]">
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+        <div className="p-7 sm:p-10">
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wider mb-5"
+              style={{ background: 'rgba(173,198,255,0.07)', border: '1px solid rgba(173,198,255,0.2)', color: '#adc6ff' }}
+            >
+              <LockIcon size={12} />
+              UNLOCK YOUR FULL BLUEPRINT
+            </div>
+            <h3 className="font-headline font-extrabold text-[clamp(20px,2.8vw,30px)] tracking-[-0.025em] text-on-surface mb-3">
+              Get the Complete Implementation Plan
+            </h3>
+            <p className="text-[14px] text-on-surface-variant leading-[1.7] max-w-[480px] mx-auto">
+              Unlock automation flows, n8n nodes, step-by-step implementation guides, roadmap, and tool recommendations — everything you need to build or hand off.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+
+            {/* Path 1: Book a call */}
+            <div
+              className="p-6 rounded-[18px] flex flex-col gap-4"
+              style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.15)' }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-primary mb-2">Option 1 — Fastest</p>
+                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Book a Free Strategy Call</h4>
+                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
+                  20 minutes. We&apos;ll scope your top automation and give you a timeline and cost.
+                  No pitch, no commitment.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                <Button asChild className="w-full px-5 py-3 h-auto rounded-[11px] text-[13px] font-bold gap-2 shadow-[0_0_20px_rgba(173,198,255,0.2)] hover:shadow-[0_0_30px_rgba(173,198,255,0.35)] btn-spring">
+                  <a
+                    href="https://calendly.com/opsradar/strategy-call"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setBookedClicked(true)}
+                  >
+                    Book Free Strategy Call
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </a>
+                </Button>
+                {bookedClicked && (
+                  <Button
+                    onClick={handleBookedUnlock}
+                    variant="outline"
+                    className="w-full px-5 py-2.5 h-auto rounded-[10px] text-[12px] font-semibold text-emerald-400 border-emerald-400/20 bg-emerald-400/6 hover:bg-emerald-400/10 hover:text-emerald-400 gap-1.5"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 7l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    I&apos;ve booked — unlock my blueprint
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Path 2: Email */}
+            <div
+              className="p-6 rounded-[18px] flex flex-col gap-4"
+              style={{ background: 'rgba(76,215,246,0.03)', border: '1px solid rgba(76,215,246,0.12)' }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary mb-2">Option 2</p>
+                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Unlock via Email</h4>
+                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
+                  Enter your email and we&apos;ll send you the full report link. Unlock immediately.
+                </p>
+              </div>
+
+              {emailStatus === 'success' ? (
+                <div className="flex items-center gap-2.5 px-4 py-3 rounded-[10px]" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8l4.5 4.5 7.5-7.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p className="text-[12px] font-semibold text-emerald-400">Unlocking your blueprint…</p>
+                </div>
+              ) : (
+                <form onSubmit={handleEmailUnlock} className="flex flex-col gap-2.5">
+                  <input
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    value={emailInput}
+                    onChange={e => setEmailInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none transition-colors duration-150 focus:border-secondary/40"
+                    style={inputStyle}
+                    onFocus={e => (e.currentTarget.style.borderColor = 'rgba(76,215,246,0.4)')}
+                    onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(66,71,84,0.4)')}
+                  />
+                  {emailStatus === 'error' && (
+                    <p className="text-[11px] text-[#f87171]">Something went wrong — try again.</p>
+                  )}
+                  <Button
+                    type="submit"
+                    disabled={!emailInput.trim() || emailStatus === 'submitting'}
+                    variant="outline"
+                    className="px-5 py-2.5 h-auto rounded-[10px] text-[12px] font-bold text-secondary border-secondary/20 bg-secondary/8 hover:bg-secondary/15 hover:text-secondary"
+                  >
+                    {emailStatus === 'submitting' ? 'Unlocking…' : 'Unlock Full Blueprint →'}
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </RevealSection>
+  )
+}
+
+// ─── Vertical roadmap timeline ────────────────────────────────────────────────
+
+function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
+  const phases = [
+    { id: 'p1', num: '01', timeline: 'Week 1–2', title: 'Quick Wins',        desc: roadmap.week_1,  color: '#10b981' },
+    { id: 'p2', num: '02', timeline: 'Month 1',  title: 'Core Systems',       desc: roadmap.month_1, color: '#3b82f6' },
+    { id: 'p3', num: '03', timeline: 'Month 3',  title: 'Intelligence Layer', desc: roadmap.month_3, color: '#8b5cf6' },
+  ]
+
+  return (
+    <div className="relative pl-[28px]">
+      <div
+        className="absolute left-[11px] top-[20px] bottom-[20px] w-[2px] rounded-full"
+        style={{ background: 'linear-gradient(180deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%)' }}
+      />
+      <div className="space-y-5">
+        {phases.map(({ id, num, timeline, title, desc, color }) => (
+          <div key={id} className="flex gap-5 relative">
+            <div
+              className="absolute -left-[28px] w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: `${color}18`, border: `2px solid ${color}`, boxShadow: `0 0 14px ${color}40`, top: '14px' }}
+            >
+              <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+            </div>
+            <div
+              className="flex-1 p-5 rounded-[14px] transition-all duration-300 hover:-translate-y-0.5 bg-surface-container border border-outline-variant/10"
+              style={{ borderTopColor: `${color}40` }}
+            >
+              <div className="flex items-center gap-3 mb-2.5">
+                <span className="font-mono text-[9px] font-bold tracking-[2.5px] text-on-surface-variant/30">{num}</span>
+                <span className="px-2.5 py-[3px] rounded-full text-[10px] font-semibold" style={{ background: `${color}15`, border: `1px solid ${color}30`, color }}>
+                  {timeline}
+                </span>
+              </div>
+              <p className="font-headline text-[16px] font-bold text-on-surface mb-1.5">{title}</p>
+              <p className="text-[13px] text-on-surface-variant leading-[1.7]">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+function ResultsContent() {
+  const [audit,        setAudit]        = useState<AuditResult | null>(null)
+  const [company,      setCompany]      = useState('')
+  const [contactName,  setContactName]  = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [auditId,      setAuditId]      = useState<string | null>(null)
+  const [error,        setError]        = useState(false)
+  const [dateStr,      setDateStr]      = useState('')
+  const [modalOpp,     setModalOpp]     = useState<string | null>(null)
+  const [unlocked,     setUnlocked]     = useState(false)
+  const unlockRef = useRef<HTMLDivElement>(null)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    setDateStr(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))
+    setUnlocked(localStorage.getItem(UNLOCK_KEY) === '1')
+
+    const id = searchParams.get('id')
+    if (id) {
+      setAuditId(id)
+      supabase
+        .from('audits').select('result, company, name, email').eq('id', id).single()
+        .then(({ data, error: dbError }) => {
+          if (dbError || !data?.result) loadFromSession()
+          else {
+            setAudit(data.result as AuditResult)
+            if (data.company) setCompany(data.company)
+            if (data.name)    setContactName(data.name)
+            if (data.email)   setContactEmail(data.email)
+          }
+        })
+    } else {
+      loadFromSession()
+    }
+
+    function loadFromSession() {
+      try {
+        const raw = sessionStorage.getItem('opsradar_audit')
+        if (raw) setAudit(JSON.parse(raw))
+        else setError(true)
+      } catch { setError(true) }
+    }
+  }, [searchParams])
+
+  function handleUnlocked() {
+    localStorage.setItem(UNLOCK_KEY, '1')
+    setUnlocked(true)
+    window.scrollBy({ top: -100, behavior: 'smooth' })
+  }
+
+  function scrollToUnlock() {
+    unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  if (!audit && !error) {
+    return (
+      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 rounded-full border-2 mx-auto animate-spin" style={{ borderColor: '#adc6ff', borderTopColor: 'transparent' }} />
+          <p className="text-on-surface-variant text-[13px]">Loading your report…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6">
+        <p className="text-on-surface-variant text-[15px]">No audit data found.</p>
+        <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
+          <Link href="/audit">Start a New Audit →</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  // ── Normalize old / new response shapes ─────────────────────────────────────
+  const a             = audit!
+  const readiness     = a.automation_readiness_score ?? a.summary?.automation_readiness_score ?? 50
+  const headline      = a.summary?.headline ?? a.executive_summary ?? 'Your Automation Audit'
+  const hoursWeekly   = a.summary?.total_hours_saved_weekly ??
+    (a.opportunities ?? []).reduce((s, o) => s + (o.hours_saved_weekly ?? 0), 0)
+  const annualSavings = a.summary?.total_annual_cost_savings ?? a.estimated_annual_waste ?? 0
+  const { opportunities, tools_analysis } = a
+  const roadmap: NormalizedRoadmap = a.roadmap
+    ? { week_1: a.roadmap.phase_1_quick_wins ?? '', month_1: a.roadmap.phase_2_core_systems ?? '', month_3: a.roadmap.phase_3_intelligence_layer ?? '' }
+    : { week_1: a.priority_roadmap?.week_1 ?? '', month_1: a.priority_roadmap?.month_1 ?? '', month_3: a.priority_roadmap?.month_3 ?? '' }
+  const addedTools    = tools_analysis.recommended_additions ?? tools_analysis.missing_integrations ?? []
+  const removedTools  = tools_analysis.redundant_tools ?? []
+  const hasRoadmap    = roadmap.week_1 || roadmap.month_1 || roadmap.month_3
+  const hasStack      = addedTools.length > 0 || removedTools.length > 0 || !!tools_analysis.biggest_friction_point
+  const pathToVision  = a.roadmap?.path_to_vision
+
+  return (
+    <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
+
+      {/* ── Fixed nav ──────────────────────────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-[13px] bg-slate-900/60 backdrop-blur-2xl border-b border-outline-variant/10">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="h-7 w-auto rounded-[6px] shrink-0" />
+          <span className="font-headline font-bold text-[16px] bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            OpsRadar
+          </span>
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
+          </div>
+          {!unlocked ? (
+            <Button
+              onClick={scrollToUnlock}
+              variant="outline"
+              className="h-auto px-4 py-[7px] rounded-[8px] text-[12px] font-bold text-primary border-primary/22 bg-primary/8 hover:bg-primary/15 hover:text-primary gap-1.5"
+            >
+              <LockIcon size={12} />
+              Unlock Blueprint
+            </Button>
+          ) : (
+            <Button
+              onClick={() => window.print()}
+              variant="outline"
+              className="h-auto px-4 py-[7px] rounded-[8px] text-[12px] font-semibold border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface bg-transparent gap-1.5"
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Download PDF
+            </Button>
+          )}
+        </div>
+      </nav>
+
+      {/* ── Report header ──────────────────────────────────────────────────── */}
+      <header className="relative overflow-hidden pt-[73px]">
+        <div className="absolute inset-0 grid-texture pointer-events-none" />
+        <div className="absolute top-0 left-[-10%] w-[500px] h-[300px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="relative z-[2] max-w-[900px] mx-auto px-6 py-12">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <Image src="/logo.png" alt="OpsRadar" width={48} height={48} className="h-12 w-auto rounded-[10px] shrink-0" />
+              <div>
+                <p className="font-headline font-extrabold text-[22px] tracking-[-0.02em] text-on-surface">OpsRadar</p>
+                <p className="text-[12px] text-on-surface-variant font-medium mt-0.5">Operations Audit Report</p>
+              </div>
+            </div>
+            <div className="sm:text-right">
+              {company && <p className="font-headline font-bold text-[18px] text-on-surface tracking-[-0.01em]">{company}</p>}
+              {dateStr  && <p className="text-[12px] text-on-surface-variant mt-0.5">{dateStr}</p>}
+              <p className="text-[11px] text-on-surface-variant/40 mt-1 flex sm:justify-end items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-primary inline-block" />
+                Powered by OpsRadar AI
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10"><Divider /></div>
+
+          <h1 className="font-headline font-extrabold text-[clamp(24px,3.8vw,44px)] leading-[1.1] tracking-[-0.03em] mt-8 max-w-[680px] text-on-surface">
+            <TypewriterText text={headline} speed={28} delay={400} />
+          </h1>
+
+          <div className="flex flex-wrap gap-6 mt-6">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Hours Recovered/Week</p>
+              <p className="font-headline text-[28px] font-extrabold tabular-nums text-secondary leading-none">
+                <AnimatedNumber target={hoursWeekly} suffix="h" duration={1400} />
+              </p>
+            </div>
+            <div className="w-px self-stretch bg-outline-variant/20" />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Savings Potential</p>
+              <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                <AnimatedNumber target={annualSavings} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1600} />
+              </p>
+            </div>
+            <div className="w-px self-stretch bg-outline-variant/20" />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Opportunities Found</p>
+              <p className="font-headline text-[28px] font-extrabold tabular-nums text-tertiary leading-none">
+                {opportunities.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Main sections ──────────────────────────────────────────────────── */}
+      <main className="max-w-[900px] mx-auto px-6 pb-28 space-y-20 mt-4">
+
+        {/* 01 · Executive Summary */}
+        {a.executive_summary && (
+          <FadeInOnScroll>
+            <section>
+              <SectionLabel num="01" text="Executive Summary" />
+              <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+                <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+                <div className="p-7">
+                  <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
+                    {a.executive_summary}
+                  </p>
+                  {(!!a.estimated_monthly_waste || !!a.estimated_annual_waste) && (
+                    <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
+                      {!!a.estimated_monthly_waste && (
+                        <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
+                          <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
+                            <AnimatedNumber target={a.estimated_monthly_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
+                          </p>
+                          <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
+                        </div>
+                      )}
+                      {!!a.estimated_annual_waste && (
+                        <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
+                          <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
+                            <AnimatedNumber target={a.estimated_annual_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
+                          </p>
+                          <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          </FadeInOnScroll>
+        )}
+
+        {/* 02 · Readiness Score */}
+        <FadeInOnScroll>
+          <section>
+            <SectionLabel num="02" text="Readiness Score" />
+            <div className="rounded-[20px] p-10 flex flex-col items-center relative overflow-hidden bg-surface-container border border-outline-variant/10">
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${readiness >= 60 ? 'rgba(16,185,129,0.06)' : readiness >= 30 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)'} 0%, transparent 70%)` }}
+              />
+              <div className="relative z-[1]"><ReadinessRing score={readiness} /></div>
+            </div>
+          </section>
+        </FadeInOnScroll>
+
+        {/* 03 · Industry Benchmarks */}
+        {a.benchmarks && (
+          <BenchmarkSection data={a.benchmarks} />
+        )}
+
+        {/* 04 · Labor Arbitrage */}
+        {a.labor_arbitrage_breakdown && (
+          <LaborArbitrageSection data={a.labor_arbitrage_breakdown} />
+        )}
+
+        {/* 05 · Context Switching Tax */}
+        {a.context_switching_analysis && (
+          <ContextSwitchingSection data={a.context_switching_analysis} />
+        )}
+
+        {/* 06 · Automation Opportunities */}
+        <section>
+          <RevealSection>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <SectionLabel num="06" text="Automation Opportunities" />
+                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface">
+                  Your Automation Blueprint
+                </h2>
+              </div>
+              <span
+                className="px-4 py-2 rounded-full text-[13px] font-semibold shrink-0"
+                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#60a5fa' }}
+              >
+                {opportunities.length} found
+              </span>
+            </div>
+          </RevealSection>
+          <StaggerChildren className="space-y-5">
+            {opportunities.map((opp) => (
+              <StaggerItem key={opp.rank}>
+                <GlowCard glowColor={`${RANK_COLORS[opp.rank] ?? '#6b7280'}0d`} className="rounded-[18px]">
+                  <OpportunityCard
+                    opp={opp}
+                    unlocked={unlocked}
+                    onUnlock={scrollToUnlock}
+                    onGetBuilt={() => setModalOpp(opp.title)}
+                  />
+                </GlowCard>
+              </StaggerItem>
+            ))}
+          </StaggerChildren>
+        </section>
+
+        {/* 06 · Onboarding Assessment */}
+        {a.onboarding_assessment && (
+          <OnboardingAssessmentSection
+            data={a.onboarding_assessment}
+            unlocked={unlocked}
+            onUnlock={scrollToUnlock}
+          />
+        )}
+
+        {/* 07 · Implementation Roadmap */}
+        {hasRoadmap && (
+          <RevealSection>
+            <section>
+              <SectionLabel num="08" text="Implementation Roadmap" />
+              <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
+                Your 90-Day Plan
+              </h2>
+              <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
+                Phased to deliver quick wins first, then compound value over time.
+              </p>
+
+              <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                <div className="space-y-5">
+                  <VerticalRoadmap roadmap={roadmap} />
+                  {pathToVision && (
+                    <div
+                      className="p-6 rounded-[18px] relative overflow-hidden"
+                      style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(173,198,255,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}
+                    >
+                      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, transparent)' }} />
+                      <div className="flex items-start gap-4">
+                        <div
+                          className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5"
+                          style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M9 2l1.8 3.6L15 6.6l-3 2.9.7 4.1L9 11.8l-3.7 1.8.7-4.1-3-2.9 4.2-.9L9 2z" stroke="#a78bfa" strokeWidth="1.4" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#a78bfa] mb-2">Path to Your Vision</p>
+                          <p className="text-[14px] text-on-surface-variant leading-[1.75]">{pathToVision}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </LockedSection>
+            </section>
+          </RevealSection>
+        )}
+
+        {/* 08 · Tools Analysis */}
+        {hasStack && (
+          <RevealSection>
+            <section>
+              <SectionLabel num="09" text="Tools Analysis" />
+              <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
+                Stack Recommendations
+              </h2>
+              <div className="p-6 rounded-[16px] mb-4 bg-surface-container border border-outline-variant/10">
+                <StackRatingBar rating={tools_analysis.current_stack_rating} />
+              </div>
+
+              <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                <div className="space-y-4">
+                  {tools_analysis.biggest_friction_point && (
+                    <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                      <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
+                      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
+                      <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{tools_analysis.biggest_friction_point}</p>
+                    </div>
+                  )}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {addedTools.length > 0 && (
+                      <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
+                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {addedTools.map((t) => (
+                            <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
+                              + {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {removedTools.length > 0 && (
+                      <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
+                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
+                        <div className="flex flex-wrap gap-2">
+                          {removedTools.map((t) => (
+                            <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </LockedSection>
+            </section>
+          </RevealSection>
+        )}
+
+        {/* Unlock section */}
+        {!unlocked && (
+          <div ref={unlockRef}>
+            <UnlockSection auditId={auditId} onUnlocked={handleUnlocked} />
+          </div>
+        )}
+
+        {/* Final CTA */}
+        <RevealSection>
+          <section className="rounded-[22px] overflow-hidden relative p-10 sm:p-14 text-center bg-surface-container border-2 border-primary/30 shadow-[0_0_80px_rgba(173,198,255,0.1)]">
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 55% at 50% 100%, rgba(173,198,255,0.08) 0%, transparent 70%)' }} />
+            <div className="relative z-[1]">
+              <Badge variant="outline" className="inline-flex items-center gap-2 h-auto px-3.5 py-1.5 rounded-full border-primary/25 bg-primary/8 text-primary text-[11px] font-bold tracking-wider mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                DONE-FOR-YOU AUTOMATION
+              </Badge>
+              <h2 className="font-headline font-extrabold text-[clamp(24px,3.5vw,40px)] tracking-[-0.03em] mb-4 text-on-surface">
+                Want Us to Build This For You?
+              </h2>
+              <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-10">
+                We take your audit results, design the exact workflows, and build them fully custom to your stack.
+                You get running automations — not a to-do list.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
+                  <a href="https://calendly.com/opsradar/strategy-call" target="_blank" rel="noopener noreferrer">
+                    Book a Free Strategy Call →
+                  </a>
+                </Button>
+                <Button
+                  onClick={() => setModalOpp('Full Automation Build')}
+                  variant="outline"
+                  className="px-7 py-[14px] h-auto rounded-[13px] text-[15px] font-semibold border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface bg-transparent"
+                >
+                  Request a Build Quote →
+                </Button>
+              </div>
+              <p className="mt-6 text-[12px] text-on-surface-variant/30">
+                No pitch. No commitment. We&apos;ll scope the build and give you an exact price.
+              </p>
+            </div>
+          </section>
+        </RevealSection>
+
+      </main>
+
+      {modalOpp && (
+        <BuildRequestModal
+          oppTitle={modalOpp}
+          contactName={contactName}
+          contactEmail={contactEmail}
+          auditId={auditId}
+          onClose={() => setModalOpp(null)}
+        />
+      )}
+
+      <footer className="py-8 px-6 text-center border-t border-outline-variant/10 bg-slate-950">
+        <div className="max-w-[900px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[12px] text-on-surface-variant/40">© 2026 OpsRadar</p>
+          <p className="text-[12px] text-on-surface-variant/30">Generated {dateStr} · Powered by OpsRadar AI</p>
+          <Link href="/audit" className="text-[12px] text-on-surface-variant/40 hover:text-on-surface-variant transition-colors">
+            Run Another Audit →
+          </Link>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ResultsContent />
+    </Suspense>
+  )
+}
