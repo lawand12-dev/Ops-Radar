@@ -263,7 +263,7 @@ export default function ServicesPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="px-8 py-4 h-auto rounded-lg font-semibold text-on-surface border-outline-variant/30 hover:bg-surface-container-high/40 hover:border-outline-variant/50 bg-transparent">
-              <a href="https://calendly.com/opsradar/strategy-call" target="_blank" rel="noopener noreferrer">
+              <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
                 Book a Strategy Call
               </a>
             </Button>
@@ -544,7 +544,7 @@ export default function ServicesPage() {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="px-8 py-4 h-auto rounded-lg font-semibold text-on-surface border-outline-variant/30 hover:bg-surface-container-high/40 hover:border-outline-variant/50 bg-transparent">
-                <a href="https://calendly.com/opsradar/strategy-call" target="_blank" rel="noopener noreferrer">
+                <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
                   Book a Strategy Call
                 </a>
               </Button>
