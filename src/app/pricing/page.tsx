@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
-  description: 'Transparent pricing for done-for-you agency automation. One-time builds from $1,500. Managed retainers from $800/mo.',
+  description: 'Transparent pricing for done-for-you agency automation. One-time builds from $1,500. Managed retainers from $300/mo.',
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -51,6 +51,21 @@ const BUILD_TIERS = [
 
 const RETAINER_TIERS = [
   {
+    name: 'Starter',
+    price: '$300',
+    period: '/mo',
+    color: '#10b981',
+    border: 'rgba(16,185,129,0.2)',
+    bg: 'rgba(16,185,129,0.05)',
+    features: [
+      'Monitor up to 1 workflow',
+      'Fix broken integrations within 72h',
+      'Monthly health report',
+      'Email support',
+    ],
+    cta: 'Best for: agencies testing automation for the first time.',
+  },
+  {
     name: 'Maintenance',
     price: '$800',
     period: '/mo',
@@ -93,7 +108,7 @@ const RETAINER_TIERS = [
     features: [
       'Everything in Growth',
       '1 Core System build per month included',
-      'Dedicated automation engineer',
+      'Priority builds and direct founder access',
       'Same-day response SLA',
       'Custom dashboards + reporting',
       'Quarterly ops review',
@@ -252,7 +267,7 @@ export default function PricingPage() {
             <h2 className="font-headline text-3xl font-bold text-on-surface mt-2">We run your automation stack.</h2>
             <p className="text-on-surface-variant mt-2 max-w-lg">Monthly plans that cover monitoring, maintenance, new builds, and ongoing support.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             {RETAINER_TIERS.map((tier) => (
               <div
                 key={tier.name}
@@ -275,6 +290,7 @@ export default function PricingPage() {
                       <span className="font-headline text-[36px] font-extrabold leading-none" style={{ color: tier.color }}>{tier.price}</span>
                       <span className="text-on-surface-variant text-[14px]">{tier.period}</span>
                     </div>
+                    <p className="text-[11px] text-on-surface-variant/40 mt-1">Cancel anytime. No contracts.</p>
                   </div>
                   <ul className="flex-1 space-y-2.5">
                     {tier.features.map(f => (
