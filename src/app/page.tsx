@@ -9,6 +9,7 @@ import StaggerChildren, { StaggerItem } from '<npm>/components/animations/Stagge
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FloatingParticles from '<npm>/components/animations/FloatingParticles'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
+import HeroVisual from '../components/HeroVisual'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Done-For-You Automation for Agencies",
@@ -170,15 +171,34 @@ export default function Home() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-32 px-6 overflow-hidden">
-        {/* Dot grid texture */}
-        <div className="absolute inset-0 grid-texture pointer-events-none" />
-        {/* Blur orbs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none" />
+
+        {/* ── Background layers ── */}
+        {/* Noise texture */}
+        <div className="noise-texture" />
+        {/* Deep radial gradient — dark blue core fading to near-black */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(17,34,71,0.9) 0%, rgba(5,8,16,0.0) 70%)' }}
+        />
+        {/* 50px grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(173,198,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.05) 1px, transparent 1px)',
+            backgroundSize: '50px 50px',
+            maskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 100%)',
+          }}
+        />
+        {/* Animated gradient orbs */}
+        <div className="orb-v2 orb-v2-1" />
+        <div className="orb-v2 orb-v2-2" />
+        <div className="orb-v2 orb-v2-3" />
         {/* Floating particles */}
         <FloatingParticles />
 
         <div className="relative z-10 flex flex-col items-center text-center max-w-4xl">
+
           {/* Badge */}
           <FadeInOnScroll delay={0.1}>
             <Badge variant="outline" className="inline-flex items-center gap-2 px-3 py-1 h-auto rounded-full bg-surface-container-high border-outline-variant/20 text-on-surface-variant mb-8">
@@ -197,9 +217,13 @@ export default function Home() {
             <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface leading-[1.08] mb-6">
               We Build Your Automations.{' '}
               <br />
-              <AnimatedGradientText className="text-6xl md:text-8xl">
+              {/* Larger, stronger gradient with glow */}
+              <span
+                className="text-gradient-animated text-6xl md:text-[5.5rem] font-black tracking-[-0.03em]"
+                style={{ filter: 'drop-shadow(0 0 40px rgba(96,165,250,0.45)) drop-shadow(0 0 80px rgba(34,211,238,0.2))' }}
+              >
                 You Focus on Growth.
-              </AnimatedGradientText>
+              </span>
             </h1>
           </FadeInOnScroll>
 
@@ -210,28 +234,78 @@ export default function Home() {
             </p>
           </FadeInOnScroll>
 
+          {/* CTAs */}
           <FadeInOnScroll delay={0.4}>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild className="px-8 py-4 h-auto rounded-lg font-bold btn-spring btn-main-sheen cta-pulse gap-2">
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              {/* Primary CTA — upgraded */}
+              <Button
+                asChild
+                className="relative px-10 py-5 h-auto rounded-xl font-bold text-[15px] btn-spring btn-main-sheen cta-pulse gap-2 overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #4f46e5 100%)',
+                  boxShadow: '0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+                }}
+              >
                 <Link href="/audit">
                   Start Free Audit
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="px-8 py-4 h-auto rounded-lg font-semibold text-on-surface border-outline-variant/30 hover:bg-surface-container-high/40 hover:border-outline-variant/50 bg-transparent">
+              <Button asChild variant="outline" className="px-8 py-5 h-auto rounded-xl font-semibold text-[15px] text-on-surface border-outline-variant/30 hover:bg-surface-container-high/40 hover:border-outline-variant/50 bg-transparent">
                 <a href="#how">See How It Works</a>
               </Button>
             </div>
           </FadeInOnScroll>
+
+          {/* Social proof / avatar group */}
+          <FadeInOnScroll delay={0.5}>
+            <div className="flex items-center gap-3">
+              {/* Avatar stack */}
+              <div className="flex -space-x-2.5">
+                {[
+                  { initials: 'JM', gradient: 'linear-gradient(135deg,#3b82f6,#06b6d4)' },
+                  { initials: 'AK', gradient: 'linear-gradient(135deg,#8b5cf6,#ec4899)' },
+                  { initials: 'TR', gradient: 'linear-gradient(135deg,#10b981,#3b82f6)' },
+                  { initials: 'SP', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+                  { initials: 'LR', gradient: 'linear-gradient(135deg,#06b6d4,#6366f1)' },
+                ].map(({ initials, gradient }, i) => (
+                  <div
+                    key={initials}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-surface-container-lowest shrink-0"
+                    style={{
+                      background: gradient,
+                      boxShadow: '0 0 10px rgba(96,165,250,0.3)',
+                      zIndex: 5 - i,
+                    }}
+                  >
+                    {initials}
+                  </div>
+                ))}
+              </div>
+              {/* Divider */}
+              <div className="w-px h-6 bg-outline-variant/20" />
+              {/* Text */}
+              <div className="text-left">
+                <div className="flex items-center gap-1 mb-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="11" height="11" viewBox="0 0 12 12" fill="#f59e0b">
+                      <path d="M6 1l1.35 2.73L10.5 4.18l-2.25 2.19.53 3.09L6 7.95 3.22 9.46l.53-3.09L1.5 4.18l3.15-.45L6 1z"/>
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-[12px] font-semibold text-on-surface">
+                  Trusted by <span className="text-primary">100+</span> agency operators
+                </p>
+              </div>
+            </div>
+          </FadeInOnScroll>
         </div>
 
-        {/* Workflow mock dashboard */}
-        <FadeInOnScroll delay={0.5} className="mt-20 w-full max-w-5xl">
-          <div className="rounded-xl border border-outline-variant/10 bg-surface-container-low/50 backdrop-blur-sm p-4 shadow-2xl">
-            <WorkflowMock />
-          </div>
+        {/* Hero visual dashboard */}
+        <FadeInOnScroll delay={0.6} className="mt-16 w-full max-w-5xl">
+          <HeroVisual />
         </FadeInOnScroll>
       </section>
 
@@ -451,65 +525,3 @@ export default function Home() {
   )
 }
 
-// ── Workflow mock (replaces external screenshot) ──────────────────────────────
-
-function WorkflowMock() {
-  const nodes = [
-    { label: 'New Lead',       sub: 'Webhook Trigger', color: '#4d8eff', textColor: '#d8e2ff' },
-    { label: 'Score & Filter', sub: 'OpenAI + Logic',  color: '#03b5d3', textColor: '#acedff' },
-    { label: 'Route to CRM',   sub: 'HubSpot Node',    color: '#4d8eff', textColor: '#d8e2ff' },
-    { label: 'Notify Team',    sub: 'Slack Message',   color: '#10b981', textColor: '#d1fae5' },
-  ]
-
-  return (
-    <div className="rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/10 p-6" style={{ minHeight: 160 }}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-          <span className="ml-2 text-[11px] text-on-surface-variant font-mono">lead-qualification.workflow</span>
-        </div>
-        <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 font-semibold uppercase tracking-wide">Active</span>
-      </div>
-
-      <div className="flex items-center gap-0 overflow-x-auto pb-2">
-        {nodes.map((node, i) => (
-          <div key={node.label} className="flex items-center shrink-0">
-            <div
-              className="flex flex-col gap-1 p-3 rounded-lg min-w-[120px]"
-              style={{ background: `${node.color}12`, border: `1px solid ${node.color}30` }}
-            >
-              <span className="text-[11px] font-bold" style={{ color: node.textColor }}>{node.label}</span>
-              <span className="text-[10px] text-on-surface-variant">{node.sub}</span>
-              <div className="flex gap-1 mt-1">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: node.color }} />
-                <div className="w-1.5 h-1.5 rounded-full opacity-40" style={{ background: node.color }} />
-              </div>
-            </div>
-            {i < nodes.length - 1 && (
-              <div className="flex items-center mx-1 shrink-0">
-                <div className="w-6 h-px bg-outline-variant/50" />
-                <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="text-outline-variant">
-                  <path d="M1 4h6M4 1l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-outline-variant/10">
-        <div className="flex gap-4">
-          {[['847', 'executions today'], ['12ms', 'avg latency'], ['100%', 'success rate']].map(([val, lbl]) => (
-            <div key={lbl}>
-              <span className="text-[13px] font-bold text-primary">{val}</span>
-              <span className="text-[10px] text-on-surface-variant ml-1">{lbl}</span>
-            </div>
-          ))}
-        </div>
-        <span className="text-[10px] text-on-surface-variant">Last run: 2 min ago</span>
-      </div>
-    </div>
-  )
-}
