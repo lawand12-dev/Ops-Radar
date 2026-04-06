@@ -1180,9 +1180,16 @@ function UnlockSection({
     if (!email) return
     setEmailStatus('submitting')
     try {
+      // Persist email to the audit record
       if (auditId) {
         await supabase.from('audits').update({ email }).eq('id', auditId)
       }
+      // Send the results link to the user's inbox
+      await fetch('/api/send-unlock-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, auditId }),
+      })
       localStorage.setItem(UNLOCK_KEY, '1')
       setEmailStatus('success')
       setTimeout(onUnlocked, 800)
