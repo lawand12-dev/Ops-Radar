@@ -1234,7 +1234,7 @@ function UnlockSection({
               <div className="flex flex-col gap-2.5">
                 <Button asChild className="w-full px-5 py-3 h-auto rounded-[11px] text-[13px] font-bold gap-2 shadow-[0_0_20px_rgba(173,198,255,0.2)] hover:shadow-[0_0_30px_rgba(173,198,255,0.35)] btn-spring">
                   <a
-                    href="https://calendly.com/opsradar/strategy-call"
+                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setBookedClicked(true)}
@@ -1784,7 +1784,7 @@ function ResultsContent() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
-                  <a href="https://calendly.com/opsradar/strategy-call" target="_blank" rel="noopener noreferrer">
+                  <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
                     Book a Free Strategy Call →
                   </a>
                 </Button>
