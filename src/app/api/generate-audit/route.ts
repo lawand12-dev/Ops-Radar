@@ -76,6 +76,7 @@ export async function POST(request: Request) {
         onboarding, progressTracking, automationWish, futureVision,
       },
       result: audit,
+      steps_completed: 12, // all 12 steps completed — used for funnel analysis
     }
     console.log('[supabase] Inserting into audits, payload keys:', Object.keys(insertPayload))
 

@@ -311,6 +311,18 @@ export default function ChatWidget() {
       if (detectedEmail) {
         setVisitorEmail(detectedEmail)
         visitorEmailRef.current = detectedEmail
+        // Notify operator — fire-and-forget, don't block UI
+        const userMsgs = finalMsgs.filter(m => m.role === 'user')
+        fetch('/api/notify-chat-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visitorEmail: detectedEmail,
+            messageCount: userMsgs.length,
+            lastMessage: trimmed,
+            conversationId: convIdRef.current,
+          }),
+        }).catch(() => { /* non-critical */ })
       }
       saveConversation(finalMsgs, activeEmail)
 

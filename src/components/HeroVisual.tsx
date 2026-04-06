@@ -1,6 +1,7 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useRef } from 'react'
 
 // ─── Tool node definitions ─────────────────────────────────────────────────
 
@@ -289,14 +290,18 @@ function MetricPill({ label, value, color }: { label: string; value: string; col
 // ─── Main export ──────────────────────────────────────────────────────────
 
 export default function HeroVisual() {
-  const reduced = useReducedMotion()
+  const reduced    = useReducedMotion()
+  const panelRef   = useRef<HTMLDivElement>(null)
+  const isInView   = useInView(panelRef, { margin: '0px 0px -100px 0px' })
 
   return (
     <motion.div
-      animate={reduced ? undefined : { y: [0, -7, 0] }}
+      ref={panelRef}
+      animate={reduced || !isInView ? undefined : { y: [0, -7, 0] }}
       transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
       className="w-full rounded-[18px] overflow-hidden"
       style={{
+        willChange: 'transform',
         background: 'linear-gradient(160deg, rgba(15,22,40,0.98) 0%, rgba(8,14,28,0.99) 100%)',
         border: '1px solid rgba(173,198,255,0.12)',
         boxShadow: '0 0 0 1px rgba(173,198,255,0.06), 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(59,130,246,0.08)',

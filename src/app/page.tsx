@@ -158,6 +158,7 @@ export default function Home() {
           </Link>
           <div className="hidden md:flex gap-8 items-center text-sm tracking-tight">
             <Link href="/services" className="text-on-surface-variant hover:text-on-surface transition-colors">Services</Link>
+            <Link href="/pricing"  className="text-on-surface-variant hover:text-on-surface transition-colors">Pricing</Link>
             <Link href="/about"    className="text-on-surface-variant hover:text-on-surface transition-colors">About</Link>
             <a href="#pain"        className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</a>
             <a href="#how"         className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</a>

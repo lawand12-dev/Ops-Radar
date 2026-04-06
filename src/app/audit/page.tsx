@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -236,6 +236,14 @@ export default function AuditPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
+  // Stable session ID for funnel tracking — generated once on mount
+  const sessionIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    const key = 'opsradar_audit_session'
+    let id = sessionStorage.getItem(key)
+    if (!id) { id = crypto.randomUUID(); sessionStorage.setItem(key, id) }
+    sessionIdRef.current = id
+  }, [])
   const [animKey, setAnimKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -301,8 +309,16 @@ export default function AuditPage() {
 
   const goNext = () => {
     if (!canProceed()) return
+    const nextStep = currentStep + 1
+    // Fire-and-forget step beacon for funnel analytics
+    if (sessionIdRef.current) {
+      navigator.sendBeacon(
+        '/api/audit-step',
+        JSON.stringify({ sessionId: sessionIdRef.current, step: nextStep }),
+      )
+    }
     navigate('forward')
-    setCurrentStep((s) => s + 1)
+    setCurrentStep(nextStep)
   }
 
   const goBack = () => {
