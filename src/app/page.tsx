@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardContent } from '<npm>/components/ui/card'
-import AnimatedGradientText from '<npm>/components/animations/AnimatedGradientText'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FloatingParticles from '<npm>/components/animations/FloatingParticles'
@@ -141,6 +140,29 @@ const SHOWCASE_CARDS = [
   },
 ]
 
+const TRUST_METRICS = [
+  {
+    value: '48h',
+    label: 'scoped proposal',
+    detail: 'Clear build plan, timeline, and fixed price after the audit.',
+  },
+  {
+    value: '5-14d',
+    label: 'common delivery window',
+    detail: 'Quick Win and Core System builds ship in days, not months.',
+  },
+  {
+    value: '$1.5k+',
+    label: 'entry build pricing',
+    detail: 'Agencies can start with a focused automation before committing bigger.',
+  },
+  {
+    value: '24h',
+    label: 'fastest support SLA',
+    detail: 'Growth retainers include rapid response when a workflow breaks.',
+  },
+]
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -260,44 +282,51 @@ export default function Home() {
             </div>
           </FadeInOnScroll>
 
-          {/* Social proof / avatar group */}
-          <FadeInOnScroll delay={0.5}>
-            <div className="flex items-center gap-3">
-              {/* Avatar stack */}
-              <div className="flex -space-x-2.5">
-                {[
-                  { initials: 'JM', gradient: 'linear-gradient(135deg,#3b82f6,#06b6d4)' },
-                  { initials: 'AK', gradient: 'linear-gradient(135deg,#8b5cf6,#ec4899)' },
-                  { initials: 'TR', gradient: 'linear-gradient(135deg,#10b981,#3b82f6)' },
-                  { initials: 'SP', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-                  { initials: 'LR', gradient: 'linear-gradient(135deg,#06b6d4,#6366f1)' },
-                ].map(({ initials, gradient }, i) => (
+          {/* Proof block */}
+          <FadeInOnScroll delay={0.5} className="w-full">
+            <div className="w-full max-w-4xl rounded-[24px] border border-outline-variant/15 bg-surface-container-low/70 p-5 sm:p-6 text-left shadow-[0_20px_80px_rgba(2,6,23,0.35)] backdrop-blur-xl">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-5">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.24em] font-bold text-secondary mb-2">
+                    Proof Before Pitch
+                  </p>
+                  <h2 className="font-headline text-xl sm:text-2xl font-bold text-on-surface">
+                    Concrete commitments beat vague trust badges.
+                  </h2>
+                </div>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-secondary transition-colors"
+                >
+                  See pricing and SLAs
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3.5 8h9m-3.5-3.5L12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                {TRUST_METRICS.map(({ value, label, detail }) => (
                   <div
-                    key={initials}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-surface-container-lowest shrink-0"
-                    style={{
-                      background: gradient,
-                      boxShadow: '0 0 10px rgba(96,165,250,0.3)',
-                      zIndex: 5 - i,
-                    }}
+                    key={label}
+                    className="rounded-[18px] border border-outline-variant/15 bg-surface-container/90 p-4"
                   >
-                    {initials}
+                    <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-1">
+                      {value}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-primary mb-2">
+                      {label}
+                    </p>
+                    <p className="text-sm leading-relaxed text-on-surface-variant">
+                      {detail}
+                    </p>
                   </div>
                 ))}
               </div>
-              {/* Divider */}
-              <div className="w-px h-6 bg-outline-variant/20" />
-              {/* Text */}
-              <div className="text-left">
-                <div className="flex items-center gap-1 mb-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} width="11" height="11" viewBox="0 0 12 12" fill="#f59e0b">
-                      <path d="M6 1l1.35 2.73L10.5 4.18l-2.25 2.19.53 3.09L6 7.95 3.22 9.46l.53-3.09L1.5 4.18l3.15-.45L6 1z"/>
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-[12px] font-semibold text-on-surface">
-                  Trusted by <span className="text-primary">100+</span> agency operators
+
+              <div className="mt-4 rounded-[18px] border border-primary/15 bg-primary/7 px-4 py-3">
+                <p className="text-sm leading-relaxed text-on-surface">
+                  No hourly billing. No “book a call to learn the price” wall. Just a free audit, a scoped plan, and a fixed next step.
                 </p>
               </div>
             </div>
@@ -525,4 +554,3 @@ export default function Home() {
     </div>
   )
 }
-

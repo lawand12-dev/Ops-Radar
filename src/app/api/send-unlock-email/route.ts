@@ -167,7 +167,7 @@ export async function POST(request: Request) {
       return serverErrorResponse()
     }
 
-    return Response.json({ ok: true, audit: auditResult, email: targetEmail })
+    return Response.json({ ok: true, email: targetEmail })
   } catch (err) {
     console.error('[send-unlock-email] Unexpected error:', err)
     return serverErrorResponse()

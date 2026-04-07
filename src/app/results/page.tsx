@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -22,6 +22,7 @@ import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const UNLOCK_KEY_PREFIX = 'opsradar_blueprint_unlocked'
+const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
 
 const BUILD_PRICE = {
   easy:    { range: '$1,500 – $2,500', delivery: 'Delivered in 5–7 days' },
@@ -131,6 +132,57 @@ type AuditResult = {
 }
 
 type NormalizedRoadmap = { week_1: string; month_1: string; month_3: string }
+type WebsiteEvidenceCard = {
+  label: string
+  detail: string
+  sourceLabel: string
+  sourcePath: string
+}
+type AuditContext = {
+  agencyType?: string
+  teamSize?: string
+  revenue?: string
+  activeClients?: string
+  tools?: string
+  toolSignals?: string
+  websiteUrl?: string
+  websiteScreenshotUrl?: string
+  websiteContext?: string
+  websiteEvidence?: string
+  websiteDetectedStack?: string
+  websiteStackEvidence?: string
+  websiteVisualContext?: string
+  websiteVisualEvidence?: string
+  crmTool?: string
+  timeHeavy?: string
+  leadEntry?: string
+  onboarding?: string
+  progressTracking?: string
+  automationWish?: string
+  processFrequency?: string
+  processOwner?: string
+  failureImpact?: string
+  futureVision?: string
+}
+type ReportHandoff = {
+  auditId: string | null
+  company: string
+  agencyType: string
+  automationWish: string
+  futureVision: string
+  tools: string[]
+  processFrequency?: string
+  processOwner?: string
+  failureImpact?: string
+  toolSignals?: string[]
+  websiteUrl?: string
+  createdAt: number
+}
+type ReportSectionItem = {
+  id: string
+  label: string
+  locked?: boolean
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -149,6 +201,102 @@ function fmtMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1000)      return `$${(n / 1000).toFixed(0)}K`
   return `$${n.toLocaleString()}`
+}
+
+function splitCommaList(value?: string): string[] {
+  if (!value) return []
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function splitSignalList(value?: string): string[] {
+  if (!value) return []
+  return value
+    .split('|')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function uniqueStrings(items: string[]): string[] {
+  return [...new Set(items.filter(Boolean))]
+}
+
+function parseWebsiteEvidence(value?: string): WebsiteEvidenceCard[] {
+  if (!value) return []
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .map((item) => {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) return null
+        const record = item as Record<string, unknown>
+        const label = typeof record.label === 'string' ? record.label.trim() : ''
+        const detail = typeof record.detail === 'string' ? record.detail.trim() : ''
+        const sourceLabel = typeof record.sourceLabel === 'string' ? record.sourceLabel.trim() : ''
+        const sourcePath = typeof record.sourcePath === 'string' ? record.sourcePath.trim() : ''
+
+        if (!label || !detail || !sourceLabel || !sourcePath) return null
+
+        return {
+          label,
+          detail,
+          sourceLabel,
+          sourcePath,
+        }
+      })
+      .filter((item): item is WebsiteEvidenceCard => Boolean(item))
+  } catch {
+    return []
+  }
+}
+
+function coerceAuditContext(value: unknown): AuditContext | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+
+  const record = value as Record<string, unknown>
+  const context: AuditContext = {}
+  const fields: Array<keyof AuditContext> = [
+    'agencyType',
+    'teamSize',
+    'revenue',
+    'activeClients',
+    'tools',
+    'toolSignals',
+    'websiteUrl',
+    'websiteScreenshotUrl',
+    'websiteContext',
+    'websiteEvidence',
+    'websiteDetectedStack',
+    'websiteStackEvidence',
+    'websiteVisualContext',
+    'websiteVisualEvidence',
+    'crmTool',
+    'timeHeavy',
+    'leadEntry',
+    'onboarding',
+    'progressTracking',
+    'automationWish',
+    'processFrequency',
+    'processOwner',
+    'failureImpact',
+    'futureVision',
+  ]
+
+  for (const field of fields) {
+    const rawValue = record[field]
+    if (typeof rawValue === 'string' && rawValue.trim()) {
+      context[field] = rawValue.trim()
+    } else if (field === 'toolSignals' && Array.isArray(rawValue)) {
+      const joined = rawValue.filter((item): item is string => typeof item === 'string' && item.trim().length > 0).join(' | ')
+      if (joined) context.toolSignals = joined
+    }
+  }
+
+  return Object.keys(context).length > 0 ? context : null
 }
 
 function getUnlockStorageKey(auditId: string | null): string {
@@ -264,6 +412,1035 @@ function PreviewBanner({ notice }: { notice?: string }) {
         </div>
       </section>
     </RevealSection>
+  )
+}
+
+function ReportLoadingExperience({
+  handoff,
+}: {
+  handoff: ReportHandoff | null
+}) {
+  const company = handoff?.company || 'your company'
+  const agencyType = handoff?.agencyType || 'agency'
+  const tools = handoff?.tools ?? []
+  const automationWish = handoff?.automationWish || 'your biggest manual bottleneck'
+  const futureVision = handoff?.futureVision || 'a cleaner, faster operation'
+  const steps = [
+    `Mapping ${company}'s ${agencyType.toLowerCase()} operating graph`,
+    `Tracing workflow drag around ${automationWish.toLowerCase()}`,
+    `Estimating labor loss and execution bottlenecks`,
+    `Designing the fastest path to ${futureVision.toLowerCase()}`,
+    'Packaging the report into a client-ready blueprint',
+  ]
+  const [step, setStep] = useState(0)
+  const [progress, setProgress] = useState(10)
+
+  useEffect(() => {
+    const progressTimer = window.setInterval(() => {
+      setProgress((current) => {
+        if (current >= 94) {
+          window.clearInterval(progressTimer)
+          return current
+        }
+        return Math.min(current + (current < 60 ? 9 : 5), 94)
+      })
+    }, 420)
+
+    const stepTimer = window.setInterval(() => {
+      setStep((current) => {
+        if (current >= steps.length - 1) {
+          window.clearInterval(stepTimer)
+          return current
+        }
+        return current + 1
+      })
+    }, 820)
+
+    return () => {
+      window.clearInterval(progressTimer)
+      window.clearInterval(stepTimer)
+    }
+  }, [steps.length])
+
+  return (
+    <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-hidden">
+      <div className="absolute inset-0 grid-texture pointer-events-none opacity-70" />
+      <div className="absolute -top-10 left-[-10%] h-[380px] w-[520px] rounded-full bg-primary/10 blur-[140px] pointer-events-none" />
+      <div className="absolute top-[18%] right-[-8%] h-[320px] w-[380px] rounded-full bg-secondary/8 blur-[140px] pointer-events-none" />
+
+      <div className="relative z-[1] mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="max-w-[720px]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/18 bg-primary/8 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-primary mb-6">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+              </span>
+              Building your blueprint
+            </div>
+
+            <h1 className="font-headline text-[clamp(32px,5.6vw,68px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-on-surface">
+              Turning raw answers into something that feels like{' '}
+              <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                ops magic
+              </span>
+              .
+            </h1>
+
+            <p className="mt-5 max-w-[640px] text-[16px] leading-[1.8] text-on-surface-variant">
+              We’re not loading a template. We’re synthesizing a custom operations blueprint for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
+            </p>
+
+            <div className="mt-7 rounded-[22px] border border-white/7 bg-surface-container-low/80 p-5 backdrop-blur-xl">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/45">
+                  Blueprint synthesis progress
+                </p>
+                <p className="font-headline text-[24px] font-extrabold tabular-nums text-primary">
+                  {progress}%
+                </p>
+              </div>
+              <div className="h-[9px] overflow-hidden rounded-full bg-surface-container-high">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progress}%`,
+                    background: 'linear-gradient(90deg, #3b82f6, #4cd7f6, #a78bfa)',
+                    boxShadow: '0 0 24px rgba(96,165,250,0.45)',
+                    transition: 'width 420ms cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                />
+              </div>
+              <div className="mt-4 space-y-2.5">
+                {steps.map((item, index) => {
+                  const active = index <= step
+                  return (
+                    <div
+                      key={item}
+                      className="flex items-center gap-3 rounded-[14px] border px-3.5 py-3 transition-all duration-500"
+                      style={{
+                        background: active ? 'rgba(173,198,255,0.06)' : 'rgba(255,255,255,0.02)',
+                        borderColor: active ? 'rgba(173,198,255,0.14)' : 'rgba(255,255,255,0.05)',
+                      }}
+                    >
+                      <div
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
+                        style={{
+                          borderColor: active ? 'rgba(76,215,246,0.35)' : 'rgba(255,255,255,0.08)',
+                          background: active ? 'rgba(76,215,246,0.14)' : 'rgba(255,255,255,0.03)',
+                        }}
+                      >
+                        {active ? (
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8l3.2 3.2L13 4.5" stroke="#4cd7f6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : (
+                          <div className="h-1.5 w-1.5 rounded-full bg-white/18" />
+                        )}
+                      </div>
+                      <p className={`text-[13px] leading-[1.5] ${active ? 'text-on-surface' : 'text-on-surface-variant/45'}`}>
+                        {item}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-primary/14 bg-surface-container-low/75 p-5 shadow-[0_30px_100px_rgba(2,6,23,0.42)] backdrop-blur-xl">
+            <div
+              className="rounded-[22px] border border-white/7 bg-surface-container/80 p-5"
+              style={{ backgroundImage: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(167,139,250,0.03))' }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary mb-3">
+                Live signal preview
+              </p>
+              <div className="space-y-4">
+                <div className="rounded-[18px] border border-white/7 bg-surface-container-high/60 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                    Company
+                  </p>
+                  <p className="font-headline text-[26px] font-extrabold tracking-[-0.03em] text-on-surface">
+                    {company}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-[16px] border border-white/7 bg-surface-container-high/60 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                      Core Model
+                    </p>
+                    <p className="font-headline text-[20px] font-bold text-[#7dd3fc]">
+                      {agencyType}
+                    </p>
+                  </div>
+                  <div className="rounded-[16px] border border-white/7 bg-surface-container-high/60 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                      Focus
+                    </p>
+                    <p className="font-headline text-[20px] font-bold text-[#ffb786]">
+                      Manual Drag
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[18px] border border-white/7 bg-surface-container-high/60 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                    Highest-pressure bottleneck
+                  </p>
+                  <p className="text-[14px] leading-[1.7] text-on-surface-variant">
+                    {automationWish}
+                  </p>
+                </div>
+
+                <div className="rounded-[18px] border border-primary/14 bg-primary/6 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary mb-3">
+                    Detected stack
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(tools.length > 0 ? tools : ['Ops stack']).map((tool) => (
+                      <span
+                        key={tool}
+                        className="rounded-full border border-primary/18 bg-surface-container/85 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                      >
+                        {tool}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function collectSignalTools(opportunities: Opportunity[]): string[] {
+  const seen = new Set<string>()
+  const collected: string[] = []
+
+  for (const opportunity of opportunities) {
+    const tools = [
+      ...(opportunity.tools_connected ?? []),
+      ...(opportunity.tools_involved ?? []),
+    ]
+
+    for (const tool of tools) {
+      if (!tool || seen.has(tool)) continue
+      seen.add(tool)
+      collected.push(tool)
+      if (collected.length >= 6) return collected
+    }
+  }
+
+  return collected
+}
+
+function derivePrimaryRisk(audit: AuditResult, opportunities: Opportunity[]): string {
+  const friction = audit.tools_analysis?.biggest_friction_point
+  if (friction) return friction
+
+  const hardTruth = opportunities.find((opp) => opp.hard_truth)?.hard_truth
+  if (hardTruth) return hardTruth
+
+  return audit.executive_summary ?? 'manual operational drag'
+}
+
+function MagicMomentPanel({
+  company,
+  headline,
+  readiness,
+  hoursWeekly,
+  annualSavings,
+  opportunities,
+  topRisk,
+  isPreview,
+}: {
+  company: string
+  headline: string
+  readiness: number
+  hoursWeekly: number
+  annualSavings: number
+  opportunities: Opportunity[]
+  topRisk: string
+  isPreview: boolean
+}) {
+  const [step, setStep] = useState(0)
+  const tools = collectSignalTools(opportunities)
+  const topOpportunity = opportunities[0]?.title ?? 'Highest-leverage automation path'
+  const savingsDisplay = annualSavings >= 1000 ? `$${Math.round(annualSavings / 1000)}K` : `$${Math.round(annualSavings)}`
+  const riskSummary = topRisk.length > 140 ? `${topRisk.slice(0, 137)}...` : topRisk
+  const statusItems = [
+    `Parsing ${company || 'company'} operating signals`,
+    `Quantifying hidden labor drain across ${tools.length > 0 ? tools.slice(0, 3).join(', ') : 'the current stack'}`,
+    `Mapping your fastest path to ${topOpportunity.toLowerCase()}`,
+  ]
+  const maxStep = statusItems.length - 1
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setStep((current) => {
+        if (current >= maxStep) {
+          window.clearInterval(timer)
+          return current
+        }
+        return current + 1
+      })
+    }, 900)
+
+    return () => window.clearInterval(timer)
+  }, [maxStep])
+
+  return (
+    <div className="mt-8 rounded-[26px] overflow-hidden border border-primary/14 bg-surface-container-low/70 shadow-[0_24px_90px_rgba(4,12,28,0.42)] backdrop-blur-xl">
+      <div
+        className="relative px-6 py-6 sm:px-7 sm:py-7"
+        style={{
+          background:
+            'radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%), radial-gradient(circle at 90% 20%, rgba(76,215,246,0.12), transparent 26%), linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'linear-gradient(rgba(173,198,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.045) 1px, transparent 1px)', backgroundSize: '34px 34px' }} />
+        <div className="relative z-[1] grid gap-5 lg:grid-cols-[1.35fr_0.95fr]">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-secondary/18 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-secondary">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-70" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-secondary" />
+              </span>
+              Live Ops Signal
+            </div>
+
+            <div className="max-w-[680px]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">
+                What the system sees instantly
+              </p>
+              <h2 className="font-headline text-[clamp(23px,3.2vw,40px)] font-extrabold leading-[1.08] tracking-[-0.035em] text-on-surface">
+                {company || 'Your agency'} is leaking{' '}
+                <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                  {savingsDisplay}
+                </span>{' '}
+                a year through manual drag that now has a build path.
+              </h2>
+            </div>
+
+            <div className="rounded-[18px] border border-white/7 bg-surface-container/75 px-4 py-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+                The strongest signal
+              </p>
+              <p className="text-[14px] leading-[1.75] text-on-surface-variant">
+                {riskSummary}
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {statusItems.map((item, index) => {
+                const active = index <= step
+                return (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-[14px] border px-3.5 py-3 transition-all duration-500"
+                    style={{
+                      background: active ? 'rgba(173,198,255,0.07)' : 'rgba(255,255,255,0.02)',
+                      borderColor: active ? 'rgba(173,198,255,0.16)' : 'rgba(255,255,255,0.06)',
+                      boxShadow: active ? '0 0 28px rgba(96,165,250,0.08)' : 'none',
+                    }}
+                  >
+                    <div
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
+                      style={{
+                        borderColor: active ? 'rgba(76,215,246,0.35)' : 'rgba(255,255,255,0.08)',
+                        background: active ? 'rgba(76,215,246,0.12)' : 'rgba(255,255,255,0.03)',
+                      }}
+                    >
+                      {active ? (
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                          <path d="M3 8l3.2 3.2L13 4.5" stroke="#4cd7f6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        <div className="h-1.5 w-1.5 rounded-full bg-white/18" />
+                      )}
+                    </div>
+                    <p className={`text-[13px] leading-[1.5] ${active ? 'text-on-surface' : 'text-on-surface-variant/45'}`}>
+                      {item}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Readiness', value: readiness, suffix: '/100', color: '#4cd7f6' },
+                { label: 'Hours Back', value: hoursWeekly, suffix: 'h/wk', color: '#34d399' },
+                { label: 'Build Paths', value: opportunities.length, suffix: isPreview ? 'preview' : 'mapped', color: '#ffb786' },
+                { label: 'Top Priority', value: 1, suffix: opportunities[0] ? 'ready' : 'queued', color: '#adc6ff' },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-[18px] border border-white/7 bg-surface-container/80 p-4"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                    {stat.label}
+                  </p>
+                  <div className="flex items-end gap-1.5">
+                    <p className="font-headline text-[32px] font-extrabold leading-none tabular-nums" style={{ color: stat.color }}>
+                      <CountUp target={stat.value} duration={1.2} />
+                    </p>
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/45">
+                      {stat.suffix}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-[18px] border border-primary/14 bg-primary/6 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-3">
+                Detected Stack
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(tools.length > 0 ? tools : ['Ops stack']).map((tool) => (
+                  <span
+                    key={tool}
+                    className="rounded-full border border-primary/18 bg-surface-container/80 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                  >
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[18px] border border-white/7 bg-surface-container/80 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+                Highest-Leverage Move
+              </p>
+              <p className="font-headline text-[19px] font-bold leading-[1.3] tracking-[-0.02em] text-on-surface">
+                {topOpportunity}
+              </p>
+              <p className="mt-2 text-[13px] leading-[1.65] text-on-surface-variant">
+                {headline}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TransformationStrip({
+  company,
+  leadOpportunity,
+  topRisk,
+  hoursWeekly,
+  annualSavings,
+  isPreview,
+}: {
+  company: string
+  leadOpportunity: Opportunity | null
+  topRisk: string
+  hoursWeekly: number
+  annualSavings: number
+  isPreview: boolean
+}) {
+  const tools = collectSignalTools(leadOpportunity ? [leadOpportunity] : []).slice(0, 4)
+  const yearlyDisplay = annualSavings >= 1000 ? `$${Math.round(annualSavings / 1000)}K` : `$${Math.round(annualSavings)}`
+  const riskLine = topRisk.length > 105 ? `${topRisk.slice(0, 102)}...` : topRisk
+  const currentBullets = [
+    riskLine,
+    leadOpportunity?.current_process || `Manual work across ${tools.length > 0 ? tools.join(', ') : 'your stack'} is still creating hidden lag and handoff risk.`,
+    `${hoursWeekly} hours each week are disappearing into low-leverage operational work.`,
+  ]
+  const futureBullets = [
+    leadOpportunity?.automated_process || `${leadOpportunity?.title ?? 'The first high-leverage workflow'} runs through one connected system instead of memory, tabs, and manual follow-up.`,
+    `${hoursWeekly} hours/week come back to the team, with up to ${yearlyDisplay} in annual capacity unlocked.`,
+    `The highest-pressure updates move automatically across ${tools.length > 0 ? tools.join(', ') : 'the core tools'} with traceability and fewer misses.`,
+  ]
+
+  return (
+    <div className="mt-7 rounded-[26px] overflow-hidden border border-outline-variant/12 bg-surface-container-low/75 shadow-[0_20px_80px_rgba(2,6,23,0.34)] backdrop-blur-xl">
+      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, rgba(248,113,113,0.9), rgba(245,158,11,0.9), rgba(52,211,153,0.9), rgba(76,215,246,0.9))' }} />
+      <div className="p-6 sm:p-7">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-5">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant/45 mb-2">
+              The Before / After
+            </p>
+            <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
+              What changes when {company || 'your team'} stops operating manually.
+            </h2>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Outcome view
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+          <div className="rounded-[22px] border border-red-400/16 bg-red-400/6 p-5">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-300/80 mb-1">
+                  Today
+                </p>
+                <p className="font-headline text-[22px] font-extrabold tracking-[-0.03em] text-on-surface">
+                  Busywork runs the day
+                </p>
+              </div>
+              <div className="rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-red-300">
+                Ops drag
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              {currentBullets.map((bullet) => (
+                <div
+                  key={bullet}
+                  className="flex items-start gap-3 rounded-[14px] border border-white/6 bg-surface-container/55 px-3.5 py-3"
+                >
+                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-300" />
+                  <p className="text-[13px] leading-[1.65] text-on-surface-variant">{bullet}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden lg:flex items-center justify-center px-2">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-primary/20 bg-primary/10 shadow-[0_0_30px_rgba(96,165,250,0.18)]">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14m-5-5 5 5-5 5" stroke="#adc6ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-emerald-400/18 bg-emerald-400/7 p-5">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300/80 mb-1">
+                  After the build
+                </p>
+                <p className="font-headline text-[22px] font-extrabold tracking-[-0.03em] text-on-surface">
+                  The system carries the load
+                </p>
+              </div>
+              <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">
+                Leverage
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              {futureBullets.map((bullet) => (
+                <div
+                  key={bullet}
+                  className="flex items-start gap-3 rounded-[14px] border border-white/6 bg-surface-container/55 px-3.5 py-3"
+                >
+                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
+                  <p className="text-[13px] leading-[1.65] text-on-surface">{bullet}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {leadOpportunity?.technical_flow && (
+          <div className="mt-5 rounded-[20px] border border-primary/14 bg-primary/6 p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
+                  Most likely first system to ship
+                </p>
+                <p className="font-headline text-[20px] font-bold tracking-[-0.02em] text-on-surface">
+                  {leadOpportunity.title}
+                </p>
+              </div>
+              {isPreview && (
+                <p className="text-[11px] text-on-surface-variant/50">
+                  Full blueprint unlocks exact sequencing, node details, and implementation steps.
+                </p>
+              )}
+            </div>
+            <WorkflowDiagram technicalFlow={leadOpportunity.technical_flow} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ForensicMatchPanel({
+  company,
+  context,
+  leadOpportunity,
+  topRisk,
+}: {
+  company: string
+  context: AuditContext | null
+  leadOpportunity: Opportunity | null
+  topRisk: string
+}) {
+  const quote = context?.automationWish?.trim() || topRisk
+  const frequency = context?.processFrequency?.trim()
+  const owner = context?.processOwner?.trim()
+  const failureImpact = context?.failureImpact?.trim()
+  const websiteEvidence = [
+    ...parseWebsiteEvidence(context?.websiteVisualEvidence),
+    ...parseWebsiteEvidence(context?.websiteStackEvidence),
+    ...parseWebsiteEvidence(context?.websiteEvidence),
+  ].slice(0, 4)
+  const toolSignals = splitSignalList(context?.toolSignals).slice(0, 3)
+  const stackTools = uniqueStrings([
+    ...splitCommaList(context?.tools),
+    ...splitCommaList(context?.websiteDetectedStack),
+    ...(context?.crmTool ? [context.crmTool] : []),
+    ...(leadOpportunity?.tools_connected ?? []),
+    ...(leadOpportunity?.tools_involved ?? []),
+  ])
+    .filter((tool) => !['None', 'Spreadsheet/Manual', 'Project management tool'].includes(tool))
+    .slice(0, 5)
+
+  const rationaleCards = [
+    {
+      label: 'Recurring pressure',
+      value: frequency || 'High recurrence detected',
+      detail: frequency
+        ? 'This repeats often enough to compound cost and mistakes quickly.'
+        : 'The current bottleneck behaves like a repeated operational drain, not a one-off annoyance.',
+      color: '#60a5fa',
+    },
+    {
+      label: 'Ownership hotspot',
+      value: owner || 'Cross-team handoff',
+      detail: owner
+        ? 'This pinpoints where the human bottleneck or leadership drag is concentrated.'
+        : 'The system sees a handoff problem, which is usually where speed and accountability break.',
+      color: '#a78bfa',
+    },
+    {
+      label: 'Business consequence',
+      value: failureImpact || 'Operational drag',
+      detail: failureImpact
+        ? 'This is why the top recommendation was ranked by urgency instead of just convenience.'
+        : 'The issue affects more than efficiency, which makes it priority-worthy.',
+      color: '#f59e0b',
+    },
+  ]
+
+  const reasonFragments = [
+    frequency ? `it happens ${frequency.toLowerCase()}` : 'it repeats often',
+    owner ? `it lands on ${owner.toLowerCase()}` : 'it creates a handoff bottleneck',
+    failureImpact ? `when it slips, ${failureImpact.toLowerCase()}` : 'when it slips, the business feels it',
+  ]
+
+  const toolSignalLine = toolSignals[0]
+    ? `The stack friction you described, especially "${toolSignals[0]}", reinforced that this is where leverage unlocks fastest.`
+    : stackTools.length > 1
+      ? `The combination of ${stackTools.slice(0, 3).join(', ')} suggests your biggest drag lives between systems, not inside one tool.`
+      : 'The strongest signal was not just the task itself, but the manual bridges around it.'
+  const websiteLine = websiteEvidence[0]
+    ? `Your public site backed that up too. The strongest cue was ${websiteEvidence[0].label.toLowerCase()}: "${websiteEvidence[0].detail}".`
+    : ''
+
+  return (
+    <div className="mt-7 rounded-[26px] overflow-hidden border border-secondary/14 bg-surface-container-low/80 shadow-[0_24px_80px_rgba(2,6,23,0.38)] backdrop-blur-xl">
+      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, #4cd7f6, #adc6ff, #f59e0b)' }} />
+      <div className="p-6 sm:p-7">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-secondary mb-2">
+              Why This Came First
+            </p>
+            <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
+              The report didn&apos;t guess. It followed your exact pressure pattern.
+            </h2>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-secondary/16 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-secondary">
+            <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
+            Decision trace
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-[22px] border border-white/7 bg-surface-container/75 p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-3">
+              What {company || 'your team'} told the system
+            </p>
+            <div className="rounded-[18px] border border-primary/14 bg-primary/6 px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
+                Core pain statement
+              </p>
+              <p className="font-headline text-[21px] font-bold leading-[1.45] tracking-[-0.025em] text-on-surface">
+                “{quote}”
+              </p>
+            </div>
+
+            {toolSignals.length > 0 && (
+              <div className="mt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+                  Stack friction you surfaced
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {toolSignals.map((signal) => (
+                    <span
+                      key={signal}
+                      className="rounded-full border border-white/8 bg-surface-container-high/70 px-3 py-1.5 text-[12px] font-medium text-on-surface-variant"
+                    >
+                      {signal}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {stackTools.length > 0 && (
+              <div className="mt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+                  Systems involved
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {stackTools.map((tool) => (
+                    <span
+                      key={tool}
+                      className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                    >
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          <div className="space-y-4">
+            {rationaleCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[20px] border bg-surface-container/75 p-4"
+                style={{ borderColor: `${item.color}25`, backgroundImage: `linear-gradient(135deg, ${item.color}12, rgba(255,255,255,0.02))` }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-2" style={{ color: item.color }}>
+                  {item.label}
+                </p>
+                <p className="font-headline text-[21px] font-bold tracking-[-0.025em] text-on-surface mb-1.5">
+                  {item.value}
+                </p>
+                <p className="text-[13px] leading-[1.65] text-on-surface-variant">
+                  {item.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-[22px] border border-primary/14 bg-primary/6 p-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+            Why recommendation #1 won
+          </p>
+          <p className="font-headline text-[22px] font-bold leading-[1.4] tracking-[-0.025em] text-on-surface">
+            {leadOpportunity?.title ?? 'The first automation path'} rose to the top because {reasonFragments.join(', ')}.
+          </p>
+          <p className="mt-3 text-[14px] leading-[1.75] text-on-surface-variant">
+            {toolSignalLine}
+          </p>
+          {websiteLine && (
+            <p className="mt-2 text-[14px] leading-[1.75] text-on-surface-variant">
+              {websiteLine}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WebsiteScreenshotPreview({
+  screenshotUrl,
+  company,
+}: {
+  screenshotUrl?: string
+  company: string
+}) {
+  const [hidden, setHidden] = useState(false)
+
+  if (!screenshotUrl || hidden) return null
+
+  return (
+    <div className="overflow-hidden rounded-[24px] border border-white/7 bg-surface-container/80 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
+      <div className="flex items-center justify-between border-b border-white/6 px-4 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+          Homepage visual read
+        </p>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#fb7185]/75" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]/75" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#34d399]/75" />
+        </div>
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={screenshotUrl}
+        alt={`${company || 'Client'} website screenshot`}
+        className="block h-auto w-full object-cover"
+        loading="lazy"
+        onError={() => setHidden(true)}
+      />
+    </div>
+  )
+}
+
+function WebsiteEvidencePanel({
+  company,
+  context,
+}: {
+  company: string
+  context: AuditContext | null
+}) {
+  const websiteUrl = context?.websiteUrl?.trim()
+  const websiteScreenshotUrl = context?.websiteScreenshotUrl?.trim()
+  const websiteContext = context?.websiteContext?.trim()
+  const websiteDetectedStack = splitCommaList(context?.websiteDetectedStack).slice(0, 8)
+  const websiteVisualContext = context?.websiteVisualContext?.trim()
+  const websiteVisualEvidence = parseWebsiteEvidence(context?.websiteVisualEvidence)
+  const websiteStackEvidence = parseWebsiteEvidence(context?.websiteStackEvidence)
+  const websiteEvidence = parseWebsiteEvidence(context?.websiteEvidence)
+
+  if (
+    !websiteContext &&
+    !websiteVisualContext &&
+    websiteEvidence.length === 0 &&
+    websiteVisualEvidence.length === 0 &&
+    websiteStackEvidence.length === 0 &&
+    websiteDetectedStack.length === 0
+  ) return null
+
+  const sourceBadges = uniqueStrings(
+    [...websiteVisualEvidence, ...websiteStackEvidence, ...websiteEvidence].map((item) => `${item.sourceLabel} ${item.sourcePath}`.trim()),
+  ).slice(0, 4)
+
+  return (
+    <div className="mt-7 rounded-[26px] overflow-hidden border border-primary/14 bg-surface-container-low/80 shadow-[0_24px_80px_rgba(2,6,23,0.34)] backdrop-blur-xl">
+      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, #4cd7f6, #60a5fa, #f59e0b)' }} />
+      <div className="p-6 sm:p-7">
+        <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary mb-2">
+              Verified On Your Site
+            </p>
+            <h2 className="font-headline text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-0.03em] text-on-surface">
+              The system found public signals that support the blueprint for {company || 'your team'}.
+            </h2>
+          </div>
+          {websiteUrl && (
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/14 bg-primary/8 px-3 py-1.5 text-[11px] font-semibold text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {websiteUrl}
+            </div>
+          )}
+        </div>
+
+        {(
+          websiteVisualEvidence.length > 0 ||
+          websiteEvidence.length > 0 ||
+          websiteStackEvidence.length > 0 ||
+          websiteDetectedStack.length > 0 ||
+          websiteScreenshotUrl
+        ) && (
+          <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+            <WebsiteScreenshotPreview
+              screenshotUrl={websiteScreenshotUrl}
+              company={company}
+            />
+
+            <div className="space-y-4">
+              {websiteVisualEvidence.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+                    Visual cues
+                  </p>
+                  <div className="grid gap-3">
+                    {websiteVisualEvidence.map((item, index) => (
+                      <div
+                        key={`visual-${item.label}-${item.sourcePath}-${index}`}
+                        className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
+                        style={{
+                          backgroundImage: `linear-gradient(135deg, ${['rgba(76,215,246,0.12)', 'rgba(96,165,250,0.10)', 'rgba(167,139,250,0.10)', 'rgba(245,158,11,0.10)'][index % 4]}, rgba(255,255,255,0.02))`,
+                        }}
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                          {item.label}
+                        </p>
+                        <p className="font-headline text-[18px] font-bold leading-[1.45] tracking-[-0.02em] text-on-surface">
+                          “{item.detail}”
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {websiteEvidence.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+                    Page evidence
+                  </p>
+                  <div className="grid gap-3">
+                    {websiteEvidence.map((item, index) => (
+                      <div
+                        key={`content-${item.label}-${item.sourcePath}-${index}`}
+                        className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
+                        style={{
+                          backgroundImage: `linear-gradient(135deg, ${['rgba(76,215,246,0.08)', 'rgba(96,165,250,0.08)', 'rgba(167,139,250,0.08)', 'rgba(245,158,11,0.08)'][index % 4]}, rgba(255,255,255,0.02))`,
+                        }}
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                          {item.label}
+                        </p>
+                        <p className="text-[14px] font-semibold leading-[1.65] text-on-surface">
+                          {item.detail}
+                        </p>
+                        <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/55">
+                          Source: {item.sourceLabel} {item.sourcePath}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(websiteDetectedStack.length > 0 || websiteStackEvidence.length > 0) && (
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+                    Public stack fingerprints
+                  </p>
+                  {websiteDetectedStack.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {websiteDetectedStack.map((tool) => (
+                        <span
+                          key={tool}
+                          className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                        >
+                          {tool}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {websiteStackEvidence.length > 0 && (
+                    <div className="grid gap-3">
+                      {websiteStackEvidence.map((item, index) => (
+                        <div
+                          key={`stack-${item.label}-${item.sourcePath}-${index}`}
+                          className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
+                          style={{
+                            backgroundImage: `linear-gradient(135deg, ${['rgba(59,130,246,0.10)', 'rgba(34,211,238,0.08)', 'rgba(167,139,250,0.08)', 'rgba(16,185,129,0.08)'][index % 4]}, rgba(255,255,255,0.02))`,
+                          }}
+                        >
+                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                            {item.label}
+                          </p>
+                          <p className="text-[14px] font-semibold leading-[1.65] text-on-surface">
+                            {item.detail}
+                          </p>
+                          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/55">
+                            Source: {item.sourceLabel} {item.sourcePath}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {sourceBadges.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+              Pages scanned
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {sourceBadges.map((source) => (
+                <span
+                  key={source}
+                  className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                >
+                  {source}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {websiteContext && (
+          <div className="mt-4 rounded-[18px] border border-white/7 bg-surface-container/70 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+              Scan synthesis
+            </p>
+            <p className="text-[13px] leading-[1.7] text-on-surface-variant">
+              {websiteContext}
+            </p>
+          </div>
+        )}
+
+        {websiteVisualContext && (
+          <div className="mt-4 rounded-[18px] border border-primary/14 bg-primary/6 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+              Visual synthesis
+            </p>
+            <p className="text-[13px] leading-[1.7] text-on-surface-variant">
+              {websiteVisualContext}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ReportMap({
+  sections,
+  activeSection,
+  onJump,
+}: {
+  sections: ReportSectionItem[]
+  activeSection: string
+  onJump: (id: string) => void
+}) {
+  if (sections.length === 0) return null
+
+  return (
+    <div className="sticky top-[57px] z-[70] border-y border-outline-variant/10 bg-slate-950/72 backdrop-blur-2xl">
+      <div className="mx-auto max-w-[980px] px-6">
+        <div className="flex gap-2 overflow-x-auto py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {sections.map((section) => {
+            const active = section.id === activeSection
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => onJump(section.id)}
+                className="shrink-0 rounded-full border px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200"
+                style={{
+                  borderColor: active ? 'rgba(76,215,246,0.26)' : 'rgba(255,255,255,0.08)',
+                  background: active ? 'rgba(76,215,246,0.12)' : 'rgba(255,255,255,0.03)',
+                  color: active ? '#7dd3fc' : 'rgba(255,255,255,0.56)',
+                  boxShadow: active ? '0 0 24px rgba(76,215,246,0.12)' : 'none',
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <span>{section.label}</span>
+                  {section.locked && <LockIcon size={10} />}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1180,7 +2357,7 @@ function UnlockSection({
 }: {
   auditId: string | null
   defaultEmail: string
-  onUnlocked: (audit: AuditResult, email: string) => void
+  onUnlocked: (email: string) => void
 }) {
   const [emailInput,    setEmailInput]    = useState('')
   const [emailStatus,   setEmailStatus]   = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
@@ -1205,12 +2382,12 @@ function UnlockSection({
       })
 
       const data = await response.json()
-      if (!response.ok || !data?.audit) {
+      if (!response.ok) {
         throw new Error(data?.error ?? 'Something went wrong')
       }
 
       setEmailStatus('success')
-      setTimeout(() => onUnlocked(data.audit as AuditResult, data.email ?? email), 500)
+      setTimeout(() => onUnlocked(data.email ?? email), 500)
     } catch {
       setEmailStatus('error')
     }
@@ -1379,9 +2556,12 @@ function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
 
 function ResultsContent() {
   const [audit,        setAudit]        = useState<AuditResult | null>(null)
+  const [auditContext, setAuditContext] = useState<AuditContext | null>(null)
   const [company,      setCompany]      = useState('')
   const [contactName,  setContactName]  = useState('')
   const [contactEmail, setContactEmail] = useState('')
+  const [activeSection, setActiveSection] = useState('executive-summary')
+  const [handoff,      setHandoff]      = useState<ReportHandoff | null>(null)
   const [error,        setError]        = useState(false)
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
@@ -1392,48 +2572,98 @@ function ResultsContent() {
   const searchParams = useSearchParams()
   const auditId = searchParams.get('id')
 
+  const applyLoadedAudit = useCallback((
+    nextAudit: AuditResult,
+    storedUnlock: boolean,
+    meta?: { company?: string | null; name?: string | null; email?: string | null; answers?: unknown },
+  ) => {
+    setAudit(nextAudit)
+    setUnlocked(nextAudit.report_stage !== 'preview' || storedUnlock)
+    if (meta?.company) setCompany(meta.company)
+    if (meta?.name) setContactName(meta.name)
+    if (meta?.email) setContactEmail(meta.email)
+    const nextContext = coerceAuditContext(meta?.answers)
+    if (nextContext) setAuditContext(nextContext)
+  }, [])
+
+  const loadFromSession = useCallback((storedUnlock: boolean) => {
+    try {
+      const raw = sessionStorage.getItem('opsradar_audit')
+      if (!raw) {
+        setError(true)
+        return
+      }
+
+      const sessionAudit = JSON.parse(raw) as AuditResult
+      applyLoadedAudit(sessionAudit, storedUnlock)
+    } catch {
+      setError(true)
+    }
+  }, [applyLoadedAudit])
+
+  const loadAuditById = useCallback(async (id: string, storedUnlock = false) => {
+    const { data, error: dbError } = await supabase
+      .from('audits')
+      .select('result, company, name, email, answers')
+      .eq('id', id)
+      .single()
+
+    if (dbError || !data?.result) {
+      loadFromSession(storedUnlock)
+      return
+    }
+
+    const nextAudit = data.result as AuditResult
+    sessionStorage.removeItem(REPORT_HANDOFF_KEY)
+    setHandoff(null)
+    applyLoadedAudit(nextAudit, storedUnlock, data)
+  }, [applyLoadedAudit, loadFromSession])
+
   useEffect(() => {
     const storedUnlock = localStorage.getItem(getUnlockStorageKey(auditId)) === '1'
-
-    if (auditId) {
-      supabase
-        .from('audits').select('result, company, name, email').eq('id', auditId).single()
-        .then(({ data, error: dbError }) => {
-          if (dbError || !data?.result) loadFromSession()
-          else {
-            const nextAudit = data.result as AuditResult
-            setAudit(nextAudit)
-            setUnlocked(nextAudit.report_stage !== 'preview' || storedUnlock)
-            if (data.company) setCompany(data.company)
-            if (data.name)    setContactName(data.name)
-            if (data.email)   setContactEmail(data.email)
+    try {
+      const rawHandoff = sessionStorage.getItem(REPORT_HANDOFF_KEY)
+      if (rawHandoff) {
+        const parsed = JSON.parse(rawHandoff) as ReportHandoff
+        if (!parsed.auditId || !auditId || parsed.auditId === auditId) {
+          const handoffContext = coerceAuditContext({
+            agencyType: parsed.agencyType,
+            automationWish: parsed.automationWish,
+            futureVision: parsed.futureVision,
+            tools: parsed.tools.join(', '),
+            processFrequency: parsed.processFrequency,
+            processOwner: parsed.processOwner,
+            failureImpact: parsed.failureImpact,
+            toolSignals: parsed.toolSignals?.join(' | '),
+            websiteUrl: parsed.websiteUrl,
+          })
+          if (handoffContext) {
+            queueMicrotask(() => setAuditContext(handoffContext))
           }
-        })
-    } else {
-      loadFromSession()
-    }
-
-    function loadFromSession() {
-      try {
-        const raw = sessionStorage.getItem('opsradar_audit')
-        if (!raw) {
-          setError(true)
-          return
+          queueMicrotask(() => setHandoff(parsed))
         }
-
-        const sessionAudit = JSON.parse(raw) as AuditResult
-        setAudit(sessionAudit)
-        setUnlocked(sessionAudit.report_stage !== 'preview' || storedUnlock)
-      } catch { setError(true) }
+      }
+    } catch {
+      sessionStorage.removeItem(REPORT_HANDOFF_KEY)
     }
-  }, [auditId])
 
-  function handleUnlocked(nextAudit: AuditResult, email: string) {
+    queueMicrotask(() => {
+      if (auditId) {
+        loadAuditById(auditId, storedUnlock).catch(() => setError(true))
+      } else {
+        loadFromSession(storedUnlock)
+      }
+    })
+  }, [auditId, loadAuditById, loadFromSession])
+
+  function handleUnlocked(email: string) {
     localStorage.setItem(getUnlockStorageKey(auditId), '1')
-    sessionStorage.setItem('opsradar_audit', JSON.stringify(nextAudit))
-    setAudit(nextAudit)
     setContactEmail(email)
-    setUnlocked(true)
+    if (auditId) {
+      loadAuditById(auditId, true).catch(() => setUnlocked(true))
+    } else {
+      setUnlocked(true)
+    }
     window.scrollBy({ top: -100, behavior: 'smooth' })
   }
 
@@ -1441,15 +2671,98 @@ function ResultsContent() {
     unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
-  if (!audit && !error) {
-    return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 rounded-full border-2 mx-auto animate-spin" style={{ borderColor: '#adc6ff', borderTopColor: 'transparent' }} />
-          <p className="text-on-surface-variant text-[13px]">Loading your report…</p>
-        </div>
-      </div>
+  // ── Normalize old / new response shapes ─────────────────────────────────────
+  const currentAudit  = audit
+  const isPreview     = currentAudit?.report_stage === 'preview'
+  const readiness     = currentAudit?.automation_readiness_score ?? currentAudit?.summary?.automation_readiness_score ?? 50
+  const headline      = currentAudit?.summary?.headline ?? currentAudit?.executive_summary ?? 'Your Automation Audit'
+  const opportunities = Array.isArray(currentAudit?.opportunities) ? currentAudit.opportunities : []
+  const hoursWeekly   = currentAudit?.summary?.total_hours_saved_weekly ??
+    opportunities.reduce((sum, opportunity) => sum + (opportunity.hours_saved_weekly ?? 0), 0)
+  const annualSavings = currentAudit?.summary?.total_annual_cost_savings ?? currentAudit?.estimated_annual_waste ?? 0
+  const toolsAnalysis = currentAudit?.tools_analysis ?? { current_stack_rating: 0 }
+  const roadmap: NormalizedRoadmap = currentAudit?.roadmap
+    ? {
+      week_1: currentAudit.roadmap.phase_1_quick_wins ?? '',
+      month_1: currentAudit.roadmap.phase_2_core_systems ?? '',
+      month_3: currentAudit.roadmap.phase_3_intelligence_layer ?? '',
+    }
+    : {
+      week_1: currentAudit?.priority_roadmap?.week_1 ?? '',
+      month_1: currentAudit?.priority_roadmap?.month_1 ?? '',
+      month_3: currentAudit?.priority_roadmap?.month_3 ?? '',
+    }
+  const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
+  const removedTools  = toolsAnalysis.redundant_tools ?? []
+  const hasBenchmarks = Boolean(currentAudit?.benchmarks)
+  const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
+  const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis)
+  const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment)
+  const hasRoadmap    = Boolean(roadmap.week_1 || roadmap.month_1 || roadmap.month_3)
+  const hasStack      = toolsAnalysis.current_stack_rating > 0 || addedTools.length > 0 || removedTools.length > 0 || !!toolsAnalysis.biggest_friction_point
+  const pathToVision  = currentAudit?.roadmap?.path_to_vision
+  const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
+  const leadOpportunity = opportunities[0] ?? null
+  const reportSections = useMemo(() => (
+    [
+      currentAudit?.executive_summary ? { id: 'executive-summary', label: 'Signal' } : null,
+      { id: 'readiness-score', label: 'Readiness' },
+      hasBenchmarks ? { id: 'industry-benchmarks', label: 'Benchmarks' } : null,
+      hasLaborBreakdown ? { id: 'labor-arbitrage', label: 'Labor' } : null,
+      hasContextSwitching ? { id: 'context-switching', label: 'Switching' } : null,
+      opportunities.length > 0 ? { id: 'automation-opportunities', label: 'Blueprint' } : null,
+      hasOnboardingAssessment ? { id: 'client-onboarding', label: 'Onboarding', locked: !unlocked } : null,
+      hasRoadmap ? { id: 'implementation-roadmap', label: 'Roadmap', locked: !unlocked } : null,
+      hasStack ? { id: 'stack-recommendations', label: 'Stack', locked: !unlocked } : null,
+      !unlocked ? { id: 'unlock-blueprint', label: 'Unlock' } : null,
+      { id: 'done-for-you-build', label: 'Build' },
+    ].filter((section): section is ReportSectionItem => Boolean(section))
+  ), [
+    currentAudit?.executive_summary,
+    hasBenchmarks,
+    hasLaborBreakdown,
+    hasContextSwitching,
+    hasOnboardingAssessment,
+    hasRoadmap,
+    hasStack,
+    opportunities.length,
+    unlocked,
+  ])
+  const reportSectionIds = reportSections.map((section) => section.id).join('|')
+  const resolvedActiveSection = reportSections.some((section) => section.id === activeSection)
+    ? activeSection
+    : (reportSections[0]?.id ?? '')
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || reportSections.length === 0) return
+
+    const elements = reportSections
+      .map((section) => document.getElementById(section.id))
+      .filter((element): element is HTMLElement => Boolean(element))
+
+    if (elements.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => Math.abs(a.boundingClientRect.top - 132) - Math.abs(b.boundingClientRect.top - 132))
+
+        const next = visible[0]?.target
+        if (next?.id) setActiveSection(next.id)
+      },
+      {
+        rootMargin: '-14% 0px -62% 0px',
+        threshold: [0.12, 0.25, 0.45],
+      },
     )
+
+    elements.forEach((element) => observer.observe(element))
+    return () => observer.disconnect()
+  }, [reportSectionIds, reportSections])
+
+  if (!currentAudit && !error) {
+    return <ReportLoadingExperience handoff={handoff} />
   }
 
   if (error) {
@@ -1463,24 +2776,7 @@ function ResultsContent() {
     )
   }
 
-  // ── Normalize old / new response shapes ─────────────────────────────────────
-  const a             = audit!
-  const isPreview     = a.report_stage === 'preview'
-  const readiness     = a.automation_readiness_score ?? a.summary?.automation_readiness_score ?? 50
-  const headline      = a.summary?.headline ?? a.executive_summary ?? 'Your Automation Audit'
-  const hoursWeekly   = a.summary?.total_hours_saved_weekly ??
-    (a.opportunities ?? []).reduce((s, o) => s + (o.hours_saved_weekly ?? 0), 0)
-  const annualSavings = a.summary?.total_annual_cost_savings ?? a.estimated_annual_waste ?? 0
-  const opportunities = Array.isArray(a.opportunities) ? a.opportunities : []
-  const toolsAnalysis = a.tools_analysis ?? { current_stack_rating: 0 }
-  const roadmap: NormalizedRoadmap = a.roadmap
-    ? { week_1: a.roadmap.phase_1_quick_wins ?? '', month_1: a.roadmap.phase_2_core_systems ?? '', month_3: a.roadmap.phase_3_intelligence_layer ?? '' }
-    : { week_1: a.priority_roadmap?.week_1 ?? '', month_1: a.priority_roadmap?.month_1 ?? '', month_3: a.priority_roadmap?.month_3 ?? '' }
-  const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
-  const removedTools  = toolsAnalysis.redundant_tools ?? []
-  const hasRoadmap    = roadmap.week_1 || roadmap.month_1 || roadmap.month_3
-  const hasStack      = toolsAnalysis.current_stack_rating > 0 || addedTools.length > 0 || removedTools.length > 0 || !!toolsAnalysis.biggest_friction_point
-  const pathToVision  = a.roadmap?.path_to_vision
+  const a = currentAudit!
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
@@ -1552,6 +2848,39 @@ function ResultsContent() {
             <TypewriterText text={headline} speed={28} delay={400} />
           </h1>
 
+          <MagicMomentPanel
+            key={`${company}-${headline}-${opportunities[0]?.title ?? 'opsradar-magic'}`}
+            company={company}
+            headline={headline}
+            readiness={readiness}
+            hoursWeekly={hoursWeekly}
+            annualSavings={annualSavings}
+            opportunities={opportunities}
+            topRisk={topRisk}
+            isPreview={isPreview}
+          />
+
+          <TransformationStrip
+            company={company}
+            leadOpportunity={leadOpportunity}
+            topRisk={topRisk}
+            hoursWeekly={hoursWeekly}
+            annualSavings={annualSavings}
+            isPreview={isPreview}
+          />
+
+          <ForensicMatchPanel
+            company={company}
+            context={auditContext}
+            leadOpportunity={leadOpportunity}
+            topRisk={topRisk}
+          />
+
+          <WebsiteEvidencePanel
+            company={company}
+            context={auditContext}
+          />
+
           <div className="flex flex-wrap gap-6 mt-6">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Hours Recovered/Week</p>
@@ -1577,6 +2906,14 @@ function ResultsContent() {
         </div>
       </header>
 
+      <ReportMap
+        sections={reportSections}
+        activeSection={resolvedActiveSection}
+        onJump={(id) => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }}
+      />
+
       {/* ── Main sections ──────────────────────────────────────────────────── */}
       <main className="max-w-[900px] mx-auto px-6 pb-28 space-y-20 mt-4">
 
@@ -1584,74 +2921,84 @@ function ResultsContent() {
 
         {/* 01 · Executive Summary */}
         {a.executive_summary && (
-          <FadeInOnScroll>
-            <section>
-              <SectionLabel num="01" text="Executive Summary" />
-              <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-                <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
-                <div className="p-7">
-                  <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
-                    {a.executive_summary}
-                  </p>
-                  {(!!a.estimated_monthly_waste || !!a.estimated_annual_waste) && (
-                    <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
-                      {!!a.estimated_monthly_waste && (
-                        <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
-                          <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
-                            <AnimatedNumber target={a.estimated_monthly_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
-                          </p>
-                          <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
-                        </div>
-                      )}
-                      {!!a.estimated_annual_waste && (
-                        <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
-                          <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
-                            <AnimatedNumber target={a.estimated_annual_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
-                          </p>
-                          <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+          <div id="executive-summary" data-report-section>
+            <FadeInOnScroll>
+              <section>
+                <SectionLabel num="01" text="Executive Summary" />
+                <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+                  <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+                  <div className="p-7">
+                    <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
+                      {a.executive_summary}
+                    </p>
+                    {(!!a.estimated_monthly_waste || !!a.estimated_annual_waste) && (
+                      <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
+                        {!!a.estimated_monthly_waste && (
+                          <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
+                            <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
+                              <AnimatedNumber target={a.estimated_monthly_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
+                            </p>
+                            <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
+                          </div>
+                        )}
+                        {!!a.estimated_annual_waste && (
+                          <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
+                            <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
+                              <AnimatedNumber target={a.estimated_annual_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
+                            </p>
+                            <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
-          </FadeInOnScroll>
+              </section>
+            </FadeInOnScroll>
+          </div>
         )}
 
         {/* 02 · Readiness Score */}
-        <FadeInOnScroll>
-          <section>
-            <SectionLabel num="02" text="Readiness Score" />
-            <div className="rounded-[20px] p-10 flex flex-col items-center relative overflow-hidden bg-surface-container border border-outline-variant/10">
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${readiness >= 60 ? 'rgba(16,185,129,0.06)' : readiness >= 30 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)'} 0%, transparent 70%)` }}
-              />
-              <div className="relative z-[1]"><ReadinessRing score={readiness} /></div>
-            </div>
-          </section>
-        </FadeInOnScroll>
+        <div id="readiness-score" data-report-section>
+          <FadeInOnScroll>
+            <section>
+              <SectionLabel num="02" text="Readiness Score" />
+              <div className="rounded-[20px] p-10 flex flex-col items-center relative overflow-hidden bg-surface-container border border-outline-variant/10">
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${readiness >= 60 ? 'rgba(16,185,129,0.06)' : readiness >= 30 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)'} 0%, transparent 70%)` }}
+                />
+                <div className="relative z-[1]"><ReadinessRing score={readiness} /></div>
+              </div>
+            </section>
+          </FadeInOnScroll>
+        </div>
 
         {/* 03 · Industry Benchmarks */}
         {a.benchmarks && (
-          <BenchmarkSection data={a.benchmarks} />
+          <div id="industry-benchmarks" data-report-section>
+            <BenchmarkSection data={a.benchmarks} />
+          </div>
         )}
 
         {/* 04 · Labor Arbitrage */}
         {a.labor_arbitrage_breakdown && (
-          <LaborArbitrageSection data={a.labor_arbitrage_breakdown} />
+          <div id="labor-arbitrage" data-report-section>
+            <LaborArbitrageSection data={a.labor_arbitrage_breakdown} />
+          </div>
         )}
 
         {/* 05 · Context Switching Tax */}
         {a.context_switching_analysis && (
-          <ContextSwitchingSection data={a.context_switching_analysis} />
+          <div id="context-switching" data-report-section>
+            <ContextSwitchingSection data={a.context_switching_analysis} />
+          </div>
         )}
 
         {/* 06 · Automation Opportunities */}
-        <section>
+        <section id="automation-opportunities" data-report-section>
           <RevealSection>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -1686,112 +3033,118 @@ function ResultsContent() {
 
         {/* 06 · Onboarding Assessment */}
         {a.onboarding_assessment && (
-          <OnboardingAssessmentSection
-            data={a.onboarding_assessment}
-            unlocked={unlocked}
-            onUnlock={scrollToUnlock}
-          />
+          <div id="client-onboarding" data-report-section>
+            <OnboardingAssessmentSection
+              data={a.onboarding_assessment}
+              unlocked={unlocked}
+              onUnlock={scrollToUnlock}
+            />
+          </div>
         )}
 
         {/* 07 · Implementation Roadmap */}
         {hasRoadmap && (
-          <RevealSection>
-            <section>
-              <SectionLabel num="08" text="Implementation Roadmap" />
-              <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
-                Your 90-Day Plan
-              </h2>
-              <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
-                Phased to deliver quick wins first, then compound value over time.
-              </p>
+          <div id="implementation-roadmap" data-report-section>
+            <RevealSection>
+              <section>
+                <SectionLabel num="08" text="Implementation Roadmap" />
+                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
+                  Your 90-Day Plan
+                </h2>
+                <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
+                  Phased to deliver quick wins first, then compound value over time.
+                </p>
 
-              <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
-                <div className="space-y-5">
-                  <VerticalRoadmap roadmap={roadmap} />
-                  {pathToVision && (
-                    <div
-                      className="p-6 rounded-[18px] relative overflow-hidden"
-                      style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(173,198,255,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}
-                    >
-                      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, transparent)' }} />
-                      <div className="flex items-start gap-4">
-                        <div
-                          className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5"
-                          style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M9 2l1.8 3.6L15 6.6l-3 2.9.7 4.1L9 11.8l-3.7 1.8.7-4.1-3-2.9 4.2-.9L9 2z" stroke="#a78bfa" strokeWidth="1.4" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#a78bfa] mb-2">Path to Your Vision</p>
-                          <p className="text-[14px] text-on-surface-variant leading-[1.75]">{pathToVision}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </LockedSection>
-            </section>
-          </RevealSection>
-        )}
-
-        {/* 08 · Tools Analysis */}
-        {hasStack && (
-          <RevealSection>
-            <section>
-              <SectionLabel num="09" text="Tools Analysis" />
-              <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
-                Stack Recommendations
-              </h2>
-              <div className="p-6 rounded-[16px] mb-4 bg-surface-container border border-outline-variant/10">
-                <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
-              </div>
-
-              <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
-                <div className="space-y-4">
-                  {toolsAnalysis.biggest_friction_point && (
-                    <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                      <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
-                      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
-                      <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
-                    </div>
-                  )}
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {addedTools.length > 0 && (
-                      <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
-                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
-                        <div className="flex flex-wrap gap-2">
-                          {addedTools.map((t) => (
-                            <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
-                              + {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {removedTools.length > 0 && (
-                      <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
-                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
-                        <div className="flex flex-wrap gap-2">
-                          {removedTools.map((t) => (
-                            <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
-                              {t}
-                            </span>
-                          ))}
+                <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                  <div className="space-y-5">
+                    <VerticalRoadmap roadmap={roadmap} />
+                    {pathToVision && (
+                      <div
+                        className="p-6 rounded-[18px] relative overflow-hidden"
+                        style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(173,198,255,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}
+                      >
+                        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, transparent)' }} />
+                        <div className="flex items-start gap-4">
+                          <div
+                            className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5"
+                            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                              <path d="M9 2l1.8 3.6L15 6.6l-3 2.9.7 4.1L9 11.8l-3.7 1.8.7-4.1-3-2.9 4.2-.9L9 2z" stroke="#a78bfa" strokeWidth="1.4" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#a78bfa] mb-2">Path to Your Vision</p>
+                            <p className="text-[14px] text-on-surface-variant leading-[1.75]">{pathToVision}</p>
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
+                </LockedSection>
+              </section>
+            </RevealSection>
+          </div>
+        )}
+
+        {/* 08 · Tools Analysis */}
+        {hasStack && (
+          <div id="stack-recommendations" data-report-section>
+            <RevealSection>
+              <section>
+                <SectionLabel num="09" text="Tools Analysis" />
+                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
+                  Stack Recommendations
+                </h2>
+                <div className="p-6 rounded-[16px] mb-4 bg-surface-container border border-outline-variant/10">
+                  <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
                 </div>
-              </LockedSection>
-            </section>
-          </RevealSection>
+
+                <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                  <div className="space-y-4">
+                    {toolsAnalysis.biggest_friction_point && (
+                      <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
+                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
+                        <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
+                      </div>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {addedTools.length > 0 && (
+                        <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
+                          <div className="flex flex-wrap gap-2">
+                            {addedTools.map((t) => (
+                              <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
+                                + {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {removedTools.length > 0 && (
+                        <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
+                          <div className="flex flex-wrap gap-2">
+                            {removedTools.map((t) => (
+                              <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </LockedSection>
+              </section>
+            </RevealSection>
+          </div>
         )}
 
         {/* Unlock section */}
         {!unlocked && (
-          <div ref={unlockRef}>
+          <div id="unlock-blueprint" ref={unlockRef} data-report-section>
             <UnlockSection
               auditId={auditId}
               defaultEmail={contactEmail}
@@ -1801,42 +3154,44 @@ function ResultsContent() {
         )}
 
         {/* Final CTA */}
-        <RevealSection>
-          <section className="rounded-[22px] overflow-hidden relative p-10 sm:p-14 text-center bg-surface-container border-2 border-primary/30 shadow-[0_0_80px_rgba(173,198,255,0.1)]">
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 55% at 50% 100%, rgba(173,198,255,0.08) 0%, transparent 70%)' }} />
-            <div className="relative z-[1]">
-              <Badge variant="outline" className="inline-flex items-center gap-2 h-auto px-3.5 py-1.5 rounded-full border-primary/25 bg-primary/8 text-primary text-[11px] font-bold tracking-wider mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-                DONE-FOR-YOU AUTOMATION
-              </Badge>
-              <h2 className="font-headline font-extrabold text-[clamp(24px,3.5vw,40px)] tracking-[-0.03em] mb-4 text-on-surface">
-                Want Us to Build This For You?
-              </h2>
-              <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-10">
-                We take your audit results, design the exact workflows, and build them fully custom to your stack.
-                You get running automations — not a to-do list.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
-                  <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
-                    Book a Free Strategy Call →
-                  </a>
-                </Button>
-                <Button
-                  onClick={() => setModalOpp('Full Automation Build')}
-                  variant="outline"
-                  className="px-7 py-[14px] h-auto rounded-[13px] text-[15px] font-semibold border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface bg-transparent"
-                >
-                  Request a Build Quote →
-                </Button>
+        <div id="done-for-you-build" data-report-section>
+          <RevealSection>
+            <section className="rounded-[22px] overflow-hidden relative p-10 sm:p-14 text-center bg-surface-container border-2 border-primary/30 shadow-[0_0_80px_rgba(173,198,255,0.1)]">
+              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 55% at 50% 100%, rgba(173,198,255,0.08) 0%, transparent 70%)' }} />
+              <div className="relative z-[1]">
+                <Badge variant="outline" className="inline-flex items-center gap-2 h-auto px-3.5 py-1.5 rounded-full border-primary/25 bg-primary/8 text-primary text-[11px] font-bold tracking-wider mb-6">
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                  DONE-FOR-YOU AUTOMATION
+                </Badge>
+                <h2 className="font-headline font-extrabold text-[clamp(24px,3.5vw,40px)] tracking-[-0.03em] mb-4 text-on-surface">
+                  Want Us to Build This For You?
+                </h2>
+                <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-10">
+                  We take your audit results, design the exact workflows, and build them fully custom to your stack.
+                  You get running automations — not a to-do list.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
+                    <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
+                      Book a Free Strategy Call →
+                    </a>
+                  </Button>
+                  <Button
+                    onClick={() => setModalOpp('Full Automation Build')}
+                    variant="outline"
+                    className="px-7 py-[14px] h-auto rounded-[13px] text-[15px] font-semibold border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface bg-transparent"
+                  >
+                    Request a Build Quote →
+                  </Button>
+                </div>
+                <p className="mt-6 text-[12px] text-on-surface-variant/30">
+                  No pitch. No commitment. We&apos;ll scope the build and give you an exact price.
+                </p>
               </div>
-              <p className="mt-6 text-[12px] text-on-surface-variant/30">
-                No pitch. No commitment. We&apos;ll scope the build and give you an exact price.
-              </p>
-            </div>
-          </section>
-        </RevealSection>
+            </section>
+          </RevealSection>
+        </div>
 
       </main>
 

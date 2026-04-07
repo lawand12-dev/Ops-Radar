@@ -4,6 +4,14 @@ import { supabase } from '../../../lib/supabase'
 import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
 import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
+import {
+  fetchWebsiteSignals,
+  normalizeWebsiteUrlInput,
+  serializeWebsiteDetectedStack,
+  serializeWebsiteEvidence,
+  serializeWebsiteStackSignals,
+} from '../../../lib/website-intel'
+import { analyzeWebsiteVisualSignals, serializeWebsiteVisualEvidence } from '../../../lib/website-visual-intel'
 import type { NotifyPayload } from '../notify/route'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -26,9 +34,13 @@ const STRING_FIELDS: Array<keyof RequestBody> = [
   'leadEntry',
   'progressTracking',
   'automationWish',
+  'processFrequency',
+  'processOwner',
+  'failureImpact',
   'futureVision',
 ]
 
+const OPTIONAL_STRING_FIELDS: Array<keyof RequestBody> = ['toolSignals', 'websiteUrl']
 const ARRAY_COMPATIBLE_FIELDS = new Set<keyof RequestBody>(['tools', 'timeHeavy', 'onboarding'])
 
 function normalizeAuditField(
@@ -71,6 +83,21 @@ function validateRequestBody(body: unknown): RequestBody | null {
     normalized[field] = value
   }
 
+  for (const field of OPTIONAL_STRING_FIELDS) {
+    const rawValue = input[field]
+    if (rawValue == null || rawValue === '') {
+      normalized[field] = ''
+      continue
+    }
+
+    const value = normalizeAuditField(rawValue, { maxLength: 1000 })
+    if (value == null) {
+      return null
+    }
+
+    normalized[field] = value
+  }
+
   for (const field of ARRAY_COMPATIBLE_FIELDS) {
     const value = normalizeAuditField(input[field], { allowArray: true, maxLength: 1000 })
     if (!value) {
@@ -102,12 +129,30 @@ export async function POST(request: Request) {
     const {
       name, email, company,
       agencyType, teamSize, revenue, activeClients,
-      tools, crmTool, timeHeavy, leadEntry,
-      onboarding, progressTracking, automationWish, futureVision,
+      tools, toolSignals, websiteUrl, crmTool, timeHeavy, leadEntry,
+      onboarding, progressTracking, automationWish, processFrequency, processOwner, failureImpact, futureVision,
     } = body
 
     if (!EMAIL_REGEX.test(email)) {
       return Response.json({ error: 'Invalid email format' }, { status: 400 })
+    }
+
+    const normalizedWebsiteUrl = normalizeWebsiteUrlInput(websiteUrl ?? '')
+    let websiteSignals = null
+    let websiteVisualSignals = null
+
+    if (normalizedWebsiteUrl) {
+      const [websiteSignalsResult, websiteVisualSignalsResult] = await Promise.allSettled([
+        fetchWebsiteSignals(normalizedWebsiteUrl),
+        analyzeWebsiteVisualSignals(normalizedWebsiteUrl),
+      ])
+
+      websiteSignals = websiteSignalsResult.status === 'fulfilled'
+        ? websiteSignalsResult.value
+        : null
+      websiteVisualSignals = websiteVisualSignalsResult.status === 'fulfilled'
+        ? websiteVisualSignalsResult.value
+        : null
     }
 
     const auditInput = {
@@ -116,12 +161,24 @@ export async function POST(request: Request) {
       revenue,
       activeClients,
       tools,
+      toolSignals,
+      websiteUrl: normalizedWebsiteUrl,
+      websiteScreenshotUrl: websiteVisualSignals?.screenshotUrl ?? '',
+      websiteContext: websiteSignals?.summary ?? '',
+      websiteEvidence: serializeWebsiteEvidence(websiteSignals?.evidence ?? []),
+      websiteDetectedStack: serializeWebsiteDetectedStack(websiteSignals?.detectedStack ?? []),
+      websiteStackEvidence: serializeWebsiteStackSignals(websiteSignals?.detectedStack ?? []),
+      websiteVisualContext: websiteVisualSignals?.summary ?? '',
+      websiteVisualEvidence: serializeWebsiteVisualEvidence(websiteVisualSignals?.evidence ?? []),
       crmTool,
       timeHeavy,
       leadEntry,
       onboarding,
       progressTracking,
       automationWish,
+      processFrequency,
+      processOwner,
+      failureImpact,
       futureVision,
     }
 
@@ -174,7 +231,7 @@ export async function POST(request: Request) {
       body: JSON.stringify(notifyPayload),
     }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
-    return Response.json({ audit, id: data.id })
+    return Response.json({ id: data.id })
   } catch (err) {
     console.error('generate-audit error:', err)
     return serverErrorResponse()

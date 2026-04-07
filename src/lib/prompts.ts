@@ -1,4 +1,5 @@
 import { OPSRADAR_SYSTEM_PROMPT_PREFIX, sanitizeString } from './security'
+import { buildAuditGroundingPrompt } from './audit-grounding'
 
 export const SYSTEM_PROMPT = `${OPSRADAR_SYSTEM_PROMPT_PREFIX}
 
@@ -16,11 +17,23 @@ PERSONALIZATION RULES:
 - Reference their EXACT tools by name in every recommendation
 - Reference their EXACT agency type in framing
 - Reference their specific pain point from the automation wish field
+- Reference the specific tool-to-tool friction surfaced in the toolSignals field when prioritizing automations
+- Treat named tools inside CRM, lead-entry, or progress-tracking details as part of their real stack
+- If website context is available, use it to verify their offer, audience, and delivery model before making recommendations
+- If website evidence is available, cite the strongest discovered signal instead of speaking vaguely about their business
+- If public website stack fingerprints are available, treat them as verified hints and reconcile them with the user's stated stack
+- If website visual analysis is available, use it to judge trust, CTA sharpness, positioning clarity, and perceived maturity
+- Use process frequency, owner, and failure impact to rank urgency and architecture quality
 - Use their revenue range to calibrate dollar estimates realistically
 - If they said "we wing it" for onboarding, call that out directly
 - If they use spreadsheets as a CRM, flag the revenue risk
 - If they have 50+ clients with manual processes, emphasize the scaling wall
 - Reference their 6-month vision and show how automation gets them there
+
+ARCHITECTURE PRIORITIZATION:
+- If the process happens daily or multiple times daily, bias toward robust triggers, retries, and low-touch automation.
+- If the owner is the founder or multiple people, call out concentration risk and handoff confusion explicitly.
+- If failure impact touches revenue, client trust, or delivery, recommend stronger guardrails, alerts, and approval-aware workflow design.
 
 TECHNICAL SPECIFICITY:
 - Every automation must name the exact n8n nodes involved
@@ -138,6 +151,9 @@ GOAL:
 STRICT PREVIEW RULES:
 - Keep this response concise and high-signal.
 - Generate exactly 2 opportunities.
+- If website context or website evidence is available, use it to sharpen the diagnosis and top opportunity ranking.
+- If public website stack fingerprints are available, use them to make the preview feel more specific and technically grounded.
+- If website visual analysis is available, use it to make the preview feel more specific and grounded.
 - Do NOT include implementation_steps.
 - Do NOT include n8n_nodes.
 - Do NOT include current_process.
@@ -186,12 +202,24 @@ export type AuditInput = {
   revenue: string
   activeClients: string
   tools: string
+  toolSignals?: string
+  websiteUrl?: string
+  websiteScreenshotUrl?: string
+  websiteContext?: string
+  websiteEvidence?: string
+  websiteDetectedStack?: string
+  websiteStackEvidence?: string
+  websiteVisualContext?: string
+  websiteVisualEvidence?: string
   crmTool: string
   timeHeavy: string
   leadEntry: string
   onboarding: string
   progressTracking: string
   automationWish: string
+  processFrequency: string
+  processOwner: string
+  failureImpact: string
   futureVision: string
 }
 
@@ -203,13 +231,27 @@ Team Size: ${sanitizeString(data.teamSize)}
 Monthly Revenue: ${sanitizeString(data.revenue)}
 Active Clients at Once: ${sanitizeString(data.activeClients)}
 Tools Used Daily: ${sanitizeString(data.tools)}
+Tool-to-Tool Friction Signals: ${sanitizeString(data.toolSignals || 'Not provided')}
+Website URL: ${sanitizeString(data.websiteUrl || 'Not provided')}
+Website Screenshot URL: ${sanitizeString(data.websiteScreenshotUrl || 'Not provided')}
+Website Intelligence: ${sanitizeString(data.websiteContext || 'Not provided')}
+Website Evidence: ${sanitizeString(data.websiteEvidence || 'Not provided')}
+Public Website Stack Signals: ${sanitizeString(data.websiteDetectedStack || 'Not provided')}
+Public Website Stack Evidence: ${sanitizeString(data.websiteStackEvidence || 'Not provided')}
+Website Visual Analysis: ${sanitizeString(data.websiteVisualContext || 'Not provided')}
+Website Visual Evidence: ${sanitizeString(data.websiteVisualEvidence || 'Not provided')}
 CRM They Use: ${sanitizeString(data.crmTool)}
 Biggest Time Drains: ${sanitizeString(data.timeHeavy)}
 How New Leads Enter System: ${sanitizeString(data.leadEntry)}
 Post-Close Onboarding Process: ${sanitizeString(data.onboarding)}
 How They Track Projects: ${sanitizeString(data.progressTracking)}
 #1 Process They'd Automate: ${sanitizeString(data.automationWish)}
+How Often That Process Happens: ${sanitizeString(data.processFrequency || 'Not provided')}
+Who Currently Owns That Process: ${sanitizeString(data.processOwner || 'Not provided')}
+What Happens If It Slips: ${sanitizeString(data.failureImpact || 'Not provided')}
 Their 6-Month Operations Vision: ${sanitizeString(data.futureVision)}
+
+${buildAuditGroundingPrompt(data)}
 
 Generate the audit JSON. Every number must be derived from these actual inputs. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Connect roadmap.path_to_vision directly to their stated 6-month vision.`
 }
