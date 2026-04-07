@@ -1,12 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  // Remove any 'eslint' key from here
+  images: {
+    domains: [], // your image domains if any
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-};
+  // Other valid config options only
+}
 
-export default nextConfig;
+export default nextConfig
