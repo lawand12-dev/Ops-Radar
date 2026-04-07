@@ -46,6 +46,9 @@ type OpportunityLike = Record<string, unknown>
 type ConfidenceReport = {
   overall: number
   opportunityScores: number[]
+  issues: string[]
+  opportunityIssues: string[][]
+  lowEvidenceMode: boolean
 }
 
 const CORE_N8N_NODES = [
@@ -150,6 +153,24 @@ function splitList(value: string): string[] {
     .filter(Boolean)
 }
 
+function splitSignals(value: string): string[] {
+  return value
+    .split('|')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function asNumber(value: unknown): number | null {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
 function findToolCatalogEntry(rawTool: string): ToolCatalogEntry | null {
   const normalized = normalizeToken(rawTool)
   if (!normalized) return null
@@ -217,6 +238,39 @@ function estimateHourlyRate(input: AuditLikeInput): number {
   const perHeadMonthlyRevenue = revenueMidpoint / Math.max(teamMidpoint, 1)
   const hourlyRate = Math.round((perHeadMonthlyRevenue / 160) * 1.05)
   return Math.max(30, Math.min(hourlyRate, 180))
+}
+
+function midpointForClientLoad(activeClients: string): number {
+  const values = activeClients.match(/\d+/g)?.map((value) => Number(value)).filter(Number.isFinite) ?? []
+  if (values.length >= 2) return Math.round((values[0] + values[1]) / 2)
+  if (values.length === 1) return values[0]
+  return 12
+}
+
+function benchmarkHoursForTeamSize(teamSize: string): number {
+  const normalized = normalizeToken(teamSize)
+  if (normalized.includes('just me') || normalized.includes('2 5')) return 18
+  if (normalized.includes('6 15')) return 38
+  if (normalized.includes('16 30')) return 65
+  if (normalized.includes('31 50')) return 100
+  if (normalized.includes('50')) return 160
+  return 38
+}
+
+function healthyOpsRatioForRevenue(revenue: string): number {
+  const normalized = normalizeToken(revenue)
+  if (normalized.includes('under 10k') || normalized.includes('10k 25k') || normalized.includes('25k 50k')) return 30
+  if (normalized.includes('50k 100k')) return 35
+  if (normalized.includes('100k 250k')) return 25
+  if (normalized.includes('250k')) return 22
+  return 30
+}
+
+function maturityCategoryForScore(score: number): { category: string; percentile: string } {
+  if (score <= 25) return { category: 'Manual Chaos', percentile: 'bottom 20% of agencies your size' }
+  if (score <= 50) return { category: 'Partially Automated', percentile: 'bottom 45% of agencies your size' }
+  if (score <= 75) return { category: 'Systematized', percentile: 'top 45% of agencies your size' }
+  return { category: 'Intelligent Ops', percentile: 'top 15% of agencies your size' }
 }
 
 function buildGroundingContext(input: AuditLikeInput): GroundingContext {
@@ -356,6 +410,195 @@ function defaultImplementationSteps(tools: string[]): string[] {
   ]
 }
 
+function deriveBiggestFrictionPoint(
+  input: AuditLikeInput,
+  context: GroundingContext,
+  opportunities: Record<string, unknown>[],
+): string {
+  const declaredSignals = splitSignals(input.toolSignals ?? '')
+  if (declaredSignals[0]) return declaredSignals[0]
+
+  const topOpportunity = asString(opportunities[0]?.title)
+  if (topOpportunity) return `${topOpportunity} is carrying the most operational drag right now.`
+
+  if (context.allowedToolNames.length > 1) {
+    return `The biggest drag is the manual bridge between ${context.allowedToolNames.slice(0, 2).join(' and ')}.`
+  }
+
+  return `The core friction point is still "${input.automationWish}", which is forcing manual coordination and follow-up.`
+}
+
+function deriveCurrentStackRating(input: AuditLikeInput, context: GroundingContext): number {
+  const toolCount = unique([
+    ...splitList(input.tools),
+    input.crmTool,
+    input.leadEntry,
+    input.progressTracking,
+  ]).filter(Boolean).length
+  const signalCount = splitSignals(input.toolSignals ?? '').length
+  const crmToken = normalizeToken(input.crmTool)
+
+  let rating = 8
+  if (toolCount >= 8) rating -= 2
+  else if (toolCount >= 5) rating -= 1
+  if (signalCount >= 2) rating -= 1
+  if (crmToken.includes('spreadsheet') || crmToken.includes('manual')) rating -= 2
+  if (context.allowedToolNames.length >= 4) rating += 1
+
+  return Math.max(2, Math.min(rating, 9))
+}
+
+function buildFallbackToolsAnalysis(
+  input: AuditLikeInput,
+  context: GroundingContext,
+  opportunities: Record<string, unknown>[],
+): Record<string, unknown> {
+  return {
+    current_stack_rating: deriveCurrentStackRating(input, context),
+    biggest_friction_point: deriveBiggestFrictionPoint(input, context, opportunities),
+    redundant_tools: [],
+    recommended_additions: [],
+  }
+}
+
+function buildFallbackRoadmap(
+  input: AuditLikeInput,
+  opportunities: Record<string, unknown>[],
+): Record<string, unknown> {
+  const titles = opportunities
+    .map((opportunity) => asString(opportunity.title))
+    .filter((title): title is string => Boolean(title))
+
+  const quickWins = titles.slice(0, 2)
+  const coreSystems = titles.slice(1, 3)
+  const intelligenceLayer = titles.slice(2, 5)
+
+  return {
+    phase_1_quick_wins: quickWins.length > 0
+      ? `Start with ${quickWins.join(' and ')} to remove the fastest recurring manual drag in the next 1-2 weeks.`
+      : 'Start with the most repetitive handoff first so the team gets immediate time back.',
+    phase_2_core_systems: coreSystems.length > 0
+      ? `Use month 1 to productionize ${coreSystems.join(' and ')} with alerts, retries, and clean ownership.`
+      : 'Use month 1 to lock the core client-facing handoffs into one reliable system.',
+    phase_3_intelligence_layer: intelligenceLayer.length > 0
+      ? `By month 3, layer in ${intelligenceLayer.join(', ')} plus reporting, prioritization, and exception handling.`
+      : 'By month 3, add monitoring, prioritization, and exception handling so operations stay ahead of growth.',
+    path_to_vision: `This roadmap moves the team toward "${input.futureVision}" by turning the current bottleneck around "${input.automationWish}" into a repeatable operating system.`,
+  }
+}
+
+function buildFallbackPriorityRoadmap(opportunities: Record<string, unknown>[]): Record<string, unknown> {
+  const titles = opportunities
+    .map((opportunity) => asString(opportunity.title))
+    .filter((title): title is string => Boolean(title))
+
+  return {
+    week_1: titles[0]
+      ? `Map the trigger, required fields, and owner for ${titles[0]}, then ship the first stable workflow.`
+      : 'Map the highest-frequency bottleneck and ship the first stable workflow.',
+    month_1: titles[1]
+      ? `Extend automation into ${titles[1]} and add alerting, retries, and duplicate protection.`
+      : 'Expand automation into the next cross-team handoff and add safeguards.',
+    month_3: titles[2]
+      ? `Unify ${titles.slice(0, 3).join(', ')} into one monitored system with reporting and exception handling.`
+      : 'Unify the first workflows into one monitored operating layer with reporting and exception handling.',
+  }
+}
+
+function buildFallbackLaborArbitrage(
+  context: GroundingContext,
+  totalHoursSavedWeekly: number,
+): Record<string, unknown> {
+  const weeklyHours = Math.max(totalHoursSavedWeekly, 8)
+  const annualLaborWaste = Math.round(weeklyHours * context.hourlyRate * 52)
+
+  return {
+    estimated_hourly_rate: context.hourlyRate,
+    hours_wasted_on_low_value_weekly: weeklyHours,
+    annual_labor_waste: annualLaborWaste,
+    explanation: `$${context.hourlyRate}/hr x ${weeklyHours} hrs/week x 52 weeks = $${annualLaborWaste.toLocaleString()}/year in avoidable labor drag.`,
+  }
+}
+
+function buildFallbackContextSwitching(
+  input: AuditLikeInput,
+  context: GroundingContext,
+): Record<string, unknown> {
+  const toolsCount = Math.max(context.allowedToolNames.length, unique([
+    ...splitList(input.tools),
+    input.crmTool,
+    input.leadEntry,
+    input.progressTracking,
+  ]).filter(Boolean).length)
+  const switchingHeadcount = Math.max(1, Math.min(Math.round(midpointForTeamSize(input.teamSize) * 0.35), 6))
+  const estimatedDailySwitches = Math.max(10, Math.min(70, Math.round(toolsCount * (switchingHeadcount + 2))))
+  const timeLostDailyMinutes = estimatedDailySwitches * 17
+  const annualCost = Math.round((timeLostDailyMinutes / 60) * context.hourlyRate * 260 * switchingHeadcount)
+
+  return {
+    tools_count: toolsCount,
+    estimated_daily_switches: estimatedDailySwitches,
+    time_lost_daily_minutes: timeLostDailyMinutes,
+    annual_cost: annualCost,
+  }
+}
+
+function buildFallbackOnboardingAssessment(input: AuditLikeInput): Record<string, unknown> {
+  const normalizedOnboarding = normalizeToken(input.onboarding)
+  const currentHours = normalizedOnboarding.includes('wing it')
+    ? '4-6 hours'
+    : normalizedOnboarding.includes('email') || normalizedOnboarding.includes('manual')
+      ? '3-5 hours'
+      : '2-4 hours'
+  const automatedTime = normalizedOnboarding.includes('wing it') ? '35-50 minutes' : '25-40 minutes'
+  const clientLoad = midpointForClientLoad(input.activeClients)
+
+  return {
+    current_state: `Right now onboarding looks like: ${input.onboarding}.`,
+    time_per_client_current: currentHours,
+    time_per_client_automated: automatedTime,
+    revenue_impact: `At roughly ${clientLoad} active clients, compressing onboarding admin creates more delivery capacity and lowers the odds of rough starts that hurt trust.`,
+  }
+}
+
+function buildFallbackBenchmarks(
+  input: AuditLikeInput,
+  totalHoursSavedWeekly: number,
+  totalMonthlySavings: number,
+  readinessScore: number,
+): Record<string, unknown> {
+  const industryAverage = benchmarkHoursForTeamSize(input.teamSize)
+  const theirHours = Math.max(totalHoursSavedWeekly, Math.round(industryAverage * 0.95))
+  const percentDifference = Math.round(((theirHours - industryAverage) / industryAverage) * 100)
+  const healthyRatioPercent = healthyOpsRatioForRevenue(input.revenue)
+  const revenueMidpoint = midpointForRevenue(input.revenue)
+  const theirRatioPercent = Math.max(4, Math.min(70, Math.round((totalMonthlySavings / Math.max(revenueMidpoint, 1)) * 100)))
+  const maturity = maturityCategoryForScore(readinessScore)
+
+  return {
+    hours_wasted_vs_average: {
+      their_hours: theirHours,
+      industry_average: industryAverage,
+      percent_difference: percentDifference,
+      verdict: percentDifference >= 40 ? 'critical' : percentDifference >= 15 ? 'above average' : percentDifference <= -10 ? 'below average' : 'average',
+    },
+    ops_cost_ratio: {
+      their_ratio_percent: theirRatioPercent,
+      healthy_ratio_percent: healthyRatioPercent,
+      verdict: theirRatioPercent > healthyRatioPercent + 8
+        ? 'Their ops drag is above the healthy range for this revenue band.'
+        : theirRatioPercent < healthyRatioPercent - 5
+          ? 'Their ops cost ratio is better than the typical benchmark for this revenue band.'
+          : 'Their ops cost ratio is roughly in line with the benchmark for this revenue band.',
+    },
+    automation_maturity: {
+      their_score: readinessScore,
+      category: maturity.category,
+      percentile: maturity.percentile,
+    },
+  }
+}
+
 function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingContext): OpportunityLike[] {
   const crm = context.primaryCrm && context.allowedToolNames.includes(context.primaryCrm)
     ? context.primaryCrm
@@ -484,33 +727,169 @@ function normalizeTopLevelFields(
     return sum + value
   }, 0)
 
-  return {
+  const readinessScore = clampNumber(raw.automation_readiness_score, 52, { min: 1, max: 100 })
+  const summarySource = asRecord(raw.summary)
+  const toolsAnalysisSource = asRecord(raw.tools_analysis)
+  const fallbackToolsAnalysis = buildFallbackToolsAnalysis(input, context, normalizedOpportunities)
+
+  const normalized: Record<string, unknown> = {
     ...raw,
     executive_summary: asString(raw.executive_summary) ?? `This ${input.agencyType} team is losing time to manual operational work that can be systemized with n8n and their current stack.`,
     estimated_monthly_waste: clampNumber(raw.estimated_monthly_waste, Math.round(totalMonthlySavings), { min: 500, max: 500_000 }),
     estimated_annual_waste: clampNumber(raw.estimated_annual_waste, Math.round(totalMonthlySavings * 12), { min: 6_000, max: 6_000_000 }),
-    automation_readiness_score: clampNumber(raw.automation_readiness_score, 52, { min: 1, max: 100 }),
+    automation_readiness_score: readinessScore,
     opportunities: normalizedOpportunities,
     summary: {
-      ...(raw.summary && typeof raw.summary === 'object' && !Array.isArray(raw.summary) ? raw.summary as Record<string, unknown> : {}),
+      ...summarySource,
       total_hours_saved_weekly: clampNumber(
-        (raw.summary as Record<string, unknown> | undefined)?.total_hours_saved_weekly,
+        summarySource.total_hours_saved_weekly,
         totalHoursSavedWeekly,
         { min: 1, max: 200 },
       ),
       total_annual_cost_savings: clampNumber(
-        (raw.summary as Record<string, unknown> | undefined)?.total_annual_cost_savings,
+        summarySource.total_annual_cost_savings,
         Math.round(totalMonthlySavings * 12),
         { min: 6_000, max: 6_000_000 },
       ),
       automation_readiness_score: clampNumber(
-        (raw.summary as Record<string, unknown> | undefined)?.automation_readiness_score,
-        clampNumber(raw.automation_readiness_score, 52, { min: 1, max: 100 }),
+        summarySource.automation_readiness_score,
+        readinessScore,
         { min: 1, max: 100 },
       ),
-      headline: asString((raw.summary as Record<string, unknown> | undefined)?.headline) ?? 'Highest-leverage automations for this agency',
+      headline: asString(summarySource.headline) ?? 'Highest-leverage automations for this agency',
+    },
+    tools_analysis: {
+      ...toolsAnalysisSource,
+      current_stack_rating: clampNumber(
+        toolsAnalysisSource.current_stack_rating,
+        asNumber(fallbackToolsAnalysis.current_stack_rating) ?? 6,
+        { min: 1, max: 10 },
+      ),
+      biggest_friction_point: asString(toolsAnalysisSource.biggest_friction_point)
+        ?? asString(fallbackToolsAnalysis.biggest_friction_point)
+        ?? `The biggest friction point is still "${input.automationWish}".`,
+      redundant_tools: asStringArray(toolsAnalysisSource.redundant_tools),
+      recommended_additions: asStringArray(toolsAnalysisSource.recommended_additions),
     },
   }
+
+  if (stage === 'preview') {
+    normalized.preview_notice = asString(raw.preview_notice)
+      ?? 'Unlock the full blueprint to get the roadmap, implementation steps, node-level architecture, and execution guidance.'
+    return normalized
+  }
+
+  const roadmapSource = asRecord(raw.roadmap)
+  const priorityRoadmapSource = asRecord(raw.priority_roadmap)
+  const laborSource = asRecord(raw.labor_arbitrage_breakdown)
+  const contextSwitchingSource = asRecord(raw.context_switching_analysis)
+  const onboardingSource = asRecord(raw.onboarding_assessment)
+  const benchmarksSource = asRecord(raw.benchmarks)
+  const hoursBenchmarkSource = asRecord(benchmarksSource.hours_wasted_vs_average)
+  const opsRatioSource = asRecord(benchmarksSource.ops_cost_ratio)
+  const automationMaturitySource = asRecord(benchmarksSource.automation_maturity)
+
+  const fallbackRoadmap = buildFallbackRoadmap(input, normalizedOpportunities)
+  const fallbackPriorityRoadmap = buildFallbackPriorityRoadmap(normalizedOpportunities)
+  const fallbackLabor = buildFallbackLaborArbitrage(context, totalHoursSavedWeekly)
+  const fallbackContextSwitching = buildFallbackContextSwitching(input, context)
+  const fallbackOnboarding = buildFallbackOnboardingAssessment(input)
+  const fallbackBenchmarks = buildFallbackBenchmarks(input, totalHoursSavedWeekly, totalMonthlySavings, readinessScore)
+  const fallbackHoursBenchmark = asRecord(fallbackBenchmarks.hours_wasted_vs_average)
+  const fallbackOpsRatio = asRecord(fallbackBenchmarks.ops_cost_ratio)
+  const fallbackAutomationMaturity = asRecord(fallbackBenchmarks.automation_maturity)
+
+  normalized.roadmap = {
+    ...roadmapSource,
+    phase_1_quick_wins: asString(roadmapSource.phase_1_quick_wins) ?? asString(fallbackRoadmap.phase_1_quick_wins),
+    phase_2_core_systems: asString(roadmapSource.phase_2_core_systems) ?? asString(fallbackRoadmap.phase_2_core_systems),
+    phase_3_intelligence_layer: asString(roadmapSource.phase_3_intelligence_layer) ?? asString(fallbackRoadmap.phase_3_intelligence_layer),
+    path_to_vision: asString(roadmapSource.path_to_vision) ?? asString(fallbackRoadmap.path_to_vision),
+  }
+
+  normalized.priority_roadmap = {
+    ...priorityRoadmapSource,
+    week_1: asString(priorityRoadmapSource.week_1) ?? asString(fallbackPriorityRoadmap.week_1),
+    month_1: asString(priorityRoadmapSource.month_1) ?? asString(fallbackPriorityRoadmap.month_1),
+    month_3: asString(priorityRoadmapSource.month_3) ?? asString(fallbackPriorityRoadmap.month_3),
+  }
+
+  normalized.labor_arbitrage_breakdown = {
+    ...laborSource,
+    estimated_hourly_rate: clampNumber(
+      laborSource.estimated_hourly_rate,
+      asNumber(fallbackLabor.estimated_hourly_rate) ?? context.hourlyRate,
+      { min: 30, max: 180 },
+    ),
+    hours_wasted_on_low_value_weekly: clampNumber(
+      laborSource.hours_wasted_on_low_value_weekly,
+      asNumber(fallbackLabor.hours_wasted_on_low_value_weekly) ?? 8,
+      { min: 1, max: 200 },
+    ),
+    annual_labor_waste: clampNumber(
+      laborSource.annual_labor_waste,
+      asNumber(fallbackLabor.annual_labor_waste) ?? 10_000,
+      { min: 1_000, max: 6_000_000 },
+    ),
+    explanation: asString(laborSource.explanation) ?? asString(fallbackLabor.explanation),
+  }
+
+  normalized.context_switching_analysis = {
+    ...contextSwitchingSource,
+    tools_count: clampNumber(
+      contextSwitchingSource.tools_count,
+      asNumber(fallbackContextSwitching.tools_count) ?? 3,
+      { min: 1, max: 20 },
+    ),
+    estimated_daily_switches: clampNumber(
+      contextSwitchingSource.estimated_daily_switches,
+      asNumber(fallbackContextSwitching.estimated_daily_switches) ?? 12,
+      { min: 1, max: 100 },
+    ),
+    time_lost_daily_minutes: clampNumber(
+      contextSwitchingSource.time_lost_daily_minutes,
+      asNumber(fallbackContextSwitching.time_lost_daily_minutes) ?? 90,
+      { min: 10, max: 1200 },
+    ),
+    annual_cost: clampNumber(
+      contextSwitchingSource.annual_cost,
+      asNumber(fallbackContextSwitching.annual_cost) ?? 10_000,
+      { min: 1_000, max: 6_000_000 },
+    ),
+  }
+
+  normalized.onboarding_assessment = {
+    ...onboardingSource,
+    current_state: asString(onboardingSource.current_state) ?? asString(fallbackOnboarding.current_state),
+    time_per_client_current: asString(onboardingSource.time_per_client_current) ?? asString(fallbackOnboarding.time_per_client_current),
+    time_per_client_automated: asString(onboardingSource.time_per_client_automated) ?? asString(fallbackOnboarding.time_per_client_automated),
+    revenue_impact: asString(onboardingSource.revenue_impact) ?? asString(fallbackOnboarding.revenue_impact),
+  }
+
+  normalized.benchmarks = {
+    ...benchmarksSource,
+    hours_wasted_vs_average: {
+      ...hoursBenchmarkSource,
+      their_hours: clampNumber(hoursBenchmarkSource.their_hours, asNumber(fallbackHoursBenchmark.their_hours) ?? 20, { min: 1, max: 300 }),
+      industry_average: clampNumber(hoursBenchmarkSource.industry_average, asNumber(fallbackHoursBenchmark.industry_average) ?? 38, { min: 1, max: 300 }),
+      percent_difference: clampNumber(hoursBenchmarkSource.percent_difference, asNumber(fallbackHoursBenchmark.percent_difference) ?? 0, { min: -100, max: 400 }),
+      verdict: asString(hoursBenchmarkSource.verdict) ?? asString(fallbackHoursBenchmark.verdict),
+    },
+    ops_cost_ratio: {
+      ...opsRatioSource,
+      their_ratio_percent: clampNumber(opsRatioSource.their_ratio_percent, asNumber(fallbackOpsRatio.their_ratio_percent) ?? 20, { min: 1, max: 100 }),
+      healthy_ratio_percent: clampNumber(opsRatioSource.healthy_ratio_percent, asNumber(fallbackOpsRatio.healthy_ratio_percent) ?? 30, { min: 1, max: 100 }),
+      verdict: asString(opsRatioSource.verdict) ?? asString(fallbackOpsRatio.verdict),
+    },
+    automation_maturity: {
+      ...automationMaturitySource,
+      their_score: clampNumber(automationMaturitySource.their_score, asNumber(fallbackAutomationMaturity.their_score) ?? readinessScore, { min: 1, max: 100 }),
+      category: asString(automationMaturitySource.category) ?? asString(fallbackAutomationMaturity.category),
+      percentile: asString(automationMaturitySource.percentile) ?? asString(fallbackAutomationMaturity.percentile),
+    },
+  }
+
+  return normalized
 }
 
 export function groundAuditResult(
@@ -523,6 +902,55 @@ export function groundAuditResult(
   return normalized
 }
 
+function buildOpportunityCorpus(opportunity: OpportunityLike): string {
+  return normalizeToken([
+    asString(opportunity.title),
+    asString(opportunity.hard_truth),
+    asString(opportunity.current_process),
+    asString(opportunity.automated_process),
+    asString(opportunity.technical_flow),
+  ].filter(Boolean).join(' '))
+}
+
+function opportunityMentionsClientContext(
+  opportunity: OpportunityLike,
+  input: AuditLikeInput,
+  context: GroundingContext,
+): boolean {
+  const corpus = buildOpportunityCorpus(opportunity)
+  if (!corpus) return false
+
+  const painSignals = [
+    input.automationWish,
+    ...splitSignals(input.toolSignals ?? ''),
+    input.processOwner,
+    input.failureImpact,
+    ...context.allowedToolNames,
+  ]
+
+  return painSignals
+    .map((signal) => normalizeToken(signal))
+    .filter(Boolean)
+    .some((signal) => corpus.includes(signal))
+}
+
+function hasStructuredTechnicalFlow(flow: string | null): boolean {
+  return Boolean(flow && /(->|→)/.test(flow))
+}
+
+function savingsMathLooksReasonable(
+  opportunity: OpportunityLike,
+  context: GroundingContext,
+): boolean {
+  const hoursSavedWeekly = asNumber(opportunity.hours_saved_weekly)
+  const monthlySavings = asNumber(opportunity.monthly_savings)
+  if (hoursSavedWeekly == null || monthlySavings == null || hoursSavedWeekly <= 0) return false
+
+  const expectedSavings = hoursSavedWeekly * context.hourlyRate * 4.33
+  const ratio = monthlySavings / Math.max(expectedSavings, 1)
+  return ratio >= 0.45 && ratio <= 1.65
+}
+
 export function assessAuditConfidence(
   audit: Record<string, unknown>,
   input: AuditLikeInput,
@@ -530,6 +958,7 @@ export function assessAuditConfidence(
 ): ConfidenceReport {
   const context = buildGroundingContext(input)
   const opportunities = Array.isArray(audit.opportunities) ? audit.opportunities : []
+  const opportunityIssues: string[][] = []
   const opportunityScores = opportunities.map((rawOpportunity) => {
     const opportunity = rawOpportunity && typeof rawOpportunity === 'object' && !Array.isArray(rawOpportunity)
       ? rawOpportunity as OpportunityLike
@@ -537,21 +966,46 @@ export function assessAuditConfidence(
 
     const tools = chooseRelevantTools(opportunity, context)
     const validNodes = filterAllowedNodes(asStringArray(opportunity.n8n_nodes), context.allowedNodes)
-    const hasTechnicalFlow = Boolean(asString(opportunity.technical_flow))
+    const technicalFlow = asString(opportunity.technical_flow)
+    const hasTechnicalFlow = Boolean(technicalFlow)
+    const hasStructuredFlow = hasStructuredTechnicalFlow(technicalFlow)
     const hasSolidSavings = typeof opportunity.hours_saved_weekly === 'number' && opportunity.hours_saved_weekly > 0
     const hasImplementation = stage === 'preview' || asStringArray(opportunity.implementation_steps).length > 0
+    const hasCurrentAndAutomatedProcess = stage === 'preview'
+      || (Boolean(asString(opportunity.current_process)) && Boolean(asString(opportunity.automated_process)))
+    const hasBuildTime = stage === 'preview'
+      || (typeof opportunity.build_time_days === 'number' && opportunity.build_time_days >= 5 && opportunity.build_time_days <= 21)
+    const mentionsClientContext = opportunityMentionsClientContext(opportunity, input, context)
+    const savingsLooksReasonable = savingsMathLooksReasonable(opportunity, context)
+    const issues: string[] = []
 
-    let score = 35
-    if (tools.length > 0) score += 20
-    if (hasTechnicalFlow) score += 15
-    if (hasSolidSavings) score += 10
-    if (hasImplementation) score += 10
+    let score = 25
+    if (tools.length > 0) score += 15
+    else issues.push('No grounded client tools were attached to this recommendation.')
+    if (hasTechnicalFlow) score += 10
+    else issues.push('Technical flow is missing.')
+    if (hasStructuredFlow) score += 8
+    else if (hasTechnicalFlow) issues.push('Technical flow is present but not structured enough.')
+    if (hasSolidSavings) score += 8
+    else issues.push('Hours saved estimate is weak.')
+    if (hasImplementation) score += 8
+    else issues.push('Implementation steps are missing.')
+    if (mentionsClientContext) score += 12
+    else issues.push('Recommendation does not clearly reflect the client-specific pain or stack.')
+    if (savingsLooksReasonable) score += 6
+    else issues.push('Savings math falls outside the expected range.')
+    if (hasCurrentAndAutomatedProcess) score += 8
+    else issues.push('Current vs automated process detail is too thin.')
     if (stage === 'preview') {
       score += 10
-    } else if (validNodes.length > 0) {
-      score += 10
+    } else {
+      if (validNodes.length > 0) score += 10
+      else issues.push('n8n nodes are missing or invalid.')
+      if (hasBuildTime) score += 10
+      else issues.push('Build time is missing or unrealistic.')
     }
 
+    opportunityIssues.push(issues)
     return Math.max(0, Math.min(score, 100))
   })
 
@@ -564,13 +1018,48 @@ export function assessAuditConfidence(
   const readiness = typeof audit.automation_readiness_score === 'number'
     ? audit.automation_readiness_score
     : null
+  const toolsAnalysis = asRecord(audit.tools_analysis)
+  const roadmap = asRecord(audit.roadmap)
+  const laborBreakdown = asRecord(audit.labor_arbitrage_breakdown)
+  const contextSwitching = asRecord(audit.context_switching_analysis)
+  const onboardingAssessment = asRecord(audit.onboarding_assessment)
+  const evidenceSignals = [
+    splitList(input.tools).length > 0,
+    Boolean(input.automationWish.trim()),
+    Boolean(input.processFrequency.trim()),
+    Boolean(input.processOwner.trim()),
+    Boolean(input.failureImpact.trim()),
+    splitSignals(input.toolSignals ?? '').length > 0,
+    Boolean((input.websiteEvidence ?? '').trim() || (input.websiteStackEvidence ?? '').trim() || (input.websiteVisualEvidence ?? '').trim() || (input.websiteDetectedStack ?? '').trim()),
+  ]
+  const lowEvidenceMode = evidenceSignals.filter(Boolean).length < 4
+  const issues: string[] = []
 
   let overall = base
   if (executiveSummary) overall += 5
+  else issues.push('Executive summary is missing.')
   if (readiness != null && readiness >= 1 && readiness <= 100) overall += 5
+  else issues.push('Automation readiness score is missing or invalid.')
+  if (asString(toolsAnalysis.biggest_friction_point)) overall += 5
+  else issues.push('Tools analysis is missing a clear friction point.')
+  if (stage === 'full' && asString(roadmap.phase_1_quick_wins)) overall += 5
+  else if (stage === 'full') issues.push('Roadmap is missing a credible quick-win phase.')
+  if (stage === 'full' && asString(laborBreakdown.explanation) && asString(onboardingAssessment.current_state) && asNumber(contextSwitching.annual_cost) != null) {
+    overall += 5
+  } else if (stage === 'full') {
+    issues.push('One or more supporting analysis sections are too thin.')
+  }
+  if (!lowEvidenceMode) overall += 5
+  else issues.push('Evidence is thin, so recommendations should stay conservative.')
+  if (opportunityScores.some((score) => score < (stage === 'preview' ? 65 : 70))) {
+    issues.push('At least one recommendation failed the quality bar.')
+  }
 
   return {
     overall: Math.max(0, Math.min(overall, 100)),
     opportunityScores,
+    issues,
+    opportunityIssues,
+    lowEvidenceMode,
   }
 }
