@@ -11,11 +11,17 @@ export const contentType = 'image/png'
 export default async function Image({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; access?: string }>
+  searchParams?: Promise<{ id?: string; access?: string }> | { id?: string; access?: string }
 }) {
-  const params = await searchParams
-  const id = params.id
-  const accessToken = (params.access ?? '').trim().slice(0, 2048)
+  const resolvedSearchParams = searchParams
+    ? await searchParams
+    : {}
+  const id = typeof resolvedSearchParams?.id === 'string'
+    ? resolvedSearchParams.id
+    : ''
+  const accessToken = typeof resolvedSearchParams?.access === 'string'
+    ? resolvedSearchParams.access.trim().slice(0, 2048)
+    : ''
 
   let company    = ''
   let score      = 0
@@ -29,7 +35,7 @@ export default async function Image({
       .from('audits')
       .select('company, result')
       .eq('id', id)
-      .single()
+      .maybeSingle()
 
     const requiredScope = data?.result && isPreviewAuditReport(data.result) ? 'preview' : 'full'
 
