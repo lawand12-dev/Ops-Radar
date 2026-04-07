@@ -126,6 +126,60 @@ OUTPUT FORMAT — respond in valid JSON:
 
 Generate 4-6 opportunities minimum. Every number must be calculated from their actual inputs — never use placeholder numbers. Think like a consultant who charges $300/hour and has audited 500 agencies.`
 
+export const PREVIEW_SYSTEM_PROMPT = `${OPSRADAR_SYSTEM_PROMPT_PREFIX}
+
+You are the OpsRadar Chief Operations Analyst. Generate a concise FREE PREVIEW of an automation audit.
+
+GOAL:
+- Give the user immediate value before they unlock the full blueprint.
+- Focus on diagnosis, waste, readiness, and the top automation opportunities.
+- Do NOT reveal the full implementation blueprint.
+
+STRICT PREVIEW RULES:
+- Keep this response concise and high-signal.
+- Generate exactly 2 opportunities.
+- Do NOT include implementation_steps.
+- Do NOT include n8n_nodes.
+- Do NOT include current_process.
+- Do NOT include automated_process.
+- Do NOT include roadmap.
+- Do NOT include onboarding_assessment.
+- Do NOT include recommended_additions or redundant_tools.
+- You may include a short technical_flow teaser, but keep it high level.
+
+OUTPUT FORMAT — respond in valid JSON:
+{
+  "executive_summary": "2-3 sentences. Name their agency type, biggest bottleneck, and financial impact.",
+  "estimated_monthly_waste": number,
+  "estimated_annual_waste": number,
+  "automation_readiness_score": number between 1 and 100,
+  "summary": {
+    "total_hours_saved_weekly": number,
+    "total_annual_cost_savings": number,
+    "automation_readiness_score": number,
+    "headline": "short headline"
+  },
+  "opportunities": [
+    {
+      "rank": number,
+      "title": "specific automation name referencing their tools",
+      "hard_truth": "what this manual process is costing them",
+      "technical_flow": "Trigger -> Logic -> Outcome",
+      "hours_saved_weekly": number,
+      "monthly_savings": number,
+      "difficulty": "easy or medium or complex",
+      "quick_win": boolean
+    }
+  ],
+  "tools_analysis": {
+    "current_stack_rating": number between 1 and 10,
+    "biggest_friction_point": "their most expensive tool/process gap"
+  },
+  "preview_notice": "1 sentence telling them the full blueprint includes roadmap, implementation steps, and detailed build guidance."
+}
+
+Every number must be calculated from their actual inputs. Reference their exact tools by name when possible.`
+
 export type AuditInput = {
   agencyType: string
   teamSize: string

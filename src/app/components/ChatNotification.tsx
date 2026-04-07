@@ -11,26 +11,26 @@ type ConvPreview = {
 
 export default function ChatNotification() {
   const [preview, setPreview] = useState<ConvPreview | null>(null)
-  const [loading, setLoading] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    const email = localStorage.getItem('opsradar_visitor_email')
-    if (!email) return
-
-    setLoading(true)
     fetch('/api/chat-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email,
-        action: 'get-conversations',
+        action: 'get-preview',
       }),
     })
-      .then(res => res.json())
-      .then(({ conversations }) => {
-        if (conversations?.length > 0) {
-          const lastConv = conversations[0]
+      .then(async (res) => {
+        if (!res.ok) {
+          return null
+        }
+
+        return res.json()
+      })
+      .then((data) => {
+        if (data?.conversation) {
+          const lastConv = data.conversation
           const lastMsg = lastConv.messages[lastConv.messages.length - 1]?.content || ''
           const date = new Date(lastConv.updated_at || lastConv.created_at)
           const now = new Date()
@@ -43,13 +43,13 @@ export default function ChatNotification() {
           else timeStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
           setPreview({
-            count: conversations.length,
+            count: data.count ?? 1,
             lastMessage: lastMsg.slice(0, 60) + (lastMsg.length > 60 ? '…' : ''),
             lastDate: timeStr,
           })
         }
       })
-      .finally(() => setLoading(false))
+      .catch(() => {})
   }, [])
 
   if (!preview || dismissed) return null

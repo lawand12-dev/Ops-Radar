@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
 type Message = { role: 'user' | 'assistant'; content: string; timestamp: string }
@@ -12,40 +12,24 @@ type Conversation = {
   visitor_email: string | null
 }
 
+type AccessStep = 'request' | 'verify' | 'ready'
+
+const EMAIL_KEY = 'opsradar_visitor_email'
+
 export default function ChatHistoryPage() {
   const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [code, setCode] = useState('')
+  const [step, setStep] = useState<AccessStep>('request')
   const [convs, setConvs] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [selectedConv, setSelectedConv] = useState<Conversation | null>(null)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [stats, setStats] = useState({ total: 0, messages: 0, firstChat: '', lastChat: '' })
-  const unsubRef = useRef<(() => void) | null>(null)
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('opsradar_visitor_email')
-    if (saved) {
-      setEmail(saved)
-      setSubmitted(true)
-      loadConversations(saved)
-    }
-  }, [])
-
-  // Auto-refresh when component mounts
-  useEffect(() => {
-    return () => {
-      if (unsubRef.current) unsubRef.current()
-    }
-  }, [])
-
-  async function loadConversations(emailAddr: string) {
-    if (!emailAddr.trim()) {
-      setError('Please enter a valid email')
-      return
-    }
-
+  const loadConversations = useCallback(async () => {
     setLoading(true)
     setError('')
 
@@ -54,108 +38,262 @@ export default function ChatHistoryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: emailAddr,
           action: 'get-conversations',
         }),
       })
 
-      if (!res.ok) throw new Error('Failed to load')
-      const { conversations } = await res.json()
+      const data = await res.json()
 
-      if (!conversations || conversations.length === 0) {
-        setError('No conversations found. Start a chat to create one.')
+      if (res.status === 401) {
+        setStep('request')
         setConvs([])
+        setSelectedConv(null)
+        setError('Verify your email again to open your chat history.')
+        return
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Failed to load conversations.')
+      }
+
+      const conversations = (data.conversations ?? []) as Conversation[]
+
+      if (conversations.length === 0) {
+        setConvs([])
+        setSelectedConv(null)
         setStats({ total: 0, messages: 0, firstChat: '', lastChat: '' })
+        setError('No conversations found for this email yet.')
         return
       }
 
       setConvs(conversations)
-      localStorage.setItem('opsradar_visitor_email', emailAddr)
+      setSelectedConv((current) => current && conversations.some((conv) => conv.id === current.id)
+        ? conversations.find((conv) => conv.id === current.id) ?? conversations[0]
+        : conversations[0])
 
-      // Calculate statistics
-      const totalMsgs = conversations.reduce((sum: number, c: any) => sum + c.messages.length, 0)
-      const dates = conversations.map(c => new Date(c.created_at))
-      const firstChat = dates.length > 0 ? formatDate(new Date(Math.min(...dates.getTime()))) : ''
-      const lastChat = dates.length > 0 ? formatDate(new Date(Math.max(...dates.getTime()))) : ''
+      const totalMessages = conversations.reduce((sum, conversation) => sum + conversation.messages.length, 0)
+      const timestamps = conversations.map((conversation) => new Date(conversation.created_at).getTime())
+      const firstChat = timestamps.length > 0 ? formatDate(new Date(Math.min(...timestamps))) : ''
+      const lastChat = timestamps.length > 0 ? formatDate(new Date(Math.max(...timestamps))) : ''
 
       setStats({
         total: conversations.length,
-        messages: totalMsgs,
+        messages: totalMessages,
         firstChat,
         lastChat,
       })
     } catch (err) {
-      console.error(err)
-      setError('Failed to load conversations. Please try again.')
+      setError(err instanceof Error ? err.message : 'Failed to load conversations.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  function formatDate(iso: string | Date): string {
-    const d = typeof iso === 'string' ? new Date(iso) : iso
-    const now = new Date()
-    const diffMin = Math.floor((now.getTime() - d.getTime()) / 60_000)
-    if (diffMin < 1) return 'just now'
-    if (diffMin < 60) return `${diffMin}m ago`
-    const diffHour = Math.floor(diffMin / 60)
-    if (diffHour < 24) return `${diffHour}h ago`
-    const diffDay = Math.floor(diffHour / 24)
-    if (diffDay < 7) return `${diffDay}d ago`
-    if (diffDay < 365) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
-  }
+  const restoreSession = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chat-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'session-status' }),
+      })
 
-  const filteredConvs = convs.filter(conv => {
-    const text = conv.messages.map(m => m.content).join(' ').toLowerCase()
-    return text.includes(searchTerm.toLowerCase())
-  })
+      if (!res.ok) {
+        return
+      }
 
-  async function deleteConversation(id: string, e: React.MouseEvent) {
-    e.stopPropagation()
-    if (!confirm('Delete this conversation?')) return
+      const data = await res.json()
+      if (data.authenticated) {
+        if (data.email) {
+          setEmail(data.email)
+          localStorage.setItem(EMAIL_KEY, data.email)
+        }
+        setStep('ready')
+        await loadConversations()
+      }
+    } catch {
+      // Ignore restore failures and fall back to manual verification
+    }
+  }, [loadConversations])
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem(EMAIL_KEY)
+    if (savedEmail) {
+      setEmail(savedEmail)
+    }
+
+    restoreSession()
+  }, [restoreSession])
+
+  async function requestAccessCode() {
+    if (!email.trim()) {
+      setError('Please enter a valid email.')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setInfo('')
+
     try {
       const res = await fetch('/api/chat-history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'request-access-code',
           email,
-          convId: id,
-          action: 'delete-conversation',
         }),
       })
 
-      if (!res.ok) throw new Error('Failed to delete')
-      setConvs(convs.filter(c => c.id !== id))
-      setSelectedConv(null)
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Unable to send code.')
+      }
+
+      localStorage.setItem(EMAIL_KEY, email)
+      setStep('verify')
+      setInfo(data.message ?? 'Check your inbox for a verification code.')
     } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to send code.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function verifyCode() {
+    if (!code.trim()) {
+      setError('Enter the 6-digit code from your email.')
+      return
+    }
+
+    setVerifying(true)
+    setError('')
+    setInfo('')
+
+    try {
+      const res = await fetch('/api/chat-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify-access-code',
+          email,
+          code,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Verification failed.')
+      }
+
+      localStorage.setItem(EMAIL_KEY, email)
+      setStep('ready')
+      setCode('')
+      await loadConversations()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed.')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  async function signOut() {
+    setLoading(true)
+
+    try {
+      await fetch('/api/chat-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sign-out' }),
+      })
+    } catch {
+      // Best effort only
+    } finally {
+      setStep('request')
+      setCode('')
+      setConvs([])
+      setSelectedConv(null)
+      setSearchTerm('')
+      setStats({ total: 0, messages: 0, firstChat: '', lastChat: '' })
+      setInfo('')
+      setError('')
+      setLoading(false)
+    }
+  }
+
+  async function deleteConversation(id: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!confirm('Delete this conversation?')) return
+
+    try {
+      const res = await fetch('/api/chat-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete-conversation',
+          convId: id,
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to delete')
+      }
+
+      const nextConversations = convs.filter((conversation) => conversation.id !== id)
+      setConvs(nextConversations)
+      setSelectedConv((current) => (current?.id === id ? nextConversations[0] ?? null : current))
+      setStats((current) => ({
+        ...current,
+        total: nextConversations.length,
+        messages: nextConversations.reduce((sum, conversation) => sum + conversation.messages.length, 0),
+      }))
+    } catch {
       alert('Failed to delete conversation')
     }
   }
 
   function exportAsJSON() {
     if (!selectedConv) return
+
     const data = JSON.stringify(selectedConv, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `chat-${selectedConv.id.slice(0, 8)}.json`
-    a.click()
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `chat-${selectedConv.id.slice(0, 8)}.json`
+    link.click()
     URL.revokeObjectURL(url)
   }
 
+  function formatDate(iso: string | Date): string {
+    const date = typeof iso === 'string' ? new Date(iso) : iso
+    const now = new Date()
+    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / 60_000)
+    if (diffMinutes < 1) return 'just now'
+    if (diffMinutes < 60) return `${diffMinutes}m ago`
+    const diffHours = Math.floor(diffMinutes / 60)
+    if (diffHours < 24) return `${diffHours}h ago`
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffDays < 365) return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+  }
+
+  const filteredConversations = useMemo(() => convs.filter((conversation) => {
+    const text = conversation.messages.map((message) => message.content).join(' ').toLowerCase()
+    return text.includes(searchTerm.toLowerCase())
+  }), [convs, searchTerm])
+
   const messageCount = selectedConv?.messages.length || 0
+  const showHistory = step === 'ready' && convs.length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      {/* Header */}
       <div className="bg-white/80 backdrop-blur border-b border-slate-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">💬 Chat Archive</h1>
-              <p className="text-sm text-slate-600 mt-1">Secure access to all your OpsRadar conversations</p>
+              <p className="text-sm text-slate-600 mt-1">Secure access with a one-time email code</p>
             </div>
             <Link href="/" className="text-primary hover:underline text-sm font-medium px-3 py-1.5 hover:bg-primary/5 rounded transition">
               ← Back
@@ -164,45 +302,98 @@ export default function ChatHistoryPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Email Input */}
-        {!submitted || convs.length === 0 ? (
+        {!showHistory && (
           <div className="max-w-md mx-auto mb-8">
             <div className="bg-white rounded-xl shadow-md p-8 border border-slate-200">
               <label className="block text-sm font-semibold text-slate-900 mb-3">
-                📧 Enter your email to access your history
+                📧 Email verification for your chat history
               </label>
-              <div className="flex gap-2 mb-4">
+
+              <div className="space-y-3">
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && loadConversations(email)}
-                  placeholder="you@example.com"
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-                <button
-                  onClick={() => {
-                    setSubmitted(true)
-                    loadConversations(email)
+                  onChange={(event) => setEmail(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && step === 'request') {
+                      requestAccessCode()
+                    }
                   }}
-                  disabled={loading}
-                  className="px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition"
-                >
-                  {loading ? 'Loading…' : 'Access'}
-                </button>
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+
+                {step === 'verify' && (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        verifyCode()
+                      }
+                    }}
+                    placeholder="6-digit code"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm tracking-[0.35em] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                )}
+
+                <div className="flex gap-2">
+                  {step === 'request' ? (
+                    <button
+                      onClick={requestAccessCode}
+                      disabled={loading}
+                      className="flex-1 px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition"
+                    >
+                      {loading ? 'Sending…' : 'Send code'}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={verifyCode}
+                        disabled={verifying}
+                        className="flex-1 px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition"
+                      >
+                        {verifying ? 'Verifying…' : 'Verify'}
+                      </button>
+                      <button
+                        onClick={requestAccessCode}
+                        disabled={loading}
+                        className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                      >
+                        Resend
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-              {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
-              <p className="text-xs text-slate-500 mt-4">Your email is only used to retrieve your conversations securely.</p>
+
+              {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded mt-4">{error}</p>}
+              {info && <p className="text-emerald-700 text-sm bg-emerald-50 p-2 rounded mt-4">{info}</p>}
+
+              <p className="text-xs text-slate-500 mt-4">
+                We’ll email a one-time code before showing any saved conversations.
+              </p>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Main Content */}
-        {submitted && convs.length > 0 && (
+        {showHistory && (
           <>
-            {/* Stats */}
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <p className="text-sm text-slate-600">Verified as <span className="font-semibold text-slate-900">{email}</span></p>
+              </div>
+              <button
+                onClick={signOut}
+                className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-white rounded transition"
+              >
+                Sign out
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
               <div className="bg-white/60 backdrop-blur rounded-lg p-4 border border-slate-200">
                 <p className="text-xs text-slate-600 font-medium uppercase tracking-wide">Total Chats</p>
@@ -223,57 +414,43 @@ export default function ChatHistoryPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Conv List */}
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
                   <div className="px-4 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
                     <input
                       type="text"
                       value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
+                      onChange={(event) => setSearchTerm(event.target.value)}
                       placeholder="Search messages…"
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <p className="text-xs text-slate-600 mt-2">
-                      {filteredConvs.length} of {convs.length}
+                      {filteredConversations.length} of {convs.length}
                     </p>
                   </div>
                   <div className="max-h-[600px] overflow-y-auto divide-y divide-slate-100">
-                    {filteredConvs.map(conv => (
+                    {filteredConversations.map((conversation) => (
                       <button
-                        key={conv.id}
-                        onClick={() => setSelectedConv(conv)}
+                        key={conversation.id}
+                        onClick={() => setSelectedConv(conversation)}
                         className={`w-full text-left px-4 py-3 hover:bg-slate-50/80 transition text-sm ${
-                          selectedConv?.id === conv.id ? 'bg-blue-50 border-l-4 border-l-primary' : ''
+                          selectedConv?.id === conversation.id ? 'bg-blue-50 border-l-4 border-l-primary' : ''
                         }`}
                       >
                         <div className="font-medium text-slate-900 line-clamp-2 text-xs">
-                          {conv.messages.find(m => m.role === 'user')?.content || 'New conversation'}
+                          {conversation.messages.find((message) => message.role === 'user')?.content || 'New conversation'}
                         </div>
                         <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-1">
-                          <span>{formatDate(conv.updated_at ?? conv.created_at)}</span>
+                          <span>{formatDate(conversation.updated_at ?? conversation.created_at)}</span>
                           <span className="text-slate-400">•</span>
-                          <span>{conv.messages.length} msgs</span>
+                          <span>{conversation.messages.length} msgs</span>
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setSubmitted(false)
-                    setEmail('')
-                    setConvs([])
-                    setSelectedConv(null)
-                    setSearchTerm('')
-                  }}
-                  className="w-full mt-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-white rounded transition"
-                >
-                  Switch email
-                </button>
               </div>
 
-              {/* Conv Details */}
               <div className="lg:col-span-2">
                 {selectedConv ? (
                   <div className="bg-white rounded-xl shadow-md border border-slate-200 h-full flex flex-col overflow-hidden">
@@ -291,7 +468,7 @@ export default function ChatHistoryPage() {
                           📥
                         </button>
                         <button
-                          onClick={e => deleteConversation(selectedConv.id, e)}
+                          onClick={(event) => deleteConversation(selectedConv.id, event)}
                           className="text-sm text-red-600 hover:text-red-700 px-2 py-1 hover:bg-red-100 rounded transition"
                           title="Delete conversation"
                         >
@@ -300,18 +477,18 @@ export default function ChatHistoryPage() {
                       </div>
                     </div>
                     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50/30">
-                      {selectedConv.messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      {selectedConv.messages.map((message, index) => (
+                        <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                           <div
                             className={`max-w-xs lg:max-w-sm px-4 py-2.5 rounded-lg text-sm leading-relaxed ${
-                              msg.role === 'user'
+                              message.role === 'user'
                                 ? 'bg-primary text-white rounded-br-none'
                                 : 'bg-slate-200 text-slate-900 rounded-bl-none'
                             }`}
                           >
-                            {msg.content}
-                            <div className={`text-xs mt-1 ${msg.role === 'user' ? 'text-blue-100' : 'text-slate-600'}`}>
-                              {new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            {message.content}
+                            <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-slate-600'}`}>
+                              {new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
                         </div>

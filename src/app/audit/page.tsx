@@ -360,6 +360,8 @@ export default function AuditPage() {
           name: lead.name,
           email: lead.email,
           company: lead.company,
+          companyWebsite: lead.companyWebsite,
+          startedAt: lead.startedAt,
           agencyType: answers.agencyType === 'Other' && answers.agencyTypeOther
             ? answers.agencyTypeOther
             : answers.agencyType,

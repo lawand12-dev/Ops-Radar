@@ -16,10 +16,12 @@ import GlowCard from '<npm>/components/animations/GlowCard'
 import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
+import HoneypotField from '../components/HoneypotField'
+import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const UNLOCK_KEY = 'opsradar_blueprint_unlocked'
+const UNLOCK_KEY_PREFIX = 'opsradar_blueprint_unlocked'
 
 const BUILD_PRICE = {
   easy:    { range: '$1,500 – $2,500', delivery: 'Delivered in 5–7 days' },
@@ -91,6 +93,8 @@ type Benchmarks = {
 }
 
 type AuditResult = {
+  report_stage?: 'preview' | 'full'
+  preview_notice?: string
   executive_summary?: string
   estimated_monthly_waste?: number
   estimated_annual_waste?: number
@@ -117,7 +121,7 @@ type AuditResult = {
     month_1?: string
     month_3?: string
   }
-  tools_analysis: {
+  tools_analysis?: {
     current_stack_rating: number
     missing_integrations?: string[]
     redundant_tools?: string[]
@@ -147,6 +151,10 @@ function fmtMoney(n: number): string {
   return `$${n.toLocaleString()}`
 }
 
+function getUnlockStorageKey(auditId: string | null): string {
+  return auditId ? `${UNLOCK_KEY_PREFIX}:${auditId}` : UNLOCK_KEY_PREFIX
+}
+
 // ─── Section label ────────────────────────────────────────────────────────────
 
 function SectionLabel({ num, text }: { num: string; text: string }) {
@@ -166,35 +174,6 @@ function Divider() {
       className="h-px w-full"
       style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(173,198,255,0.2) 30%, rgba(76,215,246,0.15) 70%, transparent 100%)' }}
     />
-  )
-}
-
-// ─── Technical flow chain ────────────────────────────────────────────────────
-
-function TechnicalFlow({ flow }: { flow: string }) {
-  const steps = flow.split(/\s*→\s*/).filter(Boolean)
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
-      {steps.map((step, i) => (
-        <div key={i} className="flex items-center gap-1.5 shrink-0">
-          <span
-            className="px-3 py-[5px] rounded-[7px] text-[11px] font-medium whitespace-nowrap"
-            style={{
-              background: 'rgba(59,130,246,0.07)',
-              border: '1px solid rgba(59,130,246,0.2)',
-              color: 'rgba(255,255,255,0.75)',
-            }}
-          >
-            {step}
-          </span>
-          {i < steps.length - 1 && (
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'rgba(59,130,246,0.45)', flexShrink: 0 }}>
-              <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -257,6 +236,34 @@ function LockedSection({
         </div>
       </div>
     </div>
+  )
+}
+
+function PreviewBanner({ notice }: { notice?: string }) {
+  return (
+    <RevealSection>
+      <section
+        className="rounded-[20px] overflow-hidden border"
+        style={{ background: 'rgba(173,198,255,0.04)', borderColor: 'rgba(173,198,255,0.15)' }}
+      >
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #4cd7f6)' }} />
+        <div className="p-6 sm:p-7">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider mb-4"
+            style={{ background: 'rgba(173,198,255,0.08)', border: '1px solid rgba(173,198,255,0.18)', color: '#adc6ff' }}
+          >
+            <LockIcon size={12} />
+            FREE PREVIEW
+          </div>
+          <h2 className="font-headline font-bold text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-on-surface mb-2">
+            Your high-level diagnosis is ready
+          </h2>
+          <p className="text-[14px] text-on-surface-variant leading-[1.75] max-w-[640px]">
+            {notice ?? 'Unlock the full blueprint to get the implementation roadmap, detailed workflow logic, n8n nodes, and step-by-step build guidance.'}
+          </p>
+        </div>
+      </section>
+    </RevealSection>
   )
 }
 
@@ -989,6 +996,8 @@ function BuildRequestModal({
   onClose:      () => void
 }) {
   const [form, setForm]     = useState({ name: contactName, email: contactEmail, budget: '', timeline: '', notes: '' })
+  const [companyWebsite, setCompanyWebsite] = useState('')
+  const [startedAt] = useState(() => Date.now())
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [errMsg, setErrMsg] = useState('')
 
@@ -1013,7 +1022,12 @@ function BuildRequestModal({
       const res = await fetch('/api/build-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audit_id: auditId, automation_title: oppTitle, ...form }),
+        body: JSON.stringify({
+          audit_id: auditId,
+          automation_title: oppTitle,
+          ...form,
+          ...getAbuseProtectionPayload(startedAt, companyWebsite),
+        }),
       })
       if (!res.ok) {
         const d = await res.json()
@@ -1074,6 +1088,8 @@ function BuildRequestModal({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
+
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">Automation</label>
                 <div className="px-3.5 py-2.5 rounded-[10px] text-[13px] font-medium text-[rgba(255,255,255,0.75)]" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)' }}>
@@ -1160,39 +1176,41 @@ function BuildRequestModal({
 // ─── Unlock section ───────────────────────────────────────────────────────────
 
 function UnlockSection({
-  auditId, onUnlocked,
+  auditId, defaultEmail, onUnlocked,
 }: {
   auditId: string | null
-  onUnlocked: () => void
+  defaultEmail: string
+  onUnlocked: (audit: AuditResult, email: string) => void
 }) {
   const [emailInput,    setEmailInput]    = useState('')
   const [emailStatus,   setEmailStatus]   = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
-  const [bookedClicked, setBookedClicked] = useState(false)
 
-  function handleBookedUnlock() {
-    localStorage.setItem(UNLOCK_KEY, '1')
-    onUnlocked()
-  }
+  useEffect(() => {
+    setEmailInput(defaultEmail)
+  }, [defaultEmail])
 
   async function handleEmailUnlock(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const email = emailInput.trim()
-    if (!email) return
+    if (!email || !auditId) {
+      setEmailStatus('error')
+      return
+    }
     setEmailStatus('submitting')
     try {
-      // Persist email to the audit record
-      if (auditId) {
-        await supabase.from('audits').update({ email }).eq('id', auditId)
-      }
-      // Send the results link to the user's inbox
-      await fetch('/api/send-unlock-email', {
+      const response = await fetch('/api/send-unlock-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, auditId }),
       })
-      localStorage.setItem(UNLOCK_KEY, '1')
+
+      const data = await response.json()
+      if (!response.ok || !data?.audit) {
+        throw new Error(data?.error ?? 'Something went wrong')
+      }
+
       setEmailStatus('success')
-      setTimeout(onUnlocked, 800)
+      setTimeout(() => onUnlocked(data.audit as AuditResult, data.email ?? email), 500)
     } catch {
       setEmailStatus('error')
     }
@@ -1244,7 +1262,6 @@ function UnlockSection({
                     href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => setBookedClicked(true)}
                   >
                     Book Free Strategy Call
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
@@ -1252,18 +1269,9 @@ function UnlockSection({
                     </svg>
                   </a>
                 </Button>
-                {bookedClicked && (
-                  <Button
-                    onClick={handleBookedUnlock}
-                    variant="outline"
-                    className="w-full px-5 py-2.5 h-auto rounded-[10px] text-[12px] font-semibold text-emerald-400 border-emerald-400/20 bg-emerald-400/6 hover:bg-emerald-400/10 hover:text-emerald-400 gap-1.5"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                      <path d="M2 7l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    I&apos;ve booked — unlock my blueprint
-                  </Button>
-                )}
+                <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">
+                  Book if you want help prioritizing or scoping the build. Your full blueprint is unlocked through the email flow on the right.
+                </p>
               </div>
             </div>
 
@@ -1274,9 +1282,9 @@ function UnlockSection({
             >
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary mb-2">Option 2</p>
-                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Unlock via Email</h4>
+                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Email Me the Full Blueprint</h4>
                 <p className="text-[12px] text-on-surface-variant leading-[1.6]">
-                  Enter your email and we&apos;ll send you the full report link. Unlock immediately.
+                  We&apos;ll generate the full report only after you request it, then send you the unlocked link immediately.
                 </p>
               </div>
 
@@ -1285,7 +1293,7 @@ function UnlockSection({
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M2 8l4.5 4.5 7.5-7.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <p className="text-[12px] font-semibold text-emerald-400">Unlocking your blueprint…</p>
+                  <p className="text-[12px] font-semibold text-emerald-400">Building and emailing your blueprint…</p>
                 </div>
               ) : (
                 <form onSubmit={handleEmailUnlock} className="flex flex-col gap-2.5">
@@ -1301,15 +1309,17 @@ function UnlockSection({
                     onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(66,71,84,0.4)')}
                   />
                   {emailStatus === 'error' && (
-                    <p className="text-[11px] text-[#f87171]">Something went wrong — try again.</p>
+                    <p className="text-[11px] text-[#f87171]">
+                      {auditId ? 'Something went wrong — try again.' : 'We could not find this audit. Please run a new audit.'}
+                    </p>
                   )}
                   <Button
                     type="submit"
-                    disabled={!emailInput.trim() || emailStatus === 'submitting'}
+                    disabled={!emailInput.trim() || emailStatus === 'submitting' || !auditId}
                     variant="outline"
                     className="px-5 py-2.5 h-auto rounded-[10px] text-[12px] font-bold text-secondary border-secondary/20 bg-secondary/8 hover:bg-secondary/15 hover:text-secondary"
                   >
-                    {emailStatus === 'submitting' ? 'Unlocking…' : 'Unlock Full Blueprint →'}
+                    {emailStatus === 'submitting' ? 'Building…' : 'Generate Full Blueprint →'}
                   </Button>
                 </form>
               )}
@@ -1372,27 +1382,28 @@ function ResultsContent() {
   const [company,      setCompany]      = useState('')
   const [contactName,  setContactName]  = useState('')
   const [contactEmail, setContactEmail] = useState('')
-  const [auditId,      setAuditId]      = useState<string | null>(null)
   const [error,        setError]        = useState(false)
-  const [dateStr,      setDateStr]      = useState('')
+  const [dateStr] = useState(() =>
+    new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+  )
   const [modalOpp,     setModalOpp]     = useState<string | null>(null)
   const [unlocked,     setUnlocked]     = useState(false)
   const unlockRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
+  const auditId = searchParams.get('id')
 
   useEffect(() => {
-    setDateStr(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))
-    setUnlocked(localStorage.getItem(UNLOCK_KEY) === '1')
+    const storedUnlock = localStorage.getItem(getUnlockStorageKey(auditId)) === '1'
 
-    const id = searchParams.get('id')
-    if (id) {
-      setAuditId(id)
+    if (auditId) {
       supabase
-        .from('audits').select('result, company, name, email').eq('id', id).single()
+        .from('audits').select('result, company, name, email').eq('id', auditId).single()
         .then(({ data, error: dbError }) => {
           if (dbError || !data?.result) loadFromSession()
           else {
-            setAudit(data.result as AuditResult)
+            const nextAudit = data.result as AuditResult
+            setAudit(nextAudit)
+            setUnlocked(nextAudit.report_stage !== 'preview' || storedUnlock)
             if (data.company) setCompany(data.company)
             if (data.name)    setContactName(data.name)
             if (data.email)   setContactEmail(data.email)
@@ -1405,14 +1416,23 @@ function ResultsContent() {
     function loadFromSession() {
       try {
         const raw = sessionStorage.getItem('opsradar_audit')
-        if (raw) setAudit(JSON.parse(raw))
-        else setError(true)
+        if (!raw) {
+          setError(true)
+          return
+        }
+
+        const sessionAudit = JSON.parse(raw) as AuditResult
+        setAudit(sessionAudit)
+        setUnlocked(sessionAudit.report_stage !== 'preview' || storedUnlock)
       } catch { setError(true) }
     }
-  }, [searchParams])
+  }, [auditId])
 
-  function handleUnlocked() {
-    localStorage.setItem(UNLOCK_KEY, '1')
+  function handleUnlocked(nextAudit: AuditResult, email: string) {
+    localStorage.setItem(getUnlockStorageKey(auditId), '1')
+    sessionStorage.setItem('opsradar_audit', JSON.stringify(nextAudit))
+    setAudit(nextAudit)
+    setContactEmail(email)
     setUnlocked(true)
     window.scrollBy({ top: -100, behavior: 'smooth' })
   }
@@ -1445,19 +1465,21 @@ function ResultsContent() {
 
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const a             = audit!
+  const isPreview     = a.report_stage === 'preview'
   const readiness     = a.automation_readiness_score ?? a.summary?.automation_readiness_score ?? 50
   const headline      = a.summary?.headline ?? a.executive_summary ?? 'Your Automation Audit'
   const hoursWeekly   = a.summary?.total_hours_saved_weekly ??
     (a.opportunities ?? []).reduce((s, o) => s + (o.hours_saved_weekly ?? 0), 0)
   const annualSavings = a.summary?.total_annual_cost_savings ?? a.estimated_annual_waste ?? 0
-  const { opportunities, tools_analysis } = a
+  const opportunities = Array.isArray(a.opportunities) ? a.opportunities : []
+  const toolsAnalysis = a.tools_analysis ?? { current_stack_rating: 0 }
   const roadmap: NormalizedRoadmap = a.roadmap
     ? { week_1: a.roadmap.phase_1_quick_wins ?? '', month_1: a.roadmap.phase_2_core_systems ?? '', month_3: a.roadmap.phase_3_intelligence_layer ?? '' }
     : { week_1: a.priority_roadmap?.week_1 ?? '', month_1: a.priority_roadmap?.month_1 ?? '', month_3: a.priority_roadmap?.month_3 ?? '' }
-  const addedTools    = tools_analysis.recommended_additions ?? tools_analysis.missing_integrations ?? []
-  const removedTools  = tools_analysis.redundant_tools ?? []
+  const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
+  const removedTools  = toolsAnalysis.redundant_tools ?? []
   const hasRoadmap    = roadmap.week_1 || roadmap.month_1 || roadmap.month_3
-  const hasStack      = addedTools.length > 0 || removedTools.length > 0 || !!tools_analysis.biggest_friction_point
+  const hasStack      = toolsAnalysis.current_stack_rating > 0 || addedTools.length > 0 || removedTools.length > 0 || !!toolsAnalysis.biggest_friction_point
   const pathToVision  = a.roadmap?.path_to_vision
 
   return (
@@ -1557,6 +1579,8 @@ function ResultsContent() {
 
       {/* ── Main sections ──────────────────────────────────────────────────── */}
       <main className="max-w-[900px] mx-auto px-6 pb-28 space-y-20 mt-4">
+
+        {isPreview && <PreviewBanner notice={a.preview_notice} />}
 
         {/* 01 · Executive Summary */}
         {a.executive_summary && (
@@ -1721,16 +1745,16 @@ function ResultsContent() {
                 Stack Recommendations
               </h2>
               <div className="p-6 rounded-[16px] mb-4 bg-surface-container border border-outline-variant/10">
-                <StackRatingBar rating={tools_analysis.current_stack_rating} />
+                <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
               </div>
 
               <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
                 <div className="space-y-4">
-                  {tools_analysis.biggest_friction_point && (
+                  {toolsAnalysis.biggest_friction_point && (
                     <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
                       <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
                       <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
-                      <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{tools_analysis.biggest_friction_point}</p>
+                      <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
                     </div>
                   )}
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -1768,7 +1792,11 @@ function ResultsContent() {
         {/* Unlock section */}
         {!unlocked && (
           <div ref={unlockRef}>
-            <UnlockSection auditId={auditId} onUnlocked={handleUnlocked} />
+            <UnlockSection
+              auditId={auditId}
+              defaultEmail={contactEmail}
+              onUnlocked={handleUnlocked}
+            />
           </div>
         )}
 

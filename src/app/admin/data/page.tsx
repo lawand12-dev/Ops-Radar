@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { Button } from '<npm>/components/ui/button'
 import { Input } from '<npm>/components/ui/input'
@@ -12,8 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '<npm>/components/ui/dialog'
-
-const LOCAL_STORAGE_KEY = 'opsradar_admin_auth'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -388,8 +387,7 @@ function OldAuditsCard({ onRefresh }: { onRefresh: () => void }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminDataPage() {
-  const [password, setPassword]           = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
 
   // Table data
   const [audits, setAudits]               = useState<Record<string, unknown>[]>([])
@@ -397,28 +395,6 @@ export default function AdminDataPage() {
   const [builds, setBuilds]               = useState<Record<string, unknown>[]>([])
   const [counts, setCounts]               = useState({ audits: 0, chat_conversations: 0, build_requests: 0 })
   const [loading, setLoading]             = useState(true)
-
-  // ── Auth ─────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (localStorage.getItem(LOCAL_STORAGE_KEY) === 'true') setIsAuthenticated(true)
-  }, [])
-
-  async function handleLogin() {
-    const res = await fetch('/api/admin-auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-password': password,
-      },
-      body: JSON.stringify({}),
-    })
-    if (res.ok) {
-      setIsAuthenticated(true)
-      localStorage.setItem(LOCAL_STORAGE_KEY, 'true')
-    } else {
-      alert('Incorrect password')
-    }
-  }
 
   // ── Data loading ──────────────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
@@ -442,37 +418,22 @@ export default function AdminDataPage() {
   }, [])
 
   useEffect(() => {
-    if (isAuthenticated) loadAll()
-  }, [isAuthenticated, loadAll])
+    const timeoutId = window.setTimeout(() => {
+      void loadAll()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [loadAll])
 
   // ── Delete helpers ────────────────────────────────────────────────────────
   async function deleteRow(table: TableName, id: string) {
     await supabase.from(table).delete().eq('id', id)
   }
 
-  // ── Login screen ──────────────────────────────────────────────────────────
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center p-4">
-        <div className="bg-surface-container-low p-8 rounded-[14px] shadow-lg w-full max-w-sm border border-outline-variant/10">
-          <h1 className="font-headline font-bold text-[22px] tracking-[-0.02em] text-on-surface mb-6 text-center">Admin Login</h1>
-          <Input
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            className="px-4 py-2.5 h-auto rounded-[10px] text-[14px] bg-surface-container border-outline-variant/15 text-on-surface placeholder:text-on-surface-variant/40"
-          />
-          <Button
-            onClick={handleLogin}
-            className="mt-4 w-full h-auto bg-primary/8 border border-primary/20 text-primary hover:bg-primary/15 px-4 py-2.5 rounded-[10px] text-[14px] font-semibold"
-          >
-            Login
-          </Button>
-        </div>
-      </div>
-    )
+  async function handleSignOut() {
+    await fetch('/api/admin-auth', { method: 'DELETE' })
+    router.replace('/admin/login')
+    router.refresh()
   }
 
   if (loading) {
@@ -510,6 +471,12 @@ export default function AdminDataPage() {
               className="h-auto px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-surface-container border border-outline-variant/15 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
             >
               Refresh
+            </Button>
+            <Button
+              onClick={handleSignOut}
+              className="h-auto px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-surface-container border border-outline-variant/15 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+            >
+              Sign out
             </Button>
           </div>
         </div>

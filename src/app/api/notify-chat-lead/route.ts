@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
+import { isAbusiveSubmission, MIN_CHAT_LEAD_MS } from '../../../lib/abuse-protection'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -13,6 +14,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
+    if (isAbusiveSubmission(body, { minElapsedMs: MIN_CHAT_LEAD_MS })) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
+
     const {
       visitorEmail,
       visitorName,
