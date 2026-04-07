@@ -1,35 +1,40 @@
 'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase' 
+import { supabase } from '../../lib/supabase'  
 import { Button } from '../../components/ui/button'  
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+export const dynamic = 'force-dynamic'
 
+// Types
 type Answers = {
-  agencyType?: string
-  teamSize?: string
-  tools?: string
-  services?: string
-  timeWasters?: string
-  manualProcesses?: string
-  revenue?: string
-  fallThrough?: string
+  agencyType?: string;
+  teamSize?: string;
+  tools?: string;
+  services?: string;
+  timeWasters?: string;
+  manualProcesses?: string;
+  revenue?: string;
+  fallThrough?: string;
 }
 
 type AuditResult = {
-  executive_summary?: string
-  automation_readiness_score?: number
-  estimated_annual_waste?: number
-  estimated_monthly_waste?: number
+  executive_summary?: string;
+  automation_readiness_score?: number;
+  estimated_annual_waste?: number;
+  estimated_monthly_waste?: number;
   summary?: {
-    automation_readiness_score?: number
-    total_annual_cost_savings?: number
-    total_hours_saved_weekly?: number
-    headline?: string
-  }
+    automation_readiness_score?: number;
+    total_annual_cost_savings?: number;
+    total_hours_saved_weekly?: number;
+    headline?: string;
+  };
+}
+
+// Rest of your login component logic continues here...
   opportunities?: Array<{
     rank: number
     title: string

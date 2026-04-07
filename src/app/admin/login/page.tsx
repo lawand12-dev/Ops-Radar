@@ -1,4 +1,9 @@
+export const dynamic = 'force-dynamic'
+
 'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { supabase } from '../../../lib/supabase' 
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
