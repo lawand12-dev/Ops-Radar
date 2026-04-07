@@ -1,5 +1,7 @@
 import { Resend } from 'resend'
 import { supabase } from '../../../lib/supabase'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 
 // Table DDL (run once in Supabase SQL editor):
 // CREATE TABLE build_requests (
@@ -28,9 +30,23 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
   try {
-    const body: BuildRequestBody = await request.json()
+    const rateLimitResponse = applyRateLimit(request, 'build-request')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
 
-    const { audit_id, automation_title, name, email, budget, timeline, notes } = body
+    const body = await request.json()
+    const payload: BuildRequestBody = {
+      audit_id: typeof body?.audit_id === 'string' ? sanitizeString(body.audit_id, 200) : null,
+      automation_title: sanitizeString(String(body?.automation_title ?? ''), 200),
+      name: sanitizeString(String(body?.name ?? ''), 200),
+      email: sanitizeString(String(body?.email ?? ''), 320),
+      budget: sanitizeString(String(body?.budget ?? ''), 200),
+      timeline: sanitizeString(String(body?.timeline ?? ''), 200),
+      notes: sanitizeString(String(body?.notes ?? ''), 1000),
+    }
+
+    const { audit_id, automation_title, name, email, budget, timeline, notes } = payload
 
     if (!automation_title || !name || !email || !budget || !timeline) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
@@ -66,15 +82,15 @@ export async function POST(request: Request) {
 
           <div style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;">
             <p style="margin: 0 0 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.3);">Requested Automation</p>
-            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #60a5fa;">${automation_title}</p>
+            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #60a5fa;">${escapeHtml(automation_title)}</p>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             ${[
-              ['Contact', name],
-              ['Email',   `<a href="mailto:${email}" style="color:#60a5fa;text-decoration:none">${email}</a>`],
-              ['Budget',  budget],
-              ['Timeline',timeline],
+              ['Contact', escapeHtml(name)],
+              ['Email', `<a href="mailto:${escapeHtml(email)}" style="color:#60a5fa;text-decoration:none">${escapeHtml(email)}</a>`],
+              ['Budget', escapeHtml(budget)],
+              ['Timeline', escapeHtml(timeline)],
             ].map(([label, value]) => `
               <tr>
                 <td style="padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3); width: 36%;">${label}</td>
@@ -85,7 +101,7 @@ export async function POST(request: Request) {
           ${notes ? `
             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;">
               <p style="margin: 0 0 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.3);">Notes</p>
-              <p style="margin: 0; font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.65;">${notes}</p>
+              <p style="margin: 0; font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.65;">${escapeHtml(notes)}</p>
             </div>` : ''}
 
           <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.2); text-align: center;">OpsRadar · Build request notification</p>
@@ -98,6 +114,6 @@ export async function POST(request: Request) {
     return Response.json({ ok: true })
   } catch (err) {
     console.error('[build-request] Unexpected error:', err)
-    return Response.json({ error: 'Failed to submit request' }, { status: 500 })
+    return serverErrorResponse()
   }
 }

@@ -20,6 +20,7 @@
 
 import { Resend } from 'resend'
 import { supabase } from '../../../../lib/supabase'
+import { serverErrorResponse } from '../../../../lib/security'
 
 const resend   = new Resend(process.env.RESEND_API_KEY)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.ai'
@@ -224,6 +225,6 @@ export async function GET(request: Request) {
     return Response.json({ ok: true, sent })
   } catch (err) {
     console.error('[followup cron] fatal error:', err)
-    return Response.json({ error: 'Cron failed' }, { status: 500 })
+    return serverErrorResponse()
   }
 }

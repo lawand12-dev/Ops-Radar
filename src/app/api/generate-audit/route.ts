@@ -1,7 +1,8 @@
 import { openai } from '../../../lib/openai'
 import { SYSTEM_PROMPT, buildUserPrompt, type AuditInput } from '../../../lib/prompts'
 import { supabase } from '../../../lib/supabase'
-import { checkRateLimit } from '../../../lib/rate-limit'
+import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
+import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
 import type { NotifyPayload } from '../notify/route'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -12,9 +13,85 @@ type RequestBody = AuditInput & {
   company: string
 }
 
+const STRING_FIELDS: Array<keyof RequestBody> = [
+  'name',
+  'email',
+  'company',
+  'agencyType',
+  'teamSize',
+  'revenue',
+  'activeClients',
+  'crmTool',
+  'leadEntry',
+  'progressTracking',
+  'automationWish',
+  'futureVision',
+]
+
+const ARRAY_COMPATIBLE_FIELDS = new Set<keyof RequestBody>(['tools', 'timeHeavy', 'onboarding'])
+
+function normalizeAuditField(
+  value: unknown,
+  options: { allowArray?: boolean; maxLength?: number } = {},
+): string | null {
+  const maxLength = options.maxLength ?? 1000
+
+  if (typeof value === 'string') {
+    const sanitized = sanitizeString(value, maxLength)
+    return sanitized || null
+  }
+
+  if (options.allowArray && Array.isArray(value)) {
+    if (value.length === 0 || value.length > 50 || value.some((item) => typeof item !== 'string')) {
+      return null
+    }
+
+    const sanitizedItems = sanitizeStringArray(value, 50, maxLength)
+    return sanitizedItems.length > 0 ? sanitizedItems.join(', ') : null
+  }
+
+  return null
+}
+
+function validateRequestBody(body: unknown): RequestBody | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null
+  }
+
+  const input = body as Record<string, unknown>
+  const normalized: Partial<RequestBody> = {}
+
+  for (const field of STRING_FIELDS) {
+    const maxLength = field === 'email' ? 320 : 1000
+    const value = normalizeAuditField(input[field], { maxLength })
+    if (!value) {
+      return null
+    }
+    normalized[field] = value
+  }
+
+  for (const field of ARRAY_COMPATIBLE_FIELDS) {
+    const value = normalizeAuditField(input[field], { allowArray: true, maxLength: 1000 })
+    if (!value) {
+      return null
+    }
+    normalized[field] = value
+  }
+
+  return normalized as RequestBody
+}
+
 export async function POST(request: Request) {
   try {
-    const body: RequestBody = await request.json()
+    const rateLimitResponse = applyRateLimit(request, 'generate-audit')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
+    const body = validateRequestBody(await request.json())
+    if (!body) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
 
     const {
       name, email, company,
@@ -23,17 +100,8 @@ export async function POST(request: Request) {
       onboarding, progressTracking, automationWish, futureVision,
     } = body
 
-    if (!name || !email || !company || !agencyType || !teamSize || !revenue || !automationWish) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 })
-    }
-
     if (!EMAIL_REGEX.test(email)) {
       return Response.json({ error: 'Invalid email format' }, { status: 400 })
-    }
-
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
-    if (!checkRateLimit(ip, 5, 60 * 60 * 1000)) { // 5 requests per hour
-      return Response.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
     const completion = await openai.chat.completions.create({
@@ -51,20 +119,15 @@ export async function POST(request: Request) {
       ],
       response_format: { type: 'json_object' },
       temperature: 0.7,
+      max_tokens: 500,
     })
 
     const raw = completion.choices[0].message.content
     if (!raw) {
-      return Response.json({ error: 'No response from AI' }, { status: 500 })
+      return serverErrorResponse()
     }
 
     const audit = JSON.parse(raw)
-
-    // ── Supabase ────────────────────────────────────────────────────────────
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    console.log('[supabase] URL defined:', !!supabaseUrl, '| URL prefix:', supabaseUrl?.slice(0, 30))
-    console.log('[supabase] Key defined:', !!supabaseKey, '| Key prefix:', supabaseKey?.slice(0, 20))
 
     const insertPayload = {
       name,
@@ -78,7 +141,6 @@ export async function POST(request: Request) {
       result: audit,
       steps_completed: 12, // all 12 steps completed — used for funnel analysis
     }
-    console.log('[supabase] Inserting into audits, payload keys:', Object.keys(insertPayload))
 
     const { data, error } = await supabase
       .from('audits')
@@ -87,15 +149,9 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('[supabase] Insert failed:')
-      console.error('  message :', error.message)
-      console.error('  code    :', error.code)
-      console.error('  details :', error.details)
-      console.error('  hint    :', error.hint)
+      console.error('[generate-audit] failed to persist audit')
       return Response.json({ audit })
     }
-
-    console.log('[supabase] Insert success, id:', data.id)
 
     // ── Fire-and-forget notification ────────────────────────────────────────
     const notifyPayload: NotifyPayload = {
@@ -110,13 +166,16 @@ export async function POST(request: Request) {
     }
     fetch(new URL('/api/notify', request.url).toString(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-forwarded-for': getClientIp(request),
+      },
       body: JSON.stringify(notifyPayload),
     }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
     return Response.json({ audit, id: data.id })
   } catch (err) {
     console.error('generate-audit error:', err)
-    return Response.json({ error: 'Failed to generate audit' }, { status: 500 })
+    return serverErrorResponse()
   }
 }

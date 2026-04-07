@@ -1,19 +1,36 @@
 import { supabase } from '../../../lib/supabase'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import { sanitizeString, serverErrorResponse } from '../../../lib/security'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { visitor_id, action } = body
+    const rateLimitResponse = applyRateLimit(request, 'chat-history')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
 
-    if (!visitor_id) {
-      return Response.json({ error: 'Invalid visitor_id' }, { status: 400 })
+    const body = await request.json()
+    const action = sanitizeString(String(body?.action ?? ''), 64)
+    const visitorId = sanitizeString(String(body?.visitor_id ?? ''), 200)
+    const email = sanitizeString(String(body?.email ?? ''), 320)
+    const convId = sanitizeString(String(body?.convId ?? ''), 200)
+
+    if (!action || (!visitorId && !email)) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
+
+    const queryField = email ? 'visitor_email' : 'visitor_id'
+    const queryValue = email || visitorId
+
+    if (!queryValue) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
     }
 
     if (action === 'get-conversations') {
       const { data, error } = await supabase
         .from('chat_conversations')
-        .select('id, created_at, updated_at, messages, visitor_id')
-        .eq('visitor_id', visitor_id)
+        .select('id, created_at, updated_at, messages, visitor_id, visitor_email')
+        .eq(queryField, queryValue)
         .order('updated_at', { ascending: false })
 
       if (error) throw error
@@ -21,12 +38,15 @@ export async function POST(request: Request) {
     }
 
     if (action === 'get-conversation') {
-      const { convId } = body
+      if (!convId) {
+        return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+      }
+
       const { data, error } = await supabase
         .from('chat_conversations')
         .select('*')
         .eq('id', convId)
-        .eq('visitor_id', visitor_id)
+        .eq(queryField, queryValue)
         .single()
 
       if (error) throw error
@@ -34,16 +54,23 @@ export async function POST(request: Request) {
     }
 
     if (action === 'delete-conversation') {
-      const { convId } = body
-      
+      if (!convId) {
+        return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+      }
+
       // Verify ownership first
       const { data: conv, error: getErr } = await supabase
         .from('chat_conversations')
-        .select('visitor_id')
+        .select('visitor_id, visitor_email')
         .eq('id', convId)
         .single()
 
-      if (getErr || conv?.visitor_id !== visitor_id) {
+      const ownsConversation = conv && (
+        (email && conv.visitor_email === email) ||
+        (visitorId && conv.visitor_id === visitorId)
+      )
+
+      if (getErr || !ownsConversation) {
         return Response.json({ error: 'Unauthorized' }, { status: 403 })
       }
 
@@ -59,6 +86,6 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid action' }, { status: 400 })
   } catch (err) {
     console.error('[chat-history api]:', err)
-    return Response.json({ error: 'Server error' }, { status: 500 })
+    return serverErrorResponse()
   }
 }

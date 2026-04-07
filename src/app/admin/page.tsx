@@ -245,8 +245,11 @@ export default function AdminPage() {
   const handleLogin = async () => {
     const res = await fetch('/api/admin-auth', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': password,
+      },
+      body: JSON.stringify({}),
     })
     if (res.ok) {
       setIsAuthenticated(true)

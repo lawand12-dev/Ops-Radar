@@ -1,4 +1,6 @@
 import { Resend } from 'resend'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -17,16 +19,36 @@ export type NotifyPayload = {
 
 export async function POST(request: Request) {
   try {
-    const payload: NotifyPayload = await request.json()
+    const rateLimitResponse = applyRateLimit(request, 'notify')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
+    const body = await request.json()
+    const payload: NotifyPayload = {
+      company: sanitizeString(String(body?.company ?? ''), 200),
+      name: sanitizeString(String(body?.name ?? ''), 200),
+      email: sanitizeString(String(body?.email ?? ''), 320),
+      teamSize: sanitizeString(String(body?.teamSize ?? ''), 200),
+      agencyType: sanitizeString(String(body?.agencyType ?? ''), 200),
+      timeWasters: sanitizeString(String(body?.timeWasters ?? ''), 1000),
+      automationReadinessScore: Number(body?.automationReadinessScore ?? 0),
+      estimatedAnnualWaste:
+        typeof body?.estimatedAnnualWaste === 'number' ? body.estimatedAnnualWaste : null,
+    }
+
+    if (!payload.company || !payload.name || !payload.teamSize || !payload.agencyType) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
 
     if (!EMAIL_REGEX.test(payload.email)) {
-      return Response.json({ error: "Invalid email format" }, { status: 400 })
+      return Response.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
     const to = process.env.NOTIFICATION_EMAIL
     if (!to) {
-      console.error("[notify] NOTIFICATION_EMAIL is not set")
-      return Response.json({ error: "Notification email not configured" }, { status: 500 })
+      console.error('[notify] missing notification email configuration')
+      return serverErrorResponse()
     }
 
     const annualWaste = payload.estimatedAnnualWaste != null
@@ -49,27 +71,27 @@ export async function POST(request: Request) {
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3); width: 40%;">Company</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff; font-weight: 600;">${payload.company}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff; font-weight: 600;">${escapeHtml(payload.company)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3);">Contact</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${payload.name}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${escapeHtml(payload.name)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3);">Email</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px;"><a href="mailto:${payload.email}" style="color: #60a5fa; text-decoration: none;">${payload.email}</a></td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px;"><a href="mailto:${escapeHtml(payload.email)}" style="color: #60a5fa; text-decoration: none;">${escapeHtml(payload.email)}</a></td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3);">Team Size</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${payload.teamSize}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${escapeHtml(payload.teamSize)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3);">Industry</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${payload.agencyType}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #eef2ff;">${escapeHtml(payload.agencyType)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.3);">Top Time Wasters</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: rgba(255,255,255,0.7);">${payload.timeWasters}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: rgba(255,255,255,0.7);">${escapeHtml(payload.timeWasters)}</td>
             </tr>
           </table>
 
@@ -91,12 +113,12 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('[notify] Resend error:', error)
-      return Response.json({ error: error.message }, { status: 500 })
+      return serverErrorResponse()
     }
 
     return Response.json({ ok: true })
   } catch (err) {
     console.error('[notify] Unexpected error:', err)
-    return Response.json({ error: 'Failed to send notification' }, { status: 500 })
+    return serverErrorResponse()
   }
 }

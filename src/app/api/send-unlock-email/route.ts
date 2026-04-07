@@ -1,5 +1,7 @@
 import { Resend } from 'resend'
 import { supabase } from '../../../lib/supabase'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -7,7 +9,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.ai'
 
 export async function POST(request: Request) {
   try {
-    const { email, auditId }: { email: string; auditId: string | null } = await request.json()
+    const rateLimitResponse = applyRateLimit(request, 'send-unlock-email')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
+    const body = await request.json()
+    const email = sanitizeString(String(body?.email ?? ''), 320)
+    const auditId = typeof body?.auditId === 'string' ? sanitizeString(body.auditId, 200) : null
 
     if (!email || !EMAIL_REGEX.test(email)) {
       return Response.json({ error: 'Invalid email' }, { status: 400 })
@@ -58,7 +67,7 @@ export async function POST(request: Request) {
           <!-- Body -->
           <div style="padding:32px 36px;">
             <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;letter-spacing:-0.5px;color:#eef2ff;">
-              Here's your complete blueprint${company ? `, ${company}` : ''} 🔓
+              Here's your complete blueprint${company ? `, ${escapeHtml(company)}` : ''} 🔓
             </h1>
             <p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.55);line-height:1.65;">
               Your full OpsRadar report is ready — including automation flows, n8n nodes,
@@ -86,7 +95,7 @@ export async function POST(request: Request) {
               View My Full Blueprint →
             </a>
             <p style="margin:0 0 28px;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;">
-              Or copy this link: <a href="${resultsUrl}" style="color:rgba(173,198,255,0.5);word-break:break-all;">${resultsUrl}</a>
+              Or copy this link: <a href="${escapeHtml(resultsUrl)}" style="color:rgba(173,198,255,0.5);word-break:break-all;">${escapeHtml(resultsUrl)}</a>
             </p>
 
             <!-- What's unlocked -->
@@ -121,12 +130,12 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('[send-unlock-email] Resend error:', error)
-      return Response.json({ error: error.message }, { status: 500 })
+      return serverErrorResponse()
     }
 
     return Response.json({ ok: true })
   } catch (err) {
     console.error('[send-unlock-email] Unexpected error:', err)
-    return Response.json({ error: 'Failed to send email' }, { status: 500 })
+    return serverErrorResponse()
   }
 }
