@@ -14,11 +14,21 @@
  */
 
 import { supabase } from '../../../lib/supabase'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import { sanitizeString, serverErrorResponse } from '../../../lib/security'
 
 export async function POST(request: Request) {
   try {
-    const { sessionId, step }: { sessionId: string; step: number } = await request.json()
-    if (!sessionId || typeof step !== 'number') {
+    const rateLimitResponse = applyRateLimit(request, 'audit-step')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
+    const body = await request.json()
+    const sessionId = sanitizeString(String(body?.sessionId ?? ''), 200)
+    const step = body?.step
+
+    if (!sessionId || typeof step !== 'number' || !Number.isFinite(step)) {
       return Response.json({ ok: false }, { status: 400 })
     }
 
@@ -29,7 +39,6 @@ export async function POST(request: Request) {
 
     return Response.json({ ok: true })
   } catch {
-    // Non-critical — never surface errors to the user
-    return Response.json({ ok: false }, { status: 500 })
+    return serverErrorResponse()
   }
 }

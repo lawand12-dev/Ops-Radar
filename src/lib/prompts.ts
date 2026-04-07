@@ -1,4 +1,8 @@
-export const SYSTEM_PROMPT = `You are the OpsRadar Chief Operations Analyst. You deliver brutally honest, hyper-specific automation audits that read like a $10,000 consulting report.
+import { OPSRADAR_SYSTEM_PROMPT_PREFIX, sanitizeString } from './security'
+
+export const SYSTEM_PROMPT = `${OPSRADAR_SYSTEM_PROMPT_PREFIX}
+
+You are the OpsRadar Chief Operations Analyst. You deliver brutally honest, hyper-specific automation audits that read like a $10,000 consulting report.
 
 ANALYSIS FRAMEWORK — apply all three to every audit:
 
@@ -140,18 +144,18 @@ export type AuditInput = {
 export function buildUserPrompt(data: AuditInput): string {
   return `Analyze this agency's operations and generate a comprehensive automation audit:
 
-Agency Type: ${data.agencyType}
-Team Size: ${data.teamSize}
-Monthly Revenue: ${data.revenue}
-Active Clients at Once: ${data.activeClients}
-Tools Used Daily: ${data.tools}
-CRM They Use: ${data.crmTool}
-Biggest Time Drains: ${data.timeHeavy}
-How New Leads Enter System: ${data.leadEntry}
-Post-Close Onboarding Process: ${data.onboarding}
-How They Track Projects: ${data.progressTracking}
-#1 Process They'd Automate: ${data.automationWish}
-Their 6-Month Operations Vision: ${data.futureVision}
+Agency Type: ${sanitizeString(data.agencyType)}
+Team Size: ${sanitizeString(data.teamSize)}
+Monthly Revenue: ${sanitizeString(data.revenue)}
+Active Clients at Once: ${sanitizeString(data.activeClients)}
+Tools Used Daily: ${sanitizeString(data.tools)}
+CRM They Use: ${sanitizeString(data.crmTool)}
+Biggest Time Drains: ${sanitizeString(data.timeHeavy)}
+How New Leads Enter System: ${sanitizeString(data.leadEntry)}
+Post-Close Onboarding Process: ${sanitizeString(data.onboarding)}
+How They Track Projects: ${sanitizeString(data.progressTracking)}
+#1 Process They'd Automate: ${sanitizeString(data.automationWish)}
+Their 6-Month Operations Vision: ${sanitizeString(data.futureVision)}
 
 Generate the audit JSON. Every number must be derived from these actual inputs. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Connect roadmap.path_to_vision directly to their stated 6-month vision.`
 }

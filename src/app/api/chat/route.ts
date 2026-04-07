@@ -1,5 +1,12 @@
 import { openai } from '../../../lib/openai'
-import { checkRateLimit } from '../../../lib/rate-limit'
+import { applyRateLimit } from '../../../lib/rate-limit'
+import {
+  containsPromptInjectionAttempt,
+  OPSRADAR_REDIRECT_MESSAGE,
+  OPSRADAR_SYSTEM_PROMPT_PREFIX,
+  sanitizeString,
+  serverErrorResponse,
+} from '../../../lib/security'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -7,7 +14,9 @@ type Message = { role: 'user' | 'assistant'; content: string; timestamp?: string
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const CHAT_SYSTEM_PROMPT = `You are the OpsRadar AI assistant. You work for OpsRadar — a done-for-you \
+const CHAT_SYSTEM_PROMPT = `${OPSRADAR_SYSTEM_PROMPT_PREFIX}
+
+You are the OpsRadar AI assistant. You work for OpsRadar — a done-for-you \
 automation service that builds, hosts, and maintains n8n workflows for agencies.
 
 Your job: answer questions, understand the visitor's business problems, \
@@ -35,51 +44,84 @@ Never make up case studies or fake client names. If asked about past work, \
 say 'I can show you the types of systems we build — start a free audit to \
 see a blueprint specific to your business.'`
 
+function isValidMessage(value: unknown): value is Message {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+
+  const message = value as Record<string, unknown>
+  return (
+    (message.role === 'user' || message.role === 'assistant') &&
+    typeof message.content === 'string'
+  )
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = applyRateLimit(request, 'chat')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
+    const body = await request.json()
     const {
       messages,
       shouldAskContact,
       visitor_id,
     }: {
-      messages:        Message[]
+      messages?: unknown
       shouldAskContact?: boolean
-      visitor_id?:   string | null
-    } = await request.json()
+      visitor_id?: string | null
+    } = body
 
-    if (!messages?.length) {
+    if (!Array.isArray(messages) || messages.length === 0) {
       return Response.json({ error: 'Messages required' }, { status: 400 })
     }
 
-    const ip = request.headers.get("x-forwarded-for") || "anonymous"
-    if (visitor_id && !checkRateLimit(visitor_id, 30, 60 * 60 * 1000)) { // 30 messages per hour per visitor_id
-      return Response.json({ error: "Rate limit exceeded" }, { status: 429 })
-    }
-    if (!visitor_id && !checkRateLimit(ip, 30, 60 * 60 * 1000)) { // Fallback for no visitor_id
-      return Response.json({ error: "Rate limit exceeded" }, { status: 429 })
+    if (messages.length > 20) {
+      return Response.json({ error: 'Conversation history is too long.' }, { status: 400 })
     }
 
-    // Build system prompt — extend with context-specific instructions
+    if (!messages.every(isValidMessage)) {
+      return Response.json({ error: 'Invalid message format.' }, { status: 400 })
+    }
+
+    if (messages.some((message) => message.role === 'user' && message.content.length > 500)) {
+      return Response.json({ error: 'Messages must be 500 characters or fewer.' }, { status: 400 })
+    }
+
+    const sanitizedMessages = messages.map((message) => ({
+      role: message.role,
+      content: sanitizeString(message.content, 500),
+    }))
+
+    if (sanitizedMessages.some((message) => message.role === 'user' && containsPromptInjectionAttempt(message.content))) {
+      return new Response(OPSRADAR_REDIRECT_MESSAGE, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store',
+        },
+      })
+    }
+
     let systemPrompt = CHAT_SYSTEM_PROMPT
 
-    if (visitor_id) {
-      systemPrompt += `\n\nThe visitor is associated with ID (${visitor_id}).`
+    const sanitizedVisitorId = typeof visitor_id === 'string' ? sanitizeString(visitor_id, 200) : ''
+    if (sanitizedVisitorId) {
+      systemPrompt += `\n\nThe visitor is associated with ID (${sanitizedVisitorId}).`
     }
 
     if (shouldAskContact) {
       systemPrompt += `\n\nIMPORTANT: After answering the visitor's question, naturally and warmly ask for their name and email in one or two casual sentences — something like "By the way, what's your name? Drop me your email too and I can save our conversation so you won't have to start from scratch next time." Keep it brief and conversational, not formal.`
     }
 
-    // Strip client-side timestamps before forwarding to OpenAI
-    const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
-
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: systemPrompt },
-        ...cleanMessages,
+        ...sanitizedMessages,
       ],
       stream:      true,
       temperature: 0.7,
@@ -112,6 +154,6 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     console.error('[chat] error:', err)
-    return Response.json({ error: 'Failed to respond' }, { status: 500 })
+    return serverErrorResponse()
   }
 }
