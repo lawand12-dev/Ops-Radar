@@ -1,8 +1,9 @@
-import { openai } from '../../../lib/openai'
-import { SYSTEM_PROMPT, buildUserPrompt, type AuditInput } from '../../../lib/prompts'
+import { type AuditInput } from '../../../lib/prompts'
+import { generateAuditReport } from '../../../lib/audit-report'
 import { supabase } from '../../../lib/supabase'
 import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
 import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
+import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 import type { NotifyPayload } from '../notify/route'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -88,7 +89,12 @@ export async function POST(request: Request) {
       return rateLimitResponse
     }
 
-    const body = validateRequestBody(await request.json())
+    const rawBody = await request.json()
+    if (isAbusiveSubmission(rawBody)) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
+
+    const body = validateRequestBody(rawBody)
     if (!body) {
       return Response.json({ error: 'Invalid request payload' }, { status: 400 })
     }
@@ -104,40 +110,28 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: buildUserPrompt({
-            agencyType, teamSize, revenue, activeClients,
-            tools, crmTool, timeHeavy, leadEntry,
-            onboarding, progressTracking, automationWish, futureVision,
-          }),
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 500,
-    })
-
-    const raw = completion.choices[0].message.content
-    if (!raw) {
-      return serverErrorResponse()
+    const auditInput = {
+      agencyType,
+      teamSize,
+      revenue,
+      activeClients,
+      tools,
+      crmTool,
+      timeHeavy,
+      leadEntry,
+      onboarding,
+      progressTracking,
+      automationWish,
+      futureVision,
     }
 
-    const audit = JSON.parse(raw)
+    const audit = await generateAuditReport(auditInput, 'preview')
 
     const insertPayload = {
       name,
       email,
       company,
-      answers: {
-        agencyType, teamSize, revenue, activeClients,
-        tools, crmTool, timeHeavy, leadEntry,
-        onboarding, progressTracking, automationWish, futureVision,
-      },
+      answers: auditInput,
       result: audit,
       steps_completed: 12, // all 12 steps completed — used for funnel analysis
     }
@@ -154,6 +148,13 @@ export async function POST(request: Request) {
     }
 
     // ── Fire-and-forget notification ────────────────────────────────────────
+    const automationReadinessScore = typeof audit.automation_readiness_score === 'number'
+      ? audit.automation_readiness_score
+      : 0
+    const estimatedAnnualWaste = typeof audit.estimated_annual_waste === 'number'
+      ? audit.estimated_annual_waste
+      : null
+
     const notifyPayload: NotifyPayload = {
       company,
       name,
@@ -161,8 +162,8 @@ export async function POST(request: Request) {
       teamSize,
       agencyType,
       timeWasters: automationWish,
-      automationReadinessScore: audit.automation_readiness_score ?? 0,
-      estimatedAnnualWaste: audit.estimated_annual_waste ?? null,
+      automationReadinessScore,
+      estimatedAnnualWaste,
     }
     fetch(new URL('/api/notify', request.url).toString(), {
       method: 'POST',

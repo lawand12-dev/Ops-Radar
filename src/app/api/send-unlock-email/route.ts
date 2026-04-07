@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { supabase } from '../../../lib/supabase'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
+import { coerceAuditInput, generateAuditReport, isPreviewAuditReport } from '../../../lib/audit-report'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -18,28 +19,61 @@ export async function POST(request: Request) {
     const email = sanitizeString(String(body?.email ?? ''), 320)
     const auditId = typeof body?.auditId === 'string' ? sanitizeString(body.auditId, 200) : null
 
-    if (!email || !EMAIL_REGEX.test(email)) {
+    if (!auditId) {
+      return Response.json({ error: 'Invalid audit reference' }, { status: 400 })
+    }
+
+    const { data, error: auditError } = await supabase
+      .from('audits')
+      .select('company, email, answers, result')
+      .eq('id', auditId)
+      .single()
+
+    if (auditError || !data) {
+      return Response.json({ error: 'Invalid audit reference' }, { status: 404 })
+    }
+
+    const targetEmail = email || sanitizeString(String(data.email ?? ''), 320)
+    if (!targetEmail || !EMAIL_REGEX.test(targetEmail)) {
       return Response.json({ error: 'Invalid email' }, { status: 400 })
     }
 
-    // Fetch audit context if we have an ID
-    let company = ''
-    let readinessScore: number | null = null
-    let annualWaste: number | null = null
+    const auditInput = coerceAuditInput(data.answers)
+    if (!auditInput) {
+      return serverErrorResponse()
+    }
 
-    if (auditId) {
-      const { data } = await supabase
+    let auditResult = data.result as Record<string, unknown> | null
+    if (!auditResult || isPreviewAuditReport(auditResult)) {
+      auditResult = await generateAuditReport(auditInput, 'full')
+
+      const { error: updateError } = await supabase
         .from('audits')
-        .select('company, result')
+        .update({
+          email: targetEmail,
+          result: auditResult,
+        })
         .eq('id', auditId)
-        .single()
-      if (data) {
-        company = data.company ?? ''
-        const result = data.result as Record<string, unknown> | null
-        readinessScore = (result?.automation_readiness_score as number) ?? null
-        annualWaste = (result?.estimated_annual_waste as number) ?? null
+
+      if (updateError) {
+        console.error('[send-unlock-email] failed to persist full audit')
+        return serverErrorResponse()
+      }
+    } else if (targetEmail !== data.email) {
+      const { error: emailUpdateError } = await supabase
+        .from('audits')
+        .update({ email: targetEmail })
+        .eq('id', auditId)
+
+      if (emailUpdateError) {
+        console.error('[send-unlock-email] failed to update email')
+        return serverErrorResponse()
       }
     }
+
+    const company = data.company ?? ''
+    const readinessScore = (auditResult?.automation_readiness_score as number) ?? null
+    const annualWaste = (auditResult?.estimated_annual_waste as number) ?? null
 
     const resultsUrl = auditId
       ? `${BASE_URL}/results?id=${auditId}`
@@ -51,7 +85,7 @@ export async function POST(request: Request) {
 
     const { error } = await resend.emails.send({
       from: 'OpsRadar <onboarding@resend.dev>',
-      to: email,
+      to: targetEmail,
       subject: `Your OpsRadar Automation Blueprint${company ? ` — ${company}` : ''}`,
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#060c1e;color:#eef2ff;border-radius:14px;overflow:hidden;">
@@ -133,7 +167,7 @@ export async function POST(request: Request) {
       return serverErrorResponse()
     }
 
-    return Response.json({ ok: true })
+    return Response.json({ ok: true, audit: auditResult, email: targetEmail })
   } catch (err) {
     console.error('[send-unlock-email] Unexpected error:', err)
     return serverErrorResponse()

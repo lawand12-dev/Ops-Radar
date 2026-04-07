@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
+import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ export default function ChatWidget() {
   const bottomRef  = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLTextAreaElement>(null)
   const abortRef   = useRef<AbortController | null>(null)
+  const leadStartedAtRef = useRef(Date.now())
   // Mutable refs to avoid stale closures in async callbacks
   const convIdRef      = useRef<string | null>(null)
   const visitorIdRef   = useRef<string | null>(null)
@@ -96,19 +98,12 @@ export default function ChatWidget() {
     setHistoryLoaded(true)
 
     const loadInitialConv = async () => {
-      // Try to load by email first (for cross-device sync)
-      const savedEmail = localStorage.getItem(EMAIL_KEY)
-      let query = supabase
+      const query = supabase
         .from('chat_conversations')
         .select('id, messages, visitor_email')
         .order('created_at', { ascending: false })
         .limit(1)
-
-      if (savedEmail) {
-        query = query.eq('visitor_email', savedEmail)
-      } else {
-        query = query.eq('visitor_id', visitorId)
-      }
+        .eq('visitor_id', visitorId)
 
       const { data } = await query.single()
       if (!data) return
@@ -143,19 +138,12 @@ export default function ChatWidget() {
 
   // ── Fetch conversation list ───────────────────────────────────────────────────
   async function fetchConvList(vid: string) {
-    // Prioritize email-based lookup for cross-device sync
-    const savedEmail = localStorage.getItem(EMAIL_KEY)
-    let query = supabase
+    const query = supabase
       .from('chat_conversations')
       .select('id, created_at, updated_at, messages')
       .order('created_at', { ascending: false })
       .limit(MAX_HISTORY)
-
-    if (savedEmail) {
-      query = query.eq('visitor_email', savedEmail)
-    } else {
-      query = query.eq('visitor_id', vid)
-    }
+      .eq('visitor_id', vid)
 
     const { data } = await query
     if (!data) return
@@ -184,7 +172,7 @@ export default function ChatWidget() {
     const vid = visitorIdRef.current
     if (!vid) return
 
-    // Always save email to localStorage for cross-device access
+    // Save the email locally so the verified history flow can prefill it later
     if (email) {
       localStorage.setItem(EMAIL_KEY, email)
     }
@@ -213,13 +201,14 @@ export default function ChatWidget() {
           }
         })
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Start a fresh conversation ────────────────────────────────────────────────
   function startNewConversation() {
     setMsgs([makeWelcome()])
     setConvId(null)
     convIdRef.current = null
+    leadStartedAtRef.current = Date.now()
     setHasAskedContact(false)
     setShowHistory(false)
     setTimeout(() => inputRef.current?.focus(), 100)
@@ -321,6 +310,7 @@ export default function ChatWidget() {
             messageCount: userMsgs.length,
             lastMessage: trimmed,
             conversationId: convIdRef.current,
+            ...getAbuseProtectionPayload(leadStartedAtRef.current),
           }),
         }).catch(() => { /* non-critical */ })
       }

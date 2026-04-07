@@ -10,11 +10,15 @@ import {
 } from '<npm>/components/ui/dialog'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
+import HoneypotField from './HoneypotField'
+import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 
 export type LeadInfo = {
   name: string
   email: string
   company: string
+  companyWebsite: string
+  startedAt: number
 }
 
 interface EmailCaptureModalProps {
@@ -26,6 +30,8 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
+  const [companyWebsite, setCompanyWebsite] = useState('')
+  const [startedAt] = useState(() => Date.now())
 
   const isValid =
     name.trim().length > 0 &&
@@ -35,7 +41,12 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!isValid) return
-    onSubmit({ name: name.trim(), email: email.trim(), company: company.trim() })
+    onSubmit({
+      name: name.trim(),
+      email: email.trim(),
+      company: company.trim(),
+      ...getAbuseProtectionPayload(startedAt, companyWebsite),
+    })
   }
 
   const inputClass =
@@ -68,6 +79,8 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
+            <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
+
             <div>
               <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
                 Your Name

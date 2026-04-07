@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
-
-const LOCAL_STORAGE_KEY = 'opsradar_admin_auth'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -102,8 +100,6 @@ function diffBadge(d: string) {
 
 function AuditDetail({ audit }: { audit: AuditRow }) {
   const { answers, result, id } = audit
-  const score  = readinessScore(result)
-  const waste  = annualWaste(result)
   const opps   = result.opportunities ?? []
   const tools  = result.tools_analysis
 
@@ -228,61 +224,12 @@ function AuditDetail({ audit }: { audit: AuditRow }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [password, setPassword] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
   const [audits,    setAudits]    = useState<AuditRow[]>([])
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState<string | null>(null)
   const [query,     setQuery]     = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (localStorage.getItem(LOCAL_STORAGE_KEY) === 'true') {
-      setIsAuthenticated(true)
-    }
-  }, [])
-
-  const handleLogin = async () => {
-    const res = await fetch('/api/admin-auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-password': password,
-      },
-      body: JSON.stringify({}),
-    })
-    if (res.ok) {
-      setIsAuthenticated(true)
-      localStorage.setItem(LOCAL_STORAGE_KEY, 'true')
-    } else {
-      alert('Incorrect password')
-    }
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center p-4">
-        <div className="bg-surface-container-low p-8 rounded-[14px] shadow-lg w-full max-w-sm border border-outline-variant/10">
-          <h1 className="font-headline font-bold text-[22px] tracking-[-0.02em] text-on-surface mb-6 text-center">Admin Login</h1>
-          <Input
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            className="px-4 py-2.5 h-auto rounded-[10px] text-[14px] bg-surface-container border-outline-variant/15 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20"
-          />
-          <Button
-            onClick={handleLogin}
-            variant="outline"
-            className="mt-4 w-full h-auto bg-primary/8 border-primary/20 text-primary hover:bg-primary/15 hover:text-primary px-4 py-2.5 rounded-[10px] text-[14px] font-semibold"
-          >
-            Login
-          </Button>
-        </div>
-      </div>
-    )
-  }
 
   useEffect(() => {
     supabase
@@ -308,6 +255,12 @@ export default function AdminPage() {
 
   function toggleRow(id: string) {
     setExpandedId(prev => prev === id ? null : id)
+  }
+
+  async function handleSignOut() {
+    await fetch('/api/admin-auth', { method: 'DELETE' })
+    router.replace('/admin/login')
+    router.refresh()
   }
 
   // ── Loading / error ─────────────────────────────────────────────────────
@@ -361,6 +314,12 @@ export default function AdminPage() {
 
           {/* Stats */}
           <div className="flex items-center gap-5">
+            <Button
+              onClick={handleSignOut}
+              className="h-auto px-3 py-2 rounded-[8px] text-[12px] font-semibold bg-surface-container border border-outline-variant/15 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+            >
+              Sign out
+            </Button>
             <div className="text-right">
               <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/50">Total Audits</p>
               <p className="font-headline text-[28px] font-extrabold leading-none text-primary tabular-nums">

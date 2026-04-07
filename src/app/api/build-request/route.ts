@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { supabase } from '../../../lib/supabase'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
+import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 
 // Table DDL (run once in Supabase SQL editor):
 // CREATE TABLE build_requests (
@@ -36,6 +37,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
+    if (isAbusiveSubmission(body)) {
+      return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+    }
+
     const payload: BuildRequestBody = {
       audit_id: typeof body?.audit_id === 'string' ? sanitizeString(body.audit_id, 200) : null,
       automation_title: sanitizeString(String(body?.automation_title ?? ''), 200),
