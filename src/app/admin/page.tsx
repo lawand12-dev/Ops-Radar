@@ -1,12 +1,10 @@
-exportconst dynamic
 'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
-import { Button } from '<npm>/components/ui/button'
+import { supabase } from '@lib/supabase'
+import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -52,7 +50,7 @@ type AuditResult = {
     missing_integrations?: string[]
   }
 }
-
+export const dynamic = 'force-dynamic'
 type AuditRow = {
   id: string
   created_at: string
