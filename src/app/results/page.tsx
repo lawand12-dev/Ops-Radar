@@ -2902,12 +2902,13 @@ function ResultsContent() {
     }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
   const removedTools  = toolsAnalysis.redundant_tools ?? []
+  const hasLockedStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
   const hasBenchmarks = Boolean(currentAudit?.benchmarks)
   const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
   const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis)
   const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment)
   const hasRoadmap    = Boolean(roadmap.week_1 || roadmap.month_1 || roadmap.month_3)
-  const hasStack      = toolsAnalysis.current_stack_rating > 0 || addedTools.length > 0 || removedTools.length > 0 || !!toolsAnalysis.biggest_friction_point
+  const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasLockedStackDetails
   const pathToVision  = currentAudit?.roadmap?.path_to_vision
   const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
   const leadOpportunity = opportunities[0] ?? null
@@ -2921,7 +2922,7 @@ function ResultsContent() {
       opportunities.length > 0 ? { id: 'automation-opportunities', label: 'Blueprint' } : null,
       hasOnboardingAssessment ? { id: 'client-onboarding', label: 'Onboarding', locked: !unlocked } : null,
       hasRoadmap ? { id: 'implementation-roadmap', label: 'Roadmap', locked: !unlocked } : null,
-      hasStack ? { id: 'stack-recommendations', label: 'Stack', locked: !unlocked } : null,
+      hasStack ? { id: 'stack-recommendations', label: 'Stack', locked: hasLockedStackDetails && !unlocked } : null,
       !unlocked ? { id: 'unlock-blueprint', label: 'Unlock' } : null,
       { id: 'done-for-you-build', label: 'Build' },
     ].filter((section): section is ReportSectionItem => Boolean(section))
@@ -2931,6 +2932,7 @@ function ResultsContent() {
     hasLaborBreakdown,
     hasContextSwitching,
     hasOnboardingAssessment,
+    hasLockedStackDetails,
     hasRoadmap,
     hasStack,
     opportunities.length,
@@ -3343,43 +3345,45 @@ function ResultsContent() {
                   <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
                 </div>
 
-                <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('stack-section-unlock')}>
-                  <div className="space-y-4">
-                    {toolsAnalysis.biggest_friction_point && (
-                      <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
-                        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
-                        <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
+                {hasLockedStackDetails && (
+                  <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('stack-section-unlock')}>
+                    <div className="space-y-4">
+                      {toolsAnalysis.biggest_friction_point && (
+                        <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                          <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
+                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
+                          <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
+                        </div>
+                      )}
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {addedTools.length > 0 && (
+                          <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
+                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
+                            <div className="flex flex-wrap gap-2">
+                              {addedTools.map((t) => (
+                                <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
+                                  + {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {removedTools.length > 0 && (
+                          <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
+                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
+                            <div className="flex flex-wrap gap-2">
+                              {removedTools.map((t) => (
+                                <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {addedTools.length > 0 && (
-                        <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
-                          <div className="flex flex-wrap gap-2">
-                            {addedTools.map((t) => (
-                              <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
-                                + {t}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {removedTools.length > 0 && (
-                        <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
-                          <div className="flex flex-wrap gap-2">
-                            {removedTools.map((t) => (
-                              <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
-                                {t}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </LockedSection>
+                  </LockedSection>
+                )}
               </section>
             </RevealSection>
           </div>
