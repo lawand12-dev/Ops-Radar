@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'  
-import { Button } from '@/components/ui/button'
+import { supabase } from '../../lib/supabase' 
+import { Button } from '../../components/ui/button'  
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
