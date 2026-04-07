@@ -1,3 +1,5 @@
+import { lookup } from 'node:dns/promises'
+import { isIP } from 'node:net'
 import { sanitizeString } from './security'
 
 export type WebsitePageSignal = {
@@ -62,6 +64,7 @@ const FETCH_TIMEOUT_MS = 4500
 const MAX_HTML_CHARS = 120_000
 const MAX_EXTRA_PAGE_FETCHES = 3
 const MAX_SUMMARY_CHARS = 900
+const MAX_REDIRECTS = 3
 
 const CTA_PATTERNS = [
   'book',
@@ -270,31 +273,75 @@ function getPathname(rawUrl: string): string {
   }
 }
 
-function isPrivateIpv4(hostname: string): boolean {
-  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return false
-  const octets = hostname.split('.').map((part) => Number(part))
+function normalizeHostname(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/\.$/, '').replace(/^\[|\]$/g, '')
+}
+
+function isPrivateIpv4(address: string): boolean {
+  const normalized = normalizeHostname(address)
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(normalized)) return false
+  const octets = normalized.split('.').map((part) => Number(part))
   if (octets.some((part) => Number.isNaN(part) || part < 0 || part > 255)) return true
 
   return (
+    octets[0] === 0 ||
     octets[0] === 10 ||
     octets[0] === 127 ||
     (octets[0] === 169 && octets[1] === 254) ||
     (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
-    (octets[0] === 192 && octets[1] === 168)
+    (octets[0] === 192 && octets[1] === 168) ||
+    (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127) ||
+    (octets[0] === 192 && octets[1] === 0 && octets[2] === 0) ||
+    (octets[0] === 192 && octets[1] === 0 && octets[2] === 2) ||
+    (octets[0] === 198 && octets[1] === 18) ||
+    (octets[0] === 198 && octets[1] === 19) ||
+    (octets[0] === 198 && octets[1] === 51 && octets[2] === 100) ||
+    (octets[0] === 203 && octets[1] === 0 && octets[2] === 113) ||
+    octets[0] >= 224
   )
 }
 
-function isBlockedHostname(hostname: string): boolean {
-  const normalized = hostname.toLowerCase()
+function isPrivateIpv6(address: string): boolean {
+  const normalized = normalizeHostname(address)
+  if (normalized.startsWith('::ffff:')) {
+    return isBlockedIpAddress(normalized.slice('::ffff:'.length))
+  }
+
+  return (
+    normalized === '::' ||
+    normalized === '::1' ||
+    normalized.startsWith('fc') ||
+    normalized.startsWith('fd') ||
+    normalized.startsWith('fe8') ||
+    normalized.startsWith('fe9') ||
+    normalized.startsWith('fea') ||
+    normalized.startsWith('feb') ||
+    normalized.startsWith('ff')
+  )
+}
+
+function isBlockedIpAddress(address: string): boolean {
+  const normalized = normalizeHostname(address)
+  const family = isIP(normalized)
+  if (!family) return false
+
+  return family === 4
+    ? isPrivateIpv4(normalized)
+    : isPrivateIpv6(normalized)
+}
+
+export function isBlockedHostname(hostname: string): boolean {
+  const normalized = normalizeHostname(hostname)
   return (
     normalized === 'localhost' ||
     normalized.endsWith('.localhost') ||
     normalized.endsWith('.local') ||
     normalized.endsWith('.internal') ||
     normalized.endsWith('.home') ||
-    normalized === '0.0.0.0' ||
-    normalized === '::1' ||
-    normalized.startsWith('[') ||
+    normalized.endsWith('.arpa') ||
+    normalized.endsWith('.invalid') ||
+    normalized.endsWith('.example') ||
+    normalized.endsWith('.test') ||
     isPrivateIpv4(normalized)
   )
 }
@@ -309,12 +356,53 @@ export function normalizeWebsiteUrlInput(value: string): string {
     const url = new URL(prefixed)
     if (!['http:', 'https:'].includes(url.protocol)) return ''
     if (url.username || url.password) return ''
-    if (!url.hostname || isBlockedHostname(url.hostname)) return ''
+    const normalizedHostname = normalizeHostname(url.hostname)
+    if (!normalizedHostname || isBlockedHostname(normalizedHostname) || isBlockedIpAddress(normalizedHostname)) return ''
 
     url.hash = ''
     return url.toString()
   } catch {
     return ''
+  }
+}
+
+async function resolvesToPublicAddress(hostname: string): Promise<boolean> {
+  const normalized = normalizeHostname(hostname)
+  if (!normalized) {
+    return false
+  }
+
+  if (isBlockedHostname(normalized) || isBlockedIpAddress(normalized)) {
+    return false
+  }
+
+  if (isIP(normalized)) {
+    return true
+  }
+
+  try {
+    const addresses = await lookup(normalized, {
+      all: true,
+      verbatim: true,
+    })
+
+    return addresses.length > 0 && addresses.every((entry) => !isBlockedIpAddress(entry.address))
+  } catch {
+    return false
+  }
+}
+
+async function validatePublicWebsiteUrl(rawUrl: string): Promise<string | null> {
+  const normalizedUrl = normalizeWebsiteUrlInput(rawUrl)
+  if (!normalizedUrl) {
+    return null
+  }
+
+  try {
+    const url = new URL(normalizedUrl)
+    return await resolvesToPublicAddress(url.hostname) ? normalizedUrl : null
+  } catch {
+    return null
   }
 }
 
@@ -392,29 +480,49 @@ function pickPageCandidates(links: LinkCandidate[]): Array<{ label: string; url:
 }
 
 async function fetchWebsitePage(rawUrl: string, label: string): Promise<FetchedWebsitePage | null> {
-  const requestedUrl = normalizeWebsiteUrlInput(rawUrl)
+  const requestedUrl = await validatePublicWebsiteUrl(rawUrl)
   if (!requestedUrl) return null
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
   try {
-    const response = await fetch(requestedUrl, {
-      redirect: 'follow',
-      signal: controller.signal,
-      headers: {
-        Accept: 'text/html,application/xhtml+xml',
-        'User-Agent': 'OpsRadarBot/1.0 (+https://opsradar.ai)',
-      },
-      cache: 'no-store',
-    })
+    let currentUrl = requestedUrl
+    let response: Response | null = null
+
+    for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+      response = await fetch(currentUrl, {
+        redirect: 'manual',
+        signal: controller.signal,
+        headers: {
+          Accept: 'text/html,application/xhtml+xml',
+          'User-Agent': 'OpsRadarBot/1.0 (+https://opsradar.ai)',
+        },
+        cache: 'no-store',
+      })
+
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location')
+        if (!location) return null
+
+        const nextUrl = await validatePublicWebsiteUrl(new URL(location, currentUrl).toString())
+        if (!nextUrl) return null
+
+        currentUrl = nextUrl
+        continue
+      }
+
+      break
+    }
+
+    if (!response) return null
 
     if (!response.ok) return null
 
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.toLowerCase().includes('text/html')) return null
 
-    const finalUrl = normalizeWebsiteUrlInput(response.url || requestedUrl)
+    const finalUrl = await validatePublicWebsiteUrl(currentUrl)
     if (!finalUrl) return null
     const headerSignature = [
       response.headers.get('x-powered-by'),

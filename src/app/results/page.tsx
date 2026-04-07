@@ -6,7 +6,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import AnimatedNumber from '../components/AnimatedNumber'
 import RevealSection from '../components/RevealSection'
-import { supabase } from '../../lib/supabase'
 import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { motion } from 'framer-motion'
@@ -17,12 +16,16 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import HoneypotField from '../components/HoneypotField'
+import {
+  clearStoredAuditAccessToken,
+  getStoredAuditAccessToken,
+  storeAuditAccessToken,
+} from '../../lib/audit-access-client'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const UNLOCK_KEY_PREFIX = 'opsradar_blueprint_unlocked'
 const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
 
 const BUILD_PRICE = {
@@ -302,10 +305,6 @@ function coerceAuditContext(value: unknown): AuditContext | null {
   }
 
   return Object.keys(context).length > 0 ? context : null
-}
-
-function getUnlockStorageKey(auditId: string | null): string {
-  return auditId ? `${UNLOCK_KEY_PREFIX}:${auditId}` : UNLOCK_KEY_PREFIX
 }
 
 // ─── Section label ────────────────────────────────────────────────────────────
@@ -2448,7 +2447,7 @@ function UnlockSection({
   auditId: string | null
   defaultEmail: string
   reportStage: 'preview' | 'full'
-  onUnlocked: (email: string) => void
+  onUnlocked: (email: string, accessToken?: string) => void
   onUnlockRequested: (email: string) => void
   onUnlockSent: (email: string) => void
   onStrategyCallClick: (source: string) => void
@@ -2470,9 +2469,13 @@ function UnlockSection({
     setEmailStatus('submitting')
     onUnlockRequested(email)
     try {
+      const accessToken = auditId ? getStoredAuditAccessToken(auditId) : ''
       const response = await fetch('/api/send-unlock-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'x-audit-access-token': accessToken } : {}),
+        },
         body: JSON.stringify({ email, auditId }),
       })
 
@@ -2483,7 +2486,13 @@ function UnlockSection({
 
       setEmailStatus('success')
       onUnlockSent(data.email ?? email)
-      setTimeout(() => onUnlocked(data.email ?? email), 500)
+      setTimeout(
+        () => onUnlocked(
+          data.email ?? email,
+          typeof data?.accessToken === 'string' ? data.accessToken : undefined,
+        ),
+        500,
+      )
     } catch {
       setEmailStatus('error')
     }
@@ -2671,6 +2680,7 @@ function ResultsContent() {
   const resultsViewRef = useRef<string | null>(null)
   const searchParams = useSearchParams()
   const auditId = searchParams.get('id')
+  const accessTokenFromUrl = (searchParams.get('access') ?? '').trim().slice(0, 2048)
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateAuditSessionId()
@@ -2681,13 +2691,22 @@ function ResultsContent() {
     resultsViewRef.current = null
   }, [auditId])
 
+  useEffect(() => {
+    if (!auditId || !accessTokenFromUrl) return
+
+    storeAuditAccessToken(auditId, accessTokenFromUrl)
+
+    const nextUrl = new URL(window.location.href)
+    nextUrl.searchParams.delete('access')
+    window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`)
+  }, [accessTokenFromUrl, auditId])
+
   const applyLoadedAudit = useCallback((
     nextAudit: AuditResult,
-    storedUnlock: boolean,
     meta?: { company?: string | null; name?: string | null; email?: string | null; answers?: unknown },
   ) => {
     setAudit(nextAudit)
-    setUnlocked(nextAudit.report_stage !== 'preview' || storedUnlock)
+    setUnlocked(nextAudit.report_stage === 'full')
     if (meta?.company) setCompany(meta.company)
     if (meta?.name) setContactName(meta.name)
     if (meta?.email) setContactEmail(meta.email)
@@ -2695,7 +2714,7 @@ function ResultsContent() {
     if (nextContext) setAuditContext(nextContext)
   }, [])
 
-  const loadFromSession = useCallback((storedUnlock: boolean) => {
+  const loadFromSession = useCallback(() => {
     try {
       const raw = sessionStorage.getItem('opsradar_audit')
       if (!raw) {
@@ -2704,32 +2723,47 @@ function ResultsContent() {
       }
 
       const sessionAudit = JSON.parse(raw) as AuditResult
-      applyLoadedAudit(sessionAudit, storedUnlock)
+      applyLoadedAudit(sessionAudit)
     } catch {
       setError(true)
     }
   }, [applyLoadedAudit])
 
-  const loadAuditById = useCallback(async (id: string, storedUnlock = false) => {
-    const { data, error: dbError } = await supabase
-      .from('audits')
-      .select('result, company, name, email, answers')
-      .eq('id', id)
-      .single()
-
-    if (dbError || !data?.result) {
-      loadFromSession(storedUnlock)
+  const loadAuditById = useCallback(async (id: string, preferredAccessToken = '') => {
+    const accessToken = preferredAccessToken || getStoredAuditAccessToken(id)
+    if (!accessToken) {
+      loadFromSession()
       return
     }
 
-    const nextAudit = data.result as AuditResult
+    const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}`, {
+      headers: {
+        'x-audit-access-token': accessToken,
+      },
+      cache: 'no-store',
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearStoredAuditAccessToken(id)
+      }
+      loadFromSession()
+      return
+    }
+
+    const data = await response.json()
+    if (!data?.audit) {
+      loadFromSession()
+      return
+    }
+
+    const nextAudit = data.audit as AuditResult
     sessionStorage.removeItem(REPORT_HANDOFF_KEY)
     setHandoff(null)
-    applyLoadedAudit(nextAudit, storedUnlock, data)
+    applyLoadedAudit(nextAudit, data.meta)
   }, [applyLoadedAudit, loadFromSession])
 
   useEffect(() => {
-    const storedUnlock = localStorage.getItem(getUnlockStorageKey(auditId)) === '1'
     try {
       const rawHandoff = sessionStorage.getItem(REPORT_HANDOFF_KEY)
       if (rawHandoff) {
@@ -2758,12 +2792,12 @@ function ResultsContent() {
 
     queueMicrotask(() => {
       if (auditId) {
-        loadAuditById(auditId, storedUnlock).catch(() => setError(true))
+        loadAuditById(auditId, accessTokenFromUrl).catch(() => setError(true))
       } else {
-        loadFromSession(storedUnlock)
+        loadFromSession()
       }
     })
-  }, [auditId, loadAuditById, loadFromSession])
+  }, [accessTokenFromUrl, auditId, loadAuditById, loadFromSession])
 
   const trackStrategyCallClick = useCallback((source: string) => {
     sendFunnelEvent({
@@ -2792,11 +2826,13 @@ function ResultsContent() {
     setModalOpp({ title, source })
   }, [audit?.report_stage, auditId])
 
-  function handleUnlocked(email: string) {
-    localStorage.setItem(getUnlockStorageKey(auditId), '1')
+  function handleUnlocked(email: string, nextAccessToken?: string) {
     setContactEmail(email)
+    if (auditId && nextAccessToken) {
+      storeAuditAccessToken(auditId, nextAccessToken)
+    }
     if (auditId) {
-      loadAuditById(auditId, true).catch(() => setUnlocked(true))
+      loadAuditById(auditId, nextAccessToken ?? '').catch(() => setError(true))
     } else {
       setUnlocked(true)
     }

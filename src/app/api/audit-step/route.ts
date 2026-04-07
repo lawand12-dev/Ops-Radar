@@ -13,9 +13,9 @@
  *   );
  */
 
-import { supabase } from '../../../lib/supabase'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../lib/security'
+import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/supabase-server'
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +32,11 @@ export async function POST(request: Request) {
       return Response.json({ ok: false }, { status: 400 })
     }
 
+    if (!hasServerSupabaseClient()) {
+      return Response.json({ ok: true })
+    }
+
+    const supabase = getServerSupabaseClient()
     await supabase.from('audit_sessions').upsert(
       { session_id: sessionId, step_reached: step, updated_at: new Date().toISOString() },
       { onConflict: 'session_id', ignoreDuplicates: false },

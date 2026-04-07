@@ -1,8 +1,15 @@
 import { type AuditInput } from '../../../lib/prompts'
 import { generateAuditReport } from '../../../lib/audit-report'
-import { supabase } from '../../../lib/supabase'
+import {
+  createAuditAccessToken,
+  hasAuditAccessSecret,
+} from '../../../lib/audit-access'
 import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
 import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
+import {
+  getServerSupabaseClient,
+  hasServerSupabaseClient,
+} from '../../../lib/supabase-server'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 import {
   fetchWebsiteSignals,
@@ -193,15 +200,24 @@ export async function POST(request: Request) {
       steps_completed: 12, // all 12 steps completed — used for funnel analysis
     }
 
-    const { data, error } = await supabase
-      .from('audits')
-      .insert(insertPayload)
-      .select('id')
-      .single()
+    let storedAuditId: string | null = null
 
-    if (error) {
-      console.error('[generate-audit] failed to persist audit')
-      return Response.json({ audit })
+    if (hasServerSupabaseClient()) {
+      const supabase = getServerSupabaseClient()
+      const { data, error } = await supabase
+        .from('audits')
+        .insert(insertPayload)
+        .select('id')
+        .single()
+
+      if (error) {
+        console.error('[generate-audit] failed to persist audit')
+        return Response.json({ audit })
+      }
+
+      storedAuditId = typeof data?.id === 'string' ? data.id : null
+    } else {
+      console.error('[generate-audit] missing server Supabase configuration')
     }
 
     // ── Fire-and-forget notification ────────────────────────────────────────
@@ -231,7 +247,18 @@ export async function POST(request: Request) {
       body: JSON.stringify(notifyPayload),
     }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
-    return Response.json({ id: data.id })
+    if (!storedAuditId || !hasAuditAccessSecret()) {
+      return Response.json({ audit })
+    }
+
+    return Response.json({
+      id: storedAuditId,
+      accessToken: createAuditAccessToken({
+        auditId: storedAuditId,
+        scope: 'preview',
+        email,
+      }),
+    })
   } catch (err) {
     console.error('generate-audit error:', err)
     return serverErrorResponse()

@@ -19,8 +19,9 @@
  */
 
 import { Resend } from 'resend'
-import { supabase } from '../../../../lib/supabase'
+import { createAuditAccessToken, hasAuditAccessSecret } from '../../../../lib/audit-access'
 import { serverErrorResponse } from '../../../../lib/security'
+import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../../lib/supabase-server'
 
 const resend   = new Resend(process.env.RESEND_API_KEY)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.ai'
@@ -36,6 +37,21 @@ function daysAgo(n: number) {
 
 function fmtMoney(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`
+}
+
+function buildResultsUrl(auditId: string, email: string | null | undefined) {
+  const baseUrl = `${BASE_URL}/results?id=${encodeURIComponent(auditId)}`
+  if (!hasAuditAccessSecret()) {
+    return baseUrl
+  }
+
+  const accessToken = createAuditAccessToken({
+    auditId,
+    scope: 'preview',
+    email: email ?? undefined,
+  })
+
+  return `${baseUrl}&access=${encodeURIComponent(accessToken)}`
 }
 
 // ─── Email builders ───────────────────────────────────────────────────────────
@@ -143,6 +159,11 @@ function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | 
 export async function GET(request: Request) {
   // Verify the request comes from Vercel Cron or a trusted caller
   const authHeader = request.headers.get('authorization')
+  if (!CRON_SECRET) {
+    console.error('[followup cron] missing CRON_SECRET')
+    return serverErrorResponse()
+  }
+
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -150,6 +171,12 @@ export async function GET(request: Request) {
   const sent = { day1: 0, day3: 0, day7: 0, errors: 0 }
 
   try {
+    if (!hasServerSupabaseClient()) {
+      return serverErrorResponse()
+    }
+
+    const supabase = getServerSupabaseClient()
+
     // ── Day 1: audits created ~24h ago, follow_up_1_sent = false ──────────────
     const { data: day1Audits } = await supabase
       .from('audits')
@@ -164,7 +191,7 @@ export async function GET(request: Request) {
       const result = audit.result as Record<string, unknown> | null
       const score  = (result?.automation_readiness_score as number) ?? 50
       const waste  = (result?.estimated_annual_waste as number) ?? null
-      const resultsUrl = `${BASE_URL}/results?id=${audit.id}`
+      const resultsUrl = buildResultsUrl(audit.id, audit.email)
 
       const { subject, html } = buildDay1Email(audit.name ?? '', audit.company ?? '', resultsUrl, score, waste)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
@@ -188,7 +215,7 @@ export async function GET(request: Request) {
       const result  = audit.result as Record<string, unknown> | null
       const opps    = (result?.opportunities as Array<{ title: string; hours_saved_weekly: number; difficulty: string }>) ?? []
       const topOpp  = opps[0] ?? null
-      const resultsUrl = `${BASE_URL}/results?id=${audit.id}`
+      const resultsUrl = buildResultsUrl(audit.id, audit.email)
 
       const { subject, html } = buildDay3Email(audit.name ?? '', resultsUrl, topOpp)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
@@ -211,7 +238,7 @@ export async function GET(request: Request) {
       if (!audit.email) continue
       const result     = audit.result as Record<string, unknown> | null
       const waste      = (result?.estimated_annual_waste as number) ?? null
-      const resultsUrl = `${BASE_URL}/results?id=${audit.id}`
+      const resultsUrl = buildResultsUrl(audit.id, audit.email)
 
       const { subject, html } = buildDay7Email(audit.name ?? '', resultsUrl, waste)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })

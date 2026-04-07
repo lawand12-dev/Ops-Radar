@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
 import { Button } from '<npm>/components/ui/button'
 import { Input } from '<npm>/components/ui/input'
 import {
@@ -13,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '<npm>/components/ui/dialog'
+import { fetchAdminApi } from '../../../lib/admin-api-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +44,14 @@ type AuditEventRow = {
   report_stage?: string | null
   metadata?: Record<string, unknown> | null
   created_at?: string | null
+}
+
+type AdminDataResponse = {
+  audits: Record<string, unknown>[]
+  chats: Record<string, unknown>[]
+  builds: Record<string, unknown>[]
+  auditSessions: AuditSessionRow[]
+  auditEvents: AuditEventRow[]
 }
 
 const TABLES: TableMeta[] = [
@@ -387,11 +395,16 @@ function CleanupCard({
 
   async function handleConfirm() {
     setLoading(true)
-    const { count } = await onRun()
-    setLoading(false)
-    setConfirm(false)
-    setResult(`Deleted ${count} row${count !== 1 ? 's' : ''}`)
-    setTimeout(() => setResult(null), 4000)
+    try {
+      const { count } = await onRun()
+      setConfirm(false)
+      setResult(`Deleted ${count} row${count !== 1 ? 's' : ''}`)
+      setTimeout(() => setResult(null), 4000)
+    } catch (error) {
+      console.error('[admin-data] cleanup failed:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -436,17 +449,19 @@ function OldAuditsCard({ onRefresh }: { onRefresh: () => void }) {
 
   async function handleConfirm() {
     setLoading(true)
-    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-    const { error, count } = await supabase
-      .from('audits')
-      .delete({ count: 'exact' })
-      .lt('created_at', cutoff)
-    setLoading(false)
-    setConfirm(false)
-    if (!error) {
-      setResult(`Deleted ${count ?? 0} row${(count ?? 0) !== 1 ? 's' : ''}`)
+    try {
+      const data = await fetchAdminApi<{ count: number }>('/api/admin/data', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete-old-audits', days }),
+      })
+      setResult(`Deleted ${data.count ?? 0} row${(data.count ?? 0) !== 1 ? 's' : ''}`)
       setTimeout(() => setResult(null), 4000)
       onRefresh()
+    } catch (error) {
+      console.error('[admin-data] old audit cleanup failed:', error)
+    } finally {
+      setLoading(false)
+      setConfirm(false)
     }
   }
 
@@ -501,28 +516,25 @@ export default function AdminDataPage() {
   // ── Data loading ──────────────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
     setLoading(true)
+    try {
+      const data = await fetchAdminApi<AdminDataResponse>('/api/admin/data')
+      const a = data.audits ?? []
+      const c = data.chats ?? []
+      const b = data.builds ?? []
+      const s = data.auditSessions ?? []
+      const e = data.auditEvents ?? []
 
-    const [auditRes, chatRes, buildRes, auditSessionsRes, auditEventsRes] = await Promise.all([
-      supabase.from('audits').select('*').order('created_at', { ascending: false }),
-      supabase.from('chat_conversations').select('*').order('created_at', { ascending: false }),
-      supabase.from('build_requests').select('*').order('created_at', { ascending: false }),
-      supabase.from('audit_sessions').select('*').order('updated_at', { ascending: false }),
-      supabase.from('audit_events').select('*').order('created_at', { ascending: false }),
-    ])
-
-    const a = (auditRes.data ?? []) as Record<string, unknown>[]
-    const c = (chatRes.data  ?? []) as Record<string, unknown>[]
-    const b = (buildRes.data ?? []) as Record<string, unknown>[]
-    const s = (auditSessionsRes.data ?? []) as AuditSessionRow[]
-    const e = (auditEventsRes.data ?? []) as AuditEventRow[]
-
-    setAudits(a)
-    setChats(c)
-    setBuilds(b)
-    setAuditSessions(s)
-    setAuditEvents(e)
-    setCounts({ audits: a.length, chat_conversations: c.length, build_requests: b.length })
-    setLoading(false)
+      setAudits(a)
+      setChats(c)
+      setBuilds(b)
+      setAuditSessions(s)
+      setAuditEvents(e)
+      setCounts({ audits: a.length, chat_conversations: c.length, build_requests: b.length })
+    } catch (error) {
+      console.error('[admin-data] failed to load:', error)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -535,7 +547,10 @@ export default function AdminDataPage() {
 
   // ── Delete helpers ────────────────────────────────────────────────────────
   async function deleteRow(table: TableName, id: string) {
-    await supabase.from(table).delete().eq('id', id)
+    await fetchAdminApi('/api/admin/data', {
+      method: 'DELETE',
+      body: JSON.stringify({ table, id }),
+    })
   }
 
   async function handleSignOut() {
@@ -850,14 +865,12 @@ export default function AdminDataPage() {
               description='Removes audits where email or company_name contains "test".'
               color="#ef4444"
               onRun={async () => {
-                const { count: c1 } = await supabase
-                  .from('audits').delete({ count: 'exact' })
-                  .ilike('email', '%test%')
-                const { count: c2 } = await supabase
-                  .from('audits').delete({ count: 'exact' })
-                  .ilike('company', '%test%')
+                const result = await fetchAdminApi<{ count: number }>('/api/admin/data', {
+                  method: 'POST',
+                  body: JSON.stringify({ action: 'delete-test-audits' }),
+                })
                 await loadAll()
-                return { count: (c1 ?? 0) + (c2 ?? 0) }
+                return { count: result.count ?? 0 }
               }}
             />
 
@@ -866,14 +879,12 @@ export default function AdminDataPage() {
               description="Removes conversations with fewer than 2 messages."
               color="#f59e0b"
               onRun={async () => {
-                const empties = chats.filter(c => msgCount(c) < 2)
-                let deleted = 0
-                for (const c of empties) {
-                  const { error } = await supabase.from('chat_conversations').delete().eq('id', c.id as string)
-                  if (!error) deleted++
-                }
+                const result = await fetchAdminApi<{ count: number }>('/api/admin/data', {
+                  method: 'POST',
+                  body: JSON.stringify({ action: 'delete-empty-chat-conversations' }),
+                })
                 await loadAll()
-                return { count: deleted }
+                return { count: result.count ?? 0 }
               }}
             />
 

@@ -21,9 +21,9 @@
  *   CREATE INDEX IF NOT EXISTS audit_events_name_idx ON audit_events(event_name);
  */
 
-import { supabase } from '../../../lib/supabase'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { sanitizeString } from '../../../lib/security'
+import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/supabase-server'
 
 const ALLOWED_EVENTS = new Set([
   'audit_started',
@@ -86,6 +86,11 @@ export async function POST(request: Request) {
       return Response.json({ ok: false }, { status: 400 })
     }
 
+    if (!hasServerSupabaseClient()) {
+      return Response.json({ ok: true })
+    }
+
+    const supabase = getServerSupabaseClient()
     await supabase.from('audit_events').insert({
       session_id: sessionId || null,
       audit_id: auditId || null,
