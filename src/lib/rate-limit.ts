@@ -7,9 +7,11 @@ interface RateLimitEntry {
 
 type RateLimitName =
   | 'admin-auth'
+  | 'audit-result'
   | 'audit-step'
   | 'build-request'
   | 'chat'
+  | 'chat-conversations'
   | 'chat-history'
   | 'funnel-event'
   | 'generate-audit'
@@ -21,9 +23,11 @@ const rateLimiter = new Map<string, RateLimitEntry>()
 
 const RATE_LIMITS: Record<RateLimitName, { limit: number; windowMs: number }> = {
   'admin-auth': { limit: 10, windowMs: ONE_HOUR_MS },
+  'audit-result': { limit: 120, windowMs: ONE_HOUR_MS },
   'audit-step': { limit: 120, windowMs: ONE_HOUR_MS },
   'build-request': { limit: 10, windowMs: ONE_HOUR_MS },
   chat: { limit: 20, windowMs: ONE_HOUR_MS },
+  'chat-conversations': { limit: 120, windowMs: ONE_HOUR_MS },
   'chat-history': { limit: 10, windowMs: ONE_HOUR_MS },
   'funnel-event': { limit: 240, windowMs: ONE_HOUR_MS },
   'generate-audit': { limit: 3, windowMs: ONE_HOUR_MS },

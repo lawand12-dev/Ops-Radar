@@ -1,8 +1,14 @@
 import { Resend } from 'resend'
-import { supabase } from '../../../lib/supabase'
+import {
+  createAuditAccessToken,
+  extractAuditAccessToken,
+  hasAuditAccessSecret,
+  verifyAuditAccessToken,
+} from '../../../lib/audit-access'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 import { coerceAuditInput, generateAuditReport, isPreviewAuditReport } from '../../../lib/audit-report'
+import { getServerSupabaseClient } from '../../../lib/supabase-server'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -18,11 +24,13 @@ export async function POST(request: Request) {
     const body = await request.json()
     const email = sanitizeString(String(body?.email ?? ''), 320)
     const auditId = typeof body?.auditId === 'string' ? sanitizeString(body.auditId, 200) : null
+    const accessToken = extractAuditAccessToken(request)
 
-    if (!auditId) {
-      return Response.json({ error: 'Invalid audit reference' }, { status: 400 })
+    if (!auditId || !accessToken || !hasAuditAccessSecret()) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const supabase = getServerSupabaseClient()
     const { data, error: auditError } = await supabase
       .from('audits')
       .select('company, email, answers, result')
@@ -31,6 +39,12 @@ export async function POST(request: Request) {
 
     if (auditError || !data) {
       return Response.json({ error: 'Invalid audit reference' }, { status: 404 })
+    }
+
+    const requiredScope = isPreviewAuditReport(data.result) ? 'preview' : 'full'
+    const grantedAccess = verifyAuditAccessToken(accessToken, auditId, requiredScope)
+    if (!grantedAccess) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const targetEmail = email || sanitizeString(String(data.email ?? ''), 320)
@@ -50,7 +64,6 @@ export async function POST(request: Request) {
       const { error: updateError } = await supabase
         .from('audits')
         .update({
-          email: targetEmail,
           result: auditResult,
         })
         .eq('id', auditId)
@@ -59,25 +72,19 @@ export async function POST(request: Request) {
         console.error('[send-unlock-email] failed to persist full audit')
         return serverErrorResponse()
       }
-    } else if (targetEmail !== data.email) {
-      const { error: emailUpdateError } = await supabase
-        .from('audits')
-        .update({ email: targetEmail })
-        .eq('id', auditId)
-
-      if (emailUpdateError) {
-        console.error('[send-unlock-email] failed to update email')
-        return serverErrorResponse()
-      }
     }
+
+    const fullAccessToken = createAuditAccessToken({
+      auditId,
+      scope: 'full',
+      email: targetEmail,
+    })
 
     const company = data.company ?? ''
     const readinessScore = (auditResult?.automation_readiness_score as number) ?? null
     const annualWaste = (auditResult?.estimated_annual_waste as number) ?? null
 
-    const resultsUrl = auditId
-      ? `${BASE_URL}/results?id=${auditId}`
-      : `${BASE_URL}/audit`
+    const resultsUrl = `${BASE_URL}/results?id=${encodeURIComponent(auditId)}&access=${encodeURIComponent(fullAccessToken)}`
 
     const scoreColor = readinessScore != null
       ? readinessScore >= 60 ? '#10b981' : readinessScore >= 30 ? '#f59e0b' : '#ef4444'
@@ -167,7 +174,7 @@ export async function POST(request: Request) {
       return serverErrorResponse()
     }
 
-    return Response.json({ ok: true, email: targetEmail })
+    return Response.json({ ok: true, email: targetEmail, accessToken: fullAccessToken })
   } catch (err) {
     console.error('[send-unlock-email] Unexpected error:', err)
     return serverErrorResponse()

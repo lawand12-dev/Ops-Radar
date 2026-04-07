@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import EmailCaptureModal, { type LeadInfo } from '../components/EmailCaptureModal'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
+import { storeAuditAccessToken } from '../../lib/audit-access-client'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -784,10 +785,22 @@ export default function AuditPage() {
       const data = await res.json()
       if (!res.ok || (!data.id && !data.audit)) throw new Error(data.error ?? 'Something went wrong')
 
+      const secureAuditId = (
+        typeof data.id === 'string' &&
+        typeof data.accessToken === 'string' &&
+        data.accessToken.trim()
+      )
+        ? data.id
+        : null
+
+      if (secureAuditId) {
+        storeAuditAccessToken(secureAuditId, data.accessToken)
+      }
+
       sendFunnelEvent({
         event: 'audit_submitted',
         sessionId: sessionIdRef.current,
-        auditId: typeof data.id === 'string' ? data.id : null,
+        auditId: secureAuditId,
         step: TOTAL_STEPS,
         reportStage: data.audit?.report_stage === 'full' ? 'full' : 'preview',
         metadata: {
@@ -797,7 +810,7 @@ export default function AuditPage() {
       })
 
       sessionStorage.setItem(REPORT_HANDOFF_KEY, JSON.stringify({
-        auditId: typeof data.id === 'string' ? data.id : null,
+        auditId: secureAuditId,
         company: lead.company,
         agencyType: answers.agencyType === 'Other' && answers.agencyTypeOther
           ? answers.agencyTypeOther
@@ -822,7 +835,9 @@ export default function AuditPage() {
         sessionStorage.removeItem('opsradar_audit')
       }
 
-      const dest = data.id ? `/results?id=${data.id}` : '/results'
+      const dest = secureAuditId
+        ? `/results?id=${encodeURIComponent(secureAuditId)}&access=${encodeURIComponent(data.accessToken)}`
+        : '/results'
       router.push(dest)
     } catch (err) {
       clearInterval(interval)

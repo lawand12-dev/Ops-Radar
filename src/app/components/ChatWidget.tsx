@@ -3,21 +3,26 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { supabase } from '../../lib/supabase'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Message     = { role: 'user' | 'assistant'; content: string; timestamp: string }
 type ConvSummary = { id: string; created_at: string; updated_at: string | null; preview: string }
+type ConversationRecord = {
+  id: string
+  created_at: string
+  updated_at: string | null
+  messages: Message[]
+  visitor_email?: string | null
+}
+type ConversationBootstrapResponse = {
+  visitorId?: string
+  latestConversation?: ConversationRecord | null
+  conversations?: ConvSummary[]
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function genId(): string {
-  return typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2) + Date.now().toString(36)
-}
 
 function makeWelcome(): Message {
   return {
@@ -42,11 +47,21 @@ function fmtDate(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function buildPreview(messages: Message[]): string {
+  const firstUser = messages.find((message) => message.role === 'user')
+  if (!firstUser) {
+    return ''
+  }
+
+  return firstUser.content.length > 52
+    ? `${firstUser.content.slice(0, 52)}...`
+    : firstUser.content
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const VISITOR_KEY   = 'opsradar_visitor_id'
-const EMAIL_KEY     = 'opsradar_visitor_email'
-const MAX_HISTORY   = 10
+const VISITOR_KEY = 'opsradar_visitor_id'
+const EMAIL_KEY = 'opsradar_visitor_email'
 
 const QUICK_ACTIONS = [
   { label: 'What do you do?',        message: 'What does OpsRadar do?' },
@@ -81,50 +96,59 @@ export default function ChatWidget() {
   useEffect(() => { visitorIdRef.current   = visitorId },   [visitorId])
   useEffect(() => { visitorEmailRef.current = visitorEmail }, [visitorEmail])
 
-  // ── Init: generate or retrieve visitor ID ────────────────────────────────────
+  // ── Init: restore local email so verified history can prefill quickly ───────
   useEffect(() => {
-    let vid = localStorage.getItem(VISITOR_KEY)
-    if (!vid) {
-      vid = genId()
-      localStorage.setItem(VISITOR_KEY, vid)
+    const storedEmail = localStorage.getItem(EMAIL_KEY)
+    if (storedEmail) {
+      setVisitorEmail(storedEmail)
+      visitorEmailRef.current = storedEmail
     }
-    setVisitorId(vid)
-    visitorIdRef.current = vid
   }, [])
 
   // ── On first open: load last conversation + history list ──────────────────────
   useEffect(() => {
-    if (!open || !visitorId || historyLoaded) return
+    if (!open || historyLoaded) return
     setHistoryLoaded(true)
 
-    const loadInitialConv = async () => {
-      const query = supabase
-        .from('chat_conversations')
-        .select('id, messages, visitor_email')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .eq('visitor_id', visitorId)
+    const loadInitialState = async () => {
+      try {
+        const res = await fetch('/api/chat-conversations?view=initial', {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
 
-      const { data } = await query.single()
-      if (!data) return
-
-      const stored = (data.messages ?? []) as Message[]
-      // Only restore if there's a real exchange (more than the welcome message)
-      if (stored.filter(m => m.role === 'user').length > 0) {
-        setMsgs(stored)
-        setConvId(data.id)
-        convIdRef.current = data.id
-        if (data.visitor_email) {
-          setVisitorEmail(data.visitor_email)
-          visitorEmailRef.current = data.visitor_email
-          localStorage.setItem(EMAIL_KEY, data.visitor_email)
+        const data = await res.json() as ConversationBootstrapResponse
+        if (typeof data.visitorId === 'string' && data.visitorId) {
+          setVisitorId(data.visitorId)
+          visitorIdRef.current = data.visitorId
+          localStorage.setItem(VISITOR_KEY, data.visitorId)
         }
+
+        const summaries = Array.isArray(data.conversations) ? data.conversations : []
+        setConvList(summaries)
+
+        const latestConversation = data.latestConversation
+        if (!latestConversation || !Array.isArray(latestConversation.messages)) return
+
+        const stored = latestConversation.messages
+        if (stored.some((message) => message.role === 'user')) {
+          setMsgs(stored)
+          setConvId(latestConversation.id)
+          convIdRef.current = latestConversation.id
+        }
+
+        if (latestConversation.visitor_email) {
+          setVisitorEmail(latestConversation.visitor_email)
+          visitorEmailRef.current = latestConversation.visitor_email
+          localStorage.setItem(EMAIL_KEY, latestConversation.visitor_email)
+        }
+      } catch {
+        // Keep chat usable even if history storage is unavailable.
       }
     }
 
-    loadInitialConv()
-    fetchConvList(visitorId)
-  }, [open, visitorId, historyLoaded])
+    loadInitialState()
+  }, [open, historyLoaded])
 
   // ── Scroll to bottom ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -137,70 +161,100 @@ export default function ChatWidget() {
   }, [open])
 
   // ── Fetch conversation list ───────────────────────────────────────────────────
-  async function fetchConvList(vid: string) {
-    const query = supabase
-      .from('chat_conversations')
-      .select('id, created_at, updated_at, messages')
-      .order('created_at', { ascending: false })
-      .limit(MAX_HISTORY)
-      .eq('visitor_id', vid)
-
-    const { data } = await query
-    if (!data) return
-
-    const summaries: ConvSummary[] = data
-      .map(row => {
-        const messages  = (row.messages ?? []) as Message[]
-        const firstUser = messages.find(m => m.role === 'user')
-        return {
-          id:         row.id,
-          created_at: row.created_at,
-          updated_at: row.updated_at ?? null,
-          preview:    firstUser
-            ? firstUser.content.slice(0, 52) + (firstUser.content.length > 52 ? '…' : '')
-            : 'New conversation',
-        }
+  async function fetchConvList() {
+    try {
+      const res = await fetch('/api/chat-conversations?view=list', {
+        cache: 'no-store',
       })
-      // Only show convs that have at least one user message
-      .filter(s => s.preview !== 'New conversation' || s.id === convIdRef.current)
+      if (!res.ok) return
 
-    setConvList(summaries)
+      const data = await res.json() as ConversationBootstrapResponse
+      if (typeof data.visitorId === 'string' && data.visitorId) {
+        setVisitorId(data.visitorId)
+        visitorIdRef.current = data.visitorId
+        localStorage.setItem(VISITOR_KEY, data.visitorId)
+      }
+
+      if (Array.isArray(data.conversations)) {
+        setConvList(data.conversations)
+      }
+    } catch {
+      // Keep the widget interactive if persistence is unavailable.
+    }
+  }
+
+  function syncConversationSummary(
+    conversationId: string,
+    messages: Message[],
+    createdAt = new Date().toISOString(),
+    updatedAt = new Date().toISOString(),
+  ) {
+    const preview = buildPreview(messages)
+    if (!preview) {
+      return
+    }
+
+    setConvList((previous) => {
+      const existing = previous.find((entry) => entry.id === conversationId)
+      return [
+        {
+          id: conversationId,
+          created_at: existing?.created_at ?? createdAt,
+          updated_at: updatedAt,
+          preview,
+        },
+        ...previous.filter((entry) => entry.id !== conversationId),
+      ].slice(0, 10)
+    })
   }
 
   // ── Persist conversation ──────────────────────────────────────────────────────
-  const saveConversation = useCallback((finalMsgs: Message[], email: string | null) => {
-    const vid = visitorIdRef.current
-    if (!vid) return
-
+  const saveConversation = useCallback(async (finalMsgs: Message[], email: string | null) => {
     // Save the email locally so the verified history flow can prefill it later
     if (email) {
       localStorage.setItem(EMAIL_KEY, email)
     }
 
-    const cid     = convIdRef.current
-    const payload = {
-      visitor_id: vid,
-      messages:   finalMsgs,
-      updated_at: new Date().toISOString(),
-      ...(email ? { visitor_email: email } : {}),
+    try {
+      const startedAsNewConversation = !convIdRef.current
+      const res = await fetch('/api/chat-conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: convIdRef.current,
+          messages: finalMsgs,
+          visitorEmail: email,
+        }),
+      })
+      if (!res.ok) return null
+
+      const data = await res.json() as {
+        visitorId?: string
+        conversationId?: string | null
+      }
+
+      if (typeof data.visitorId === 'string' && data.visitorId) {
+        setVisitorId(data.visitorId)
+        visitorIdRef.current = data.visitorId
+        localStorage.setItem(VISITOR_KEY, data.visitorId)
+      }
+
+      if (typeof data.conversationId === 'string' && data.conversationId) {
+        setConvId(data.conversationId)
+        convIdRef.current = data.conversationId
+        syncConversationSummary(data.conversationId, finalMsgs)
+
+        if (startedAsNewConversation) {
+          await fetchConvList()
+        }
+
+        return data.conversationId
+      }
+    } catch {
+      return null
     }
-    if (cid) {
-      supabase.from('chat_conversations').update(payload).eq('id', cid).then(() => {})
-    } else {
-      supabase
-        .from('chat_conversations')
-        .insert(payload)
-        .select('id')
-        .single()
-        .then(({ data }) => {
-          if (data?.id) {
-            setConvId(data.id)
-            convIdRef.current = data.id
-            // Refresh the history list so it shows the new conv
-            if (vid) fetchConvList(vid)
-          }
-        })
-    }
+
+    return null
   }, [])
 
   // ── Start a fresh conversation ────────────────────────────────────────────────
@@ -212,29 +266,43 @@ export default function ChatWidget() {
     setHasAskedContact(false)
     setShowHistory(false)
     setTimeout(() => inputRef.current?.focus(), 100)
-    const vid = visitorIdRef.current
-    if (vid) fetchConvList(vid)
+    fetchConvList().catch(() => {})
   }
 
   // ── Load a conversation from history ─────────────────────────────────────────
   async function loadConversation(id: string) {
-    const { data } = await supabase
-      .from('chat_conversations')
-      .select('id, messages, visitor_email')
-      .eq('id', id)
-      .single()
+    try {
+      const res = await fetch(`/api/chat-conversations?id=${encodeURIComponent(id)}`, {
+        cache: 'no-store',
+      })
+      if (!res.ok) return
 
-    if (!data) return
-    const stored = (data.messages ?? []) as Message[]
-    setMsgs(stored)
-    setConvId(data.id)
-    convIdRef.current = data.id
-    if (data.visitor_email) {
-      setVisitorEmail(data.visitor_email)
-      visitorEmailRef.current = data.visitor_email
+      const data = await res.json() as {
+        visitorId?: string
+        conversation?: ConversationRecord | null
+      }
+      if (typeof data.visitorId === 'string' && data.visitorId) {
+        setVisitorId(data.visitorId)
+        visitorIdRef.current = data.visitorId
+        localStorage.setItem(VISITOR_KEY, data.visitorId)
+      }
+
+      if (!data.conversation) return
+
+      const stored = Array.isArray(data.conversation.messages) ? data.conversation.messages : []
+      setMsgs(stored)
+      setConvId(data.conversation.id)
+      convIdRef.current = data.conversation.id
+      if (data.conversation.visitor_email) {
+        setVisitorEmail(data.conversation.visitor_email)
+        visitorEmailRef.current = data.conversation.visitor_email
+        localStorage.setItem(EMAIL_KEY, data.conversation.visitor_email)
+      }
+      setShowHistory(false)
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior }), 50)
+    } catch {
+      // Ignore storage errors and keep the current conversation in place.
     }
-    setShowHistory(false)
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior }), 50)
   }
 
   // ── Send message ──────────────────────────────────────────────────────────────
@@ -300,6 +368,11 @@ export default function ChatWidget() {
       if (detectedEmail) {
         setVisitorEmail(detectedEmail)
         visitorEmailRef.current = detectedEmail
+      }
+
+      const savedConversationId = await saveConversation(finalMsgs, activeEmail)
+
+      if (detectedEmail) {
         // Notify operator — fire-and-forget, don't block UI
         const userMsgs = finalMsgs.filter(m => m.role === 'user')
         fetch('/api/notify-chat-lead', {
@@ -309,12 +382,11 @@ export default function ChatWidget() {
             visitorEmail: detectedEmail,
             messageCount: userMsgs.length,
             lastMessage: trimmed,
-            conversationId: convIdRef.current,
+            conversationId: savedConversationId ?? convIdRef.current,
             ...getAbuseProtectionPayload(leadStartedAtRef.current),
           }),
         }).catch(() => { /* non-critical */ })
       }
-      saveConversation(finalMsgs, activeEmail)
 
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') return

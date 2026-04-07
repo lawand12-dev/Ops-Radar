@@ -24,13 +24,7 @@ type SessionPayload = {
 }
 
 function getAuthSecret(): string | null {
-  return (
-    process.env.CHAT_HISTORY_AUTH_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    process.env.OPENAI_API_KEY ||
-    process.env.RESEND_API_KEY ||
-    null
-  )
+  return process.env.CHAT_HISTORY_AUTH_SECRET || null
 }
 
 function encode(value: string): string {

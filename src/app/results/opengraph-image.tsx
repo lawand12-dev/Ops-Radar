@@ -1,14 +1,21 @@
 import { ImageResponse } from 'next/og'
-import { supabase } from '../../lib/supabase'
+import { isPreviewAuditReport } from '../../lib/audit-report'
+import { verifyAuditAccessToken } from '../../lib/audit-access'
+import { getServerSupabaseClient } from '../../lib/supabase-server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const alt = 'OpsRadar Automation Audit'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-export default async function Image({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default async function Image({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; access?: string }>
+}) {
   const params = await searchParams
   const id = params.id
+  const accessToken = (params.access ?? '').trim().slice(0, 2048)
 
   let company    = ''
   let score      = 0
@@ -16,14 +23,17 @@ export default async function Image({ searchParams }: { searchParams: Promise<{ 
   let oppCount   = 0
   let headline   = 'Your Automation Audit Is Ready'
 
-  if (id) {
+  if (id && accessToken) {
+    const supabase = getServerSupabaseClient()
     const { data } = await supabase
       .from('audits')
       .select('company, result')
       .eq('id', id)
       .single()
 
-    if (data) {
+    const requiredScope = data?.result && isPreviewAuditReport(data.result) ? 'preview' : 'full'
+
+    if (data && verifyAuditAccessToken(accessToken, id, requiredScope)) {
       company    = data.company ?? ''
       const r    = data.result as Record<string, unknown> | null
       score      = (r?.automation_readiness_score as number) ?? 0

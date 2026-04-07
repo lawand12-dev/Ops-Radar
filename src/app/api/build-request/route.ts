@@ -1,8 +1,8 @@
 import { Resend } from 'resend'
-import { supabase } from '../../../lib/supabase'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
+import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/supabase-server'
 
 // Table DDL (run once in Supabase SQL editor):
 // CREATE TABLE build_requests (
@@ -58,13 +58,18 @@ export async function POST(request: Request) {
     }
 
     // ── Save to Supabase ─────────────────────────────────────────────────
-    const { error: dbError } = await supabase
-      .from('build_requests')
-      .insert({ audit_id: audit_id ?? null, automation_title, name, email, budget, timeline, notes: notes || null })
+    if (hasServerSupabaseClient()) {
+      const supabase = getServerSupabaseClient()
+      const { error: dbError } = await supabase
+        .from('build_requests')
+        .insert({ audit_id: audit_id ?? null, automation_title, name, email, budget, timeline, notes: notes || null })
 
-    if (dbError) {
-      console.error('[build-request] Supabase error:', dbError.message)
-      // Non-fatal — still send the email
+      if (dbError) {
+        console.error('[build-request] Supabase error:', dbError.message)
+        // Non-fatal — still send the email
+      }
+    } else {
+      console.error('[build-request] missing server Supabase configuration')
     }
 
     // ── Send notification email ──────────────────────────────────────────

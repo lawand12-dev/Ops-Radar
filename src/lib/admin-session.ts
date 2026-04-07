@@ -10,12 +10,7 @@ type AdminSessionPayload = {
 }
 
 function getAdminSessionSecret(): string | null {
-  return (
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    process.env.OPENAI_API_KEY ||
-    null
-  )
+  return process.env.ADMIN_SESSION_SECRET || null
 }
 
 function encode(value: string): string {
@@ -78,4 +73,12 @@ export function isValidAdminSessionToken(token: string | undefined): boolean {
   } catch {
     return false
   }
+}
+
+export function getAdminSessionTokenFromCookieHeader(cookieHeader: string): string | undefined {
+  return cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${ADMIN_SESSION_COOKIE}=`))
+    ?.slice(ADMIN_SESSION_COOKIE.length + 1)
 }

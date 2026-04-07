@@ -20,7 +20,7 @@ export type WebsiteVisualSignals = {
   evidence: WebsiteVisualEvidence[]
 }
 
-const SCREENSHOT_BASE_URL = process.env.WEBSITE_SCREENSHOT_BASE_URL || 'https://image.thum.io/get'
+const DEFAULT_SCREENSHOT_BASE_URL = 'https://image.thum.io/get'
 
 const VISUAL_SYSTEM_PROMPT = `
 You are the OpsRadar visual website analyst.
@@ -131,7 +131,24 @@ function buildSummary(parsed: {
 export function buildWebsiteScreenshotUrl(rawUrl: string): string {
   const normalized = normalizeWebsiteUrlInput(rawUrl)
   if (!normalized) return ''
-  return `${SCREENSHOT_BASE_URL}/width/1440/crop/1200/noanimate/${normalized}`
+
+  try {
+    const screenshotBaseUrl = new URL(
+      process.env.WEBSITE_SCREENSHOT_BASE_URL || DEFAULT_SCREENSHOT_BASE_URL,
+    )
+    if (
+      screenshotBaseUrl.protocol !== 'https:' ||
+      screenshotBaseUrl.username ||
+      screenshotBaseUrl.password ||
+      !normalizeWebsiteUrlInput(screenshotBaseUrl.origin)
+    ) {
+      return ''
+    }
+
+    return `${screenshotBaseUrl.toString().replace(/\/+$/, '')}/width/1440/crop/1200/noanimate/${normalized}`
+  } catch {
+    return ''
+  }
 }
 
 export function serializeWebsiteVisualEvidence(evidence: WebsiteVisualEvidence[]): string {

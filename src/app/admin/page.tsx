@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/button'
+import { fetchAdminApi } from '../../lib/admin-api-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,6 +60,7 @@ type AuditRow = {
   company: string;
   answers: Answers;
   result: AuditResult;
+  previewAccessToken?: string | null;
 }
 
 // Helpers
@@ -98,9 +99,12 @@ function diffBadge(d: string) {
 
 // Expanded row detail
 function AuditDetail({ audit }: { audit: AuditRow }) {
-  const { answers, result, id } = audit
+  const { answers, result, id, previewAccessToken } = audit
   const opps = result.opportunities ?? []
   const tools = result.tools_analysis
+  const reportHref = previewAccessToken
+    ? `/results?id=${encodeURIComponent(id)}&access=${encodeURIComponent(previewAccessToken)}`
+    : `/results?id=${encodeURIComponent(id)}`
 
   return (
     <div className="mt-4 space-y-5 text-[13px]">
@@ -172,7 +176,7 @@ function AuditDetail({ audit }: { audit: AuditRow }) {
       )}
 
       <div className="flex items-center justify-end pt-2">
-        <Link href={`/results?id=${id}`} target="_blank" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-primary/8 border border-primary/20 text-primary hover:bg-primary/15 transition-colors">
+        <Link href={reportHref} target="_blank" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-primary/8 border border-primary/20 text-primary hover:bg-primary/15 transition-colors">
           View Full Report
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 6h8M6.5 2.5l4 3.5-4 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -193,13 +197,13 @@ export default function AdminPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase
-      .from('audits')
-      .select('id, created_at, name, email, company, answers, result')
-      .order('created_at', { ascending: false })
-      .then(({ data, error: err }) => {
-        if (err) setError(err.message)
-        else setAudits((data ?? []) as AuditRow[])
+    fetchAdminApi<{ audits: AuditRow[] }>('/api/admin/data?view=audits')
+      .then((data) => {
+        setAudits(data.audits ?? [])
+        setLoading(false)
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Failed to load audits')
         setLoading(false)
       })
   }, [])

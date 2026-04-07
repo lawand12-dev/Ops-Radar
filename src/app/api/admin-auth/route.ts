@@ -4,6 +4,7 @@ import {
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE,
   createAdminSessionToken,
+  getAdminSessionTokenFromCookieHeader,
   hasAdminSessionSecret,
   isValidAdminSessionToken,
 } from '../../../lib/admin-session'
@@ -32,12 +33,9 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const cookieHeader = request.headers.get('cookie') ?? ''
-  const sessionCookie = cookieHeader
-    .split(';')
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${ADMIN_SESSION_COOKIE}=`))
-    ?.slice(ADMIN_SESSION_COOKIE.length + 1)
+  const sessionCookie = getAdminSessionTokenFromCookieHeader(
+    request.headers.get('cookie') ?? '',
+  )
 
   return Response.json({ authenticated: isValidAdminSessionToken(sessionCookie) })
 }

@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../lib/security'
-import { supabase } from '../../../lib/supabase'
 import { Resend } from 'resend'
 import {
   CHAT_HISTORY_ACCESS_COOKIE,
@@ -14,6 +13,7 @@ import {
   hasChatHistoryAuthSecret,
   verifyChatHistoryAccessToken,
 } from '../../../lib/chat-history-auth'
+import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/supabase-server'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -21,6 +21,7 @@ const ACCESS_CODE_REGEX = /^\d{6}$/
 const ACCESS_CODE_MESSAGE = 'If we found chat history for that email, we sent a verification code.'
 
 async function hasChatHistory(email: string) {
+  const supabase = getServerSupabaseClient()
   const { data, error } = await supabase
     .from('chat_conversations')
     .select('id')
@@ -76,6 +77,12 @@ export async function POST(request: NextRequest) {
     if (rateLimitResponse) {
       return rateLimitResponse
     }
+
+    if (!hasServerSupabaseClient()) {
+      return serverErrorResponse()
+    }
+
+    const supabase = getServerSupabaseClient()
 
     const body = await request.json()
     const action = sanitizeString(String(body?.action ?? ''), 64)

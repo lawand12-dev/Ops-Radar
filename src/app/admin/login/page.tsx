@@ -3,7 +3,6 @@
 import { Suspense } from 'react'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
 
 export default function LoginPage() {
   return (
@@ -14,7 +13,6 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -25,18 +23,26 @@ function LoginContent() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    
-    if (loginError) {
-      setError(loginError.message)
-    } else {
+
+    try {
+      const response = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: {
+          'x-admin-password': password,
+        },
+      })
+
+      const data = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : 'Login failed')
+      }
+
       const redirectTo = searchParams.get('redirectTo') || '/admin'
-      router.push(redirectTo)
+      router.replace(redirectTo)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed')
     }
+
     setLoading(false)
   }
 
@@ -51,18 +57,10 @@ function LoginContent() {
         )}
         <form onSubmit={handleLogin}>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full px-3 py-2 border rounded-lg mb-4"
-            required
-          />
-          <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder="Admin Password"
             className="w-full px-3 py-2 border rounded-lg mb-6"
             required
           />
