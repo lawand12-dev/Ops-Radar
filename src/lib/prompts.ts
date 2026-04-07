@@ -255,3 +255,51 @@ ${buildAuditGroundingPrompt(data)}
 
 Generate the audit JSON. Every number must be derived from these actual inputs. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Connect roadmap.path_to_vision directly to their stated 6-month vision.`
 }
+
+export function buildAuditRepairPrompt(
+  data: AuditInput,
+  stage: 'preview' | 'full',
+  draft: Record<string, unknown>,
+  quality: {
+    overall: number
+    opportunityScores: number[]
+    issues: string[]
+    opportunityIssues: string[][]
+    lowEvidenceMode: boolean
+  },
+): string {
+  const issueLines = quality.issues.length > 0
+    ? quality.issues.map((issue) => `- ${issue}`).join('\n')
+    : '- No top-level issues were detected, but the quality gate requested a stronger draft.'
+
+  const opportunityLines = quality.opportunityIssues
+    .map((issues, index) => {
+      if (issues.length === 0) return `- Opportunity ${index + 1}: no flagged issues.`
+      return `- Opportunity ${index + 1}: ${issues.join(' ')}`
+    })
+    .join('\n')
+
+  return `${buildUserPrompt(data)}
+
+QA REPAIR MODE:
+- Revise the existing ${stage} audit draft below.
+- Keep the exact same JSON schema for this audit stage.
+- Fix the quality issues without adding any commentary outside the JSON object.
+- Do not expose confidence scores, QA notes, or internal reasoning in the output.
+- If evidence is thin, stay conservative and use simpler, better-grounded recommendations instead of sounding overly certain.
+- Never invent tools or n8n nodes. If a tool is uncertain, prefer a more general but still accurate workflow.
+
+QUALITY GATE SUMMARY:
+- Overall confidence before repair: ${quality.overall}/100
+- Low-evidence mode: ${quality.lowEvidenceMode ? 'yes' : 'no'}
+- Opportunity scores: ${quality.opportunityScores.join(', ')}
+
+TOP-LEVEL ISSUES:
+${issueLines}
+
+OPPORTUNITY ISSUES:
+${opportunityLines}
+
+CURRENT DRAFT JSON:
+${JSON.stringify(draft)}`
+}

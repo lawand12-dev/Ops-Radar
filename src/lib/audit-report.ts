@@ -1,5 +1,5 @@
 import { openai } from './openai'
-import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildUserPrompt, type AuditInput } from './prompts'
+import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildAuditRepairPrompt, buildUserPrompt, type AuditInput } from './prompts'
 import { assessAuditConfidence, groundAuditResult } from './audit-grounding'
 import { sanitizeString } from './security'
 
@@ -69,25 +69,47 @@ export function coerceAuditInput(value: unknown): AuditInput | null {
   return normalized as AuditInput
 }
 
-export async function generateAuditReport(
+function getSystemPrompt(stage: AuditReportStage): string {
+  return stage === 'preview' ? PREVIEW_SYSTEM_PROMPT : SYSTEM_PROMPT
+}
+
+function getTemperature(stage: AuditReportStage): number {
+  return stage === 'preview' ? 0.2 : 0.25
+}
+
+function getMaxTokens(stage: AuditReportStage): number {
+  return stage === 'preview' ? 900 : 2200
+}
+
+function parseAuditResponse(raw: string): Record<string, unknown> {
+  const parsed = JSON.parse(raw)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Invalid audit response')
+  }
+
+  return parsed as Record<string, unknown>
+}
+
+async function requestAuditDraft(
   input: AuditInput,
   stage: AuditReportStage,
+  userPrompt: string,
 ): Promise<Record<string, unknown>> {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
         role: 'system',
-        content: stage === 'preview' ? PREVIEW_SYSTEM_PROMPT : SYSTEM_PROMPT,
+        content: getSystemPrompt(stage),
       },
       {
         role: 'user',
-        content: buildUserPrompt(input),
+        content: userPrompt,
       },
     ],
     response_format: { type: 'json_object' },
-    temperature: stage === 'preview' ? 0.2 : 0.25,
-    max_tokens: stage === 'preview' ? 900 : 2200,
+    temperature: getTemperature(stage),
+    max_tokens: getMaxTokens(stage),
   })
 
   const raw = completion.choices[0].message.content
@@ -95,24 +117,70 @@ export async function generateAuditReport(
     throw new Error('Missing audit response')
   }
 
-  const parsed = JSON.parse(raw)
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Invalid audit response')
+  return parseAuditResponse(raw)
+}
+
+function shouldRepairAudit(
+  confidence: ReturnType<typeof assessAuditConfidence>,
+  stage: AuditReportStage,
+): boolean {
+  const opportunityFloor = stage === 'preview' ? 65 : 70
+  return (
+    confidence.overall < 78
+    || confidence.opportunityScores.some((score) => score < opportunityFloor)
+    || confidence.issues.length >= 2
+  )
+}
+
+function rankAuditConfidence(confidence: ReturnType<typeof assessAuditConfidence>): number {
+  const weakOpportunities = confidence.opportunityScores.filter((score) => score < 70).length
+  return (confidence.overall * 10) - (confidence.issues.length * 6) - (weakOpportunities * 8)
+}
+
+export async function generateAuditReport(
+  input: AuditInput,
+  stage: AuditReportStage,
+): Promise<Record<string, unknown>> {
+  const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input))
+  const initialGrounded = groundAuditResult(initialDraft, input, stage)
+  const initialConfidence = assessAuditConfidence(initialGrounded, input, stage)
+
+  let bestAudit = initialGrounded
+  let bestConfidence = initialConfidence
+
+  if (shouldRepairAudit(initialConfidence, stage)) {
+    try {
+      const repairedDraft = await requestAuditDraft(
+        input,
+        stage,
+        buildAuditRepairPrompt(input, stage, initialGrounded, initialConfidence),
+      )
+      const repairedGrounded = groundAuditResult(repairedDraft, input, stage)
+      const repairedConfidence = assessAuditConfidence(repairedGrounded, input, stage)
+
+      if (rankAuditConfidence(repairedConfidence) >= rankAuditConfidence(initialConfidence)) {
+        bestAudit = repairedGrounded
+        bestConfidence = repairedConfidence
+      }
+    } catch (error) {
+      console.warn('[audit-report] repair pass failed', {
+        stage,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 
-  const grounded = groundAuditResult(parsed as Record<string, unknown>, input, stage)
-  const confidence = assessAuditConfidence(grounded, input, stage)
-
-  if (confidence.overall < 70) {
+  if (bestConfidence.overall < 70) {
     console.warn('[audit-report] low-confidence audit generated', {
       stage,
-      overallConfidence: confidence.overall,
-      opportunityScores: confidence.opportunityScores,
+      overallConfidence: bestConfidence.overall,
+      opportunityScores: bestConfidence.opportunityScores,
+      issues: bestConfidence.issues,
     })
   }
 
   return {
-    ...grounded,
+    ...bestAudit,
     report_stage: stage,
   }
 }

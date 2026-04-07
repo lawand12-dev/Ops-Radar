@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import EmailCaptureModal, { type LeadInfo } from '../components/EmailCaptureModal'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
+import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -530,10 +531,13 @@ export default function AuditPage() {
   // Stable session ID for funnel tracking — generated once on mount
   const sessionIdRef = useRef<string | null>(null)
   useEffect(() => {
-    const key = 'opsradar_audit_session'
-    let id = sessionStorage.getItem(key)
-    if (!id) { id = crypto.randomUUID(); sessionStorage.setItem(key, id) }
+    const id = getOrCreateAuditSessionId()
     sessionIdRef.current = id
+
+    sendFunnelEvent({
+      event: 'audit_started',
+      sessionId: id,
+    })
   }, [])
   const [animKey, setAnimKey] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -699,6 +703,11 @@ export default function AuditPage() {
 
   const openModal = () => {
     if (!canProceed()) return
+    sendFunnelEvent({
+      event: 'lead_modal_opened',
+      sessionId: sessionIdRef.current,
+      step: currentStep + 1,
+    })
     setShowModal(true)
   }
 
@@ -774,6 +783,18 @@ export default function AuditPage() {
 
       const data = await res.json()
       if (!res.ok || (!data.id && !data.audit)) throw new Error(data.error ?? 'Something went wrong')
+
+      sendFunnelEvent({
+        event: 'audit_submitted',
+        sessionId: sessionIdRef.current,
+        auditId: typeof data.id === 'string' ? data.id : null,
+        step: TOTAL_STEPS,
+        reportStage: data.audit?.report_stage === 'full' ? 'full' : 'preview',
+        metadata: {
+          websiteProvided: Boolean(lead.websiteUrl?.trim()),
+          toolCount: uniqueHandoffTools.length,
+        },
+      })
 
       sessionStorage.setItem(REPORT_HANDOFF_KEY, JSON.stringify({
         auditId: typeof data.id === 'string' ? data.id : null,

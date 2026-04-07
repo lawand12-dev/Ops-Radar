@@ -18,6 +18,7 @@ import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import HoneypotField from '../components/HoneypotField'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
+import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,10 @@ type ReportSectionItem = {
   id: string
   label: string
   locked?: boolean
+}
+type BuildRequestDraft = {
+  title: string
+  source: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -986,6 +991,13 @@ function ForensicMatchPanel({
   const frequency = context?.processFrequency?.trim()
   const owner = context?.processOwner?.trim()
   const failureImpact = context?.failureImpact?.trim()
+  const declaredTools = uniqueStrings([
+    ...splitCommaList(context?.tools),
+    ...(context?.crmTool ? [context.crmTool] : []),
+  ])
+    .filter((tool) => !['None', 'Spreadsheet/Manual', 'Project management tool'].includes(tool))
+    .slice(0, 5)
+  const detectedStack = splitCommaList(context?.websiteDetectedStack).slice(0, 4)
   const websiteEvidence = [
     ...parseWebsiteEvidence(context?.websiteVisualEvidence),
     ...parseWebsiteEvidence(context?.websiteStackEvidence),
@@ -993,9 +1005,8 @@ function ForensicMatchPanel({
   ].slice(0, 4)
   const toolSignals = splitSignalList(context?.toolSignals).slice(0, 3)
   const stackTools = uniqueStrings([
-    ...splitCommaList(context?.tools),
+    ...declaredTools,
     ...splitCommaList(context?.websiteDetectedStack),
-    ...(context?.crmTool ? [context.crmTool] : []),
     ...(leadOpportunity?.tools_connected ?? []),
     ...(leadOpportunity?.tools_involved ?? []),
   ])
@@ -1043,6 +1054,20 @@ function ForensicMatchPanel({
   const websiteLine = websiteEvidence[0]
     ? `Your public site backed that up too. The strongest cue was ${websiteEvidence[0].label.toLowerCase()}: "${websiteEvidence[0].detail}".`
     : ''
+  const detectedHighlights = uniqueStrings([
+    ...detectedStack.map((tool) => `Public stack signal: ${tool}`),
+    ...websiteEvidence.slice(0, 2).map((item) => `${item.label}: ${item.detail}`),
+  ]).slice(0, 4)
+  const inferredHighlights = uniqueStrings([
+    leadOpportunity?.title ? `Highest-leverage build: ${leadOpportunity.title}` : '',
+    stackTools.length > 1 ? `Likely break point: ${stackTools.slice(0, 2).join(' -> ')}` : '',
+    leadOpportunity?.tools_connected?.length
+      ? `Likely systems to orchestrate: ${leadOpportunity.tools_connected.slice(0, 3).join(', ')}`
+      : '',
+    owner ? `Likely bottleneck owner: ${owner}` : '',
+    failureImpact ? `Urgency driver: ${failureImpact}` : '',
+    leadOpportunity?.hours_saved_weekly ? `Modeled recovery: ${leadOpportunity.hours_saved_weekly}h/week` : '',
+  ]).slice(0, 4)
 
   return (
     <div className="mt-7 rounded-[26px] overflow-hidden border border-secondary/14 bg-surface-container-low/80 shadow-[0_24px_80px_rgba(2,6,23,0.38)] backdrop-blur-xl">
@@ -1054,7 +1079,7 @@ function ForensicMatchPanel({
               Why This Came First
             </p>
             <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              The report didn&apos;t guess. It followed your exact pressure pattern.
+              The report separated what you told us, what the site exposed, and what OpsRadar inferred.
             </h2>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-secondary/16 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-secondary">
@@ -1066,7 +1091,7 @@ function ForensicMatchPanel({
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-[22px] border border-white/7 bg-surface-container/75 p-5">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-3">
-              What {company || 'your team'} told the system
+              Declared By {company || 'Your Team'}
             </p>
             <div className="rounded-[18px] border border-primary/14 bg-primary/6 px-4 py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
@@ -1095,13 +1120,13 @@ function ForensicMatchPanel({
               </div>
             )}
 
-            {stackTools.length > 0 && (
+            {declaredTools.length > 0 && (
               <div className="mt-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
-                  Systems involved
+                  Systems you named
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {stackTools.map((tool) => (
+                  {declaredTools.map((tool) => (
                     <span
                       key={tool}
                       className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
@@ -1112,6 +1137,47 @@ function ForensicMatchPanel({
                 </div>
               </div>
             )}
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[18px] border border-emerald-400/14 bg-emerald-400/7 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300/80 mb-2">
+                  Detected Publicly
+                </p>
+                <div className="space-y-2.5">
+                  {(detectedHighlights.length > 0 ? detectedHighlights : ['No strong public site signals were available.']).map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                    >
+                      <p className="text-[13px] leading-[1.6] text-on-surface">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
+                  Inferred By OpsRadar
+                </p>
+                <div className="space-y-2.5">
+                  {(inferredHighlights.length > 0
+                    ? inferredHighlights
+                    : ['OpsRadar used your pain, stack, and public evidence to rank the most likely highest-leverage build.']
+                  ).map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                    >
+                      <p className="text-[13px] leading-[1.6] text-on-surface">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
           </div>
 
@@ -2164,12 +2230,14 @@ function OpportunityCard({
 // ─── Build request modal ──────────────────────────────────────────────────────
 
 function BuildRequestModal({
-  oppTitle, contactName, contactEmail, auditId, onClose,
+  oppTitle, contactName, contactEmail, auditId, source, reportStage, onClose,
 }: {
   oppTitle:     string
   contactName:  string
   contactEmail: string
   auditId:      string | null
+  source:       string
+  reportStage:  'preview' | 'full'
   onClose:      () => void
 }) {
   const [form, setForm]     = useState({ name: contactName, email: contactEmail, budget: '', timeline: '', notes: '' })
@@ -2195,6 +2263,17 @@ function BuildRequestModal({
     e.preventDefault()
     if (!canSubmit) return
     setStatus('submitting')
+    sendFunnelEvent({
+      event: 'build_request_submitted',
+      auditId,
+      source,
+      reportStage,
+      metadata: {
+        automation: oppTitle,
+        budget: form.budget,
+        timeline: form.timeline,
+      },
+    })
     try {
       const res = await fetch('/api/build-request', {
         method: 'POST',
@@ -2211,6 +2290,17 @@ function BuildRequestModal({
         throw new Error(d.error ?? 'Failed to submit')
       }
       setStatus('success')
+      sendFunnelEvent({
+        event: 'build_request_success',
+        auditId,
+        source,
+        reportStage,
+        metadata: {
+          automation: oppTitle,
+          budget: form.budget,
+          timeline: form.timeline,
+        },
+      })
     } catch (err) {
       setErrMsg(err instanceof Error ? err.message : 'Something went wrong')
       setStatus('error')
@@ -2353,11 +2443,15 @@ function BuildRequestModal({
 // ─── Unlock section ───────────────────────────────────────────────────────────
 
 function UnlockSection({
-  auditId, defaultEmail, onUnlocked,
+  auditId, defaultEmail, reportStage, onUnlocked, onUnlockRequested, onUnlockSent, onStrategyCallClick,
 }: {
   auditId: string | null
   defaultEmail: string
+  reportStage: 'preview' | 'full'
   onUnlocked: (email: string) => void
+  onUnlockRequested: (email: string) => void
+  onUnlockSent: (email: string) => void
+  onStrategyCallClick: (source: string) => void
 }) {
   const [emailInput,    setEmailInput]    = useState('')
   const [emailStatus,   setEmailStatus]   = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
@@ -2374,6 +2468,7 @@ function UnlockSection({
       return
     }
     setEmailStatus('submitting')
+    onUnlockRequested(email)
     try {
       const response = await fetch('/api/send-unlock-email', {
         method: 'POST',
@@ -2387,6 +2482,7 @@ function UnlockSection({
       }
 
       setEmailStatus('success')
+      onUnlockSent(data.email ?? email)
       setTimeout(() => onUnlocked(data.email ?? email), 500)
     } catch {
       setEmailStatus('error')
@@ -2439,6 +2535,7 @@ function UnlockSection({
                     href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => onStrategyCallClick(`unlock-section-${reportStage}-strategy-call`)}
                   >
                     Book Free Strategy Call
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
@@ -2566,11 +2663,23 @@ function ResultsContent() {
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
-  const [modalOpp,     setModalOpp]     = useState<string | null>(null)
+  const [modalOpp,     setModalOpp]     = useState<BuildRequestDraft | null>(null)
   const [unlocked,     setUnlocked]     = useState(false)
   const unlockRef = useRef<HTMLDivElement>(null)
+  const sessionIdRef = useRef('')
+  const sectionTrackingRef = useRef(new Set<string>())
+  const resultsViewRef = useRef<string | null>(null)
   const searchParams = useSearchParams()
   const auditId = searchParams.get('id')
+
+  useEffect(() => {
+    sessionIdRef.current = getOrCreateAuditSessionId()
+  }, [])
+
+  useEffect(() => {
+    sectionTrackingRef.current.clear()
+    resultsViewRef.current = null
+  }, [auditId])
 
   const applyLoadedAudit = useCallback((
     nextAudit: AuditResult,
@@ -2656,6 +2765,33 @@ function ResultsContent() {
     })
   }, [auditId, loadAuditById, loadFromSession])
 
+  const trackStrategyCallClick = useCallback((source: string) => {
+    sendFunnelEvent({
+      event: 'strategy_call_clicked',
+      sessionId: sessionIdRef.current,
+      auditId,
+      source,
+      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
+      metadata: {
+        unlocked,
+      },
+    })
+  }, [audit?.report_stage, auditId, unlocked])
+
+  const openBuildRequest = useCallback((title: string, source: string) => {
+    sendFunnelEvent({
+      event: 'build_request_opened',
+      sessionId: sessionIdRef.current,
+      auditId,
+      source,
+      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
+      metadata: {
+        automation: title,
+      },
+    })
+    setModalOpp({ title, source })
+  }, [audit?.report_stage, auditId])
+
   function handleUnlocked(email: string) {
     localStorage.setItem(getUnlockStorageKey(auditId), '1')
     setContactEmail(email)
@@ -2664,10 +2800,23 @@ function ResultsContent() {
     } else {
       setUnlocked(true)
     }
+    sendFunnelEvent({
+      event: 'report_unlocked',
+      sessionId: sessionIdRef.current,
+      auditId,
+      reportStage: 'full',
+    })
     window.scrollBy({ top: -100, behavior: 'smooth' })
   }
 
-  function scrollToUnlock() {
+  function scrollToUnlock(source = 'results-unlock') {
+    sendFunnelEvent({
+      event: 'unlock_cta_clicked',
+      sessionId: sessionIdRef.current,
+      auditId,
+      source,
+      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
+    })
     unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
@@ -2734,6 +2883,25 @@ function ResultsContent() {
     : (reportSections[0]?.id ?? '')
 
   useEffect(() => {
+    if (!currentAudit) return
+
+    const viewKey = `${auditId ?? 'session'}:${currentAudit.report_stage ?? 'preview'}`
+    if (resultsViewRef.current === viewKey) return
+    resultsViewRef.current = viewKey
+
+    sendFunnelEvent({
+      event: 'results_viewed',
+      sessionId: sessionIdRef.current,
+      auditId,
+      reportStage: currentAudit.report_stage === 'full' ? 'full' : 'preview',
+      metadata: {
+        unlocked,
+        opportunities: opportunities.length,
+      },
+    })
+  }, [auditId, currentAudit, opportunities.length, unlocked])
+
+  useEffect(() => {
     if (typeof document === 'undefined' || reportSections.length === 0) return
 
     const elements = reportSections
@@ -2744,6 +2912,22 @@ function ResultsContent() {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting || !entry.target.id || sectionTrackingRef.current.has(entry.target.id)) return
+
+          sectionTrackingRef.current.add(entry.target.id)
+          sendFunnelEvent({
+            event: 'report_section_viewed',
+            sessionId: sessionIdRef.current,
+            auditId,
+            sectionId: entry.target.id,
+            reportStage: currentAudit?.report_stage === 'full' ? 'full' : 'preview',
+            metadata: {
+              unlocked,
+            },
+          })
+        })
+
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => Math.abs(a.boundingClientRect.top - 132) - Math.abs(b.boundingClientRect.top - 132))
@@ -2759,7 +2943,7 @@ function ResultsContent() {
 
     elements.forEach((element) => observer.observe(element))
     return () => observer.disconnect()
-  }, [reportSectionIds, reportSections])
+  }, [auditId, currentAudit?.report_stage, reportSectionIds, reportSections, unlocked])
 
   if (!currentAudit && !error) {
     return <ReportLoadingExperience handoff={handoff} />
@@ -2796,7 +2980,7 @@ function ResultsContent() {
           </div>
           {!unlocked ? (
             <Button
-              onClick={scrollToUnlock}
+              onClick={() => scrollToUnlock('top-nav-unlock')}
               variant="outline"
               className="h-auto px-4 py-[7px] rounded-[8px] text-[12px] font-bold text-primary border-primary/22 bg-primary/8 hover:bg-primary/15 hover:text-primary gap-1.5"
             >
@@ -3022,8 +3206,8 @@ function ResultsContent() {
                   <OpportunityCard
                     opp={opp}
                     unlocked={unlocked}
-                    onUnlock={scrollToUnlock}
-                    onGetBuilt={() => setModalOpp(opp.title)}
+                    onUnlock={() => scrollToUnlock(`opportunity-${opp.rank}-unlock`)}
+                    onGetBuilt={() => openBuildRequest(opp.title, `opportunity-${opp.rank}-quote`)}
                   />
                 </GlowCard>
               </StaggerItem>
@@ -3037,7 +3221,7 @@ function ResultsContent() {
             <OnboardingAssessmentSection
               data={a.onboarding_assessment}
               unlocked={unlocked}
-              onUnlock={scrollToUnlock}
+              onUnlock={() => scrollToUnlock('onboarding-section-unlock')}
             />
           </div>
         )}
@@ -3055,7 +3239,7 @@ function ResultsContent() {
                   Phased to deliver quick wins first, then compound value over time.
                 </p>
 
-                <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('roadmap-section-unlock')}>
                   <div className="space-y-5">
                     <VerticalRoadmap roadmap={roadmap} />
                     {pathToVision && (
@@ -3100,7 +3284,7 @@ function ResultsContent() {
                   <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
                 </div>
 
-                <LockedSection unlocked={unlocked} onUnlock={scrollToUnlock}>
+                <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('stack-section-unlock')}>
                   <div className="space-y-4">
                     {toolsAnalysis.biggest_friction_point && (
                       <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
@@ -3148,7 +3332,27 @@ function ResultsContent() {
             <UnlockSection
               auditId={auditId}
               defaultEmail={contactEmail}
+              reportStage={isPreview ? 'preview' : 'full'}
               onUnlocked={handleUnlocked}
+              onUnlockRequested={(email) => {
+                sendFunnelEvent({
+                  event: 'unlock_email_requested',
+                  sessionId: sessionIdRef.current,
+                  auditId,
+                  reportStage: 'preview',
+                  metadata: { hasEmail: Boolean(email) },
+                })
+              }}
+              onUnlockSent={(email) => {
+                sendFunnelEvent({
+                  event: 'unlock_email_sent',
+                  sessionId: sessionIdRef.current,
+                  auditId,
+                  reportStage: 'preview',
+                  metadata: { hasEmail: Boolean(email) },
+                })
+              }}
+              onStrategyCallClick={trackStrategyCallClick}
             />
           </div>
         )}
@@ -3173,12 +3377,17 @@ function ResultsContent() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
-                    <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer">
+                    <a
+                      href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackStrategyCallClick('final-cta-strategy-call')}
+                    >
                       Book a Free Strategy Call →
                     </a>
                   </Button>
                   <Button
-                    onClick={() => setModalOpp('Full Automation Build')}
+                    onClick={() => openBuildRequest('Full Automation Build', 'final-cta-quote')}
                     variant="outline"
                     className="px-7 py-[14px] h-auto rounded-[13px] text-[15px] font-semibold border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface bg-transparent"
                   >
@@ -3197,10 +3406,12 @@ function ResultsContent() {
 
       {modalOpp && (
         <BuildRequestModal
-          oppTitle={modalOpp}
+          oppTitle={modalOpp.title}
           contactName={contactName}
           contactEmail={contactEmail}
           auditId={auditId}
+          source={modalOpp.source}
+          reportStage={isPreview ? 'preview' : 'full'}
           onClose={() => setModalOpp(null)}
         />
       )}
