@@ -262,6 +262,10 @@ function parseWebsiteEvidence(value?: string): WebsiteEvidenceCard[] {
   }
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
 function coerceAuditContext(value: unknown): AuditContext | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
 
@@ -2705,6 +2709,7 @@ function ResultsContent() {
     nextAudit: AuditResult,
     meta?: { company?: string | null; name?: string | null; email?: string | null; answers?: unknown },
   ) => {
+    setError(false)
     setAudit(nextAudit)
     setUnlocked(nextAudit.report_stage === 'full')
     if (meta?.company) setCompany(meta.company)
@@ -2714,20 +2719,25 @@ function ResultsContent() {
     if (nextContext) setAuditContext(nextContext)
   }, [])
 
-  const loadFromSession = useCallback(() => {
+  const readSessionAudit = useCallback((): AuditResult | null => {
     try {
       const raw = sessionStorage.getItem('opsradar_audit')
-      if (!raw) {
-        setError(true)
-        return
-      }
-
-      const sessionAudit = JSON.parse(raw) as AuditResult
-      applyLoadedAudit(sessionAudit)
+      if (!raw) return null
+      return JSON.parse(raw) as AuditResult
     } catch {
-      setError(true)
+      return null
     }
-  }, [applyLoadedAudit])
+  }, [])
+
+  const loadFromSession = useCallback(() => {
+    const sessionAudit = readSessionAudit()
+    if (!sessionAudit) {
+      setError(true)
+      return
+    }
+
+    applyLoadedAudit(sessionAudit)
+  }, [applyLoadedAudit, readSessionAudit])
 
   const loadAuditById = useCallback(async (id: string, preferredAccessToken = '') => {
     const accessToken = preferredAccessToken || getStoredAuditAccessToken(id)
@@ -2736,31 +2746,39 @@ function ResultsContent() {
       return
     }
 
-    const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}`, {
-      headers: {
-        'x-audit-access-token': accessToken,
-      },
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        clearStoredAuditAccessToken(id)
+    for (const retryDelay of [0, 350, 900]) {
+      if (retryDelay > 0) {
+        await wait(retryDelay)
       }
-      loadFromSession()
+
+      const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}`, {
+        headers: {
+          'x-audit-access-token': accessToken,
+        },
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearStoredAuditAccessToken(id)
+          break
+        }
+        continue
+      }
+
+      const data = await response.json()
+      if (!data?.audit) {
+        continue
+      }
+
+      const nextAudit = data.audit as AuditResult
+      sessionStorage.removeItem(REPORT_HANDOFF_KEY)
+      setHandoff(null)
+      applyLoadedAudit(nextAudit, data.meta)
       return
     }
 
-    const data = await response.json()
-    if (!data?.audit) {
-      loadFromSession()
-      return
-    }
-
-    const nextAudit = data.audit as AuditResult
-    sessionStorage.removeItem(REPORT_HANDOFF_KEY)
-    setHandoff(null)
-    applyLoadedAudit(nextAudit, data.meta)
+    loadFromSession()
   }, [applyLoadedAudit, loadFromSession])
 
   useEffect(() => {
@@ -2790,6 +2808,11 @@ function ResultsContent() {
       sessionStorage.removeItem(REPORT_HANDOFF_KEY)
     }
 
+    const sessionAudit = readSessionAudit()
+    if (sessionAudit) {
+      queueMicrotask(() => applyLoadedAudit(sessionAudit))
+    }
+
     queueMicrotask(() => {
       if (auditId) {
         loadAuditById(auditId, accessTokenFromUrl).catch(() => setError(true))
@@ -2797,7 +2820,7 @@ function ResultsContent() {
         loadFromSession()
       }
     })
-  }, [accessTokenFromUrl, auditId, loadAuditById, loadFromSession])
+  }, [accessTokenFromUrl, auditId, applyLoadedAudit, loadAuditById, loadFromSession, readSessionAudit])
 
   const trackStrategyCallClick = useCallback((source: string) => {
     sendFunnelEvent({

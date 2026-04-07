@@ -253,6 +253,7 @@ export async function POST(request: Request) {
 
     return Response.json({
       id: storedAuditId,
+      audit,
       accessToken: createAuditAccessToken({
         auditId: storedAuditId,
         scope: 'preview',
