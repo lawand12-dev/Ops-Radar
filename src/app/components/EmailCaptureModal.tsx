@@ -17,6 +17,7 @@ export type LeadInfo = {
   name: string
   email: string
   company: string
+  websiteUrl: string
   companyWebsite: string
   startedAt: number
 }
@@ -30,6 +31,7 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
   const [startedAt] = useState(() => Date.now())
 
@@ -45,6 +47,7 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
       name: name.trim(),
       email: email.trim(),
       company: company.trim(),
+      websiteUrl: websiteUrl.trim(),
       ...getAbuseProtectionPayload(startedAt, companyWebsite),
     })
   }
@@ -117,6 +120,20 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Acme Agency"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
+                Website
+                <span className="text-on-surface-variant/40"> (optional, improves accuracy)</span>
+              </label>
+              <Input
+                type="url"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="https://youragency.com"
                 className={inputClass}
               />
             </div>

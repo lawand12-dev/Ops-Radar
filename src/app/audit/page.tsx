@@ -40,6 +40,15 @@ const TOOLS_BY_AGENCY: Record<string, string[]> = {
   'Design/Creative': [
     'Figma', 'Adobe Creative Suite', 'Canva', 'Monday', 'Asana', 'ClickUp',
   ],
+  'Development': [
+    'GitHub', 'GitLab', 'Jira', 'Linear', 'Vercel', 'Sentry', 'PostHog',
+  ],
+  'PR/Communications': [
+    'Muck Rack', 'Cision', 'Meltwater', 'Prowly', 'CoverageBook', 'Asana', 'ClickUp',
+  ],
+  'E-commerce': [
+    'Shopify', 'Klaviyo', 'Gorgias', 'ShipStation', 'Recharge', 'Zendesk', 'Google Merchant Center',
+  ],
 }
 
 const CRM_OPTIONS = [
@@ -60,13 +69,175 @@ const TIME_HEAVY_OPTS: Record<string, string[]> = {
     'Client feedback loops', 'File management', 'Project handoffs',
     'Revision tracking', 'Asset delivery', 'Invoicing',
   ],
+  'Development': [
+    'Ticket triage', 'Sprint handoffs', 'QA / bug reporting',
+    'Client status updates', 'Release coordination', 'Scope changes',
+  ],
+  'PR/Communications': [
+    'Media list building', 'Press outreach follow-up', 'Approval rounds',
+    'Coverage reporting', 'Client updates', 'Campaign recap decks',
+  ],
+  'E-commerce': [
+    'Order exception handling', 'Inventory updates', 'Customer support handoffs',
+    'Campaign reporting', 'Returns / refunds', 'Launch coordination',
+  ],
 }
 
 const TIME_HEAVY_Q: Record<string, string> = {
   'Marketing': 'Which of these client deliverables take the most time?',
   'Recruiting/Staffing': 'Which part of the hiring pipeline is most manual?',
   'Design/Creative': 'Where does your team lose the most time?',
+  'Development': 'Where does your delivery process get bogged down?',
+  'PR/Communications': 'Which part of client PR execution is still most manual?',
+  'E-commerce': 'Which part of store operations still needs too much human work?',
 }
+
+const AGENCY_COPY = {
+  default: {
+    toolsHint: 'Choose the systems your team touches every week. This shapes the integration map and stack score.',
+    leadEntryHint: 'We use this to identify the cleanest first automation trigger.',
+    onboardingHint: 'This shows us how chaotic the post-close handoff really is.',
+    progressHint: 'This tells us where deadlines disappear and who gets surprised.',
+    automationPlaceholder: 'e.g. Every time a new client signs, we still copy details into multiple tools, create docs by hand, and chase people in Slack before work can actually start...',
+    futureVisionPlaceholder: 'e.g. New work kicks off automatically, status updates stay visible without chasing, and the team spends time on delivery instead of admin...',
+  },
+  'Marketing': {
+    toolsHint: 'Think ads, CRM, reporting, content, scheduling, and client communication tools.',
+    leadEntryHint: 'This shows us what should trigger lead routing, enrichment, and follow-up automatically.',
+    onboardingHint: 'This helps us spot where kickoff, reporting, and campaign setup still rely on humans remembering things.',
+    progressHint: 'This tells us where campaign visibility breaks down between account managers, specialists, and clients.',
+    automationPlaceholder: 'e.g. Every Friday we still pull Google Ads, GA4, and client notes into a report deck manually before sending updates...',
+    futureVisionPlaceholder: 'e.g. Leads get routed instantly, campaign reporting is automated, and client updates go out without the team spending Friday in spreadsheets...',
+  },
+  'Recruiting/Staffing': {
+    toolsHint: 'Think ATS, sourcing, scheduling, submissions, candidate communication, and client update tools.',
+    leadEntryHint: 'This helps us map candidate and client intake triggers into a cleaner recruiting workflow.',
+    onboardingHint: 'This tells us where recruiter-to-client handoffs and placement ops are still manual.',
+    progressHint: 'This shows us where candidate stages, interview status, and client visibility start drifting apart.',
+    automationPlaceholder: 'e.g. When a candidate reaches final round, we still coordinate scheduling, reminders, and client updates manually across email and our ATS...',
+    futureVisionPlaceholder: 'e.g. Candidate stages stay synced automatically, interview logistics run without chasing, and recruiters spend more time placing than coordinating...',
+  },
+  'Design/Creative': {
+    toolsHint: 'Think briefs, files, feedback, PM, approvals, asset delivery, and invoicing tools.',
+    leadEntryHint: 'This helps us see where inquiries should turn into projects without manual admin.',
+    onboardingHint: 'This reveals how much of your kickoff and asset setup still depends on memory and back-and-forth.',
+    progressHint: 'This tells us where revisions, approvals, and delivery updates fall out of sync.',
+    automationPlaceholder: 'e.g. We still create project boards, kickoff docs, folder structures, and feedback loops manually every time a client signs...',
+    futureVisionPlaceholder: 'e.g. Projects launch with templates automatically, revisions stay organized, and the team spends more time designing than chasing approvals...',
+  },
+  'Development': {
+    toolsHint: 'Think repos, tickets, QA, docs, deployments, client communication, and monitoring tools.',
+    leadEntryHint: 'This shows us where new work or bug requests should enter a structured delivery flow.',
+    onboardingHint: 'This tells us how much project setup, access provisioning, and sprint kickoff still depends on manual coordination.',
+    progressHint: 'This reveals where delivery visibility breaks between engineering, PM, QA, and clients.',
+    automationPlaceholder: 'e.g. New projects still require someone to set up tickets, docs, repos, Slack channels, and client updates manually before dev work starts...',
+    futureVisionPlaceholder: 'e.g. Delivery status stays visible automatically, handoffs are clean, and new work spins up from templates without PM overhead...',
+  },
+  'PR/Communications': {
+    toolsHint: 'Think media databases, pitching, approvals, reporting, recaps, and client communication tools.',
+    leadEntryHint: 'This helps us map how inquiries, campaign requests, and media opportunities should trigger the next workflow.',
+    onboardingHint: 'This shows us where kickoff, approvals, and outreach prep are still being run manually.',
+    progressHint: 'This reveals where campaign updates, approvals, and coverage reporting go dark.',
+    automationPlaceholder: 'e.g. We still build media lists, coordinate approvals, and turn coverage into client recap reports manually every campaign...',
+    futureVisionPlaceholder: 'e.g. Coverage reports build themselves, approvals move faster, and client updates stay proactive without account teams chasing...',
+  },
+  'E-commerce': {
+    toolsHint: 'Think storefront, support, retention, fulfillment, inventory, finance, and reporting tools.',
+    leadEntryHint: 'This helps us identify the first trigger for support, retention, or post-purchase automation.',
+    onboardingHint: 'This shows us how new wholesale clients, campaigns, or launch work are handed off internally after the sale.',
+    progressHint: 'This tells us where launches, customer issues, and cross-team operations become invisible.',
+    automationPlaceholder: 'e.g. We still handle launch checklists, order issues, and customer handoffs manually across Shopify, email, and support tools...',
+    futureVisionPlaceholder: 'e.g. Launches run from checklists automatically, support and ops stay synced, and the team handles exceptions instead of repetitive store admin...',
+  },
+} as const
+
+type ToolSignalRule = {
+  matchAny: string[]
+  suggestions: string[]
+}
+
+const TOOL_SIGNAL_RULES: ToolSignalRule[] = [
+  {
+    matchAny: ['Google Ads', 'Meta Ads Manager', 'Google Analytics', 'SEMrush', 'Hootsuite', 'Mailchimp', 'ActiveCampaign', 'Looker Studio', 'Supermetrics'],
+    suggestions: [
+      'Reporting is still assembled manually across marketing tools',
+      'Performance anomalies need a human to notice first',
+      'Campaign or client recap updates still depend on copy-paste',
+      'Lead attribution or source matching still needs cleanup',
+    ],
+  },
+  {
+    matchAny: ['HubSpot', 'GoHighLevel', 'Salesforce', 'Pipedrive', 'Monday CRM', 'Airtable', 'Notion'],
+    suggestions: [
+      'Lead routing and assignment still needs manual cleanup',
+      'Deal-to-delivery handoff still breaks between tools',
+      'Follow-up reminders or no-response chasing still happens manually',
+      'Pipeline records only get updated after the fact',
+    ],
+  },
+  {
+    matchAny: ['Asana', 'ClickUp', 'Monday', 'Trello', 'Jira', 'Linear'],
+    suggestions: [
+      'New projects or tasks still get created by hand',
+      'Status updates still need to be posted in multiple places',
+      'Deadlines and blockers depend on somebody chasing',
+      'Sales-to-delivery handoff still gets rebuilt manually',
+    ],
+  },
+  {
+    matchAny: ['Bullhorn', 'Greenhouse', 'Lever', 'LinkedIn Recruiter', 'Indeed', 'Workable', 'JazzHR'],
+    suggestions: [
+      'Candidate stage updates still happen manually',
+      'Interview scheduling and reminders still need coordination',
+      'Client submission updates are still sent by hand',
+      'Offer or onboarding handoff still breaks between tools',
+    ],
+  },
+  {
+    matchAny: ['Figma', 'Adobe Creative Suite', 'Canva'],
+    suggestions: [
+      'Asset or brief collection still happens over chat and email',
+      'Review and approval loops still get chased manually',
+      'File delivery and versioning still create confusion',
+      'Approved work still needs a human to trigger the next step',
+    ],
+  },
+  {
+    matchAny: ['GitHub', 'GitLab', 'Jira', 'Linear', 'Vercel', 'Sentry', 'PostHog'],
+    suggestions: [
+      'New bugs or requests still need manual triage into delivery',
+      'Release status updates still depend on a human',
+      'QA or issue follow-up still jumps between tools',
+      'Incidents are noticed, but not routed automatically',
+    ],
+  },
+  {
+    matchAny: ['Muck Rack', 'Cision', 'Meltwater', 'Prowly', 'CoverageBook'],
+    suggestions: [
+      'Media list building and outreach prep still happens manually',
+      'Approvals and follow-ups still live in inboxes',
+      'Coverage reporting still needs manual compiling',
+      'Client recap decks still get rebuilt from scratch',
+    ],
+  },
+  {
+    matchAny: ['Shopify', 'Klaviyo', 'Gorgias', 'ShipStation', 'Recharge', 'Zendesk', 'Google Merchant Center'],
+    suggestions: [
+      'Order, support, and ops handoffs still break between tools',
+      'Returns or exception handling still depends on manual coordination',
+      'Post-purchase or retention workflows still need a human push',
+      'Launch or inventory updates still get stitched together manually',
+    ],
+  },
+  {
+    matchAny: ['Stripe', 'QuickBooks', 'Calendly', 'Zoom', 'PandaDoc'],
+    suggestions: [
+      'Booked calls or signed deals still need manual internal prep',
+      'Invoices, payment status, or finance follow-up still needs chasing',
+      'Contracts or approvals do not automatically kick off delivery',
+    ],
+  },
+]
 
 const LEAD_ENTRY_OPTIONS = [
   'Manual entry', 'Web form', 'Email', 'Phone call',
@@ -92,6 +263,60 @@ const LOADING_MESSAGES = [
 ]
 
 const TOTAL_STEPS = 12
+const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
+const PROCESS_FREQUENCY_OPTIONS = [
+  'Multiple times daily',
+  'Daily',
+  'A few times a week',
+  'Weekly',
+  'Per new lead/client',
+  'Monthly or ad hoc',
+]
+const PROCESS_OWNER_OPTIONS = [
+  'Founder',
+  'Sales rep',
+  'Account manager',
+  'Project manager',
+  'Ops/admin',
+  'Multiple people',
+]
+const FAILURE_IMPACT_OPTIONS = [
+  'Minor annoyance',
+  'Delayed follow-up',
+  'Internal handoff breaks',
+  'Client delivery gets delayed',
+  'Revenue is at risk',
+  'Client trust takes a hit',
+]
+
+function normalizeToken(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+function getToolSignalOptions(selectedTools: string[]): string[] {
+  const normalizedTools = selectedTools.map((tool) => normalizeToken(tool))
+  const collected: string[] = []
+
+  for (const rule of TOOL_SIGNAL_RULES) {
+    const matchesRule = rule.matchAny.some((match) => {
+      const normalizedMatch = normalizeToken(match)
+      return normalizedTools.some((tool) => tool.includes(normalizedMatch) || normalizedMatch.includes(tool))
+    })
+
+    if (!matchesRule) continue
+
+    for (const suggestion of rule.suggestions) {
+      if (!collected.includes(suggestion)) {
+        collected.push(suggestion)
+      }
+      if (collected.length >= 8) {
+        return collected
+      }
+    }
+  }
+
+  return collected
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -103,15 +328,23 @@ type Answers = {
   activeClients: string
   tools: string[]
   toolsOther: string
+  toolSignals: string[]
+  toolSignalsDetail: string
   crmTool: string
+  crmDetail: string
   timeHeavyMulti: string[]
   timeHeavyText: string
   leadEntry: string
+  leadEntryDetail: string
   onboarding: string[]
   progressTracking: string
+  progressTrackingDetail: string
   automationWish: string
+  processFrequency: string
+  processOwner: string
+  failureImpact: string
   futureVision: string
-}
+} 
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -230,6 +463,64 @@ function TextInput({
   )
 }
 
+function ChipSingleSelect({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string
+  options: string[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div>
+      <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/55">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2.5">
+        {options.map((opt) => {
+          const selected = value === opt
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => onChange(opt)}
+              className={`rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-all duration-150 active:scale-95 ${
+                selected
+                  ? 'border-primary/60 bg-primary/10 text-on-surface option-selected'
+                  : 'border-outline-variant/20 bg-surface-container text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              {selected && (
+                <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-secondary align-middle" />
+              )}
+              {opt}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function InsightNote({ text }: { text: string }) {
+  return (
+    <div
+      className="mb-6 rounded-2xl border px-4 py-3.5"
+      style={{ background: 'rgba(173,198,255,0.05)', borderColor: 'rgba(173,198,255,0.12)' }}
+    >
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
+        This sharpens your blueprint
+      </p>
+      <p className="text-[13px] leading-[1.65] text-on-surface-variant">
+        {text}
+      </p>
+    </div>
+  )
+}
+
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export default function AuditPage() {
@@ -257,46 +548,125 @@ export default function AuditPage() {
     activeClients: '',
     tools: [],
     toolsOther: '',
+    toolSignals: [],
+    toolSignalsDetail: '',
     crmTool: '',
+    crmDetail: '',
     timeHeavyMulti: [],
     timeHeavyText: '',
     leadEntry: '',
+    leadEntryDetail: '',
     onboarding: [],
     progressTracking: '',
+    progressTrackingDetail: '',
     automationWish: '',
+    processFrequency: '',
+    processOwner: '',
+    failureImpact: '',
     futureVision: '',
   })
 
-  const agencyCat = (): 'Marketing' | 'Recruiting/Staffing' | 'Design/Creative' | 'default' => {
-    if (answers.agencyType === 'Marketing') return 'Marketing'
-    if (answers.agencyType === 'Recruiting/Staffing') return 'Recruiting/Staffing'
-    if (answers.agencyType === 'Design/Creative') return 'Design/Creative'
-    return 'default'
-  }
+  const agencyCat = (): keyof typeof AGENCY_COPY => (
+    answers.agencyType in AGENCY_COPY
+      ? (answers.agencyType as keyof typeof AGENCY_COPY)
+      : 'default'
+  )
 
   const getToolOptions = (): string[] => {
     const cat = agencyCat()
     const specific = cat !== 'default' ? (TOOLS_BY_AGENCY[cat] ?? []) : []
-    return [...specific, ...TOOLS_COMMON, 'Other']
+    return [...new Set([...specific, ...TOOLS_COMMON, 'Other'])]
+  }
+
+  const agencyCategory = agencyCat()
+  const agencyCopy = AGENCY_COPY[agencyCategory]
+  const toolOptions = getToolOptions()
+  const selectedToolNames = [
+    ...answers.tools.filter((tool) => tool !== 'Other'),
+    ...(answers.tools.includes('Other') && answers.toolsOther.trim() ? [answers.toolsOther.trim()] : []),
+  ]
+  const toolSignalOptions = getToolSignalOptions(selectedToolNames)
+  const needsAgencyTypeDetail = answers.agencyType === 'Other'
+  const needsToolDetail = answers.tools.includes('Other')
+  const needsToolSignalFollowup = selectedToolNames.length >= 2 && toolSignalOptions.length > 0
+  const needsCrmDetail = answers.crmTool === 'Other'
+  const showsLeadEntryDetail = ['Web form', 'Email', 'Referral spreadsheet', 'Other'].includes(answers.leadEntry)
+  const requiresLeadEntryDetail = answers.leadEntry === 'Other'
+  const needsProgressTrackingDetail = ['Project management tool', 'Other'].includes(answers.progressTracking)
+
+  useEffect(() => {
+    const allowedTools = new Set(toolOptions)
+    const allowedTimeHeavy = agencyCategory !== 'default'
+      ? new Set(TIME_HEAVY_OPTS[agencyCategory] ?? [])
+      : null
+
+    setAnswers((prev) => {
+      const filteredTools = prev.tools.filter((tool) => allowedTools.has(tool))
+      const filteredTimeHeavy = allowedTimeHeavy
+        ? prev.timeHeavyMulti.filter((item) => allowedTimeHeavy.has(item))
+        : []
+      const filteredToolSignals = prev.toolSignals.filter((signal) => toolSignalOptions.includes(signal))
+
+      const hasToolChange = filteredTools.length !== prev.tools.length
+      const hasTimeHeavyChange =
+        filteredTimeHeavy.length !== prev.timeHeavyMulti.length ||
+        filteredTimeHeavy.some((item, index) => item !== prev.timeHeavyMulti[index])
+      const hasToolSignalChange =
+        filteredToolSignals.length !== prev.toolSignals.length ||
+        filteredToolSignals.some((item, index) => item !== prev.toolSignals[index])
+
+      if (!hasToolChange && !hasTimeHeavyChange && !hasToolSignalChange) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        tools: filteredTools,
+        timeHeavyMulti: filteredTimeHeavy,
+        toolSignals: filteredToolSignals,
+      }
+    })
+  }, [agencyCategory, toolOptions, toolSignalOptions])
+
+  const describeWithDetail = (label: string, detail: string): string => {
+    const trimmed = detail.trim()
+    if (!trimmed) return label
+    if (label === 'Other') return trimmed
+    return `${label} (${trimmed})`
   }
 
   const canProceed = (): boolean => {
-    const cat = agencyCat()
+    const cat = agencyCategory
     switch (currentStep) {
-      case 0:  return !!answers.agencyType
+      case 0:
+        return !!answers.agencyType && (!needsAgencyTypeDetail || answers.agencyTypeOther.trim().length >= 3)
       case 1:  return !!answers.teamSize
       case 2:  return !!answers.revenue
       case 3:  return !!answers.activeClients
-      case 4:  return answers.tools.length > 0
-      case 5:  return !!answers.crmTool
+      case 4:
+        return (
+          answers.tools.length > 0 &&
+          (!needsToolDetail || answers.toolsOther.trim().length >= 3) &&
+          (!needsToolSignalFollowup || answers.toolSignals.length > 0 || answers.toolSignalsDetail.trim().length >= 10)
+        )
+      case 5:
+        return !!answers.crmTool && (!needsCrmDetail || answers.crmDetail.trim().length >= 2)
       case 6:
         return cat === 'default'
           ? answers.timeHeavyText.trim().length >= 10
           : answers.timeHeavyMulti.length > 0
-      case 7:  return !!answers.leadEntry
+      case 7:
+        return !!answers.leadEntry && (!requiresLeadEntryDetail || answers.leadEntryDetail.trim().length >= 2)
       case 8:  return answers.onboarding.length > 0
-      case 9:  return !!answers.progressTracking
-      case 10: return answers.automationWish.trim().length >= 20
+      case 9:
+        return !!answers.progressTracking && (!needsProgressTrackingDetail || answers.progressTrackingDetail.trim().length >= 2)
+      case 10:
+        return (
+          answers.automationWish.trim().length >= 20 &&
+          !!answers.processFrequency &&
+          !!answers.processOwner &&
+          !!answers.failureImpact
+        )
       case 11: return answers.futureVision.trim().length >= 20
       default: return false
     }
@@ -343,15 +713,33 @@ export default function AuditPage() {
     }, 2200)
 
     try {
-      const cat = agencyCat()
+      const cat = agencyCategory
       const timeHeavy = cat === 'default'
         ? answers.timeHeavyText
         : answers.timeHeavyMulti.join(', ')
+      const crmToolValue = describeWithDetail(answers.crmTool, answers.crmDetail)
+      const leadEntryValue = describeWithDetail(answers.leadEntry, answers.leadEntryDetail)
+      const progressTrackingValue = describeWithDetail(answers.progressTracking, answers.progressTrackingDetail)
 
       const toolList = [
         ...answers.tools.filter((t) => t !== 'Other'),
         ...(answers.tools.includes('Other') && answers.toolsOther ? [answers.toolsOther] : []),
       ].join(', ')
+      const toolSignalsValue = [
+        ...answers.toolSignals,
+        ...(answers.toolSignalsDetail.trim() ? [answers.toolSignalsDetail.trim()] : []),
+      ].join(' | ')
+
+      const handoffTools = [
+        ...toolList.split(',').map((tool) => tool.trim()).filter(Boolean),
+        crmToolValue !== 'None' ? crmToolValue : '',
+        needsProgressTrackingDetail ? answers.progressTrackingDetail.trim() : '',
+      ]
+      const uniqueHandoffTools = [...new Set(handoffTools)].filter((tool) => (
+        !!tool &&
+        tool !== 'Spreadsheet/Manual' &&
+        tool !== 'Project management tool'
+      ))
 
       const res = await fetch('/api/generate-audit', {
         method: 'POST',
@@ -360,6 +748,7 @@ export default function AuditPage() {
           name: lead.name,
           email: lead.email,
           company: lead.company,
+          websiteUrl: lead.websiteUrl,
           companyWebsite: lead.companyWebsite,
           startedAt: lead.startedAt,
           agencyType: answers.agencyType === 'Other' && answers.agencyTypeOther
@@ -369,20 +758,49 @@ export default function AuditPage() {
           revenue: answers.revenue,
           activeClients: answers.activeClients,
           tools: toolList,
-          crmTool: answers.crmTool,
+          toolSignals: toolSignalsValue,
+          crmTool: crmToolValue,
           timeHeavy,
-          leadEntry: answers.leadEntry,
+          leadEntry: leadEntryValue,
           onboarding: answers.onboarding.join(', '),
-          progressTracking: answers.progressTracking,
+          progressTracking: progressTrackingValue,
           automationWish: answers.automationWish,
+          processFrequency: answers.processFrequency,
+          processOwner: answers.processOwner,
+          failureImpact: answers.failureImpact,
           futureVision: answers.futureVision,
         }),
       })
 
       const data = await res.json()
-      if (!res.ok || !data.audit) throw new Error(data.error ?? 'Something went wrong')
+      if (!res.ok || (!data.id && !data.audit)) throw new Error(data.error ?? 'Something went wrong')
 
-      sessionStorage.setItem('opsradar_audit', JSON.stringify(data.audit))
+      sessionStorage.setItem(REPORT_HANDOFF_KEY, JSON.stringify({
+        auditId: typeof data.id === 'string' ? data.id : null,
+        company: lead.company,
+        agencyType: answers.agencyType === 'Other' && answers.agencyTypeOther
+          ? answers.agencyTypeOther
+          : answers.agencyType,
+        automationWish: answers.automationWish,
+        futureVision: answers.futureVision,
+        processFrequency: answers.processFrequency,
+        processOwner: answers.processOwner,
+        failureImpact: answers.failureImpact,
+        toolSignals: [
+          ...answers.toolSignals,
+          ...(answers.toolSignalsDetail.trim() ? [answers.toolSignalsDetail.trim()] : []),
+        ].slice(0, 4),
+        websiteUrl: lead.websiteUrl,
+        tools: uniqueHandoffTools.slice(0, 6),
+        createdAt: Date.now(),
+      }))
+
+      if (data.audit) {
+        sessionStorage.setItem('opsradar_audit', JSON.stringify(data.audit))
+      } else {
+        sessionStorage.removeItem('opsradar_audit')
+      }
+
       const dest = data.id ? `/results?id=${data.id}` : '/results'
       router.push(dest)
     } catch (err) {
@@ -394,7 +812,7 @@ export default function AuditPage() {
     }
   }
 
-  const toggleMulti = (field: 'tools' | 'timeHeavyMulti' | 'onboarding') => (value: string) => {
+  const toggleMulti = (field: 'tools' | 'toolSignals' | 'timeHeavyMulti' | 'onboarding') => (value: string) => {
     setAnswers((prev) => {
       const current = prev[field] as string[]
       return {
@@ -529,7 +947,11 @@ export default function AuditPage() {
           {/* Step 1 — Agency type */}
           {currentStep === 0 && (
             <>
-              <StepHeader question="What type of agency are you?" />
+              <StepHeader
+                question="What kind of business are we looking at?"
+                hint="We tailor benchmarks, workflow assumptions, and stack recommendations around your operating model."
+              />
+              <InsightNote text="A recruiting shop, a creative studio, and an e-commerce team break in totally different places. This is where we stop the audit from feeling generic." />
               <SingleSelect
                 options={AGENCY_TYPES}
                 value={answers.agencyType}
@@ -543,6 +965,9 @@ export default function AuditPage() {
                     placeholder="Describe your agency type..."
                   />
                 </div>
+              )}
+              {needsAgencyTypeDetail && answers.agencyTypeOther.trim().length > 0 && answers.agencyTypeOther.trim().length < 3 && (
+                <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so we can tailor the audit.</p>
               )}
             </>
           )}
@@ -588,10 +1013,11 @@ export default function AuditPage() {
             <>
               <StepHeader
                 question="What tools does your team use daily?"
-                hint="Select all that apply"
+                hint={agencyCopy.toolsHint}
               />
+              <InsightNote text="This tells us where your team is context-switching, what APIs can be connected, and which recommendations are actually realistic for your stack." />
               <MultiSelect
-                options={getToolOptions()}
+                options={toolOptions}
                 values={answers.tools}
                 onChange={toggleMulti('tools')}
               />
@@ -604,18 +1030,72 @@ export default function AuditPage() {
                   />
                 </div>
               )}
+              {needsToolDetail && answers.toolsOther.trim().length > 0 && answers.toolsOther.trim().length < 3 && (
+                <p className="mt-2 text-xs text-on-surface-variant/50">Name the extra tool so we can factor it into the blueprint.</p>
+              )}
+              {needsToolSignalFollowup && (
+                <div className="mt-6 rounded-[20px] border border-primary/12 bg-primary/5 p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+                    Smart follow-up
+                  </p>
+                  <p className="font-headline text-[17px] font-bold tracking-[-0.02em] text-on-surface mb-2">
+                    Based on your stack, what still gets stitched together by hand?
+                  </p>
+                  <p className="text-[13px] leading-[1.65] text-on-surface-variant mb-4">
+                    Pick the handoffs that feel painfully familiar. This gives the AI better workflow context before it recommends automations.
+                  </p>
+                  <MultiSelect
+                    options={toolSignalOptions}
+                    values={answers.toolSignals}
+                    onChange={toggleMulti('toolSignals')}
+                  />
+                  <div className="mt-4">
+                    <TextInput
+                      value={answers.toolSignalsDetail}
+                      onChange={(v) => setAnswers((p) => ({ ...p, toolSignalsDetail: v }))}
+                      placeholder="Optional: name another tool-to-tool handoff that breaks often..."
+                    />
+                  </div>
+                  {answers.toolSignals.length === 0 && answers.toolSignalsDetail.trim().length > 0 && answers.toolSignalsDetail.trim().length < 10 && (
+                    <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so the workflow pain is clear.</p>
+                  )}
+                </div>
+              )}
+              {needsToolSignalFollowup && answers.toolSignals.length === 0 && answers.toolSignalsDetail.trim().length === 0 && (
+                <p className="mt-3 text-xs text-on-surface-variant/50">Choose at least one stack pain point or write your own before continuing.</p>
+              )}
             </>
           )}
 
           {/* Step 6 — CRM */}
           {currentStep === 5 && (
             <>
-              <StepHeader question="What CRM do you use?" />
+              <StepHeader
+                question="Where do deals and client records actually live?"
+                hint="Even if it is a spreadsheet, inbox, or messy hybrid, tell us the real source of truth."
+              />
+              <InsightNote text="This answer changes how we think about lead routing, client handoff, and how much manual cleanup your team is doing before real work can start." />
               <SingleSelect
                 options={CRM_OPTIONS}
                 value={answers.crmTool}
-                onChange={(v) => setAnswers((p) => ({ ...p, crmTool: v }))}
+                onChange={(v) => setAnswers((p) => ({
+                  ...p,
+                  crmTool: v,
+                  crmDetail: v === 'Other' ? p.crmDetail : '',
+                }))}
               />
+              {needsCrmDetail && (
+                <div className="mt-4">
+                  <TextInput
+                    value={answers.crmDetail}
+                    onChange={(v) => setAnswers((p) => ({ ...p, crmDetail: v }))}
+                    placeholder="e.g. Attio, Zoho CRM, Close..."
+                  />
+                </div>
+              )}
+              {answers.crmTool === 'Spreadsheet/Manual' && (
+                <p className="mt-3 text-xs text-[#ffb786]">This is a strong signal that revenue and handoff quality are probably leaking through manual ops.</p>
+              )}
             </>
           )}
 
@@ -629,6 +1109,7 @@ export default function AuditPage() {
                     question="What are the top 3 tasks eating your team's time?"
                     hint="Think repetitive, manual, or copy-paste heavy work."
                   />
+                  <InsightNote text="We turn these answers into labor-waste math, not vague advice. The more operational and repetitive the task, the more accurate the ROI model gets." />
                   <TextArea
                     value={answers.timeHeavyText}
                     onChange={(v) => setAnswers((p) => ({ ...p, timeHeavyText: v }))}
@@ -643,6 +1124,7 @@ export default function AuditPage() {
                   question={TIME_HEAVY_Q[cat]}
                   hint="Select all that apply"
                 />
+                <InsightNote text="These are usually the places where expensive people are doing low-leverage work. We use this to rank the fastest-return automations first." />
                 <MultiSelect
                   options={TIME_HEAVY_OPTS[cat]}
                   values={answers.timeHeavyMulti}
@@ -655,12 +1137,36 @@ export default function AuditPage() {
           {/* Step 8 — Lead entry */}
           {currentStep === 7 && (
             <>
-              <StepHeader question="How do new leads/clients currently enter your system?" />
+              <StepHeader
+                question="How do new leads or new work actually enter your system today?"
+                hint={agencyCopy.leadEntryHint}
+              />
+              <InsightNote text="This is often the first trigger in the workflow. If we know how work enters, we can design what should happen instantly afterward." />
               <SingleSelect
                 options={LEAD_ENTRY_OPTIONS}
                 value={answers.leadEntry}
-                onChange={(v) => setAnswers((p) => ({ ...p, leadEntry: v }))}
+                onChange={(v) => setAnswers((p) => ({
+                  ...p,
+                  leadEntry: v,
+                  leadEntryDetail: ['Web form', 'Email', 'Referral spreadsheet', 'Other'].includes(v)
+                    ? p.leadEntryDetail
+                    : '',
+                }))}
               />
+              {showsLeadEntryDetail && (
+                <div className="mt-4">
+                  <TextInput
+                    value={answers.leadEntryDetail}
+                    onChange={(v) => setAnswers((p) => ({ ...p, leadEntryDetail: v }))}
+                    placeholder={answers.leadEntry === 'Other'
+                      ? 'Describe the source...'
+                      : 'Optional: name the source or tool, e.g. Typeform, shared inbox, partner sheet...'}
+                  />
+                </div>
+              )}
+              {requiresLeadEntryDetail && answers.leadEntryDetail.trim().length > 0 && answers.leadEntryDetail.trim().length < 2 && (
+                <p className="mt-2 text-xs text-on-surface-variant/50">Tell us what that source is so the trigger is not vague.</p>
+              )}
             </>
           )}
 
@@ -669,8 +1175,9 @@ export default function AuditPage() {
             <>
               <StepHeader
                 question="What happens after you close a new client?"
-                hint="Select all that apply"
+                hint={agencyCopy.onboardingHint}
               />
+              <InsightNote text="Most agencies think their problem is reporting or project tracking, but the mess often starts right after the sale. This step helps us see the handoff cracks." />
               <MultiSelect
                 options={ONBOARDING_OPTIONS}
                 values={answers.onboarding}
@@ -682,12 +1189,33 @@ export default function AuditPage() {
           {/* Step 10 — Progress tracking */}
           {currentStep === 9 && (
             <>
-              <StepHeader question="How do you currently track project progress and deadlines?" />
+              <StepHeader
+                question="How do you currently track progress, handoffs, and deadlines?"
+                hint={agencyCopy.progressHint}
+              />
+              <InsightNote text="We use this to understand where updates disappear, where accountability is weak, and whether your team is working from one operating view or six." />
               <SingleSelect
                 options={PROGRESS_OPTIONS}
                 value={answers.progressTracking}
-                onChange={(v) => setAnswers((p) => ({ ...p, progressTracking: v }))}
+                onChange={(v) => setAnswers((p) => ({
+                  ...p,
+                  progressTracking: v,
+                  progressTrackingDetail: ['Project management tool', 'Other'].includes(v)
+                    ? p.progressTrackingDetail
+                    : '',
+                }))}
               />
+              {needsProgressTrackingDetail && (
+                <div className="mt-4">
+                  <TextInput
+                    value={answers.progressTrackingDetail}
+                    onChange={(v) => setAnswers((p) => ({ ...p, progressTrackingDetail: v }))}
+                    placeholder={answers.progressTracking === 'Project management tool'
+                      ? 'Which one, e.g. Asana, ClickUp, Jira, Linear...'
+                      : 'Describe how you track it...'}
+                  />
+                </div>
+              )}
             </>
           )}
 
@@ -696,13 +1224,34 @@ export default function AuditPage() {
             <>
               <StepHeader
                 question="What's the ONE process that, if automated, would save you the most time this month?"
-                hint="Be specific — the more detail, the better your audit."
+                hint="Give us the process, the volume, the owner, and how painful failure is."
               />
+              <InsightNote text="This is the most important answer in the whole form. Name the exact workflow, mention the tools involved, and describe what currently has to be done by hand." />
               <TextArea
                 value={answers.automationWish}
                 onChange={(v) => setAnswers((p) => ({ ...p, automationWish: v }))}
-                placeholder={`e.g. Pulling together weekly client reports from Google Ads, GA4, and our project tracker into a single PDF takes 3–4 hours every Friday...`}
+                placeholder={agencyCopy.automationPlaceholder}
               />
+              <div className="mt-6 space-y-5">
+                <ChipSingleSelect
+                  label="How often does this happen?"
+                  options={PROCESS_FREQUENCY_OPTIONS}
+                  value={answers.processFrequency}
+                  onChange={(v) => setAnswers((p) => ({ ...p, processFrequency: v }))}
+                />
+                <ChipSingleSelect
+                  label="Who feels this pain most directly?"
+                  options={PROCESS_OWNER_OPTIONS}
+                  value={answers.processOwner}
+                  onChange={(v) => setAnswers((p) => ({ ...p, processOwner: v }))}
+                />
+                <ChipSingleSelect
+                  label="What happens when this process slips?"
+                  options={FAILURE_IMPACT_OPTIONS}
+                  value={answers.failureImpact}
+                  onChange={(v) => setAnswers((p) => ({ ...p, failureImpact: v }))}
+                />
+              </div>
               {answers.automationWish.trim().length > 0 && answers.automationWish.trim().length < 20 && (
                 <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
               )}
@@ -716,10 +1265,11 @@ export default function AuditPage() {
                 question="If you could wave a magic wand, what would your operations look like in 6 months?"
                 hint="Dream big — this helps us tailor your audit roadmap."
               />
+              <InsightNote text="We use this to write the roadmap in the language of your business. The clearer your picture of the future, the less generic the strategy feels." />
               <TextArea
                 value={answers.futureVision}
                 onChange={(v) => setAnswers((p) => ({ ...p, futureVision: v }))}
-                placeholder={`e.g. Clients get onboarded automatically the day they sign. Reports go out without anyone touching them. My team only deals with creative work, not admin...`}
+                placeholder={agencyCopy.futureVisionPlaceholder}
               />
               {answers.futureVision.trim().length > 0 && answers.futureVision.trim().length < 20 && (
                 <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
