@@ -1,0 +1,90 @@
+---
+title: Building a Client Reporting Layer That Does Not Break Every Monday
+description: A pragmatic blueprint for stitching ad platforms, CRM data, and billing signals into a reporting system your team can actually trust.
+date: 2026-01-30
+categories:
+  - Reporting
+  - Sales Ops
+---
+
+## Reporting systems fail quietly
+
+Most agency reporting stacks fail in subtle ways:
+
+- Spend is current but pipeline data lags by a day
+- Billing totals do not match delivery milestones
+- Definitions change between the dashboard and the weekly email
+
+None of that looks catastrophic at first. It just slowly erodes trust until the team starts rebuilding reports by hand.
+
+## Start with one metric contract
+
+Before you connect tools, write a contract for the metrics that matter. At minimum:
+
+- Lead volume
+- Qualified opportunities
+- Closed revenue
+- Retainer value
+- Delivery margin
+
+For each metric, define:
+
+1. Source of truth
+2. Refresh frequency
+3. Owner
+4. Failure mode if the source is late or missing
+
+That prevents the usual argument where every tool claims to be right.
+
+## Use a layered reporting model
+
+The cleanest stack has three layers:
+
+### Ingestion
+
+Pull data from ad platforms, CRM, payment tools, and project systems into one warehouse or shared reporting layer.
+
+### Normalization
+
+Map inconsistent fields into a standard operating model. This is where you fix naming drift, date mismatches, and duplicated account IDs.
+
+### Delivery
+
+Expose the metrics through dashboards, scheduled emails, and client-ready briefings. Keep this layer thin. Reporting tools should present the truth, not invent it.
+
+## A weekly report packet should answer four questions
+
+Your reporting layer should make it easy to answer:
+
+- What happened this week?
+- Why did it happen?
+- What changed from the previous period?
+- What should the team do next?
+
+That is why a strong reporting stack usually needs both structured metrics and a short AI-generated summary that works from those metrics.
+
+## Keep summaries grounded
+
+If you use AI for weekly reporting notes, constrain it with explicit inputs:
+
+```ts
+const summaryInput = {
+  period: '2026-W05',
+  spendDeltaPct: 12.4,
+  qualifiedLeads: 18,
+  revenueClosed: 24000,
+  anomalies: ['CRM sync lagged for 3 hours on Tuesday'],
+}
+```
+
+The model should summarize from the packet, not from memory and not from a live tool search.
+
+## Design for failure
+
+Premium reporting systems are defined by how they behave when something is wrong. Add simple rules:
+
+- If a source is stale, mark the report section as delayed.
+- If a metric changes definition, version it.
+- If a client-facing number is incomplete, suppress the narrative layer until the data is corrected.
+
+That is how you preserve trust while the system scales.

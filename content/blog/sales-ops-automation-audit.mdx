@@ -1,0 +1,101 @@
+---
+title: The Sales Ops Automation Audit
+description: A step-by-step method to find the sales operations workflows worth automating before you add more tools or headcount.
+date: 2026-03-18
+categories:
+  - Sales Ops
+  - AI
+featured: true
+---
+
+## Why most automation backlogs stall
+
+Teams usually start with a list of **ideas**, not a map of **failure points**. That creates a pattern where a new tool is added, a few zaps appear, and the messy handoff between sales and delivery still breaks every week.
+
+The better approach is to audit the system in layers:
+
+1. Identify the trigger that starts the workflow.
+2. Measure every decision point that changes routing or priority.
+3. Track the handoff where context moves from one team to another.
+
+If one of those layers is ambiguous, automation only amplifies the ambiguity.
+
+> Automate the constraint, not the noise around it.
+
+## Run the audit in three passes
+
+### 1. Trigger quality
+
+Start by asking what actually causes the workflow to begin. For most sales ops teams, the trigger is one of these:
+
+- A form submission
+- A CRM stage change
+- A booking confirmation
+- A payment event
+
+The trigger should answer two questions immediately:
+
+- Is the lead or customer real?
+- Is the record complete enough to route without human cleanup?
+
+If the answer is no, the automation backlog is downstream of a data quality problem.
+
+### 2. Decision logic
+
+Next, inspect the rules that decide who owns the record and what happens next. This is where AI can help, but only if the operating rules are explicit.
+
+| Layer | Question to ask | Good signal |
+| --- | --- | --- |
+| Routing | Does ownership change based on deal type or geography? | Rules are written and versioned |
+| Prioritization | What makes one lead urgent? | Score thresholds exist |
+| Qualification | What information blocks progression? | Required fields are enforced |
+
+If your routing logic lives inside Slack messages and rep intuition, fix that before you introduce an LLM.
+
+### 3. Handoff latency
+
+Most revenue systems break during handoff, not capture. Measure the time between:
+
+- Lead qualified -> account executive notified
+- Deal closed -> implementation team briefed
+- Onboarding sold -> kickoff assets created
+
+If those gaps are measured in hours or days, you have an operating system problem, not a dashboard problem.
+
+## A practical scoring model
+
+Use a simple scorecard before choosing any automation platform:
+
+```yaml
+scorecard:
+  trigger_quality: 4
+  routing_logic: 2
+  handoff_latency_hours: 17
+  required_manual_touches: 6
+  system_owner: revenue_ops
+```
+
+This is intentionally simple. You are trying to decide **where the system leaks**, not produce a perfect maturity model.
+
+## Where AI actually helps
+
+Once the workflow is stable, AI becomes useful in a few specific jobs:
+
+- Summarizing sales calls into CRM-ready notes
+- Classifying inbound leads against an ICP rubric
+- Drafting implementation briefs from closed-won records
+- Flagging missing data before a deal can move stages
+
+These are high-leverage because they remove interpretation work, not because they sound advanced.
+
+## What to automate first
+
+If you want one default order, use this:
+
+1. CRM data cleanup and field enforcement
+2. Lead routing and assignment
+3. Sales-to-delivery handoff packaging
+4. Reporting and weekly summaries
+5. AI enrichment and prioritization
+
+That sequence gives you cleaner data, faster response times, and a better surface area for AI to work on later.

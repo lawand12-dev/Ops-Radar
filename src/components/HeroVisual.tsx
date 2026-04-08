@@ -3,387 +3,570 @@
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { useRef } from 'react'
 
-// ─── Tool node definitions ─────────────────────────────────────────────────
+type Position = {
+  left: string
+  top: string
+}
 
-type NodeDef = {
-  key: string
+type CanvasNode = Position & {
+  id: string
   label: string
-  sub: string
+  subtitle: string
+  tag: string
+  metric: string
   color: string
-  bg: string
-  runs: string
+  glow: string
   icon: React.ReactNode
+  activityDelay: number
 }
 
-function WebhookIcon({ color }: { color: string }) {
+type Connector = {
+  id: string
+  path: string
+  pulse: Position[]
+  color: string
+  delay: number
+}
+
+function LeadIcon({ color }: { color: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M9 2v4M9 12v4M2 9h4M12 9h4" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
-      <circle cx="9" cy="9" r="2.5" fill={color} fillOpacity="0.25" stroke={color} strokeWidth="1.4"/>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <circle cx="10" cy="6.2" r="3.1" stroke={color} strokeWidth="1.5" />
+      <path d="M4.5 16.3c1.2-2.7 3.1-4 5.5-4s4.3 1.3 5.5 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M15.8 4.5h2.7M17.15 3.15v2.7" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   )
 }
-function OpenAIIcon({ color }: { color: string }) {
+
+function AIIcon({ color }: { color: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="7" stroke={color} strokeWidth="1.4"/>
-      <path d="M9 5.5c0 0 2.5 1.5 2.5 3.5S9 12.5 9 12.5M9 5.5C9 5.5 6.5 7 6.5 9S9 12.5 9 12.5" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
-      <circle cx="9" cy="9" r="1.5" fill={color}/>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <rect x="4" y="4" width="12" height="12" rx="3" stroke={color} strokeWidth="1.5" />
+      <path d="M7.25 10h5.5M10 7.25v5.5" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="10" cy="10" r="1.9" fill={color} fillOpacity="0.18" stroke={color} strokeWidth="1.2" />
     </svg>
   )
 }
-function HubSpotIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="13" cy="5.5" r="3" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="1.4"/>
-      <path d="M10.5 5.5H5A3 3 0 0 0 5 11.5h5.5" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
-      <circle cx="6" cy="14" r="2" fill={color}/>
-    </svg>
-  )
-}
+
 function SlackIcon({ color }: { color: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="3"  y="7.5" width="3" height="7"   rx="1.5" fill={color}/>
-      <rect x="3"  y="3.5" width="3" height="3"   rx="1.5" fill={color} fillOpacity="0.5"/>
-      <rect x="7.5" y="3.5" width="7" height="3"  rx="1.5" fill={color}/>
-      <rect x="12" y="3.5" width="3" height="7"   rx="1.5" fill={color}/>
-      <rect x="12" y="11.5" width="3" height="3"  rx="1.5" fill={color} fillOpacity="0.5"/>
-      <rect x="7.5" y="11.5" width="7" height="3" rx="1.5" fill={color}/>
-    </svg>
-  )
-}
-function GmailIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="2" y="4.5" width="14" height="10" rx="1.5" stroke={color} strokeWidth="1.4"/>
-      <path d="M2 6l7 5 7-5" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-function SheetsIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="3" y="2.5" width="12" height="13" rx="1.5" stroke={color} strokeWidth="1.4"/>
-      <path d="M3 6.5h12M3 10.5h12M8 6.5v9" stroke={color} strokeWidth="1.2" strokeLinecap="round"/>
-    </svg>
-  )
-}
-function ClickUpIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M3 12L6.5 8l3 3 5-6" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <rect x="4" y="8" width="3.2" height="7.4" rx="1.6" fill={color} />
+      <rect x="4" y="4.4" width="3.2" height="3.2" rx="1.6" fill={color} fillOpacity="0.55" />
+      <rect x="8.2" y="4.4" width="7.4" height="3.2" rx="1.6" fill={color} />
+      <rect x="12.8" y="4.4" width="3.2" height="7.4" rx="1.6" fill={color} />
+      <rect x="12.8" y="12.4" width="3.2" height="3.2" rx="1.6" fill={color} fillOpacity="0.55" />
+      <rect x="8.2" y="12.4" width="7.4" height="3.2" rx="1.6" fill={color} />
     </svg>
   )
 }
 
-// ─── Workflow data ─────────────────────────────────────────────────────────
+function CRMIcon({ color }: { color: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <rect x="4" y="4.2" width="12" height="11.6" rx="2.4" stroke={color} strokeWidth="1.5" />
+      <path d="M7 8h6M7 11h4" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M13.9 4.2v11.6" stroke={color} strokeWidth="1.2" strokeOpacity="0.45" />
+    </svg>
+  )
+}
 
-const WORKFLOW_1: NodeDef[] = [
+const DESKTOP_NODES: CanvasNode[] = [
   {
-    key: 'w1-webhook', label: 'New Lead',      sub: 'Webhook Trigger',
-    color: '#facc15', bg: 'rgba(250,204,21,0.1)', runs: '2,847',
-    icon: <WebhookIcon color="#facc15" />,
+    id: 'lead',
+    label: 'Lead',
+    subtitle: 'Webhook trigger',
+    tag: 'Trigger',
+    metric: 'New form submit',
+    color: '#60a5fa',
+    glow: 'rgba(96,165,250,0.24)',
+    icon: <LeadIcon color="#93c5fd" />,
+    left: '18%',
+    top: '52%',
+    activityDelay: 0.12,
   },
   {
-    key: 'w1-openai',  label: 'Score & Filter', sub: 'OpenAI · GPT-4o',
-    color: '#34d399', bg: 'rgba(52,211,153,0.1)', runs: '2,844',
-    icon: <OpenAIIcon color="#34d399" />,
+    id: 'ai',
+    label: 'AI Scoring',
+    subtitle: 'Intent + fit analysis',
+    tag: 'AI',
+    metric: 'Score: 92 / 100',
+    color: '#34d399',
+    glow: 'rgba(52,211,153,0.24)',
+    icon: <AIIcon color="#6ee7b7" />,
+    left: '49%',
+    top: '52%',
+    activityDelay: 0.72,
   },
   {
-    key: 'w1-hubspot', label: 'Add to CRM',     sub: 'HubSpot',
-    color: '#f97316', bg: 'rgba(249,115,22,0.1)', runs: '2,391',
-    icon: <HubSpotIcon color="#f97316" />,
+    id: 'slack',
+    label: 'Slack',
+    subtitle: 'Team notification',
+    tag: 'Action',
+    metric: 'Alert delivered',
+    color: '#22d3ee',
+    glow: 'rgba(34,211,238,0.22)',
+    icon: <SlackIcon color="#67e8f9" />,
+    left: '81%',
+    top: '30%',
+    activityDelay: 1.35,
   },
   {
-    key: 'w1-slack',   label: 'Notify Team',    sub: 'Slack',
-    color: '#38bdf8', bg: 'rgba(56,189,248,0.1)', runs: '2,391',
-    icon: <SlackIcon color="#38bdf8" />,
-  },
-  {
-    key: 'w1-gmail',   label: 'Send Recap',     sub: 'Gmail',
-    color: '#f87171', bg: 'rgba(248,113,113,0.1)', runs: '2,391',
-    icon: <GmailIcon color="#f87171" />,
+    id: 'crm',
+    label: 'CRM',
+    subtitle: 'Pipeline sync',
+    tag: 'Action',
+    metric: 'Record updated',
+    color: '#fb923c',
+    glow: 'rgba(251,146,60,0.22)',
+    icon: <CRMIcon color="#fdba74" />,
+    left: '81%',
+    top: '72%',
+    activityDelay: 1.55,
   },
 ]
 
-const WORKFLOW_2: NodeDef[] = [
+const MOBILE_NODES: CanvasNode[] = [
   {
-    key: 'w2-sheets',  label: 'Form Submit',    sub: 'Google Sheets',
-    color: '#4ade80', bg: 'rgba(74,222,128,0.1)', runs: '1,203',
-    icon: <SheetsIcon color="#4ade80" />,
+    id: 'lead',
+    label: 'Lead',
+    subtitle: 'Webhook trigger',
+    tag: 'Trigger',
+    metric: 'New form submit',
+    color: '#60a5fa',
+    glow: 'rgba(96,165,250,0.24)',
+    icon: <LeadIcon color="#93c5fd" />,
+    left: '50%',
+    top: '18%',
+    activityDelay: 0.12,
   },
   {
-    key: 'w2-openai',  label: 'Summarise Data', sub: 'OpenAI · GPT-4o',
-    color: '#34d399', bg: 'rgba(52,211,153,0.1)', runs: '1,203',
-    icon: <OpenAIIcon color="#34d399" />,
+    id: 'ai',
+    label: 'AI Scoring',
+    subtitle: 'Intent + fit analysis',
+    tag: 'AI',
+    metric: 'Score: 92 / 100',
+    color: '#34d399',
+    glow: 'rgba(52,211,153,0.24)',
+    icon: <AIIcon color="#6ee7b7" />,
+    left: '50%',
+    top: '45%',
+    activityDelay: 0.72,
   },
   {
-    key: 'w2-hubspot', label: 'Update CRM',     sub: 'HubSpot',
-    color: '#f97316', bg: 'rgba(249,115,22,0.1)', runs: '1,201',
-    icon: <HubSpotIcon color="#f97316" />,
+    id: 'slack',
+    label: 'Slack',
+    subtitle: 'Team notification',
+    tag: 'Action',
+    metric: 'Alert delivered',
+    color: '#22d3ee',
+    glow: 'rgba(34,211,238,0.22)',
+    icon: <SlackIcon color="#67e8f9" />,
+    left: '27%',
+    top: '77%',
+    activityDelay: 1.35,
   },
   {
-    key: 'w2-slack',   label: 'Ping Channel',   sub: 'Slack',
-    color: '#38bdf8', bg: 'rgba(56,189,248,0.1)', runs: '1,201',
-    icon: <SlackIcon color="#38bdf8" />,
-  },
-  {
-    key: 'w2-clickup', label: 'Create Task',    sub: 'ClickUp',
-    color: '#818cf8', bg: 'rgba(129,140,248,0.1)', runs: '1,201',
-    icon: <ClickUpIcon color="#818cf8" />,
+    id: 'crm',
+    label: 'CRM',
+    subtitle: 'Pipeline sync',
+    tag: 'Action',
+    metric: 'Record updated',
+    color: '#fb923c',
+    glow: 'rgba(251,146,60,0.22)',
+    icon: <CRMIcon color="#fdba74" />,
+    left: '73%',
+    top: '77%',
+    activityDelay: 1.55,
   },
 ]
 
-// ─── Animated connector ────────────────────────────────────────────────────
+const DESKTOP_CONNECTORS: Connector[] = [
+  {
+    id: 'lead-to-ai',
+    path: 'M 26 52 C 33 52, 39 52, 44 52',
+    pulse: [
+      { left: '26%', top: '52%' },
+      { left: '32%', top: '52%' },
+      { left: '38%', top: '52%' },
+      { left: '44%', top: '52%' },
+    ],
+    color: '#60a5fa',
+    delay: 0.2,
+  },
+  {
+    id: 'ai-to-slack',
+    path: 'M 54 50 C 63 49, 69 36, 74 30',
+    pulse: [
+      { left: '54%', top: '50%' },
+      { left: '61%', top: '47%' },
+      { left: '68%', top: '38%' },
+      { left: '74%', top: '30%' },
+    ],
+    color: '#22d3ee',
+    delay: 0.92,
+  },
+  {
+    id: 'ai-to-crm',
+    path: 'M 54 54 C 63 55, 69 66, 74 72',
+    pulse: [
+      { left: '54%', top: '54%' },
+      { left: '61%', top: '57%' },
+      { left: '68%', top: '64%' },
+      { left: '74%', top: '72%' },
+    ],
+    color: '#fb923c',
+    delay: 1.08,
+  },
+]
 
-function Connector({ color, delay }: { color: string; delay: number }) {
-  const reduced = useReducedMotion()
-  return (
-    <div className="relative flex items-center" style={{ flex: 1, minWidth: 24, height: 2 }}>
-      {/* Dashed base line */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(90deg, ${color}40, ${color}20)`,
-          maskImage: 'repeating-linear-gradient(90deg, black 0px, black 5px, transparent 5px, transparent 10px)',
-          WebkitMaskImage: 'repeating-linear-gradient(90deg, black 0px, black 5px, transparent 5px, transparent 10px)',
-        }}
-      />
-      {/* Traveling dot */}
-      {!reduced && (
-        <motion.div
-          className="absolute top-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            width: 6, height: 6,
-            background: color,
-            boxShadow: `0 0 8px 2px ${color}80`,
-          }}
-          animate={{ left: ['-4px', 'calc(100% + 4px)'] }}
-          transition={{
-            duration: 1.6,
-            delay,
-            repeat: Infinity,
-            repeatDelay: 2.8,
-            ease: 'easeInOut',
-          }}
-        />
-      )}
-      {/* Arrow tip */}
-      <svg
-        className="absolute right-0 shrink-0"
-        width="8" height="8" viewBox="0 0 8 8" fill="none"
-        style={{ color: `${color}60` }}
-      >
-        <path d="M1 4h6M4 1l3 3-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-  )
-}
+const MOBILE_CONNECTORS: Connector[] = [
+  {
+    id: 'lead-to-ai',
+    path: 'M 50 24 C 50 29, 50 35, 50 40',
+    pulse: [
+      { left: '50%', top: '24%' },
+      { left: '50%', top: '29%' },
+      { left: '50%', top: '34%' },
+      { left: '50%', top: '40%' },
+    ],
+    color: '#60a5fa',
+    delay: 0.2,
+  },
+  {
+    id: 'ai-to-slack',
+    path: 'M 46 53 C 40 60, 33 68, 28 72',
+    pulse: [
+      { left: '46%', top: '53%' },
+      { left: '40%', top: '60%' },
+      { left: '34%', top: '67%' },
+      { left: '28%', top: '72%' },
+    ],
+    color: '#22d3ee',
+    delay: 0.92,
+  },
+  {
+    id: 'ai-to-crm',
+    path: 'M 54 53 C 60 60, 67 68, 72 72',
+    pulse: [
+      { left: '54%', top: '53%' },
+      { left: '60%', top: '60%' },
+      { left: '66%', top: '67%' },
+      { left: '72%', top: '72%' },
+    ],
+    color: '#fb923c',
+    delay: 1.08,
+  },
+]
 
-// ─── Single node card ──────────────────────────────────────────────────────
-
-function NodeCard({ node, index, pulseDelay }: { node: NodeDef; index: number; pulseDelay: number }) {
-  const reduced = useReducedMotion()
-  return (
-    <motion.div
-      initial={reduced ? false : { opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.3 + index * 0.08 }}
-      className="shrink-0 flex flex-col gap-1 rounded-[10px] px-3 py-2.5"
-      style={{
-        background: node.bg,
-        border: `1px solid ${node.color}30`,
-        minWidth: 110,
-      }}
-    >
-      {/* Icon + label row */}
-      <div className="flex items-center gap-2">
-        {/* Pulsing icon wrapper */}
-        <motion.div
-          className="w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0"
-          style={{ background: `${node.color}18`, border: `1px solid ${node.color}35` }}
-          animate={reduced ? undefined : {
-            boxShadow: [
-              `0 0 0px 0px ${node.color}00`,
-              `0 0 10px 3px ${node.color}50`,
-              `0 0 0px 0px ${node.color}00`,
-            ],
-          }}
-          transition={{ duration: 2.4, delay: pulseDelay, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          {node.icon}
-        </motion.div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold leading-tight text-white/90 truncate">{node.label}</p>
-          <p className="text-[9px] text-white/35 truncate">{node.sub}</p>
-        </div>
-      </div>
-      {/* Run count */}
-      <div className="flex items-center gap-1 mt-0.5">
-        <div className="w-1.5 h-1.5 rounded-full" style={{ background: node.color, boxShadow: `0 0 4px ${node.color}` }} />
-        <span className="text-[9px] font-semibold" style={{ color: `${node.color}cc` }}>{node.runs} runs</span>
-      </div>
-    </motion.div>
-  )
-}
-
-// ─── Workflow row ──────────────────────────────────────────────────────────
-
-function WorkflowRow({
-  nodes, label, tag, delay,
+function DataPulse({
+  points,
+  color,
+  delay,
+  active,
 }: {
-  nodes: NodeDef[]
-  label: string
-  tag: string
+  points: Position[]
+  color: string
   delay: number
+  active: boolean
 }) {
-  const reduced = useReducedMotion()
+  if (!active) return null
+
   return (
     <motion.div
-      initial={reduced ? false : { opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="rounded-[12px] p-3"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+      className="absolute z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/60"
+      style={{
+        left: points[0].left,
+        top: points[0].top,
+        background: color,
+        boxShadow: `0 0 0 3px ${color}1f, 0 0 18px 4px ${color}55, 0 0 36px ${color}38`,
+      }}
+      animate={{
+        left: points.map((point) => point.left),
+        top: points.map((point) => point.top),
+        opacity: [0, 1, 1, 0],
+        scale: [0.72, 1, 1, 0.82],
+      }}
+      transition={{
+        duration: 1,
+        delay,
+        repeat: Infinity,
+        repeatDelay: 2,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      aria-hidden
+    />
+  )
+}
+
+function NodeCard({
+  node,
+  index,
+  active,
+}: {
+  node: CanvasNode
+  index: number
+  active: boolean
+}) {
+  return (
+    <motion.div
+      className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+      style={{ left: node.left, top: node.top }}
+      initial={{ opacity: 0, scale: 0.96, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.42, delay: 0.15 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Row header */}
-      <div className="flex items-center gap-2 mb-2.5">
-        <span
-          className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(173,198,255,0.08)', border: '1px solid rgba(173,198,255,0.15)', color: '#adc6ff' }}
-        >
-          {tag}
-        </span>
-        <span className="text-[10px] font-semibold text-white/40">{label}</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-[9px] font-bold text-emerald-400">99.8%</span>
-          <span className="text-[9px] text-white/25">success</span>
-        </div>
-      </div>
-      {/* Node chain */}
-      <div className="flex items-center gap-0">
-        {nodes.map((node, i) => (
-          <div key={node.key} className="flex items-center" style={{ flex: i < nodes.length - 1 ? '0 0 auto' : '0 0 auto' }}>
-            <NodeCard node={node} index={i} pulseDelay={delay + i * 0.4} />
-            {i < nodes.length - 1 && (
-              <Connector color={nodes[i + 1].color} delay={delay + i * 0.3} />
-            )}
+      <div
+        className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(16,24,40,0.92),rgba(9,15,28,0.9))] shadow-[0_18px_40px_rgba(2,6,23,0.35)] backdrop-blur-xl w-[104px] min-[380px]:w-[118px] sm:w-[138px] lg:w-[166px]"
+        style={{
+          boxShadow: `0 18px 40px rgba(2,6,23,0.35), 0 0 0 1px ${node.color}12`,
+        }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-90"
+          style={{
+            background: `radial-gradient(circle at top left, ${node.glow}, transparent 60%)`,
+          }}
+          aria-hidden
+        />
+        <div className="relative z-10 p-3 sm:p-4">
+          <div className="flex items-start justify-between gap-2">
+            <motion.div
+              className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:h-10 sm:w-10"
+              animate={
+                active
+                  ? {
+                      scale: [1, 1.06, 1],
+                      boxShadow: [
+                        `0 0 0 0 ${node.color}00`,
+                        `0 0 18px 2px ${node.color}55`,
+                        `0 0 0 0 ${node.color}00`,
+                      ],
+                    }
+                  : undefined
+              }
+              transition={{
+                duration: 0.6,
+                delay: node.activityDelay,
+                repeat: Infinity,
+                repeatDelay: 2.4,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              {node.icon}
+            </motion.div>
+            <span
+              className="rounded-full border px-2 py-1 text-[8px] font-bold uppercase tracking-[0.22em] text-white/70 sm:text-[9px]"
+              style={{ borderColor: `${node.color}26`, background: `${node.color}12` }}
+            >
+              {node.tag}
+            </span>
           </div>
-        ))}
+
+          <div className="mt-3">
+            <p className="text-sm font-semibold tracking-tight text-white sm:text-[15px]">{node.label}</p>
+            <p className="mt-1 text-[10px] leading-4 text-white/52 sm:text-[11px] sm:leading-5">
+              {node.subtitle}
+            </p>
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-[10px] font-medium sm:text-[11px]">
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: node.color, boxShadow: `0 0 10px ${node.color}` }}
+            />
+            <span style={{ color: `${node.color}dd` }}>{node.metric}</span>
+          </div>
+        </div>
       </div>
     </motion.div>
   )
 }
 
-// ─── Metric pill ──────────────────────────────────────────────────────────
-
-function MetricPill({ label, value, color }: { label: string; value: string; color: string }) {
+function CanvasGraph({
+  className,
+  nodes,
+  connectors,
+  active,
+}: {
+  className: string
+  nodes: CanvasNode[]
+  connectors: Connector[]
+  active: boolean
+}) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="font-headline font-extrabold text-[13px] tabular-nums" style={{ color }}>{value}</span>
-      <span className="text-[10px] text-white/35">{label}</span>
+    <div className={`absolute inset-0 ${className}`}>
+      <svg
+        className="absolute inset-0 h-full w-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        {connectors.map((connector) => (
+          <g key={connector.id}>
+            <path
+              d={connector.path}
+              fill="none"
+              stroke={`${connector.color}1f`}
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+            <motion.path
+              d={connector.path}
+              fill="none"
+              stroke={`${connector.color}b3`}
+              strokeWidth="2"
+              strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={active ? { pathLength: 1, opacity: 1 } : { pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </g>
+        ))}
+      </svg>
+
+      {connectors.map((connector) => (
+        <DataPulse
+          key={connector.id}
+          points={connector.pulse}
+          color={connector.color}
+          delay={connector.delay}
+          active={active}
+        />
+      ))}
+
+      {nodes.map((node, index) => (
+        <NodeCard key={node.id} node={node} index={index} active={active} />
+      ))}
     </div>
   )
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────
+function StepPill({
+  step,
+  label,
+}: {
+  step: string
+  label: string
+}) {
+  return (
+    <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl">
+      <span className="mr-2 text-[10px] font-bold uppercase tracking-[0.22em] text-primary">{step}</span>
+      <span className="text-xs text-white/72 sm:text-[13px]">{label}</span>
+    </div>
+  )
+}
 
 export default function HeroVisual() {
-  const reduced    = useReducedMotion()
-  const panelRef   = useRef<HTMLDivElement>(null)
-  const isInView   = useInView(panelRef, { margin: '0px 0px -100px 0px' })
+  const reduced = useReducedMotion()
+  const panelRef = useRef<HTMLDivElement>(null)
+  const isInView = useInView(panelRef, { margin: '0px 0px -120px 0px', once: false })
+  const shouldAnimate = !reduced && isInView
 
   return (
     <motion.div
       ref={panelRef}
-      animate={reduced || !isInView ? undefined : { y: [0, -7, 0] }}
-      transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
-      className="w-full rounded-[18px] overflow-hidden"
-      style={{
-        willChange: 'transform',
-        background: 'linear-gradient(160deg, rgba(15,22,40,0.98) 0%, rgba(8,14,28,0.99) 100%)',
-        border: '1px solid rgba(173,198,255,0.12)',
-        boxShadow: '0 0 0 1px rgba(173,198,255,0.06), 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(59,130,246,0.08)',
-      }}
+      animate={shouldAnimate ? { y: [0, -6, 0] } : undefined}
+      transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity }}
+      className="w-full overflow-hidden rounded-[28px] border border-primary/14 bg-surface-container-low/75 shadow-[0_30px_120px_rgba(2,6,23,0.56),0_0_0_1px_rgba(173,198,255,0.06),0_0_60px_rgba(59,130,246,0.1)] backdrop-blur-2xl"
     >
-      {/* Gradient top edge */}
-      <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #3b82f6, #06b6d4 40%, #8b5cf6 75%, transparent)' }} />
-
-      {/* Window chrome */}
       <div
-        className="flex items-center justify-between px-4 py-3 border-b"
-        style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
-      >
-        <div className="flex items-center gap-2">
+        className="h-px w-full"
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(96,165,250,0), rgba(96,165,250,0.9), rgba(34,211,238,0.9), rgba(251,146,60,0.5), rgba(251,146,60,0))',
+        }}
+      />
+
+      <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.02] px-4 py-3 sm:px-5">
+        <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/80" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]/80" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#febc2e]/80" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]/80" />
           </div>
-          <span className="ml-2 text-[10px] font-mono text-white/25 hidden sm:block">
-            opsradar · automation-engine
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/78">Live Simulation</p>
+            <p className="mt-0.5 hidden text-[11px] text-white/32 sm:block">
+              Lead enrichment canvas running every 3 seconds
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5">
+          <motion.div
+            className="h-2 w-2 rounded-full bg-emerald-400"
+            animate={shouldAnimate ? { opacity: [1, 0.35, 1] } : undefined}
+            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-400">
+            Live
           </span>
         </div>
+      </div>
 
-        {/* LIVE badge */}
+      <div className="relative h-[390px] overflow-hidden sm:h-[450px] md:h-[520px]">
         <div
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.22)' }}
-        >
-          <motion.div
-            className="w-1.5 h-1.5 rounded-full bg-emerald-400"
-            animate={reduced ? undefined : { opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">Live</span>
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 20% 20%, rgba(96,165,250,0.16), transparent 26%), radial-gradient(circle at 78% 28%, rgba(34,211,238,0.14), transparent 24%), radial-gradient(circle at 72% 74%, rgba(251,146,60,0.12), transparent 22%), linear-gradient(180deg, rgba(7,11,22,0.96), rgba(9,14,25,0.88))',
+          }}
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-75"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(173,198,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.05) 1px, transparent 1px)',
+            backgroundSize: '44px 44px',
+            maskImage: 'radial-gradient(ellipse 78% 70% at 50% 46%, black 28%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 78% 70% at 50% 46%, black 28%, transparent 100%)',
+          }}
+          aria-hidden
+        />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/8 bg-primary/5 blur-3xl" />
+
+        <div className="absolute left-4 top-4 hidden max-w-[280px] rounded-[20px] border border-white/10 bg-slate-950/35 px-4 py-3 shadow-[0_12px_30px_rgba(2,6,23,0.28)] backdrop-blur-xl sm:block">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">Workflow Logic</p>
+          <p className="mt-2 text-sm font-semibold tracking-tight text-white">
+            New leads are scored by AI, then routed to the team and synced to the CRM instantly.
+          </p>
+          <p className="mt-2 text-xs leading-5 text-white/52">
+            This is the visual proof inside the hero: capture, qualify, notify, update.
+          </p>
+        </div>
+
+        <div className="absolute right-4 top-4 hidden rounded-[20px] border border-white/10 bg-slate-950/35 px-4 py-3 text-right shadow-[0_12px_30px_rgba(2,6,23,0.28)] backdrop-blur-xl md:block">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">Avg Runtime</p>
+          <p className="mt-2 bg-gradient-to-r from-white via-primary to-secondary bg-clip-text text-3xl font-black tracking-[-0.06em] text-transparent">
+            2.4s
+          </p>
+          <p className="mt-1 text-xs text-white/50">from inbound lead to qualified handoff</p>
+        </div>
+
+        <CanvasGraph className="md:hidden" nodes={MOBILE_NODES} connectors={MOBILE_CONNECTORS} active={shouldAnimate} />
+        <CanvasGraph className="hidden md:block" nodes={DESKTOP_NODES} connectors={DESKTOP_CONNECTORS} active={shouldAnimate} />
+
+        <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 sm:gap-3">
+          <StepPill step="01" label="Lead captured" />
+          <StepPill step="02" label="AI scores intent" />
+          <StepPill step="03" label="Slack + CRM updated" />
         </div>
       </div>
 
-      {/* Metrics bar */}
-      <div
-        className="flex flex-wrap items-center gap-4 sm:gap-6 px-4 py-2.5 border-b"
-        style={{ background: 'rgba(59,130,246,0.03)', borderColor: 'rgba(255,255,255,0.04)' }}
-      >
-        <MetricPill value="2,847" label="executions today"  color="#60a5fa" />
-        <div className="w-px h-3 bg-white/8" />
-        <MetricPill value="99.8%" label="success rate"      color="#34d399" />
-        <div className="w-px h-3 bg-white/8" />
-        <MetricPill value="47h"   label="time saved today"  color="#f59e0b" />
-        <div className="hidden sm:block w-px h-3 bg-white/8" />
-        <MetricPill value="12ms"  label="avg latency"       color="#a78bfa" />
-      </div>
-
-      {/* Workflow rows */}
-      <div className="p-4 space-y-3 overflow-x-auto">
-        <WorkflowRow
-          nodes={WORKFLOW_1}
-          label="lead-qualification.workflow"
-          tag="Sales Ops"
-          delay={0.1}
-        />
-        <WorkflowRow
-          nodes={WORKFLOW_2}
-          label="client-onboarding.workflow"
-          tag="Retention"
-          delay={0.25}
-        />
-      </div>
-
-      {/* Bottom status bar */}
-      <div
-        className="flex items-center justify-between px-4 py-2 border-t"
-        style={{ background: 'rgba(255,255,255,0.01)', borderColor: 'rgba(255,255,255,0.04)' }}
-      >
-        <div className="flex items-center gap-1.5">
-          <motion.div
-            className="w-1.5 h-1.5 rounded-full bg-emerald-400"
-            animate={reduced ? undefined : { opacity: [1, 0.4, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <span className="text-[9px] text-white/25">All systems operational · Last run 3s ago</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 bg-white/[0.02] px-4 py-3 sm:px-5">
+        <div className="flex items-center gap-2 text-[11px] text-white/40">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(173,198,255,0.9)]" />
+          <span>Lead qualification canvas</span>
+          <span className="text-white/20">·</span>
+          <span>n8n / Zapier style orchestration</span>
         </div>
-        <span className="text-[9px] text-white/15 hidden sm:block">Powered by OpsRadar · n8n</span>
+        <div className="flex items-center gap-4 text-[11px]">
+          <span className="text-primary">92/100 intent score</span>
+          <span className="text-white/18">|</span>
+          <span className="text-secondary">20hrs/week saved</span>
+        </div>
       </div>
     </motion.div>
   )

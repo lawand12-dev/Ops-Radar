@@ -9,6 +9,7 @@ import GlowCard from '<npm>/components/animations/GlowCard'
 import FloatingParticles from '<npm>/components/animations/FloatingParticles'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import HeroVisual from '../components/HeroVisual'
+import SuccessStories from '../components/SuccessStories'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Done-For-You Automation for Agencies",
@@ -405,6 +406,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <SuccessStories />
 
       {/* ── Systems Showcase ─────────────────────────────────────────── */}
       <section id="showcase" className="py-32 px-6 max-w-7xl mx-auto">

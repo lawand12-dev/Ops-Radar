@@ -6,6 +6,7 @@ import { Card, CardContent } from '<npm>/components/ui/card'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
+import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 
 export const metadata: Metadata = {
   title: "About",
@@ -67,6 +68,13 @@ const DIFF_CARDS = [
   },
 ]
 
+const FOUNDER_PROFILE = {
+  name: 'Lawand',
+  title: 'Founder & Lead Automation Architect',
+  summary:
+    'I came up on the agency side, where smart people still lost margin to broken handoffs, duplicate entry, and automation setups nobody trusted two weeks after launch. I built OpsRadar because I got tired of seeing operational debt dressed up as process.',
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
@@ -85,9 +93,9 @@ export default function AboutPage() {
           <div className="hidden md:flex gap-8 items-center text-sm tracking-tight">
             <Link href="/services" className="text-on-surface-variant hover:text-on-surface transition-colors">Services</Link>
             <Link href="/about"    className="text-on-surface font-semibold">About</Link>
-            <a href="/#pain"       className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</a>
-            <a href="/#how"        className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</a>
-            <a href="/#showcase"   className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</a>
+            <Link href="/#pain"       className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</Link>
+            <Link href="/#how"        className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</Link>
+            <Link href="/#showcase"   className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</Link>
           </div>
           <Button asChild className="bg-primary-container text-on-primary-container hover:bg-primary-container/80 px-5 py-2 h-auto rounded-lg font-semibold text-sm btn-spring">
             <Link href="/audit">Start Free Audit</Link>
@@ -139,12 +147,23 @@ export default function AboutPage() {
               </p>
               <p className="text-base md:text-lg text-on-surface leading-relaxed font-medium">
                 We&apos;re not a tool you have to learn. We&apos;re not a course you have to take.
-                We&apos;re the team that makes your operations run themselves.
+                We&apos;re the engineering layer that makes your operations run themselves.
               </p>
             </div>
           </div>
         </FadeInOnScroll>
       </section>
+
+      {/* ── Divider ───────────────────────────────────────────────────── */}
+      <div className="max-w-3xl mx-auto px-6">
+        <div className="h-px bg-outline-variant/20" />
+      </div>
+
+      <FounderPhilosophySection
+        name={FOUNDER_PROFILE.name}
+        title={FOUNDER_PROFILE.title}
+        summary={FOUNDER_PROFILE.summary}
+      />
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-6">
