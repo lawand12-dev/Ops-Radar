@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import { Card, CardContent } from '<npm>/components/ui/card'
@@ -7,6 +6,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
+import SiteHeader from '<npm>/components/ui/site-header'
 
 export const metadata: Metadata = {
   title: "About",
@@ -80,31 +80,21 @@ const FOUNDER_PROFILE = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body overflow-x-hidden">
-
-      {/* ── Nav ──────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 w-full bg-slate-900/60 backdrop-blur-2xl shadow-[0_0_64px_rgba(173,198,255,0.08)] border-b border-outline-variant/10">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="OpsRadar" width={32} height={32} className="h-8 w-auto rounded-[6px] shrink-0" />
-            <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-headline">
-              OpsRadar
-            </span>
-          </Link>
-          <div className="hidden md:flex gap-8 items-center text-sm tracking-tight">
-            <Link href="/services" className="text-on-surface-variant hover:text-on-surface transition-colors">Services</Link>
-            <Link href="/about"    className="text-on-surface font-semibold">About</Link>
-            <Link href="/#pain"       className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</Link>
-            <Link href="/#how"        className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</Link>
-            <Link href="/#showcase"   className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</Link>
-          </div>
-          <Button asChild className="bg-primary-container text-on-primary-container hover:bg-primary-container/80 px-5 py-2 h-auto rounded-lg font-semibold text-sm btn-spring">
-            <Link href="/audit">Start Free Audit</Link>
-          </Button>
-        </div>
-      </nav>
+      <SiteHeader
+        sticky
+        navLinks={[
+          { label: 'Home', href: '/' },
+          { label: 'Services', href: '/services' },
+          { label: 'Pricing', href: '/pricing' },
+          { label: 'About', href: '/about', isActive: true },
+          { label: 'Problems', href: '/#pain' },
+          { label: 'How It Works', href: '/#how' },
+          { label: 'Systems', href: '/#showcase' },
+        ]}
+      />
 
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-24 pb-20 px-6">
+      <section className="relative overflow-hidden px-6 pb-20 pt-16 sm:pt-20">
         <div className="absolute inset-0 grid-texture pointer-events-none" />
         <div className="absolute top-[-15%] right-[-10%] w-[500px] h-[500px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
 
