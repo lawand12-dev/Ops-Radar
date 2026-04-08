@@ -78,7 +78,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-ui);
   --color-text-400: var(--text-400);
   --color-text-300: var(--text-300);
   --color-text-200: var(--text-200);
@@ -117,20 +117,11 @@ textarea {
   }
 }
 
-.animate-fade-slide-in-1 {
-  animation: fadeSlideIn 0.65s ease-out 0.05s both;
-}
-
-.animate-fade-slide-in-2 {
-  animation: fadeSlideIn 0.65s ease-out 0.14s both;
-}
-
-.animate-fade-slide-in-3 {
-  animation: fadeSlideIn 0.65s ease-out 0.23s both;
-}
-
+.animate-fade-slide-in-1,
+.animate-fade-slide-in-2,
+.animate-fade-slide-in-3,
 .animate-fade-slide-in-4 {
-  animation: fadeSlideIn 0.65s ease-out 0.32s both;
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -463,7 +454,7 @@ body::after {
 /* ─── Utility classes ────────────────────────────────────────────────── */
 
 .page-enter {
-  animation: fade-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: none;
 }
 
 .fade-up {

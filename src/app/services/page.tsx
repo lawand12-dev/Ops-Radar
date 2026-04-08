@@ -12,17 +12,17 @@ import SiteHeader from '<npm>/components/ui/site-header'
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance. Fixed monthly pricing, no per-task fees.",
+    "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance.",
   openGraph: {
     title: "Services — OpsRadar",
     description:
-      "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance. Fixed monthly pricing, no per-task fees.",
+      "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance.",
     images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
-      "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance. Fixed monthly pricing, no per-task fees.",
+      "Done-for-you automation services for agencies: workflow builds, CRM integrations, reporting automations, and ongoing maintenance.",
     images: ["/logo.png"],
   },
 }
@@ -387,107 +387,6 @@ export default function ServicesPage() {
           ))}
         </StaggerChildren>
       </section>
-
-      {/* ── Divider ───────────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
-      </div>
-
-      {/* ── Two Ways to Work With Us ──────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 py-28">
-        <FadeInOnScroll>
-          <span className="uppercase tracking-[0.2em] text-secondary font-bold text-xs">Pricing Models</span>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mt-4 mb-4 text-on-surface">
-            Two Ways to Work With Us
-          </h2>
-          <p className="text-on-surface-variant max-w-lg mb-12 leading-relaxed">
-            Both options start with a free audit and a fixed-price proposal. Pick the model that fits how your team operates.
-          </p>
-        </FadeInOnScroll>
-
-          <div className="grid sm:grid-cols-2 gap-5 items-start">
-            {/* Card 1: One-Time Build */}
-            <GlowCard glowColor="rgba(96,165,250,0.14)" className="rounded-[24px]">
-            <Card className="hardware-card flex flex-col rounded-[24px] p-8 ring-0 shadow-none">
-              <CardContent className="p-0 flex flex-col flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/40 mb-4">Option 01</p>
-                <h3 className="font-headline font-extrabold text-2xl text-on-surface mb-1">One-Time Build</h3>
-                <p className="font-headline font-bold text-3xl text-primary mb-5 leading-none">
-                  from $1,500
-                </p>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {[
-                    'We build and deliver the complete workflow',
-                    'You own it, run it on your infrastructure',
-                    'Testing, documentation, and training included',
-                    '30 days of post-launch bug fixes',
-                  ].map(item => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm text-on-surface-variant leading-relaxed">
-                      <span className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold bg-primary/10 border border-primary/25 text-primary">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="p-3.5 rounded-lg mb-6 bg-surface-container-high border border-outline-variant/10">
-                  <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-on-surface-variant/40 mb-1">Best for</p>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Teams with technical staff who can self-host and maintain workflows after delivery.
-                  </p>
-                </div>
-
-                <Button asChild variant="outline" className="w-full px-6 py-3 h-auto rounded-lg text-sm font-semibold text-on-surface-variant border-outline-variant/30 hover:border-outline-variant/60 hover:text-on-surface bg-transparent btn-spring">
-                  <Link href="/audit">Start with a Free Audit</Link>
-                </Button>
-              </CardContent>
-            </Card>
-            </GlowCard>
-
-            {/* Card 2: Managed Automation (highlighted) */}
-            <GlowCard glowColor="rgba(96,165,250,0.14)" className="rounded-[24px]">
-            <Card className="hardware-card relative flex flex-col overflow-hidden rounded-[24px] p-8 ring-1 ring-primary/20 shadow-[0_18px_52px_rgba(2,6,23,0.34),0_0_0_1px_rgba(173,198,255,0.08)]">
-              <CardContent className="p-0 flex flex-col flex-1">
-                {/* Most Popular badge */}
-                <Badge className="absolute top-5 right-5 h-auto px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 border border-primary/30 text-primary">
-                  Most Popular
-                </Badge>
-
-                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-primary/70 mb-4">Option 02</p>
-                <h3 className="font-headline font-extrabold text-2xl text-on-surface mb-1">Managed Automation</h3>
-                <p className="font-headline font-bold text-3xl text-primary mb-5 leading-none">
-                  from $500<span className="text-lg font-medium text-on-surface-variant">/mo</span>
-                </p>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {[
-                    'We build, host, monitor, and maintain everything',
-                    'Monthly subscription — cancel anytime',
-                    '24/7 monitoring with automatic error recovery',
-                    'Priority support, new versions included',
-                  ].map(item => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm text-on-surface leading-relaxed">
-                      <span className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold bg-secondary/10 border border-secondary/25 text-secondary">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="p-3.5 rounded-lg mb-6 bg-primary/5 border border-primary/15">
-                  <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-primary/60 mb-1">Best for</p>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Agencies who want automation running without managing infrastructure or dealing with breaks.
-                  </p>
-                </div>
-
-                <Button asChild className="w-full px-6 py-3 h-auto rounded-lg text-sm font-bold btn-spring btn-main-sheen">
-                  <Link href="/audit">Start with a Free Audit →</Link>
-                </Button>
-              </CardContent>
-            </Card>
-            </GlowCard>
-          </div>
-        </section>
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6">

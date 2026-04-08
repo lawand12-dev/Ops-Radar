@@ -184,7 +184,7 @@ export default function Home() {
       <section className="relative overflow-hidden pb-14">
         <div className="absolute inset-0 bg-[#030712]" />
         <ShaderBackground
-          className="absolute inset-x-0 bottom-[-8%] top-[22%] z-[1] h-auto w-full opacity-58 [mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [transform:scale(1.05)]"
+          className="absolute inset-x-0 bottom-[-6%] top-[18%] z-[1] h-auto w-full opacity-58 [mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [transform:scale(1.05)]"
         />
         <div
           className="absolute inset-0 z-[2] pointer-events-none"
