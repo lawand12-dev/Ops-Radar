@@ -36,8 +36,10 @@ interface ResponsiveHeroBannerProps {
   description?: string
   primaryButtonText?: string
   primaryButtonHref?: string
+  showPrimaryArrowIcon?: boolean
   secondaryButtonText?: string
   secondaryButtonHref?: string
+  showSecondaryIcon?: boolean
   partnersTitle?: string
   partners?: Partner[]
   className?: string
@@ -67,8 +69,10 @@ export default function ResponsiveHeroBanner({
   description = "We design, host, and maintain the workflows behind lead routing, onboarding, reporting, and AI handoffs so your team can operate faster without hiring internal ops engineers.",
   primaryButtonText = "Start Your Free Audit",
   primaryButtonHref = "/audit",
+  showPrimaryArrowIcon = true,
   secondaryButtonText = "See How It Works",
   secondaryButtonHref = "#how",
+  showSecondaryIcon = true,
   partnersTitle = "Built around the layers agencies need most under load",
   partners = DEFAULT_PARTNERS,
   className,
@@ -106,9 +110,11 @@ export default function ResponsiveHeroBanner({
               variant="outline"
               className="animate-fade-slide-in-1 mb-6 inline-flex h-auto items-center gap-3 rounded-full border-white/18 bg-slate-950/55 px-2.5 py-2 text-white shadow-[0_18px_50px_rgba(2,6,23,0.22)] backdrop-blur-xl"
             >
-              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-950">
-                {badgeLabel}
-              </span>
+              {badgeLabel ? (
+                <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-950">
+                  {badgeLabel}
+                </span>
+              ) : null}
               <span className="text-sm font-medium text-white/92">{badgeText}</span>
             </Badge>
 
@@ -130,7 +136,7 @@ export default function ResponsiveHeroBanner({
               >
                 <Link href={primaryButtonHref}>
                   {primaryButtonText}
-                  <ArrowRight className="h-4 w-4" />
+                  {showPrimaryArrowIcon ? <ArrowRight className="h-4 w-4" /> : null}
                 </Link>
               </Button>
 
@@ -138,7 +144,7 @@ export default function ResponsiveHeroBanner({
                 href={secondaryButtonHref}
                 className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-slate-950/34 px-6 py-3.5 text-sm font-semibold text-white/92 transition-colors hover:border-white/28 hover:text-white"
               >
-                <CirclePlay className="h-4 w-4" />
+                {showSecondaryIcon ? <CirclePlay className="h-4 w-4" /> : null}
                 {secondaryButtonText}
               </Link>
             </div>

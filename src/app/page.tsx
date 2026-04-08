@@ -217,17 +217,19 @@ export default function Home() {
 
         <ResponsiveHeroBanner
           navLinks={HOME_NAV_LINKS}
-          badgeLabel="OpsRadar"
+          badgeLabel=""
           badgeText="Done-for-you automation for agencies that need reliable execution"
           title="We Build Your Automations."
           titleLine2="You Focus on Growth."
           description="Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals. We engineer the workflow layer that captures leads, routes intent through AI, updates your CRM, and keeps your team moving under load."
-          primaryButtonText="Start Free Audit"
+          primaryButtonText="Start Free Audit →"
           primaryButtonHref="/audit"
+          showPrimaryArrowIcon={false}
           secondaryButtonText="See How It Works"
           secondaryButtonHref="#how"
-          partnersTitle="The operating layers we build, wire, and maintain for you"
-          contentClassName="items-start pt-4 sm:pt-8 lg:pt-10"
+          showSecondaryIcon={false}
+          partnersTitle="THE OPERATING LAYERS WE BUILD, WIRE, AND MAINTAIN FOR YOU"
+          contentClassName="items-start pt-16 sm:pt-20 lg:pt-24"
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6">
