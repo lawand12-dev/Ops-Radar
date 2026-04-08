@@ -102,6 +102,7 @@ export default function FounderPhilosophySection({
   specialties = DEFAULT_SPECIALTIES,
 }: FounderPhilosophySectionProps) {
   const initials = initialsFromName(name)
+  const profileImageSrc = imageSrc === undefined ? '/founder.jpg' : imageSrc
 
   return (
     <section id="founder" className="max-w-6xl mx-auto px-6 py-24">
@@ -133,7 +134,7 @@ export default function FounderPhilosophySection({
                   </span>
                 </div>
 
-                <div className="mt-5 relative overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 aspect-[4/5]">
+                <div className="group mt-5 relative overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 aspect-[4/5]">
                   <div
                     className="absolute inset-0"
                     style={{
@@ -152,14 +153,29 @@ export default function FounderPhilosophySection({
                     }}
                   />
 
-                  {imageSrc ? (
-                    <Image
-                      src={imageSrc}
-                      alt={`${name} headshot`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 380px"
-                    />
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-[24px] border border-primary/15 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_0_36px_rgba(96,165,250,0.12)] transition duration-500 group-hover:border-secondary/20 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_0_48px_rgba(76,215,246,0.18)]"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(173,198,255,0.12),transparent_42%),linear-gradient(180deg,rgba(10,14,24,0.02),rgba(10,14,24,0.42))] opacity-80 transition duration-500 group-hover:opacity-100"
+                    aria-hidden
+                  />
+
+                  {profileImageSrc ? (
+                    <div className="absolute inset-[10px] overflow-hidden rounded-[18px]">
+                      <Image
+                        src={profileImageSrc}
+                        alt={`${name} headshot`}
+                        fill
+                        className="object-cover object-center transition duration-700 ease-out grayscale-[0.24] saturate-[0.85] group-hover:scale-[1.02] group-hover:grayscale-0 group-hover:saturate-100"
+                        sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1200px) 42vw, 380px"
+                      />
+                      <div
+                        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,14,24,0.02),rgba(10,14,24,0.18)_42%,rgba(10,14,24,0.58))]"
+                        aria-hidden
+                      />
+                    </div>
                   ) : (
                     <>
                       <div className="absolute left-1/2 top-[22%] h-28 w-28 -translate-x-1/2 rounded-full border border-primary/20 bg-primary/10 shadow-[0_0_40px_rgba(173,198,255,0.16)]" />
