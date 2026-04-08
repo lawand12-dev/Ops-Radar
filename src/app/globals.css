@@ -78,7 +78,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-serif: var(--font-ui);
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --color-text-400: var(--text-400);
   --color-text-300: var(--text-300);
   --color-text-200: var(--text-200);
