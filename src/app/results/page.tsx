@@ -1482,7 +1482,7 @@ function ReportMap({
   if (sections.length === 0) return null
 
   return (
-    <div className="sticky top-[57px] z-[70] border-y border-outline-variant/10 bg-slate-950/72 backdrop-blur-2xl">
+    <div className="sticky top-[96px] z-[70] border-y border-outline-variant/10 bg-slate-950/72 backdrop-blur-2xl">
       <div className="mx-auto max-w-[980px] px-6">
         <div className="flex gap-2 overflow-x-auto py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {sections.map((section) => {
@@ -3013,44 +3013,49 @@ function ResultsContent() {
     <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
 
       {/* ── Fixed nav ──────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-[13px] bg-slate-900/60 backdrop-blur-2xl border-b border-outline-variant/10">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="h-7 w-auto rounded-[6px] shrink-0" />
-          <span className="font-headline font-bold text-[16px] bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            OpsRadar
-          </span>
-        </Link>
-        <div className="flex items-center gap-2.5">
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
+      <div className="fixed inset-x-0 top-0 z-[100] px-6 pt-4">
+        <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+          <div className="flex items-center justify-between gap-4 px-3 py-1">
+            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
+              <Image src="/logo.png" alt="OpsRadar" width={36} height={36} className="h-9 w-9 rounded-xl object-cover" />
+              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
+                OpsRadar
+              </span>
+            </Link>
+
+            <div className="flex items-center gap-2.5">
+              <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
+              </div>
+              {!unlocked ? (
+                <Button
+                  onClick={() => scrollToUnlock('top-nav-unlock')}
+                  variant="outline"
+                  className="h-auto rounded-full border-primary/22 bg-primary/8 px-4 py-2 text-[12px] font-bold text-primary hover:bg-primary/15 hover:text-primary gap-1.5"
+                >
+                  <LockIcon size={12} />
+                  Unlock Blueprint
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
+                  className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5"
+                >
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Download PDF
+                </Button>
+              )}
+            </div>
           </div>
-          {!unlocked ? (
-            <Button
-              onClick={() => scrollToUnlock('top-nav-unlock')}
-              variant="outline"
-              className="h-auto px-4 py-[7px] rounded-[8px] text-[12px] font-bold text-primary border-primary/22 bg-primary/8 hover:bg-primary/15 hover:text-primary gap-1.5"
-            >
-              <LockIcon size={12} />
-              Unlock Blueprint
-            </Button>
-          ) : (
-            <Button
-              onClick={() => window.print()}
-              variant="outline"
-              className="h-auto px-4 py-[7px] rounded-[8px] text-[12px] font-semibold border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface bg-transparent gap-1.5"
-            >
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Download PDF
-            </Button>
-          )}
         </div>
-      </nav>
+      </div>
 
       {/* ── Report header ──────────────────────────────────────────────────── */}
-      <header className="relative overflow-hidden pt-[73px]">
+      <header className="relative overflow-hidden pt-[104px]">
         <div className="absolute inset-0 grid-texture pointer-events-none" />
         <div className="absolute top-0 left-[-10%] w-[500px] h-[300px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
 
