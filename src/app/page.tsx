@@ -198,24 +198,24 @@ export default function Home() {
       <section className="relative overflow-hidden px-6 pb-24 pt-20">
         <div className="absolute inset-0 bg-[#030712]" />
         <ShaderBackground
-          className="absolute inset-0 z-0 h-full w-full opacity-80 [mask-image:radial-gradient(ellipse_90%_76%_at_50%_38%,black_32%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_90%_76%_at_50%_38%,black_32%,transparent_100%)] [transform:scale(1.08)]"
+          className="absolute inset-0 z-[1] h-full w-full opacity-95 [mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [transform:scale(1.12)]"
         />
         <div
-          className="absolute inset-0 z-[1] pointer-events-none"
+          className="absolute inset-0 z-[2] pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 16% 28%, rgba(37,99,235,0.22), transparent 24%), radial-gradient(circle at 76% 24%, rgba(79,70,229,0.16), transparent 22%), linear-gradient(180deg, #02050c 0%, #07111f 42%, #040812 100%)',
+              'radial-gradient(circle at 16% 28%, rgba(37,99,235,0.12), transparent 24%), radial-gradient(circle at 76% 24%, rgba(79,70,229,0.1), transparent 22%), linear-gradient(180deg, rgba(2,5,12,0.28) 0%, rgba(7,17,31,0.38) 42%, rgba(4,8,18,0.52) 100%)',
           }}
         />
         <div
-          className="absolute inset-0 z-[1] pointer-events-none opacity-[0.028]"
+          className="absolute inset-0 z-[3] pointer-events-none opacity-[0.028]"
           style={{
             backgroundImage:
               'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.82%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")',
           }}
         />
         <div
-          className="absolute inset-0 z-[1] pointer-events-none opacity-70"
+          className="absolute inset-0 z-[3] pointer-events-none opacity-55"
           style={{
             backgroundImage:
               'linear-gradient(rgba(173,198,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.04) 1px, transparent 1px)',
@@ -225,8 +225,8 @@ export default function Home() {
               'radial-gradient(ellipse 88% 70% at 50% 42%, black 28%, transparent 100%)',
           }}
         />
-        <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[1] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
-        <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[1] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
+        <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[4] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
+        <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <div className="grid items-center gap-14 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(440px,0.98fr)] lg:gap-16">
