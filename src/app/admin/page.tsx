@@ -246,11 +246,12 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface">
-      <header className="border-b border-outline-variant/10 px-6 py-5">
-        <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="px-6 pt-4">
+        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+          <div className="flex flex-col gap-4 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Link href="/" className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/40 hover:text-on-surface-variant transition-colors">
+              <Link href="/" className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/60 transition-colors hover:text-on-surface-variant">
                 <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
                 OpsRadar
               </Link>
@@ -292,7 +293,8 @@ export default function AdminPage() {
             )}
           </div>
         </div>
-      </header>
+        </div>
+      </div>
 
       <main className="max-w-[1100px] mx-auto px-6 py-8">
         <div className="relative mb-6">

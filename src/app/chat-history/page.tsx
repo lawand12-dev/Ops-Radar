@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import SiteHeader from '<npm>/components/ui/site-header'
 
 type Message = { role: 'user' | 'assistant'; content: string; timestamp: string }
 type Conversation = {
@@ -288,21 +288,33 @@ export default function ChatHistoryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <div className="bg-white/80 backdrop-blur border-b border-slate-200 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">💬 Chat Archive</h1>
-              <p className="text-sm text-slate-600 mt-1">Secure access with a one-time email code</p>
-            </div>
-            <Link href="/" className="text-primary hover:underline text-sm font-medium px-3 py-1.5 hover:bg-primary/5 rounded transition">
-              ← Back
-            </Link>
-          </div>
-        </div>
-      </div>
+      <SiteHeader
+        sticky
+        navLinks={[
+          { label: 'Home', href: '/' },
+          { label: 'Services', href: '/services' },
+          { label: 'Pricing', href: '/pricing' },
+          { label: 'About', href: '/about' },
+          { label: 'Blog', href: '/blog' },
+        ]}
+        ctaLabel="Start Free Audit"
+        ctaHref="/audit"
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 rounded-[28px] border border-white/10 bg-slate-950/80 px-6 py-7 text-white shadow-[0_30px_90px_rgba(2,6,23,0.18)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">
+            Chat Archive
+          </p>
+          <h1 className="mt-3 bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-4xl font-bold tracking-tight text-transparent">
+            Secure access to your saved conversations
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/70">
+            Verify your email with a one-time code to reopen previous chats, export transcripts,
+            or delete old threads.
+          </p>
+        </div>
+
         {!showHistory && (
           <div className="max-w-md mx-auto mb-8">
             <div className="bg-white rounded-xl shadow-md p-8 border border-slate-200">

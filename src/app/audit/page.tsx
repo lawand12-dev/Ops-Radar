@@ -939,18 +939,24 @@ export default function AuditPage() {
       </div>
 
       {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-3xl mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="OpsRadar" width={32} height={32} className="h-8 w-auto rounded-[6px]" />
-          <span className="font-semibold text-[15px] tracking-tight">OpsRadar</span>
-        </Link>
-        <span className="text-xs font-medium text-on-surface-variant tabular-nums">
-          {currentStep + 1} / {TOTAL_STEPS}
-        </span>
-      </nav>
+      <div className="relative z-10 px-6 pt-4">
+        <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+          <div className="flex items-center justify-between gap-4 px-3 py-1">
+            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
+              <Image src="/logo.png" alt="OpsRadar" width={36} height={36} className="h-9 w-9 rounded-xl object-cover" />
+              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
+                OpsRadar
+              </span>
+            </Link>
+            <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
+              {currentStep + 1} / {TOTAL_STEPS}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Progress bar */}
-      <div className="relative z-10 max-w-3xl mx-auto px-6">
+      <div className="relative z-10 max-w-3xl mx-auto px-6 pt-4">
         <div className="relative h-1 bg-surface-container-high/80 rounded-full">
           <div
             className="h-full rounded-full transition-all duration-500 ease-out"

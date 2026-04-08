@@ -70,7 +70,7 @@ export default function SiteHeader({
       )}
     >
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[30px] border border-white/10 bg-slate-950/50 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.36)] backdrop-blur-2xl">
+        <div className="rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-4 px-2 py-1 sm:px-3">
             <Link
               href={logoHref}
@@ -90,7 +90,7 @@ export default function SiteHeader({
             </Link>
 
             <nav className="hidden lg:flex items-center gap-2">
-              <div className="flex items-center gap-1 rounded-full bg-white/5 px-1 py-1 ring-1 ring-white/10">
+              <div className="flex items-center gap-1 rounded-full bg-white/6 px-1 py-1 ring-1 ring-white/12">
                 {navLinks.map((link) => {
                   const isActive = isActiveLink(link)
 
@@ -102,8 +102,8 @@ export default function SiteHeader({
                       className={cn(
                         "rounded-full px-3 py-2 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-white/10 text-white"
-                          : "text-white/70 hover:text-white"
+                          ? "bg-white/12 text-white"
+                          : "text-white/82 hover:text-white"
                       )}
                     >
                       {link.label}
@@ -113,7 +113,7 @@ export default function SiteHeader({
 
                 <Link
                   href={ctaHref}
-                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-white/90"
+                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-white/92"
                 >
                   {ctaLabel}
                   <ArrowUpRight className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default function SiteHeader({
             <button
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white lg:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white lg:hidden"
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
@@ -147,8 +147,8 @@ export default function SiteHeader({
                       className={cn(
                         "rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-white/10 text-white"
-                          : "bg-white/[0.03] text-white/75 hover:text-white"
+                          ? "bg-white/12 text-white"
+                          : "bg-white/[0.04] text-white/82 hover:text-white"
                       )}
                     >
                       {link.label}

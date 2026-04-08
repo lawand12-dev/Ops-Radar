@@ -184,13 +184,13 @@ export default function Home() {
       <section className="relative overflow-hidden pb-14">
         <div className="absolute inset-0 bg-[#030712]" />
         <ShaderBackground
-          className="absolute inset-0 z-[1] h-full w-full opacity-95 [mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [transform:scale(1.12)]"
+          className="absolute inset-x-0 bottom-[-10%] top-[28%] z-[1] h-auto w-full opacity-58 [mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,black_8%,black_100%)] [transform:scale(1.05)]"
         />
         <div
           className="absolute inset-0 z-[2] pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 16% 28%, rgba(37,99,235,0.12), transparent 24%), radial-gradient(circle at 76% 24%, rgba(79,70,229,0.1), transparent 22%), linear-gradient(180deg, rgba(2,5,12,0.28) 0%, rgba(7,17,31,0.38) 42%, rgba(4,8,18,0.52) 100%)',
+              'radial-gradient(circle at 16% 18%, rgba(37,99,235,0.16), transparent 22%), radial-gradient(circle at 76% 18%, rgba(79,70,229,0.12), transparent 20%), linear-gradient(180deg, rgba(2,5,12,0.12) 0%, rgba(7,17,31,0.2) 34%, rgba(4,8,18,0.42) 100%)',
           }}
         />
         <div
@@ -206,11 +206,12 @@ export default function Home() {
             backgroundImage:
               'linear-gradient(rgba(173,198,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.04) 1px, transparent 1px)',
             backgroundSize: '72px 72px',
-            maskImage: 'radial-gradient(ellipse 88% 70% at 50% 42%, black 28%, transparent 100%)',
+            maskImage: 'linear-gradient(180deg, transparent 0%, transparent 18%, black 42%, transparent 100%)',
             WebkitMaskImage:
-              'radial-gradient(ellipse 88% 70% at 50% 42%, black 28%, transparent 100%)',
+              'linear-gradient(180deg, transparent 0%, transparent 18%, black 42%, transparent 100%)',
           }}
         />
+        <div className="pointer-events-none absolute inset-x-[18%] top-[7%] z-[4] h-[260px] rounded-full bg-slate-950/42 blur-[120px]" />
         <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[4] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
         <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
@@ -226,6 +227,7 @@ export default function Home() {
           secondaryButtonText="See How It Works"
           secondaryButtonHref="#how"
           partnersTitle="The operating layers we build, wire, and maintain for you"
+          contentClassName="items-start pt-4 sm:pt-8 lg:pt-10"
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6">

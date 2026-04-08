@@ -632,16 +632,17 @@ export default function AdminDataPage() {
     <div className="min-h-screen bg-surface-container-lowest text-on-surface">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="border-b border-outline-variant/10 px-6 py-5 sticky top-0 z-10 bg-surface-container-lowest/90 backdrop-blur-xl">
-        <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="sticky top-0 z-10 px-6 pt-4">
+        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+          <div className="flex flex-col gap-3 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Link href="/" className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/40 hover:text-on-surface-variant transition-colors">
+              <Link href="/" className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors">
                 <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
                 OpsRadar
               </Link>
               <span className="text-on-surface-variant/20">/</span>
-              <Link href="/admin" className="text-[11px] text-on-surface-variant/40 hover:text-on-surface-variant transition-colors">Admin</Link>
+              <Link href="/admin" className="text-[11px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors">Admin</Link>
               <span className="text-on-surface-variant/20">/</span>
               <span className="text-[11px] text-on-surface-variant">Data</span>
             </div>
@@ -663,7 +664,8 @@ export default function AdminDataPage() {
             </Button>
           </div>
         </div>
-      </header>
+        </div>
+      </div>
 
       <main className="max-w-[1100px] mx-auto px-6 py-8 space-y-10">
 
