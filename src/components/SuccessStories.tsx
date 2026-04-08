@@ -63,6 +63,7 @@ type SuccessStoriesProps = {
 
 function ComparisonCard({
   label,
+  kicker,
   title,
   points,
   tone,
