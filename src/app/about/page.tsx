@@ -116,13 +116,13 @@ export default function AboutPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-6">
-        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── The Story ────────────────────────────────────────────────── */}
       <section className="max-w-3xl mx-auto px-6 py-24">
         <FadeInOnScroll>
-          <div className="rounded-xl overflow-hidden bg-surface-container border border-outline-variant/10">
+          <div className="surface-panel overflow-hidden rounded-[26px]">
             <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
             <div className="p-8 sm:p-10 space-y-6">
               <p className="text-base md:text-lg text-on-surface-variant leading-relaxed font-light">
@@ -146,7 +146,7 @@ export default function AboutPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       <FounderPhilosophySection
@@ -157,7 +157,7 @@ export default function AboutPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── How We're Different ───────────────────────────────────────── */}
@@ -174,7 +174,7 @@ export default function AboutPage() {
             <StaggerItem key={title}>
               <GlowCard glowColor={`${color}12`} className="h-full rounded-xl">
                 <Card
-                  className="p-6 flex flex-col gap-4 h-full bg-surface-container border-outline-variant/10 ring-0 shadow-none overflow-hidden rounded-xl"
+                  className="surface-card h-full overflow-hidden rounded-[22px] p-6 ring-0 shadow-none"
                   style={{ borderTopColor: 'transparent' }}
                 >
                   <CardContent className="p-0 flex flex-col gap-4">
@@ -204,7 +204,7 @@ export default function AboutPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
@@ -230,7 +230,7 @@ export default function AboutPage() {
       </FadeInOnScroll>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
-      <footer className="py-8 px-6 border-t border-outline-variant/10 bg-slate-950">
+      <footer className="footer-shell py-8 px-6">
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-on-surface-variant/40">© 2026 OpsRadar</p>
           <div className="flex items-center gap-6">

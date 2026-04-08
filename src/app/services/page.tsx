@@ -266,7 +266,7 @@ export default function ServicesPage() {
               ['5–10 Days', 'Avg. build time'],
               ['24/7', 'Monitoring & support'],
             ].map(([stat, label]) => (
-              <div key={stat} className="text-center">
+              <div key={stat} className="surface-card min-w-[170px] rounded-[20px] px-6 py-5 text-center">
                 <p className="font-headline font-extrabold text-2xl text-primary leading-none">{stat}</p>
                 <p className="text-xs text-on-surface-variant mt-1">{label}</p>
               </div>
@@ -277,7 +277,7 @@ export default function ServicesPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── The Process ──────────────────────────────────────────────── */}
@@ -348,7 +348,7 @@ export default function ServicesPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── What We Build ─────────────────────────────────────────────── */}
@@ -390,7 +390,7 @@ export default function ServicesPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── FAQ ───────────────────────────────────────────────────────── */}
@@ -407,7 +407,7 @@ export default function ServicesPage() {
 
       {/* ── Divider ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="h-px bg-outline-variant/20" />
+        <div className="surface-divider" />
       </div>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
@@ -445,7 +445,7 @@ export default function ServicesPage() {
       </FadeInOnScroll>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
-      <footer className="py-8 px-6 border-t border-outline-variant/10 bg-slate-950">
+      <footer className="footer-shell py-8 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-on-surface-variant/40">© 2026 OpsRadar</p>
           <div className="flex items-center gap-6">

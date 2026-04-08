@@ -1,7 +1,60 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import ChatWidget from "./components/ChatWidget";
 import ChatNotification from "./components/ChatNotification";
+
+const sansFont = localFont({
+  src: [
+    {
+      path: "./fonts/NotoSansDisplay-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/NotoSansDisplay-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-sans-loaded",
+  display: "swap",
+});
+
+const serifFont = localFont({
+  src: [
+    {
+      path: "./fonts/NotoSerifDisplay-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/NotoSerifDisplay-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-serif-loaded",
+  display: "swap",
+});
+
+const themeInitScript = `
+  (() => {
+    try {
+      const storageKey = 'opsradar-theme';
+      const storedTheme = window.localStorage.getItem(storageKey);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = storedTheme === 'light' || storedTheme === 'dark'
+        ? storedTheme
+        : (prefersDark ? 'dark' : 'light');
+
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    } catch (_) {
+      document.documentElement.classList.remove('dark');
+    }
+  })();
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opsradar.ai'),
@@ -44,7 +97,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased dark">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`h-full antialiased ${sansFont.variable} ${serifFont.variable}`}
+    >
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <ChatNotification />

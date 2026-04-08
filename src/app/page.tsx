@@ -4,6 +4,7 @@ import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardContent } from '<npm>/components/ui/card'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
+import ShaderBackground from '<npm>/components/ui/shader-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
@@ -182,43 +183,41 @@ export default function Home() {
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
         <div className="absolute inset-0 bg-[#030712]" />
-        <div className="absolute inset-x-0 bottom-[-4%] top-[12%] z-[1] pointer-events-none opacity-70 [mask-image:linear-gradient(180deg,transparent_0%,transparent_16%,black_34%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,transparent_16%,black_34%,black_100%)]">
-          <svg
-            aria-hidden="true"
-            className="h-full w-full"
-            viewBox="0 0 1600 900"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="heroLineStrong" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4338ca" stopOpacity="0.26" />
-                <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.82" />
-                <stop offset="100%" stopColor="#f472b6" stopOpacity="0.26" />
-              </linearGradient>
-              <linearGradient id="heroLineSoft" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#312e81" stopOpacity="0.16" />
-                <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.52" />
-                <stop offset="100%" stopColor="#c084fc" stopOpacity="0.16" />
-              </linearGradient>
-            </defs>
+        <div className="absolute inset-x-0 bottom-[-8%] top-[6%] z-[1] pointer-events-none [mask-image:linear-gradient(180deg,transparent_0%,transparent_18%,black_34%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,transparent_18%,black_34%,black_100%)]">
+          <div className="absolute inset-0 opacity-26 [transform:translateY(-8%)_scale(1.08)]">
+            <svg
+              aria-hidden="true"
+              className="h-full w-full"
+              viewBox="0 0 1600 900"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="heroLineStrong" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#4338ca" stopOpacity="0.24" />
+                  <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.76" />
+                  <stop offset="100%" stopColor="#f472b6" stopOpacity="0.24" />
+                </linearGradient>
+                <linearGradient id="heroLineSoft" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#312e81" stopOpacity="0.14" />
+                  <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.42" />
+                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.14" />
+                </linearGradient>
+              </defs>
 
-            <g fill="none" strokeLinecap="round">
-              <path d="M-120 760C120 680 290 890 520 790C760 684 920 442 1120 474C1320 506 1468 712 1710 680" stroke="url(#heroLineStrong)" strokeWidth="5" />
-              <path d="M-100 820C150 730 330 946 600 822C872 698 1006 518 1228 548C1448 578 1550 736 1728 720" stroke="url(#heroLineStrong)" strokeWidth="4.2" />
-              <path d="M-80 698C170 666 330 838 532 752C736 664 886 480 1048 486C1210 492 1360 628 1710 640" stroke="url(#heroLineSoft)" strokeWidth="3.2" />
-              <path d="M-80 862C174 806 334 870 556 780C780 690 928 612 1184 618C1438 624 1556 690 1716 704" stroke="url(#heroLineSoft)" strokeWidth="3.6" />
-              <path d="M120 894C298 786 424 732 646 742C868 752 1014 824 1212 800C1410 776 1522 684 1712 700" stroke="url(#heroLineStrong)" strokeWidth="4.4" />
-              <path d="M252 878C432 736 572 612 760 620C948 628 1112 760 1324 756C1534 752 1658 706 1744 688" stroke="url(#heroLineStrong)" strokeWidth="3.4" />
-              <path d="M356 900C520 792 632 690 798 666C966 642 1128 710 1312 724C1498 738 1624 718 1736 690" stroke="url(#heroLineSoft)" strokeWidth="2.8" />
-            </g>
-
-            <g fill="#f5d0fe" opacity="0.5">
-              <circle cx="642" cy="742" r="5" />
-              <circle cx="964" cy="654" r="4.5" />
-              <circle cx="1288" cy="712" r="5" />
-              <circle cx="1512" cy="682" r="4.5" />
-            </g>
-          </svg>
+              <g fill="none" strokeLinecap="round">
+                <path d="M-120 760C120 680 290 890 520 790C760 684 920 442 1120 474C1320 506 1468 712 1710 680" stroke="url(#heroLineStrong)" strokeWidth="5" />
+                <path d="M-100 820C150 730 330 946 600 822C872 698 1006 518 1228 548C1448 578 1550 736 1728 720" stroke="url(#heroLineStrong)" strokeWidth="4.2" />
+                <path d="M-80 698C170 666 330 838 532 752C736 664 886 480 1048 486C1210 492 1360 628 1710 640" stroke="url(#heroLineSoft)" strokeWidth="3.2" />
+                <path d="M-80 862C174 806 334 870 556 780C780 690 928 612 1184 618C1438 624 1556 690 1716 704" stroke="url(#heroLineSoft)" strokeWidth="3.6" />
+                <path d="M120 894C298 786 424 732 646 742C868 752 1014 824 1212 800C1410 776 1522 684 1712 700" stroke="url(#heroLineStrong)" strokeWidth="4.4" />
+                <path d="M252 878C432 736 572 612 760 620C948 628 1112 760 1324 756C1534 752 1658 706 1744 688" stroke="url(#heroLineStrong)" strokeWidth="3.4" />
+                <path d="M356 900C520 792 632 690 798 666C966 642 1128 710 1312 724C1498 738 1624 718 1736 690" stroke="url(#heroLineSoft)" strokeWidth="2.8" />
+              </g>
+            </svg>
+          </div>
+          <ShaderBackground
+            className="absolute inset-0 h-full w-full opacity-54 [transform:translateY(-8%)_scale(1.08)]"
+          />
         </div>
         <div
           className="absolute inset-0 z-[2] pointer-events-none"
@@ -272,7 +271,7 @@ export default function Home() {
               {TRUST_METRICS.map(({ value, label, detail }) => (
                 <div
                   key={label}
-                  className="rounded-[24px] border border-outline-variant/[0.12] bg-surface-container-low/68 p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
+                  className="surface-card rounded-[24px] p-5"
                 >
                   <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
                     {value}
@@ -293,8 +292,8 @@ export default function Home() {
       {/* ── Pain Points ──────────────────────────────────────────────── */}
       <section id="pain" className="py-32 px-6 max-w-7xl mx-auto">
         <FadeInOnScroll className="mb-16">
-          <span className="uppercase tracking-[0.2em] text-secondary font-bold text-xs">The Problem</span>
-          <h2 className="font-headline text-3xl md:text-4xl mt-4 text-on-surface max-w-xl">
+          <span className="section-tag">The Problem</span>
+          <h2 className="section-title mt-4 max-w-xl text-3xl md:text-4xl">
             Operational debt is the silent agency killer.
           </h2>
         </FadeInOnScroll>
@@ -330,8 +329,8 @@ export default function Home() {
       <section id="showcase" className="py-32 px-6 max-w-7xl mx-auto">
         <FadeInOnScroll className="flex justify-between items-end mb-16">
           <div className="max-w-xl">
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">Solutions</span>
-            <h2 className="font-headline text-4xl mt-4 text-on-surface">
+            <span className="section-tag text-primary">Solutions</span>
+            <h2 className="section-title mt-4 text-4xl">
               Enterprise-grade systems for boutique agencies.
             </h2>
           </div>
@@ -372,62 +371,78 @@ export default function Home() {
       <FadeInOnScroll>
         <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto">
-            <h2 className="font-headline text-3xl md:text-5xl font-bold text-center mb-20 text-on-surface">
-              Choose Your Operational Path
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-              {/* DIY */}
-              <div className="p-12 border border-outline-variant/20 bg-surface-container-lowest opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                <h4 className="text-lg font-bold mb-6 text-on-surface">DIY Tools</h4>
-                <ul className="space-y-4 text-sm text-on-surface-variant">
-                  {['High learning curve','Constant API breakages','You are the tech support'].map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-error shrink-0">
+            <div className="mx-auto mb-16 max-w-3xl text-center">
+              <span className="section-tag justify-center">Why OpsRadar</span>
+              <h2 className="section-title mt-4 text-3xl md:text-5xl">
+                Choose Your Operational Path
+              </h2>
+              <p className="section-copy mx-auto mt-5">
+                Most automation options look fine during setup. The real difference is who owns the
+                workflow once it becomes business-critical and something breaks under load.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="surface-card rounded-[28px] p-8 lg:mt-6">
+                <span className="section-tag text-[10px] text-error">DIY Stack</span>
+                <h4 className="mt-5 text-xl font-bold text-on-surface">DIY Tools</h4>
+                <p className="mt-3 text-sm leading-7 text-on-surface-variant">
+                  Flexible on paper, but your team inherits the setup, breakages, and every edge case.
+                </p>
+                <ul className="mt-8 space-y-4 text-sm text-on-surface-variant">
+                  {['High learning curve', 'Constant API breakages', 'You are the tech support'].map(item => (
+                    <li key={item} className="flex items-start gap-3">
+                      <svg width="14" height="14" viewBox="0 0 12 12" fill="none" className="mt-1 shrink-0 text-error">
                         <path d="M2 2l8 8M10 2 2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
-                      {item}
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* OpsRadar — featured */}
-              <div className="p-12 border-2 border-primary bg-surface-container-low shadow-[0_0_80px_rgba(173,198,255,0.15)] relative z-20 scale-105 rounded-xl">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-[10px] font-bold px-4 py-1 rounded-full uppercase">
-                  Highly Recommended
+              <div className="surface-card surface-card-strong relative rounded-[30px] p-8 lg:-mt-4">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary/14 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+                  Best Fit
                 </div>
-                <h4 className="text-2xl font-bold mb-6 text-on-surface">OpsRadar</h4>
-                <ul className="space-y-4 text-on-surface">
+                <span className="section-tag text-[10px] text-primary">Done-For-You Layer</span>
+                <h4 className="mt-5 text-[1.7rem] font-bold tracking-tight text-on-surface">OpsRadar</h4>
+                <p className="mt-3 text-sm leading-7 text-on-surface-variant">
+                  We scope it, build it, host it, and stay accountable for reliability after launch.
+                </p>
+                <ul className="mt-8 space-y-4 text-on-surface">
                   {[
                     'Built by agency veterans',
                     'Proactive maintenance',
                     'Done-for-you migration',
                     'Fixed monthly pricing',
                   ].map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-primary shrink-0">
+                    <li key={item} className="flex items-start gap-3">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="mt-0.5 shrink-0 text-primary">
                         <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.15"/>
                         <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      {item}
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                <Button asChild className="w-full mt-10 py-4 h-auto rounded-lg font-bold btn-spring btn-main-sheen">
+                <Button asChild className="btn-spring btn-main-sheen mt-10 w-full rounded-xl py-4 text-base font-bold">
                   <Link href="/audit">Get Started Free</Link>
                 </Button>
               </div>
 
-              {/* Freelancers */}
-              <div className="p-12 border border-outline-variant/20 bg-surface-container-lowest opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                <h4 className="text-lg font-bold mb-6 text-on-surface">Freelancers</h4>
-                <ul className="space-y-4 text-sm text-on-surface-variant">
-                  {['Hit or miss reliability','Hidden hourly costs','Ghost you when busy'].map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-error shrink-0">
+              <div className="surface-card rounded-[28px] p-8 lg:mt-6">
+                <span className="section-tag text-[10px] text-tertiary">Freelance Support</span>
+                <h4 className="mt-5 text-xl font-bold text-on-surface">Freelancers</h4>
+                <p className="mt-3 text-sm leading-7 text-on-surface-variant">
+                  Useful for one-off tasks, but reliability gets uneven once their bandwidth shifts.
+                </p>
+                <ul className="mt-8 space-y-4 text-sm text-on-surface-variant">
+                  {['Hit or miss reliability', 'Hidden hourly costs', 'Ghost you when busy'].map(item => (
+                    <li key={item} className="flex items-start gap-3">
+                      <svg width="14" height="14" viewBox="0 0 12 12" fill="none" className="mt-1 shrink-0 text-error">
                         <path d="M2 2l8 8M10 2 2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
-                      {item}
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -458,16 +473,16 @@ export default function Home() {
       </FadeInOnScroll>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
-      <footer className="bg-slate-950 border-t border-white/5 py-8">
+      <footer className="footer-shell py-8">
         <div className="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-4">
-          <div className="text-lg font-bold text-slate-300">OpsRadar</div>
-          <p className="text-xs uppercase tracking-widest text-slate-500">
+          <div className="text-lg font-bold text-on-surface">OpsRadar</div>
+          <p className="text-xs uppercase tracking-widest text-on-surface-variant/70">
             © 2026 OpsRadar. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/services" className="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Services</Link>
-            <Link href="/about"    className="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors">About</Link>
-            <Link href="/audit"    className="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Free Audit</Link>
+            <Link href="/services" className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Services</Link>
+            <Link href="/about"    className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">About</Link>
+            <Link href="/audit"    className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Free Audit</Link>
           </div>
         </div>
       </footer>
