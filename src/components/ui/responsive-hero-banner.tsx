@@ -118,7 +118,7 @@ export default function ResponsiveHeroBanner({
               <span className="text-sm font-medium text-white/92">{badgeText}</span>
             </Badge>
 
-            <h1 className="animate-fade-slide-in-2 font-headline text-5xl font-extrabold leading-[0.92] tracking-[-0.055em] text-white drop-shadow-[0_20px_50px_rgba(2,6,23,0.5)] sm:text-6xl md:text-7xl lg:text-[5.9rem]">
+            <h1 className="animate-fade-slide-in-2 font-serif text-5xl leading-[0.96] tracking-[-0.045em] text-white drop-shadow-[0_20px_50px_rgba(2,6,23,0.5)] sm:text-6xl md:text-7xl lg:text-[6.2rem]">
               <span className="block text-white">{title}</span>
               <span className="mt-2 block bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
                 {titleLine2}
