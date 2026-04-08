@@ -8,7 +8,6 @@ import ShaderBackground from '<npm>/components/ui/shader-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
-import HeroVisual from '../components/HeroVisual'
 import SystemFlowSection from '../components/SystemFlowSection'
 import SuccessStories from '../components/SuccessStories'
 
@@ -228,110 +227,119 @@ export default function Home() {
         <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[4] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
         <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
-        <div className="relative z-10 mx-auto max-w-7xl">
-          <div className="grid items-center gap-14 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(440px,0.98fr)] lg:gap-16">
-            <div className="relative max-w-3xl py-12 lg:py-20">
-              <div className="pointer-events-none absolute -left-20 top-8 h-[420px] w-[420px] rounded-full bg-primary/[0.14] blur-[120px]" />
+        <div className="relative z-10 mx-auto flex min-h-[calc(100vh-8rem)] max-w-7xl items-center">
+          <div className="relative max-w-5xl py-12 lg:py-20">
+            <div className="pointer-events-none absolute -left-20 top-8 h-[420px] w-[420px] rounded-full bg-primary/[0.14] blur-[120px]" />
 
-              <FadeInOnScroll delay={0.08}>
-                <Badge
-                  variant="outline"
-                  className="mb-8 inline-flex h-auto items-center gap-2 rounded-full border-outline-variant/20 bg-surface-container-high/70 px-3 py-1 text-on-surface-variant backdrop-blur-xl"
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Agency Ops Command Center
-                  </span>
-                </Badge>
-              </FadeInOnScroll>
+            <FadeInOnScroll delay={0.08}>
+              <Badge
+                variant="outline"
+                className="mb-8 inline-flex h-auto items-center gap-2 rounded-full border-outline-variant/20 bg-surface-container-high/70 px-3 py-1 text-on-surface-variant backdrop-blur-xl"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" />
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">
+                  Agency Ops Command Center
+                </span>
+              </Badge>
+            </FadeInOnScroll>
 
-              <FadeInOnScroll delay={0.14}>
-                <div className="relative">
-                  <div className="pointer-events-none absolute -left-8 top-8 h-40 w-40 rounded-full bg-[rgba(96,165,250,0.18)] blur-[90px]" />
-                  <h1 className="relative font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:text-[5.6rem]">
-                    <span className="block text-white">We Build Your Automations.</span>
-                    <span
-                      className="mt-3 block text-gradient-animated text-[1.08em] font-black"
-                      style={{
-                        filter:
-                          'drop-shadow(0 0 36px rgba(96,165,250,0.38)) drop-shadow(0 0 90px rgba(34,211,238,0.14))',
-                      }}
-                    >
-                      You Focus on Growth.
-                    </span>
-                  </h1>
-                </div>
-              </FadeInOnScroll>
-
-              <FadeInOnScroll delay={0.22}>
-                <p className="mt-7 max-w-2xl text-lg leading-8 text-on-surface-variant md:text-xl">
-                  Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals.
-                  We engineer the automation layer that captures leads, routes intent through AI, updates
-                  the CRM, and keeps your team moving under load.
-                </p>
-              </FadeInOnScroll>
-
-              <FadeInOnScroll delay={0.3}>
-                <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                  <Button
-                    asChild
-                    className="relative h-auto gap-2 overflow-hidden rounded-xl px-10 py-5 text-[15px] font-bold btn-spring btn-main-sheen cta-pulse"
+            <FadeInOnScroll delay={0.14}>
+              <div className="relative">
+                <div className="pointer-events-none absolute -left-8 top-8 h-40 w-40 rounded-full bg-[rgba(96,165,250,0.18)] blur-[90px]" />
+                <h1 className="relative max-w-4xl font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:text-[5.8rem]">
+                  <span className="block text-white">We Build Your Automations.</span>
+                  <span
+                    className="mt-3 block text-gradient-animated text-[1.08em] font-black"
                     style={{
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #4f46e5 100%)',
-                      boxShadow:
-                        '0 0 40px rgba(59,130,246,0.42), 0 0 80px rgba(59,130,246,0.18), inset 0 1px 0 rgba(255,255,255,0.15)',
+                      filter:
+                        'drop-shadow(0 0 36px rgba(96,165,250,0.38)) drop-shadow(0 0 90px rgba(34,211,238,0.14))',
                     }}
                   >
-                    <Link href="/audit">
-                      Start Free Audit
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                        <path
-                          d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-auto rounded-xl border-outline-variant/30 bg-transparent px-8 py-5 text-[15px] font-semibold text-on-surface hover:border-outline-variant/50 hover:bg-surface-container-high/40"
+                    You Focus on Growth.
+                  </span>
+                </h1>
+              </div>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.22}>
+              <p className="mt-8 max-w-3xl text-lg leading-8 text-on-surface-variant md:text-xl">
+                Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals.
+                We engineer the automation layer that captures leads, routes intent through AI, updates
+                the CRM, and keeps your team moving under load.
+              </p>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.28}>
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-on-surface-variant">
+                {[
+                  'Lead capture to CRM sync',
+                  'Done-for-you delivery',
+                  'Support when workflows break',
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_18px_rgba(34,211,238,0.8)]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.34}>
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Button
+                  asChild
+                  className="relative h-auto gap-2 overflow-hidden rounded-xl px-10 py-5 text-[15px] font-bold btn-spring btn-main-sheen cta-pulse"
+                  style={{
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #4f46e5 100%)',
+                    boxShadow:
+                      '0 0 40px rgba(59,130,246,0.42), 0 0 80px rgba(59,130,246,0.18), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  }}
+                >
+                  <Link href="/audit">
+                    Start Free Audit
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-auto rounded-xl border-outline-variant/30 bg-transparent px-8 py-5 text-[15px] font-semibold text-on-surface hover:border-outline-variant/50 hover:bg-surface-container-high/40"
+                >
+                  <a href="#how">See How It Works</a>
+                </Button>
+              </div>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.42}>
+              <div className="mt-14 grid max-w-5xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {TRUST_METRICS.map(({ value, label, detail }) => (
+                  <div
+                    key={label}
+                    className="rounded-[24px] border border-outline-variant/[0.12] bg-surface-container-low/68 p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
                   >
-                    <a href="#how">See How It Works</a>
-                  </Button>
-                </div>
-              </FadeInOnScroll>
-
-              <FadeInOnScroll delay={0.38}>
-                <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-2">
-                  {TRUST_METRICS.map(({ value, label, detail }) => (
-                    <div
-                      key={label}
-                      className="rounded-[20px] border border-outline-variant/[0.12] bg-surface-container-low/70 p-4 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
-                    >
-                      <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
-                        {value}
-                      </p>
-                      <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                        {label}
-                      </p>
-                      <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                        {detail}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </FadeInOnScroll>
-            </div>
-
-            <FadeInOnScroll delay={0.18} className="w-full lg:justify-self-end">
-              <HeroVisual />
+                    <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+                      {value}
+                    </p>
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                      {label}
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                      {detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </FadeInOnScroll>
           </div>
         </div>
