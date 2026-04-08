@@ -6,9 +6,9 @@ import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardContent } from '<npm>/components/ui/card'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
-import FloatingParticles from '<npm>/components/animations/FloatingParticles'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import HeroVisual from '../components/HeroVisual'
+import SystemFlowSection from '../components/SystemFlowSection'
 import SuccessStories from '../components/SuccessStories'
 
 export const metadata: Metadata = {
@@ -194,150 +194,143 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-32 px-6 overflow-hidden">
-
-        {/* ── Background layers ── */}
-        {/* Noise texture */}
-        <div className="noise-texture" />
-        {/* Deep radial gradient — dark blue core fading to near-black */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(17,34,71,0.9) 0%, rgba(5,8,16,0.0) 70%)' }}
-        />
-        {/* 50px grid overlay */}
+      <section className="relative overflow-hidden px-6 pb-24 pt-20">
+        <div className="absolute inset-0 bg-[#030712]" />
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: 'linear-gradient(rgba(173,198,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.05) 1px, transparent 1px)',
-            backgroundSize: '50px 50px',
-            maskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 100%)',
+            background:
+              'radial-gradient(circle at 16% 28%, rgba(37,99,235,0.22), transparent 24%), radial-gradient(circle at 76% 24%, rgba(79,70,229,0.16), transparent 22%), linear-gradient(180deg, #02050c 0%, #07111f 42%, #040812 100%)',
           }}
         />
-        {/* Animated gradient orbs */}
-        <div className="orb-v2 orb-v2-1" />
-        <div className="orb-v2 orb-v2-2" />
-        <div className="orb-v2 orb-v2-3" />
-        {/* Floating particles */}
-        <FloatingParticles />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.028]"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.82%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")',
+          }}
+        />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-70"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(173,198,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.04) 1px, transparent 1px)',
+            backgroundSize: '72px 72px',
+            maskImage: 'radial-gradient(ellipse 88% 70% at 50% 42%, black 28%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 88% 70% at 50% 42%, black 28%, transparent 100%)',
+          }}
+        />
+        <div className="pointer-events-none absolute left-[-8%] top-[8%] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
+        <div className="pointer-events-none absolute right-[-8%] top-[12%] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-4xl">
+        <div className="relative z-10 mx-auto max-w-7xl">
+          <div className="grid items-center gap-14 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(440px,0.98fr)] lg:gap-16">
+            <div className="relative max-w-3xl py-12 lg:py-20">
+              <div className="pointer-events-none absolute -left-20 top-8 h-[420px] w-[420px] rounded-full bg-primary/[0.14] blur-[120px]" />
 
-          {/* Badge */}
-          <FadeInOnScroll delay={0.1}>
-            <Badge variant="outline" className="inline-flex items-center gap-2 px-3 py-1 h-auto rounded-full bg-surface-container-high border-outline-variant/20 text-on-surface-variant mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
-              </span>
-              <span className="text-[10px] uppercase tracking-widest font-bold">
-                Done-For-You Agency Automation
-              </span>
-            </Badge>
-          </FadeInOnScroll>
-
-          {/* H1 */}
-          <FadeInOnScroll delay={0.2}>
-            <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface leading-[1.08] mb-6">
-              We Build Your Automations.{' '}
-              <br />
-              {/* Larger, stronger gradient with glow */}
-              <span
-                className="text-gradient-animated text-6xl md:text-[5.5rem] font-black tracking-[-0.03em]"
-                style={{ filter: 'drop-shadow(0 0 40px rgba(96,165,250,0.45)) drop-shadow(0 0 80px rgba(34,211,238,0.2))' }}
-              >
-                You Focus on Growth.
-              </span>
-            </h1>
-          </FadeInOnScroll>
-
-          <FadeInOnScroll delay={0.3}>
-            <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
-              Stop wrestling with Zapier and outdated spreadsheets. We architect, build, and maintain
-              the custom operational systems your agency needs to scale profitably.
-            </p>
-          </FadeInOnScroll>
-
-          {/* CTAs */}
-          <FadeInOnScroll delay={0.4}>
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              {/* Primary CTA — upgraded */}
-              <Button
-                asChild
-                className="relative px-10 py-5 h-auto rounded-xl font-bold text-[15px] btn-spring btn-main-sheen cta-pulse gap-2 overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #4f46e5 100%)',
-                  boxShadow: '0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
-                }}
-              >
-                <Link href="/audit">
-                  Start Free Audit
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="px-8 py-5 h-auto rounded-xl font-semibold text-[15px] text-on-surface border-outline-variant/30 hover:bg-surface-container-high/40 hover:border-outline-variant/50 bg-transparent">
-                <a href="#how">See How It Works</a>
-              </Button>
-            </div>
-          </FadeInOnScroll>
-
-          {/* Proof block */}
-          <FadeInOnScroll delay={0.5} className="w-full">
-            <div className="w-full max-w-4xl rounded-[24px] border border-outline-variant/15 bg-surface-container-low/70 p-5 sm:p-6 text-left shadow-[0_20px_80px_rgba(2,6,23,0.35)] backdrop-blur-xl">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-5">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.24em] font-bold text-secondary mb-2">
-                    Proof Before Pitch
-                  </p>
-                  <h2 className="font-headline text-xl sm:text-2xl font-bold text-on-surface">
-                    Concrete commitments beat vague trust badges.
-                  </h2>
-                </div>
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-secondary transition-colors"
+              <FadeInOnScroll delay={0.08}>
+                <Badge
+                  variant="outline"
+                  className="mb-8 inline-flex h-auto items-center gap-2 rounded-full border-outline-variant/20 bg-surface-container-high/70 px-3 py-1 text-on-surface-variant backdrop-blur-xl"
                 >
-                  See pricing and SLAs
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M3.5 8h9m-3.5-3.5L12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-              </div>
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" />
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                    Agency Ops Command Center
+                  </span>
+                </Badge>
+              </FadeInOnScroll>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-                {TRUST_METRICS.map(({ value, label, detail }) => (
-                  <div
-                    key={label}
-                    className="rounded-[18px] border border-outline-variant/15 bg-surface-container/90 p-4"
-                  >
-                    <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-1">
-                      {value}
-                    </p>
-                    <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-primary mb-2">
-                      {label}
-                    </p>
-                    <p className="text-sm leading-relaxed text-on-surface-variant">
-                      {detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <FadeInOnScroll delay={0.14}>
+                <div className="relative">
+                  <div className="pointer-events-none absolute -left-8 top-8 h-40 w-40 rounded-full bg-[rgba(96,165,250,0.18)] blur-[90px]" />
+                  <h1 className="relative font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:text-[5.6rem]">
+                    <span className="block text-white">We Build Your Automations.</span>
+                    <span
+                      className="mt-3 block text-gradient-animated text-[1.08em] font-black"
+                      style={{
+                        filter:
+                          'drop-shadow(0 0 36px rgba(96,165,250,0.38)) drop-shadow(0 0 90px rgba(34,211,238,0.14))',
+                      }}
+                    >
+                      You Focus on Growth.
+                    </span>
+                  </h1>
+                </div>
+              </FadeInOnScroll>
 
-              <div className="mt-4 rounded-[18px] border border-primary/15 bg-primary/7 px-4 py-3">
-                <p className="text-sm leading-relaxed text-on-surface">
-                  No hourly billing. No “book a call to learn the price” wall. Just a free audit, a scoped plan, and a fixed next step.
+              <FadeInOnScroll delay={0.22}>
+                <p className="mt-7 max-w-2xl text-lg leading-8 text-on-surface-variant md:text-xl">
+                  Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals.
+                  We engineer the automation layer that captures leads, routes intent through AI, updates
+                  the CRM, and keeps your team moving under load.
                 </p>
-              </div>
-            </div>
-          </FadeInOnScroll>
-        </div>
+              </FadeInOnScroll>
 
-        {/* Hero visual dashboard */}
-        <FadeInOnScroll delay={0.6} className="mt-16 w-full max-w-5xl">
-          <HeroVisual />
-        </FadeInOnScroll>
+              <FadeInOnScroll delay={0.3}>
+                <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                  <Button
+                    asChild
+                    className="relative h-auto gap-2 overflow-hidden rounded-xl px-10 py-5 text-[15px] font-bold btn-spring btn-main-sheen cta-pulse"
+                    style={{
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #4f46e5 100%)',
+                      boxShadow:
+                        '0 0 40px rgba(59,130,246,0.42), 0 0 80px rgba(59,130,246,0.18), inset 0 1px 0 rgba(255,255,255,0.15)',
+                    }}
+                  >
+                    <Link href="/audit">
+                      Start Free Audit
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path
+                          d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-auto rounded-xl border-outline-variant/30 bg-transparent px-8 py-5 text-[15px] font-semibold text-on-surface hover:border-outline-variant/50 hover:bg-surface-container-high/40"
+                  >
+                    <a href="#how">See How It Works</a>
+                  </Button>
+                </div>
+              </FadeInOnScroll>
+
+              <FadeInOnScroll delay={0.38}>
+                <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-2">
+                  {TRUST_METRICS.map(({ value, label, detail }) => (
+                    <div
+                      key={label}
+                      className="rounded-[20px] border border-outline-variant/[0.12] bg-surface-container-low/70 p-4 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
+                    >
+                      <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+                        {value}
+                      </p>
+                      <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                        {label}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+                        {detail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </FadeInOnScroll>
+            </div>
+
+            <FadeInOnScroll delay={0.18} className="w-full lg:justify-self-end">
+              <HeroVisual />
+            </FadeInOnScroll>
+          </div>
+        </div>
       </section>
 
       {/* ── Pain Points ──────────────────────────────────────────────── */}
@@ -351,11 +344,15 @@ export default function Home() {
         <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {PAIN_CARDS.map(({ icon, title, desc, accent }) => (
             <StaggerItem key={title}>
-              <GlowCard glowColor="rgba(239,68,68,0.08)" className="h-full rounded-xl">
+              <GlowCard glowColor="rgba(96,165,250,0.14)" className="h-full rounded-[24px]">
                 <Card
-                  className="h-full p-8 bg-surface-container-low border-outline-variant/10 ring-0 shadow-none cursor-default rounded-xl overflow-hidden relative"
-                  style={{ borderLeft: `3px solid ${accent}` }}
+                  className="hardware-card relative h-full cursor-default overflow-hidden rounded-[24px] p-8 ring-0 shadow-none"
                 >
+                  <div
+                    className="pointer-events-none absolute bottom-7 left-5 top-7 w-px rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${accent}, transparent)` }}
+                    aria-hidden
+                  />
                   <CardContent className="p-0">
                     <div className="mb-6">{icon}</div>
                     <h3 className="text-lg font-bold mb-3 text-on-surface">{title}</h3>
@@ -368,44 +365,7 @@ export default function Home() {
         </StaggerChildren>
       </section>
 
-      {/* ── How It Works ─────────────────────────────────────────────── */}
-      <section id="how" className="py-32 bg-surface-container-lowest overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeInOnScroll className="text-center mb-20">
-            <h2 className="font-headline text-3xl md:text-5xl font-bold text-on-surface">
-              From Chaos to Clockwork
-            </h2>
-          </FadeInOnScroll>
-          <div className="relative">
-            {/* Connecting line with glow */}
-            <div className="hidden md:block absolute top-8 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" style={{ boxShadow: '0 0 8px 1px rgba(173,198,255,0.25)' }} />
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
-              {[
-                { n: '1', title: 'Free Audit',    desc: 'We identify your biggest operational bottlenecks for free.', active: true },
-                { n: '2', title: 'Scope & Price', desc: 'Custom blueprint designed for your specific tech stack.',    active: false },
-                { n: '3', title: 'We Build It',   desc: 'Our engineers handle the complex logic and integration.',    active: false },
-                { n: '4', title: 'It Runs 24/7',  desc: 'White-glove maintenance and 99.9% uptime guaranteed.',       active: true },
-              ].map(({ n, title, desc, active }, i) => (
-                <FadeInOnScroll key={n} delay={i * 0.1} direction="up">
-                  <div className="flex flex-col items-center text-center">
-                    <div
-                      className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl mb-6 ${
-                        active
-                          ? 'bg-surface-container-high border border-primary/50 text-primary shadow-[0_0_20px_rgba(173,198,255,0.2)]'
-                          : 'bg-surface-container-high border border-outline-variant text-on-surface'
-                      }`}
-                    >
-                      {n}
-                    </div>
-                    <h4 className="font-bold mb-2 text-on-surface">{title}</h4>
-                    <p className="text-xs text-on-surface-variant px-4 leading-relaxed">{desc}</p>
-                  </div>
-                </FadeInOnScroll>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <SystemFlowSection />
 
       <SuccessStories />
 
@@ -422,8 +382,8 @@ export default function Home() {
         <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SHOWCASE_CARDS.map(({ tag, tagClass, title, desc, tools, topBorder }) => (
             <StaggerItem key={title}>
-              <GlowCard className="h-full rounded-xl">
-                <Card className="group relative h-full bg-surface-container border-outline-variant/10 ring-0 shadow-none glow-hover overflow-hidden cursor-default rounded-xl">
+              <GlowCard glowColor="rgba(96,165,250,0.14)" className="h-full rounded-[24px]">
+                <Card className="hardware-card relative h-full cursor-default overflow-hidden rounded-[24px] ring-0 shadow-none">
                   {/* Colored top border */}
                   <div className="h-[2px] w-full" style={{ background: topBorder }} />
                   <CardContent className="p-8 pt-6">

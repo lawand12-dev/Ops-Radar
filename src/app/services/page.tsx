@@ -213,9 +213,9 @@ export default function ServicesPage() {
           <div className="hidden md:flex gap-8 items-center text-sm tracking-tight">
             <Link href="/services" className="text-on-surface font-semibold">Services</Link>
             <Link href="/about"    className="text-on-surface-variant hover:text-on-surface transition-colors">About</Link>
-            <a href="/#pain"       className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</a>
-            <a href="/#how"        className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</a>
-            <a href="/#showcase"   className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</a>
+            <Link href="/#pain"      className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</Link>
+            <Link href="/#how"       className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</Link>
+            <Link href="/#showcase"  className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</Link>
           </div>
           <Button asChild className="bg-primary-container text-on-primary-container hover:bg-primary-container/80 px-5 py-2 h-auto rounded-lg font-semibold text-sm btn-spring">
             <Link href="/audit">Start Free Audit</Link>
@@ -327,8 +327,8 @@ export default function ServicesPage() {
                   </div>
 
                   {/* Card */}
-                  <GlowCard glowColor={`${color}10`} className="flex-1 rounded-xl">
-                    <Card className="flex-1 p-6 bg-surface-container border-outline-variant/10 ring-0 shadow-none rounded-xl">
+                  <GlowCard glowColor="rgba(96,165,250,0.14)" className="flex-1 rounded-[24px]">
+                    <Card className="hardware-card flex-1 rounded-[24px] p-6 ring-0 shadow-none">
                       <CardContent className="p-0">
                         <div className="flex items-center gap-3 mb-2">
                           <span className="font-mono text-[9px] font-bold tracking-[2.5px] text-on-surface-variant/40">
@@ -376,13 +376,12 @@ export default function ServicesPage() {
         <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {WHAT_WE_BUILD.map(({ icon, title, desc, color }) => (
             <StaggerItem key={title}>
-              <GlowCard glowColor={`${color}10`} className="h-full rounded-xl">
+              <GlowCard glowColor="rgba(96,165,250,0.14)" className="h-full rounded-[24px]">
                 <Card
-                  className="h-full p-6 bg-surface-container border-outline-variant/10 ring-0 shadow-none cursor-default rounded-xl overflow-hidden"
-                  style={{ borderTopColor: 'transparent' }}
+                  className="hardware-card h-full cursor-default overflow-hidden rounded-[24px] p-6 ring-0 shadow-none"
                 >
                   <CardContent className="p-0">
-                    <div className="h-[2px] -mx-6 -mt-6 mb-5 rounded-t-xl" style={{ background: `linear-gradient(90deg, ${color}, ${color}00 60%)` }} />
+                    <div className="h-[2px] -mx-6 -mt-6 mb-5 rounded-t-[24px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}00 60%)` }} />
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
                       style={{ background: `${color}12`, border: `1px solid ${color}25` }}
@@ -418,8 +417,8 @@ export default function ServicesPage() {
 
           <div className="grid sm:grid-cols-2 gap-5 items-start">
             {/* Card 1: One-Time Build */}
-            <GlowCard className="rounded-xl">
-            <Card className="p-8 bg-surface-container border-outline-variant/10 ring-0 shadow-none flex flex-col rounded-xl">
+            <GlowCard glowColor="rgba(96,165,250,0.14)" className="rounded-[24px]">
+            <Card className="hardware-card flex flex-col rounded-[24px] p-8 ring-0 shadow-none">
               <CardContent className="p-0 flex flex-col flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/40 mb-4">Option 01</p>
                 <h3 className="font-headline font-extrabold text-2xl text-on-surface mb-1">One-Time Build</h3>
@@ -456,8 +455,8 @@ export default function ServicesPage() {
             </GlowCard>
 
             {/* Card 2: Managed Automation (highlighted) */}
-            <GlowCard glowColor="rgba(173,198,255,0.08)" className="rounded-xl">
-            <Card className="p-8 flex flex-col relative overflow-hidden border-2 border-primary scale-[1.02] bg-surface-container ring-0 shadow-[0_0_80px_rgba(173,198,255,0.15)] rounded-xl">
+            <GlowCard glowColor="rgba(96,165,250,0.14)" className="rounded-[24px]">
+            <Card className="hardware-card relative flex flex-col overflow-hidden rounded-[24px] p-8 ring-1 ring-primary/20 shadow-[0_18px_52px_rgba(2,6,23,0.34),0_0_0_1px_rgba(173,198,255,0.08)]">
               <CardContent className="p-0 flex flex-col flex-1">
                 {/* Most Popular badge */}
                 <Badge className="absolute top-5 right-5 h-auto px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 border border-primary/30 text-primary">
@@ -571,4 +570,3 @@ export default function ServicesPage() {
     </div>
   )
 }
-
