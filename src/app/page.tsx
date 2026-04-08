@@ -8,6 +8,7 @@ import ShaderBackground from '<npm>/components/ui/shader-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
+import HeroVisual from '../components/HeroVisual'
 import SystemFlowSection from '../components/SystemFlowSection'
 import SuccessStories from '../components/SuccessStories'
 
@@ -339,6 +340,12 @@ export default function Home() {
                     </p>
                   </div>
                 ))}
+              </div>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.5}>
+              <div className="mt-14 w-full max-w-6xl lg:mt-16">
+                <HeroVisual />
               </div>
             </FadeInOnScroll>
           </div>
