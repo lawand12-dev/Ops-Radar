@@ -6,6 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ArrowUpRight, Menu, X } from "lucide-react"
 
+import ThemeToggle from "<npm>/components/theme/ThemeToggle"
 import { cn } from "<npm>/lib/utils"
 
 export interface SiteNavLink {
@@ -64,17 +65,17 @@ export default function SiteHeader({
   return (
     <header
       className={cn(
-        "z-50 px-6 pt-4",
+        "z-50 px-4 pt-3 sm:px-6",
         sticky && "sticky top-0",
         className
       )}
     >
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+        <div className="header-shell rounded-[28px] p-2 shadow-[0_24px_90px_rgba(2,6,23,0.16)]">
           <div className="flex items-center justify-between gap-4 px-2 py-1 sm:px-3">
             <Link
               href={logoHref}
-              className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90"
+              className="flex items-center gap-3 rounded-full px-2 py-1 text-on-surface transition-opacity hover:opacity-90"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Image
@@ -90,7 +91,7 @@ export default function SiteHeader({
             </Link>
 
             <nav className="hidden lg:flex items-center gap-2">
-              <div className="flex items-center gap-1 rounded-full bg-white/6 px-1 py-1 ring-1 ring-white/12">
+              <div className="header-nav-pill flex items-center gap-1 rounded-full px-1 py-1">
                 {navLinks.map((link) => {
                   const isActive = isActiveLink(link)
 
@@ -100,10 +101,10 @@ export default function SiteHeader({
                       href={link.href}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                        "header-link rounded-full px-3 py-2 text-sm font-medium tracking-[0.01em] transition-colors",
                         isActive
-                          ? "bg-white/12 text-white"
-                          : "text-white/82 hover:text-white"
+                          ? "header-link-active"
+                          : ""
                       )}
                     >
                       {link.label}
@@ -111,9 +112,11 @@ export default function SiteHeader({
                   )
                 })}
 
+                <ThemeToggle className="ml-1" showLabel />
+
                 <Link
                   href={ctaHref}
-                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-white/92"
+                  className="header-cta ml-1 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
                 >
                   {ctaLabel}
                   <ArrowUpRight className="h-4 w-4" />
@@ -121,19 +124,22 @@ export default function SiteHeader({
               </div>
             </nav>
 
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white lg:hidden"
-              aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            <div className="flex items-center gap-2 lg:hidden">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                className="header-menu-button inline-flex h-11 w-11 items-center justify-center rounded-full"
+                aria-expanded={mobileMenuOpen}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
 
           {mobileMenuOpen ? (
-            <div className="border-t border-white/10 px-3 pb-3 pt-3 lg:hidden">
+            <div className="header-mobile-panel px-3 pb-3 pt-3 lg:hidden">
               <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => {
                   const isActive = isActiveLink(link)
@@ -145,10 +151,10 @@ export default function SiteHeader({
                       onClick={() => setMobileMenuOpen(false)}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                        "header-mobile-link rounded-2xl px-4 py-3 text-sm font-medium tracking-[0.01em] transition-colors",
                         isActive
-                          ? "bg-white/12 text-white"
-                          : "bg-white/[0.04] text-white/82 hover:text-white"
+                          ? "header-mobile-link-active"
+                          : ""
                       )}
                     >
                       {link.label}
@@ -159,7 +165,7 @@ export default function SiteHeader({
                 <Link
                   href={ctaHref}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="mt-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-white/90"
+                  className="header-cta mt-2 inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors"
                 >
                   {ctaLabel}
                   <ArrowUpRight className="h-4 w-4" />

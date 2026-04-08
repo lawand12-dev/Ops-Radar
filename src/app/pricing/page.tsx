@@ -124,12 +124,12 @@ export default function PricingPage() {
       <header className="relative overflow-hidden px-6 pb-16 pt-16 text-center sm:pt-20">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59,130,246,0.1) 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-3xl mx-auto">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[3px] text-secondary mb-5">Pricing</span>
-          <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-tight text-on-surface mb-5 leading-[1.08]">
+          <span className="section-tag justify-center mb-5">Pricing</span>
+          <h1 className="section-title mb-5 text-4xl md:text-6xl">
             Transparent pricing.<br />
             <span className="text-gradient-animated">No surprises.</span>
           </h1>
-          <p className="text-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed">
+          <p className="section-copy mx-auto">
             One-time builds with fixed scope. Monthly retainers with real SLAs.
             Start with the free audit to know exactly which tier fits your needs.
           </p>
@@ -144,16 +144,20 @@ export default function PricingPage() {
         {/* Managed retainers */}
         <section>
           <div className="mb-10">
-            <span className="text-[10px] font-bold uppercase tracking-[3px] text-secondary">Managed Retainers</span>
-            <h2 className="font-headline text-3xl font-bold text-on-surface mt-2">We run your automation stack.</h2>
-            <p className="text-on-surface-variant mt-2 max-w-lg">Monthly plans that cover monitoring, maintenance, new builds, and ongoing support.</p>
+            <span className="section-tag">Managed Retainers</span>
+            <h2 className="section-title mt-2 text-3xl">We run your automation stack.</h2>
+            <p className="section-copy mt-2">Monthly plans that cover monitoring, maintenance, new builds, and ongoing support.</p>
           </div>
           <div className="grid md:grid-cols-4 gap-6">
             {RETAINER_TIERS.map((tier) => (
               <div
                 key={tier.name}
-                className="relative rounded-[20px] overflow-hidden flex flex-col"
-                style={{ background: tier.bg, border: `1px solid ${tier.border}` }}
+                className="surface-card relative flex flex-col overflow-hidden rounded-[24px]"
+                style={{
+                  borderColor: tier.border,
+                  background: `linear-gradient(180deg, ${tier.bg} 0%, rgba(8,12,19,0.98) 100%)`,
+                  boxShadow: `0 22px 70px ${tier.color}10`,
+                }}
               >
                 {tier.badge && (
                   <div
@@ -201,13 +205,12 @@ export default function PricingPage() {
 
         {/* FAQ */}
         <section className="max-w-2xl mx-auto">
-          <h2 className="font-headline text-2xl font-bold text-on-surface mb-8 text-center">Common questions</h2>
+          <h2 className="section-title mb-8 text-center text-2xl">Common questions</h2>
           <div className="space-y-3">
             {FAQ.map(({ q, a }) => (
               <div
                 key={q}
-                className="rounded-[14px] p-5"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                className="surface-card rounded-[18px] p-5"
               >
                 <p className="font-semibold text-[14px] text-on-surface mb-2">{q}</p>
                 <p className="text-[13px] text-on-surface-variant leading-[1.7]">{a}</p>
@@ -217,14 +220,14 @@ export default function PricingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="rounded-[22px] overflow-hidden relative p-12 text-center bg-surface-container border-2 border-primary/25">
+        <section className="surface-panel relative overflow-hidden rounded-[28px] border border-primary/20 p-12 text-center">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 60% at 50% 100%, rgba(59,130,246,0.08) 0%, transparent 70%)' }} />
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
           <div className="relative z-10">
-            <h2 className="font-headline text-3xl md:text-4xl font-extrabold text-on-surface mb-4 tracking-tight">
+            <h2 className="section-title mb-4 text-3xl md:text-4xl">
               Not sure which tier you need?
             </h2>
-            <p className="text-on-surface-variant mb-8 max-w-md mx-auto leading-relaxed">
+            <p className="section-copy mb-8 mx-auto max-w-md">
               The free audit identifies exactly what to build and how complex it is.
               Takes 3 minutes. Instant results.
             </p>
@@ -247,13 +250,13 @@ export default function PricingPage() {
         </section>
       </main>
 
-      <footer className="bg-slate-950 border-t border-white/5 py-8">
+      <footer className="footer-shell py-8">
         <div className="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-4">
-          <div className="text-lg font-bold text-slate-300">OpsRadar</div>
-          <p className="text-xs uppercase tracking-widest text-slate-500">© 2026 OpsRadar. All rights reserved.</p>
+          <div className="text-lg font-bold text-on-surface">OpsRadar</div>
+          <p className="text-xs uppercase tracking-widest text-on-surface-variant/70">© 2026 OpsRadar. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/services" className="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Services</Link>
-            <Link href="/audit"    className="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Free Audit</Link>
+            <Link href="/services" className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Services</Link>
+            <Link href="/audit"    className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Free Audit</Link>
           </div>
         </div>
       </footer>

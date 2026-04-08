@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import EmailCaptureModal, { type LeadInfo } from '../components/EmailCaptureModal'
+import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
 import { storeAuditAccessToken } from '../../lib/audit-access-client'
@@ -948,8 +949,11 @@ export default function AuditPage() {
                 OpsRadar
               </span>
             </Link>
-            <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
-              {currentStep + 1} / {TOTAL_STEPS}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
+                {currentStep + 1} / {TOTAL_STEPS}
+              </div>
             </div>
           </div>
         </div>

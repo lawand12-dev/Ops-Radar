@@ -108,7 +108,7 @@ export default function ResponsiveHeroBanner({
           <div className="mx-auto w-full max-w-5xl text-center">
             <Badge
               variant="outline"
-              className="animate-fade-slide-in-1 mb-6 inline-flex h-auto items-center gap-3 rounded-full border-white/18 bg-slate-950/55 px-2.5 py-2 text-white shadow-[0_18px_50px_rgba(2,6,23,0.22)] backdrop-blur-xl"
+              className="hero-badge animate-fade-slide-in-1 mb-6 inline-flex h-auto items-center gap-3 rounded-full px-2.5 py-2 text-white shadow-[0_18px_50px_rgba(2,6,23,0.22)] backdrop-blur-xl"
             >
               {badgeLabel ? (
                 <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-950">
@@ -132,7 +132,7 @@ export default function ResponsiveHeroBanner({
             <div className="animate-fade-slide-in-4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <Button
                 asChild
-                className="h-auto rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.16)] hover:bg-white/92"
+                className="btn-spring btn-main-sheen h-auto rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.16)] hover:bg-white/92"
               >
                 <Link href={primaryButtonHref}>
                   {primaryButtonText}
@@ -142,7 +142,7 @@ export default function ResponsiveHeroBanner({
 
               <Link
                 href={secondaryButtonHref}
-                className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-slate-950/34 px-6 py-3.5 text-sm font-semibold text-white/92 transition-colors hover:border-white/28 hover:text-white"
+                className="hero-secondary-button inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
               >
                 {showSecondaryIcon ? <CirclePlay className="h-4 w-4" /> : null}
                 {secondaryButtonText}
@@ -162,12 +162,12 @@ export default function ResponsiveHeroBanner({
                     <Link
                       key={partner.name}
                       href={partner.href}
-                      className="group flex min-h-24 flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-white/12 bg-slate-950/34 px-4 py-5 text-center shadow-[0_20px_70px_rgba(2,6,23,0.18)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white/[0.06]"
+                      className="hero-partner-card group flex min-h-[108px] flex-col items-center justify-center gap-3 rounded-[1.6rem] px-4 py-5 text-center transition-all"
                     >
-                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/12 bg-white/10 text-white transition-colors group-hover:text-primary">
+                      <span className="hero-partner-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl transition-colors group-hover:text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
-                      <span className="text-sm font-medium text-white/82 transition-colors group-hover:text-white">
+                      <span className="hero-partner-label text-sm font-medium transition-colors">
                         {partner.name}
                       </span>
                     </Link>
