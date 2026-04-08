@@ -2,52 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 
+import BuildTiersSection from '<npm>/components/pricing/BuildTiers'
+
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
   description: 'Transparent pricing for done-for-you agency automation. One-time builds from $1,500. Managed retainers from $300/mo.',
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-
-const BUILD_TIERS = [
-  {
-    name: 'Quick Win',
-    difficulty: 'easy',
-    price: '$1,500 – $2,500',
-    delivery: '5–7 business days',
-    color: '#10b981',
-    bg: 'rgba(16,185,129,0.06)',
-    border: 'rgba(16,185,129,0.18)',
-    description: 'A single, well-defined automation with 2–4 connected tools. Perfect for your first automation or a standalone time-saver.',
-    examples: ['Lead → CRM sync', 'Slack alert on form submit', 'Weekly report to email', 'Invoice generation trigger'],
-    includes: ['Scoping call', 'n8n workflow built + tested', 'Hand-off documentation', '14-day bug-fix window'],
-  },
-  {
-    name: 'Core System',
-    difficulty: 'medium',
-    price: '$2,500 – $4,000',
-    delivery: '7–14 business days',
-    color: '#3b82f6',
-    bg: 'rgba(59,130,246,0.06)',
-    border: 'rgba(59,130,246,0.2)',
-    badge: 'Most Popular',
-    description: 'A multi-step workflow connecting 4–7 tools with branching logic, error handling, and data transformation.',
-    examples: ['Full client onboarding flow', 'Lead qualification + routing', 'Multi-channel follow-up sequence', 'Reporting pipeline'],
-    includes: ['Everything in Quick Win', 'Conditional logic + error paths', 'Hosted on your n8n instance', '30-day bug-fix window'],
-  },
-  {
-    name: 'Full Blueprint',
-    difficulty: 'complex',
-    price: '$4,000 – $7,000',
-    delivery: '14–21 business days',
-    color: '#8b5cf6',
-    bg: 'rgba(139,92,246,0.06)',
-    border: 'rgba(139,92,246,0.18)',
-    description: 'An interconnected system of multiple workflows covering an entire operational area — sales, reporting, or client delivery.',
-    examples: ['End-to-end sales ops system', 'Full reporting + delivery stack', 'AI-powered lead enrichment', 'Custom agency OS'],
-    includes: ['Everything in Core System', 'Multi-workflow architecture', 'AI/LLM integrations', '60-day bug-fix window', 'Ops review call on delivery'],
-  },
-]
 
 const RETAINER_TIERS = [
   {
@@ -182,83 +144,7 @@ export default function PricingPage() {
       <main className="max-w-6xl mx-auto px-6 pb-32 space-y-24">
 
         {/* One-time builds */}
-        <section>
-          <div className="mb-10">
-            <span className="text-[10px] font-bold uppercase tracking-[3px] text-secondary">One-Time Builds</span>
-            <h2 className="font-headline text-3xl font-bold text-on-surface mt-2">Build it once, run it forever.</h2>
-            <p className="text-on-surface-variant mt-2 max-w-lg">Fixed price, fixed scope, fixed delivery date. No hourly billing, no scope creep.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {BUILD_TIERS.map((tier) => (
-              <div
-                key={tier.name}
-                className="relative rounded-[20px] overflow-hidden flex flex-col"
-                style={{ background: tier.bg, border: `1px solid ${tier.border}` }}
-              >
-                {tier.badge && (
-                  <div
-                    className="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
-                    style={{ background: `${tier.color}20`, border: `1px solid ${tier.color}40`, color: tier.color }}
-                  >
-                    {tier.badge}
-                  </div>
-                )}
-                <div className="h-[2px]" style={{ background: `linear-gradient(90deg, ${tier.color}, ${tier.color}00)` }} />
-                <div className="p-7 flex flex-col flex-1 gap-6">
-                  {/* Header */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] mb-1" style={{ color: tier.color }}>{tier.difficulty}</p>
-                    <h3 className="font-headline text-[22px] font-bold text-on-surface">{tier.name}</h3>
-                    <p className="text-on-surface-variant text-[13px] mt-2 leading-[1.6]">{tier.description}</p>
-                  </div>
-
-                  {/* Price */}
-                  <div>
-                    <p className="font-headline text-[32px] font-extrabold leading-none" style={{ color: tier.color }}>{tier.price}</p>
-                    <p className="text-[12px] text-on-surface-variant mt-1">{tier.delivery}</p>
-                  </div>
-
-                  {/* Examples */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/40 mb-2">Examples</p>
-                    <ul className="space-y-1.5">
-                      {tier.examples.map(ex => (
-                        <li key={ex} className="flex items-center gap-2 text-[13px] text-on-surface-variant">
-                          <span style={{ color: tier.color }}>→</span> {ex}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Includes */}
-                  <div className="flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/40 mb-2">Includes</p>
-                    <ul className="space-y-2">
-                      {tier.includes.map(item => (
-                        <li key={item} className="flex items-start gap-2 text-[13px] text-on-surface-variant">
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mt-[2px] shrink-0" style={{ color: tier.color }}>
-                            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.12"/>
-                            <path d="M4.5 7l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <a
-                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
-                    target="_blank" rel="noopener noreferrer"
-                    className="block text-center py-3 rounded-[12px] text-[13px] font-bold transition-all"
-                    style={{ background: `${tier.color}15`, border: `1px solid ${tier.color}35`, color: tier.color }}
-                  >
-                    Get a Quote →
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <BuildTiersSection />
 
         {/* Managed retainers */}
         <section>

@@ -1,0 +1,101 @@
+---
+title: Designing an AI-Ready Sales-to-Delivery Handoff
+description: How to structure sales context so AI agents and human operators can pick up the right information without creating downstream chaos.
+date: 2026-02-27
+categories:
+  - AI
+  - Sales Ops
+---
+
+## The handoff is the product
+
+Many agencies treat the sales handoff like an internal admin task. In practice, it is the point where your delivery system decides whether it is operating from truth or guesswork.
+
+An AI-ready handoff is not just a transcript summary. It is a **structured payload** that includes:
+
+- Commercial context
+- Scope constraints
+- Stakeholder expectations
+- Risk signals
+- Immediate next actions
+
+If those fields are missing, downstream automation produces polished nonsense.
+
+## Build the handoff as a schema
+
+The cleanest pattern is to define one canonical object that every tool can understand.
+
+```json
+{
+  "account_name": "Northstar Media",
+  "primary_goal": "Reduce proposal turnaround time",
+  "promised_automation_scope": [
+    "Lead routing",
+    "Proposal assembly",
+    "Slack alerts"
+  ],
+  "known_constraints": [
+    "HubSpot is source of truth",
+    "Implementation starts in 5 business days"
+  ],
+  "risk_flags": [
+    "No documented approval workflow",
+    "Multiple stakeholders on reporting"
+  ]
+}
+```
+
+That schema should be generated once, reviewed once, and then reused by onboarding, reporting, and project setup workflows.
+
+## Separate facts from interpretation
+
+A good handoff has two layers:
+
+### Layer 1: factual inputs
+
+- Tools already in use
+- Signed scope
+- Required integrations
+- Budget or delivery constraints
+- Stakeholders and approval roles
+
+### Layer 2: operational interpretation
+
+- What might block implementation?
+- Which requests sound high-risk?
+- Where is the client likely to change direction?
+
+The first layer can come directly from CRM fields and meeting notes. The second is where AI summarization can help, but it should always be framed as interpretation instead of truth.
+
+## The minimum workflow
+
+For most teams, this is enough:
+
+1. Sales call ends and transcript lands in your system.
+2. AI drafts the handoff packet against a fixed schema.
+3. The account owner approves or edits the packet.
+4. The approved packet triggers project creation and internal notifications.
+5. Delivery receives the same artifact everywhere: CRM, PM tool, and Slack.
+
+That removes the repeated manual retelling that usually destroys context.
+
+## Guardrails that matter
+
+Avoid the common mistake of letting AI invent missing context. Add validation rules instead:
+
+- If `primary_goal` is empty, block project creation.
+- If no system owner is named, flag the handoff as incomplete.
+- If promised scope conflicts with the signed proposal, require review.
+
+Those checks matter more than model selection.
+
+## Final rule
+
+The handoff should be so clear that a new operator could read it once and know:
+
+- What was sold
+- What matters first
+- What might go wrong
+- What the client expects next
+
+If the packet cannot do that, your automation layer is still compensating for weak operating design.
