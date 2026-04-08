@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardContent } from '<npm>/components/ui/card'
+import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import ShaderBackground from '<npm>/components/ui/shader-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
@@ -164,37 +164,24 @@ const TRUST_METRICS = [
   },
 ]
 
+const HOME_NAV_LINKS = [
+  { label: 'Home', href: '/', isActive: true },
+  { label: 'Services', href: '/services' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Problems', href: '/#pain' },
+  { label: 'How It Works', href: '/#how' },
+  { label: 'Systems', href: '/#showcase' },
+]
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body selection:bg-primary/20 page-enter">
 
-      {/* ── Nav ──────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 w-full bg-slate-900/60 backdrop-blur-2xl shadow-[0_0_64px_rgba(173,198,255,0.08)] border-b border-outline-variant/10">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="OpsRadar" width={32} height={32} className="h-8 w-auto rounded-[6px] shrink-0" />
-            <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-headline">
-              OpsRadar
-            </span>
-          </Link>
-          <div className="hidden md:flex gap-8 items-center text-sm tracking-tight">
-            <Link href="/services" className="text-on-surface-variant hover:text-on-surface transition-colors">Services</Link>
-            <Link href="/pricing"  className="text-on-surface-variant hover:text-on-surface transition-colors">Pricing</Link>
-            <Link href="/about"    className="text-on-surface-variant hover:text-on-surface transition-colors">About</Link>
-            <a href="#pain"        className="text-on-surface-variant hover:text-on-surface transition-colors">Problems</a>
-            <a href="#how"         className="text-on-surface-variant hover:text-on-surface transition-colors">How It Works</a>
-            <a href="#showcase"    className="text-on-surface-variant hover:text-on-surface transition-colors">Systems</a>
-          </div>
-          <Button asChild className="bg-primary-container text-on-primary-container hover:bg-primary-container/80 px-5 py-2 h-auto rounded-lg font-semibold text-sm btn-spring">
-            <Link href="/audit">Start Free Audit</Link>
-          </Button>
-        </div>
-      </nav>
-
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-20">
+      <section className="relative overflow-hidden pb-14">
         <div className="absolute inset-0 bg-[#030712]" />
         <ShaderBackground
           className="absolute inset-0 z-[1] h-full w-full opacity-95 [mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_100%_86%_at_50%_40%,black_48%,transparent_100%)] [transform:scale(1.12)]"
@@ -227,121 +214,41 @@ export default function Home() {
         <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[4] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
         <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100vh-8rem)] max-w-7xl items-center">
-          <div className="relative w-full py-12 lg:py-20">
-            <div className="pointer-events-none absolute -left-20 top-8 h-[420px] w-[420px] rounded-full bg-primary/[0.14] blur-[120px]" />
+        <ResponsiveHeroBanner
+          navLinks={HOME_NAV_LINKS}
+          badgeLabel="OpsRadar"
+          badgeText="Done-for-you automation for agencies that need reliable execution"
+          title="We Build Your Automations."
+          titleLine2="You Focus on Growth."
+          description="Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals. We engineer the workflow layer that captures leads, routes intent through AI, updates your CRM, and keeps your team moving under load."
+          primaryButtonText="Start Free Audit"
+          primaryButtonHref="/audit"
+          secondaryButtonText="See How It Works"
+          secondaryButtonHref="#how"
+          partnersTitle="The operating layers we build, wire, and maintain for you"
+        />
 
-            <FadeInOnScroll delay={0.08}>
-              <Badge
-                variant="outline"
-                className="mb-8 inline-flex h-auto items-center gap-2 rounded-full border-outline-variant/20 bg-surface-container-high/70 px-3 py-1 text-on-surface-variant backdrop-blur-xl"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" />
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest">
-                  Agency Ops Command Center
-                </span>
-              </Badge>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.14}>
-              <div className="relative">
-                <div className="pointer-events-none absolute -left-8 top-8 h-40 w-40 rounded-full bg-[rgba(96,165,250,0.18)] blur-[90px]" />
-                <h1 className="relative max-w-6xl font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:max-w-[min(92vw,78rem)] lg:text-[6.4rem]">
-                  <span className="block text-white">We Build Your Automations.</span>
-                  <span
-                    className="mt-3 block text-gradient-animated text-[1.08em] font-black"
-                    style={{
-                      filter:
-                        'drop-shadow(0 0 36px rgba(96,165,250,0.38)) drop-shadow(0 0 90px rgba(34,211,238,0.14))',
-                    }}
-                  >
-                    You Focus on Growth.
-                  </span>
-                </h1>
-              </div>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.22}>
-              <p className="mt-8 max-w-4xl text-lg leading-8 text-on-surface-variant md:text-xl lg:max-w-5xl">
-                Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals.
-                We engineer the automation layer that captures leads, routes intent through AI, updates
-                the CRM, and keeps your team moving under load.
-              </p>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.28}>
-              <div className="mt-8 flex max-w-5xl flex-wrap items-center gap-x-8 gap-y-3 text-sm text-on-surface-variant">
-                {[
-                  'Lead capture to CRM sync',
-                  'Done-for-you delivery',
-                  'Support when workflows break',
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_18px_rgba(34,211,238,0.8)]" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.34}>
-              <div className="mt-10 flex max-w-4xl flex-col gap-4 sm:flex-row">
-                <Button
-                  asChild
-                  className="relative h-auto gap-2 overflow-hidden rounded-xl px-10 py-5 text-[15px] font-bold btn-spring btn-main-sheen cta-pulse"
-                  style={{
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #4f46e5 100%)',
-                    boxShadow:
-                      '0 0 40px rgba(59,130,246,0.42), 0 0 80px rgba(59,130,246,0.18), inset 0 1px 0 rgba(255,255,255,0.15)',
-                  }}
+        <div className="relative z-10 mx-auto max-w-7xl px-6">
+          <FadeInOnScroll>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {TRUST_METRICS.map(({ value, label, detail }) => (
+                <div
+                  key={label}
+                  className="rounded-[24px] border border-outline-variant/[0.12] bg-surface-container-low/68 p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
                 >
-                  <Link href="/audit">
-                    Start Free Audit
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                      <path
-                        d="M3.75 9h10.5m-4.5-4.5 4.5 4.5-4.5 4.5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-auto rounded-xl border-outline-variant/30 bg-transparent px-8 py-5 text-[15px] font-semibold text-on-surface hover:border-outline-variant/50 hover:bg-surface-container-high/40"
-                >
-                  <a href="#how">See How It Works</a>
-                </Button>
-              </div>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.42}>
-              <div className="mt-14 grid w-full max-w-7xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {TRUST_METRICS.map(({ value, label, detail }) => (
-                  <div
-                    key={label}
-                    className="rounded-[24px] border border-outline-variant/[0.12] bg-surface-container-low/68 p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)] backdrop-blur-xl"
-                  >
-                    <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
-                      {value}
-                    </p>
-                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                      {label}
-                    </p>
-                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
-                      {detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </FadeInOnScroll>
-          </div>
+                  <p className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+                    {value}
+                  </p>
+                  <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                    {label}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                    {detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </FadeInOnScroll>
         </div>
       </section>
 

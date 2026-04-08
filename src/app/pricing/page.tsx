@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 
 import BuildTiersSection from '<npm>/components/pricing/BuildTiers'
+import SiteHeader from '<npm>/components/ui/site-header'
 
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
@@ -107,26 +107,21 @@ const FAQ = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body">
-
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 w-full bg-slate-900/60 backdrop-blur-2xl border-b border-outline-variant/10">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="h-7 w-auto rounded-[6px]" />
-            <span className="text-xl font-bold tracking-tighter bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-headline">
-              OpsRadar
-            </span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/audit" className="px-5 py-2 rounded-lg bg-primary text-on-primary text-sm font-bold">
-              Start Free Audit
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader
+        sticky
+        navLinks={[
+          { label: 'Home', href: '/' },
+          { label: 'Services', href: '/services' },
+          { label: 'Pricing', href: '/pricing', isActive: true },
+          { label: 'About', href: '/about' },
+          { label: 'Problems', href: '/#pain' },
+          { label: 'How It Works', href: '/#how' },
+          { label: 'Systems', href: '/#showcase' },
+        ]}
+      />
 
       {/* Hero */}
-      <header className="relative overflow-hidden pt-20 pb-16 px-6 text-center">
+      <header className="relative overflow-hidden px-6 pb-16 pt-16 text-center sm:pt-20">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59,130,246,0.1) 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-3xl mx-auto">
           <span className="inline-block text-[10px] font-bold uppercase tracking-[3px] text-secondary mb-5">Pricing</span>
