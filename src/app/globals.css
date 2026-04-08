@@ -8,8 +8,8 @@
   /* Legacy */
   --color-blue-brand: #0066ff;
   --color-cyan-brand: #00d4ff;
-  --font-hero: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-hero);
+  --font-ui: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: var(--font-ui);
   --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
 
   /* ── Stitch design system ─────────────────────────────────────── */
@@ -37,10 +37,10 @@
   --color-error-container:          #93000a;
 
   /* Fonts */
-  --font-headline: var(--font-hero);
-  --font-body:     var(--font-hero);
-  --font-label:    var(--font-hero);
-  --font-outfit-var: var(--font-hero);
+  --font-headline: var(--font-ui);
+  --font-body:     var(--font-ui);
+  --font-label:    var(--font-ui);
+  --font-outfit-var: var(--font-ui);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -78,7 +78,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-serif: var(--font-hero);
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --color-text-400: var(--text-400);
   --color-text-300: var(--text-300);
   --color-text-200: var(--text-200);
