@@ -8,7 +8,6 @@ import ShaderBackground from '<npm>/components/ui/shader-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
-import HeroVisual from '../components/HeroVisual'
 import SystemFlowSection from '../components/SystemFlowSection'
 import SuccessStories from '../components/SuccessStories'
 
@@ -229,7 +228,7 @@ export default function Home() {
         <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
 
         <div className="relative z-10 mx-auto flex min-h-[calc(100vh-8rem)] max-w-7xl items-center">
-          <div className="relative max-w-5xl py-12 lg:py-20">
+          <div className="relative w-full py-12 lg:py-20">
             <div className="pointer-events-none absolute -left-20 top-8 h-[420px] w-[420px] rounded-full bg-primary/[0.14] blur-[120px]" />
 
             <FadeInOnScroll delay={0.08}>
@@ -250,7 +249,7 @@ export default function Home() {
             <FadeInOnScroll delay={0.14}>
               <div className="relative">
                 <div className="pointer-events-none absolute -left-8 top-8 h-40 w-40 rounded-full bg-[rgba(96,165,250,0.18)] blur-[90px]" />
-                <h1 className="relative max-w-4xl font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:text-[5.8rem]">
+                <h1 className="relative max-w-6xl font-headline text-5xl font-extrabold leading-[0.98] tracking-[-0.045em] text-on-surface sm:text-6xl md:text-7xl lg:max-w-[min(92vw,78rem)] lg:text-[6.4rem]">
                   <span className="block text-white">We Build Your Automations.</span>
                   <span
                     className="mt-3 block text-gradient-animated text-[1.08em] font-black"
@@ -266,7 +265,7 @@ export default function Home() {
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.22}>
-              <p className="mt-8 max-w-3xl text-lg leading-8 text-on-surface-variant md:text-xl">
+              <p className="mt-8 max-w-4xl text-lg leading-8 text-on-surface-variant md:text-xl lg:max-w-5xl">
                 Stop running the agency through copy-paste, Slack archaeology, and spreadsheet rituals.
                 We engineer the automation layer that captures leads, routes intent through AI, updates
                 the CRM, and keeps your team moving under load.
@@ -274,7 +273,7 @@ export default function Home() {
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.28}>
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-on-surface-variant">
+              <div className="mt-8 flex max-w-5xl flex-wrap items-center gap-x-8 gap-y-3 text-sm text-on-surface-variant">
                 {[
                   'Lead capture to CRM sync',
                   'Done-for-you delivery',
@@ -289,7 +288,7 @@ export default function Home() {
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.34}>
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <div className="mt-10 flex max-w-4xl flex-col gap-4 sm:flex-row">
                 <Button
                   asChild
                   className="relative h-auto gap-2 overflow-hidden rounded-xl px-10 py-5 text-[15px] font-bold btn-spring btn-main-sheen cta-pulse"
@@ -323,7 +322,7 @@ export default function Home() {
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.42}>
-              <div className="mt-14 grid max-w-5xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-14 grid w-full max-w-7xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {TRUST_METRICS.map(({ value, label, detail }) => (
                   <div
                     key={label}
@@ -340,12 +339,6 @@ export default function Home() {
                     </p>
                   </div>
                 ))}
-              </div>
-            </FadeInOnScroll>
-
-            <FadeInOnScroll delay={0.5}>
-              <div className="mt-14 w-full max-w-6xl lg:mt-16">
-                <HeroVisual />
               </div>
             </FadeInOnScroll>
           </div>
