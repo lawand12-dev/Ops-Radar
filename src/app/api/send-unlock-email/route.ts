@@ -10,7 +10,7 @@ import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/se
 import { coerceAuditInput, generateAuditReport, isPreviewAuditReport } from '../../../lib/audit-report'
 import { getServerSupabaseClient } from '../../../lib/supabase-server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.ai'
 
@@ -47,10 +47,9 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const targetEmail = email || sanitizeString(String(data.email ?? ''), 320)
-    if (!targetEmail || !EMAIL_REGEX.test(targetEmail)) {
-      return Response.json({ error: 'Invalid email' }, { status: 400 })
-    }
+    const requestedEmail = EMAIL_REGEX.test(email) ? email : ''
+    const storedEmail = sanitizeString(String(data.email ?? ''), 320)
+    const targetEmail = EMAIL_REGEX.test(storedEmail) ? (requestedEmail || storedEmail) : requestedEmail
 
     const auditInput = coerceAuditInput(data.answers)
     if (!auditInput) {
@@ -77,7 +76,7 @@ export async function POST(request: Request) {
     const fullAccessToken = createAuditAccessToken({
       auditId,
       scope: 'full',
-      email: targetEmail,
+      email: targetEmail || undefined,
     })
 
     const company = data.company ?? ''
@@ -90,11 +89,12 @@ export async function POST(request: Request) {
       ? readinessScore >= 60 ? '#10b981' : readinessScore >= 30 ? '#f59e0b' : '#ef4444'
       : '#60a5fa'
 
-    const { error } = await resend.emails.send({
-      from: 'OpsRadar <onboarding@resend.dev>',
-      to: targetEmail,
-      subject: `Your OpsRadar Automation Blueprint${company ? ` — ${company}` : ''}`,
-      html: `
+    if (resend && targetEmail) {
+      const { error } = await resend.emails.send({
+        from: 'OpsRadar <onboarding@resend.dev>',
+        to: targetEmail,
+        subject: `Your OpsRadar Automation Blueprint${company ? ` — ${company}` : ''}`,
+        html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#060c1e;color:#eef2ff;border-radius:14px;overflow:hidden;">
 
           <!-- Header -->
@@ -167,11 +167,11 @@ export async function POST(request: Request) {
           </div>
         </div>
       `,
-    })
+      })
 
-    if (error) {
-      console.error('[send-unlock-email] Resend error:', error)
-      return serverErrorResponse()
+      if (error) {
+        console.error('[send-unlock-email] Resend error:', error)
+      }
     }
 
     return Response.json({ ok: true, email: targetEmail, accessToken: fullAccessToken })

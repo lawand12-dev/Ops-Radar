@@ -380,7 +380,7 @@ function LockedSection({
             <LockIcon size={16} />
           </div>
           <p className="text-[12px] font-semibold text-on-surface/90 max-w-[230px] leading-[1.55]">
-            Book a free strategy call to unlock your full implementation blueprint
+            Unlock the full implementation blueprint instantly. No extra form, no extra gate.
           </p>
           <Button
             onClick={onUnlock}
@@ -2456,31 +2456,24 @@ function UnlockSection({
   onUnlockSent: (email: string) => void
   onStrategyCallClick: (source: string) => void
 }) {
-  const [emailInput,    setEmailInput]    = useState('')
-  const [emailStatus,   setEmailStatus]   = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [unlockStatus, setUnlockStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
 
-  useEffect(() => {
-    setEmailInput(defaultEmail)
-  }, [defaultEmail])
-
-  async function handleEmailUnlock(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const email = emailInput.trim()
-    if (!email || !auditId) {
-      setEmailStatus('error')
+  async function handleInstantUnlock() {
+    if (!auditId) {
+      setUnlockStatus('error')
       return
     }
-    setEmailStatus('submitting')
-    onUnlockRequested(email)
+    setUnlockStatus('submitting')
+    onUnlockRequested(defaultEmail)
     try {
-      const accessToken = auditId ? getStoredAuditAccessToken(auditId) : ''
+      const accessToken = getStoredAuditAccessToken(auditId)
       const response = await fetch('/api/send-unlock-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken ? { 'x-audit-access-token': accessToken } : {}),
         },
-        body: JSON.stringify({ email, auditId }),
+        body: JSON.stringify({ auditId }),
       })
 
       const data = await response.json()
@@ -2488,21 +2481,20 @@ function UnlockSection({
         throw new Error(data?.error ?? 'Something went wrong')
       }
 
-      setEmailStatus('success')
-      onUnlockSent(data.email ?? email)
+      setUnlockStatus('success')
+      const resolvedEmail = typeof data?.email === 'string' ? data.email : defaultEmail
+      onUnlockSent(resolvedEmail)
       setTimeout(
         () => onUnlocked(
-          data.email ?? email,
+          resolvedEmail,
           typeof data?.accessToken === 'string' ? data.accessToken : undefined,
         ),
-        500,
+        350,
       )
     } catch {
-      setEmailStatus('error')
+      setUnlockStatus('error')
     }
   }
-
-  const inputStyle = { background: 'rgba(28,32,40,1)', border: '1px solid rgba(66,71,84,0.4)', color: '#e0e2ee' }
 
   return (
     <RevealSection>
@@ -2523,23 +2515,67 @@ function UnlockSection({
               Get the Complete Implementation Plan
             </h3>
             <p className="text-[14px] text-on-surface-variant leading-[1.7] max-w-[480px] mx-auto">
-              Unlock automation flows, n8n nodes, step-by-step implementation guides, roadmap, and tool recommendations — everything you need to build or hand off.
+              Unlock automation flows, n8n nodes, step-by-step implementation guides, roadmap, and tool recommendations instantly.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5">
 
-            {/* Path 1: Book a call */}
+            {/* Path 1: Instant unlock */}
             <div
               className="p-6 rounded-[18px] flex flex-col gap-4"
               style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.15)' }}
             >
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-primary mb-2">Option 1 — Fastest</p>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-primary mb-2">Instant Access</p>
+                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Unlock the Full Blueprint Now</h4>
+                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
+                  No extra email step. No extra form. We upgrade this preview in place and reveal the full report immediately.
+                </p>
+              </div>
+              {unlockStatus === 'success' ? (
+                <div className="flex items-center gap-2.5 px-4 py-3 rounded-[10px]" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8l4.5 4.5 7.5-7.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p className="text-[12px] font-semibold text-emerald-400">Full blueprint unlocked. Loading the complete report…</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {unlockStatus === 'error' && (
+                    <p className="text-[11px] text-[#f87171]">
+                      {auditId ? 'Something went wrong while unlocking the report. Try again.' : 'We could not find this audit. Please run a new audit.'}
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={handleInstantUnlock}
+                    disabled={unlockStatus === 'submitting' || !auditId}
+                    className="w-full px-5 py-3 h-auto rounded-[11px] text-[13px] font-bold gap-2 text-white shadow-[0_0_24px_rgba(59,130,246,0.26)] btn-spring"
+                    style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 52%, #7c3aed 100%)' }}
+                  >
+                    {unlockStatus === 'submitting' ? 'Unlocking…' : 'Unlock Full Blueprint'}
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </Button>
+                  <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">
+                    We still email the unlocked copy to your audit contact in the background when delivery is available, but access no longer depends on that step.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Path 2: Optional call */}
+            <div
+              className="p-6 rounded-[18px] flex flex-col gap-4"
+              style={{ background: 'rgba(76,215,246,0.03)', border: '1px solid rgba(76,215,246,0.12)' }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary mb-2">Optional Support</p>
                 <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Book a Free Strategy Call</h4>
                 <p className="text-[12px] text-on-surface-variant leading-[1.6]">
-                  20 minutes. We&apos;ll scope your top automation and give you a timeline and cost.
-                  No pitch, no commitment.
+                  If you want help prioritizing or scoping the build, book a call. The report unlock is separate and instant.
                 </p>
               </div>
               <div className="flex flex-col gap-2.5">
@@ -2557,59 +2593,9 @@ function UnlockSection({
                   </a>
                 </Button>
                 <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">
-                  Book if you want help prioritizing or scoping the build. Your full blueprint is unlocked through the email flow on the right.
+                  Use this if you want an implementation timeline, budget guidance, or a done-for-you build plan.
                 </p>
               </div>
-            </div>
-
-            {/* Path 2: Email */}
-            <div
-              className="p-6 rounded-[18px] flex flex-col gap-4"
-              style={{ background: 'rgba(76,215,246,0.03)', border: '1px solid rgba(76,215,246,0.12)' }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary mb-2">Option 2</p>
-                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Email Me the Full Blueprint</h4>
-                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
-                  We&apos;ll generate the full report only after you request it, then send you the unlocked link immediately.
-                </p>
-              </div>
-
-              {emailStatus === 'success' ? (
-                <div className="flex items-center gap-2.5 px-4 py-3 rounded-[10px]" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M2 8l4.5 4.5 7.5-7.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <p className="text-[12px] font-semibold text-emerald-400">Building and emailing your blueprint…</p>
-                </div>
-              ) : (
-                <form onSubmit={handleEmailUnlock} className="flex flex-col gap-2.5">
-                  <input
-                    type="email"
-                    required
-                    placeholder="your@email.com"
-                    value={emailInput}
-                    onChange={e => setEmailInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none transition-colors duration-150 focus:border-secondary/40"
-                    style={inputStyle}
-                    onFocus={e => (e.currentTarget.style.borderColor = 'rgba(76,215,246,0.4)')}
-                    onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(66,71,84,0.4)')}
-                  />
-                  {emailStatus === 'error' && (
-                    <p className="text-[11px] text-[#f87171]">
-                      {auditId ? 'Something went wrong — try again.' : 'We could not find this audit. Please run a new audit.'}
-                    </p>
-                  )}
-                  <Button
-                    type="submit"
-                    disabled={!emailInput.trim() || emailStatus === 'submitting' || !auditId}
-                    variant="outline"
-                    className="px-5 py-2.5 h-auto rounded-[10px] text-[12px] font-bold text-secondary border-secondary/20 bg-secondary/8 hover:bg-secondary/15 hover:text-secondary"
-                  >
-                    {emailStatus === 'submitting' ? 'Building…' : 'Generate Full Blueprint →'}
-                  </Button>
-                </form>
-              )}
             </div>
           </div>
         </div>
