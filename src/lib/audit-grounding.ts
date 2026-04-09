@@ -132,12 +132,6 @@ const TOOL_CATALOG: ToolCatalogEntry[] = [
   { canonicalName: 'n8n', aliases: ['n8n'], n8nNode: null, notes: 'n8n is the orchestration layer, not an external app node.' },
 ]
 
-const DIFFICULTY_DEFAULT_DAYS = {
-  easy: 6,
-  medium: 10,
-  complex: 17,
-} as const
-
 function normalizeToken(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 }
@@ -296,25 +290,18 @@ function quoteList(items: string[]): string {
 
 export function buildAuditGroundingPrompt(input: AuditLikeInput): string {
   const context = buildGroundingContext(input)
-  const supported = context.detectedTools.filter((tool) => tool.n8nNode)
-  const fallbackOnly = context.detectedTools.filter((tool) => !tool.n8nNode)
 
   return `
-GROUNDING CONTEXT — use this as the source of truth for tool and n8n architecture choices:
+GROUNDING CONTEXT — use this as the source of truth for tool references and savings calculations:
 - Detected client tools: ${quoteList(context.allowedToolNames)}
 - Public website stack hints: ${quoteList(splitList(input.websiteDetectedStack ?? ''))}
 - Primary CRM: ${context.primaryCrm ? `"${context.primaryCrm}"` : 'unknown'}
 - Estimated loaded labor rate for savings math: $${context.hourlyRate}/hour
-- Approved n8n node names for this audit: ${quoteList(context.allowedNodes)}
-- Supported tool -> node mappings: ${supported.length > 0 ? supported.map((tool) => `"${tool.canonicalName}" -> "${tool.n8nNode}"`).join('; ') : 'none detected'}
-- Tools that should use "HTTP Request" or generic file handoff if referenced: ${fallbackOnly.length > 0 ? fallbackOnly.map((tool) => `"${tool.canonicalName}"${tool.notes ? ` (${tool.notes})` : ''}`).join('; ') : 'none'}
 
 GROUNDING RULES:
-- Never invent a connector node for a tool outside the approved list above.
-- If a detected tool does not have a trusted native node mapping above, use "HTTP Request" instead of a made-up node.
-- Only mention tools from the client's stack unless you clearly label something as a recommended addition.
-- Keep technical_flow aligned with the n8n_nodes list.
-- Build-time ranges must stay realistic: easy 5-7 days, medium 7-14 days, complex 14-21 days.
+- Only reference tools from the client's confirmed stack in opportunity titles and hard_truth.
+- Use the estimated labor rate above to keep monthly_savings calculations realistic.
+- Opportunity titles must name at least one of the client's real tools.
 `.trim()
 }
 
@@ -342,72 +329,6 @@ function normalizeDifficulty(value: unknown): 'easy' | 'medium' | 'complex' {
   const normalized = normalizeToken(String(value ?? ''))
   if (normalized === 'easy' || normalized === 'medium' || normalized === 'complex') return normalized
   return 'medium'
-}
-
-function filterAllowedNodes(nodes: string[], allowedNodes: string[]): string[] {
-  const allowed = new Set(allowedNodes.map((node) => normalizeToken(node)))
-  return unique(
-    nodes.filter((node) => allowed.has(normalizeToken(node))),
-  )
-}
-
-function chooseRelevantTools(opportunity: OpportunityLike, context: GroundingContext): string[] {
-  const explicitTools = unique(asStringArray(opportunity.tools_connected).concat(asStringArray(opportunity.tools_involved)))
-    .map((tool) => findToolCatalogEntry(tool)?.canonicalName ?? tool)
-    .filter((tool) => context.allowedToolNames.includes(tool))
-
-  if (explicitTools.length > 0) return explicitTools
-
-  const corpus = normalizeToken([
-    asString(opportunity.title),
-    asString(opportunity.hard_truth),
-    asString(opportunity.current_process),
-    asString(opportunity.automated_process),
-    asString(opportunity.technical_flow),
-  ].filter(Boolean).join(' '))
-
-  const inferred = context.detectedTools
-    .filter((tool) => corpus.includes(normalizeToken(tool.canonicalName)))
-    .map((tool) => tool.canonicalName)
-
-  if (inferred.length > 0) return inferred
-
-  const fallback: string[] = []
-  if (context.primaryCrm && context.allowedToolNames.includes(context.primaryCrm)) {
-    fallback.push(context.primaryCrm)
-  }
-  if (context.allowedToolNames.includes('Slack')) fallback.push('Slack')
-  if (context.allowedToolNames.includes('Gmail')) fallback.push('Gmail')
-
-  return unique(fallback).slice(0, 3)
-}
-
-function deriveNodesFromTools(tools: string[], context: GroundingContext): string[] {
-  const toolNodes = tools
-    .map((tool) => TOOL_CATALOG.find((entry) => entry.canonicalName === tool)?.n8nNode)
-    .filter((node): node is string => Boolean(node))
-
-  return unique([
-    'Webhook',
-    'If',
-    'Set',
-    ...toolNodes,
-  ]).filter((node) => context.allowedNodes.includes(node))
-}
-
-function defaultTechnicalFlow(tools: string[]): string {
-  const actions = tools.length > 0 ? tools.join(' + ') : 'target systems'
-  return `Trigger -> Validate and route -> Update ${actions} -> Confirm outcome`
-}
-
-function defaultImplementationSteps(tools: string[]): string[] {
-  const destination = tools.length > 0 ? tools.join(', ') : 'the connected systems'
-  return [
-    'Document the trigger event, required fields, and ownership for the workflow.',
-    `Authenticate n8n against ${destination} and map the minimum required data.`,
-    'Add branching, retries, and duplicate protection before the workflow touches production data.',
-    'Test happy path and failure path with real sample records before launch.',
-  ]
 }
 
 function deriveBiggestFrictionPoint(
@@ -604,42 +525,32 @@ function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingCon
     ? context.primaryCrm
     : context.allowedToolNames[0] ?? 'the CRM'
 
-  const hasSlack = context.allowedToolNames.includes('Slack')
-  const hasGmail = context.allowedToolNames.includes('Gmail')
-  const hasClickUp = context.allowedToolNames.includes('ClickUp')
-  const hasPandaDoc = context.allowedToolNames.includes('PandaDoc')
-  const hasSheets = context.allowedToolNames.includes('Google Sheets')
-
   return [
     {
       title: `${crm} lead capture and qualification`,
       hard_truth: `New lead intake is still creating drag around "${input.automationWish}". Slow qualification means slower follow-up and wasted sales capacity.`,
-      technical_flow: `Trigger -> Validate lead -> Score and route in ${crm} -> Notify owner`,
-      tools_connected: unique([crm, hasSlack ? 'Slack' : hasGmail ? 'Gmail' : '']),
+      urgency_reason: `Every week this runs manually is another week of delayed follow-ups and potential deals falling through the cracks.`,
       difficulty: 'easy',
       hours_saved_weekly: 6,
     },
     {
       title: 'Client onboarding handoff automation',
-      hard_truth: `The current onboarding process (${input.onboarding}) is creating avoidable handoff risk and inconsistent setup quality.`,
-      technical_flow: `Deal won -> Create onboarding assets -> Notify delivery team -> Confirm setup completion`,
-      tools_connected: unique([crm, hasPandaDoc ? 'PandaDoc' : '', hasClickUp ? 'ClickUp' : hasSlack ? 'Slack' : '']),
+      hard_truth: `The current onboarding process (${input.onboarding}) is creating avoidable handoff risk and inconsistent client setup quality.`,
+      urgency_reason: `Rough onboarding experiences compound — each bad start increases churn risk and damages referrals.`,
       difficulty: 'medium',
       hours_saved_weekly: 8,
     },
     {
       title: 'Operational reporting and status sync',
       hard_truth: `Tracking work through "${input.progressTracking}" makes reporting slower and increases the chance that client updates are late or incomplete.`,
-      technical_flow: `Schedule Trigger -> Pull status data -> Summarize exceptions -> Send digest`,
-      tools_connected: unique([hasSheets ? 'Google Sheets' : crm, hasSlack ? 'Slack' : hasGmail ? 'Gmail' : '']),
+      urgency_reason: `Late status updates erode client trust faster than almost any other ops failure — and this one is entirely preventable.`,
       difficulty: 'medium',
       hours_saved_weekly: 5,
     },
     {
       title: 'Cross-tool data consistency workflow',
       hard_truth: `The stack (${input.tools}) relies on manual updates across tools, which makes data drift and duplicate entry almost guaranteed as the agency grows.`,
-      technical_flow: `Source update -> Normalize record -> Sync target tools -> Log success or retry`,
-      tools_connected: context.allowedToolNames.slice(0, 3),
+      urgency_reason: `Data inconsistency gets exponentially worse as client volume grows — fixing it now costs a fraction of what it will cost at scale.`,
       difficulty: 'complex',
       hours_saved_weekly: 10,
     },
@@ -649,7 +560,6 @@ function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingCon
 function normalizeOpportunity(
   rawOpportunity: unknown,
   index: number,
-  stage: AuditStage,
   context: GroundingContext,
 ): Record<string, unknown> {
   const opportunity = (rawOpportunity && typeof rawOpportunity === 'object' && !Array.isArray(rawOpportunity))
@@ -657,9 +567,6 @@ function normalizeOpportunity(
     : {}
 
   const difficulty = normalizeDifficulty(opportunity.difficulty)
-  const toolsConnected = chooseRelevantTools(opportunity, context)
-  const suppliedNodes = filterAllowedNodes(asStringArray(opportunity.n8n_nodes), context.allowedNodes)
-  const n8nNodes = suppliedNodes.length > 0 ? suppliedNodes : deriveNodesFromTools(toolsConnected, context)
   const hoursSavedWeekly = clampNumber(opportunity.hours_saved_weekly, 4 + index * 2, { min: 1, max: 80 })
   const monthlySavings = clampNumber(
     opportunity.monthly_savings,
@@ -667,34 +574,15 @@ function normalizeOpportunity(
     { min: 250, max: 200_000 },
   )
 
-  const base: Record<string, unknown> = {
+  return {
     rank: clampNumber(opportunity.rank, index + 1, { min: 1, max: 6 }),
     title: asString(opportunity.title) ?? `Automation opportunity ${index + 1}`,
     hard_truth: asString(opportunity.hard_truth) ?? 'Manual work is creating avoidable labor cost and response delays.',
-    technical_flow: asString(opportunity.technical_flow) ?? defaultTechnicalFlow(toolsConnected),
     hours_saved_weekly: hoursSavedWeekly,
     monthly_savings: monthlySavings,
     difficulty,
     quick_win: difficulty === 'easy',
-  }
-
-  if (stage === 'preview') {
-    return base
-  }
-
-  return {
-    ...base,
-    current_process: asString(opportunity.current_process) ?? 'Work is being handled manually across multiple steps and tools, which increases lag and the chance of missed handoffs.',
-    automated_process: asString(opportunity.automated_process) ?? 'n8n captures the trigger, validates the record, routes it to the right systems, and confirms completion automatically.',
-    n8n_nodes: n8nNodes,
-    tools_connected: toolsConnected,
-    build_time_days: clampNumber(opportunity.build_time_days, DIFFICULTY_DEFAULT_DAYS[difficulty], {
-      min: difficulty === 'easy' ? 5 : difficulty === 'medium' ? 7 : 14,
-      max: difficulty === 'easy' ? 7 : difficulty === 'medium' ? 14 : 21,
-    }),
-    implementation_steps: asStringArray(opportunity.implementation_steps).length > 0
-      ? asStringArray(opportunity.implementation_steps).slice(0, 6)
-      : defaultImplementationSteps(toolsConnected),
+    urgency_reason: asString(opportunity.urgency_reason) ?? null,
   }
 }
 
@@ -715,7 +603,7 @@ function normalizeTopLevelFields(
 
   const normalizedOpportunities = supplemented
     .slice(0, stage === 'preview' ? 2 : 6)
-    .map((opportunity, index) => normalizeOpportunity(opportunity, index, stage, context))
+    .map((opportunity, index) => normalizeOpportunity(opportunity, index, context))
 
   const totalHoursSavedWeekly = normalizedOpportunities.reduce((sum, opportunity) => {
     const value = typeof opportunity.hours_saved_weekly === 'number' ? opportunity.hours_saved_weekly : 0
@@ -906,9 +794,7 @@ function buildOpportunityCorpus(opportunity: OpportunityLike): string {
   return normalizeToken([
     asString(opportunity.title),
     asString(opportunity.hard_truth),
-    asString(opportunity.current_process),
-    asString(opportunity.automated_process),
-    asString(opportunity.technical_flow),
+    asString(opportunity.urgency_reason),
   ].filter(Boolean).join(' '))
 }
 
@@ -932,10 +818,6 @@ function opportunityMentionsClientContext(
     .map((signal) => normalizeToken(signal))
     .filter(Boolean)
     .some((signal) => corpus.includes(signal))
-}
-
-function hasStructuredTechnicalFlow(flow: string | null): boolean {
-  return Boolean(flow && /(->|→)/.test(flow))
 }
 
 function savingsMathLooksReasonable(
@@ -964,46 +846,24 @@ export function assessAuditConfidence(
       ? rawOpportunity as OpportunityLike
       : {}
 
-    const tools = chooseRelevantTools(opportunity, context)
-    const validNodes = filterAllowedNodes(asStringArray(opportunity.n8n_nodes), context.allowedNodes)
-    const technicalFlow = asString(opportunity.technical_flow)
-    const hasTechnicalFlow = Boolean(technicalFlow)
-    const hasStructuredFlow = hasStructuredTechnicalFlow(technicalFlow)
     const hasSolidSavings = typeof opportunity.hours_saved_weekly === 'number' && opportunity.hours_saved_weekly > 0
-    const hasImplementation = stage === 'preview' || asStringArray(opportunity.implementation_steps).length > 0
-    const hasCurrentAndAutomatedProcess = stage === 'preview'
-      || (Boolean(asString(opportunity.current_process)) && Boolean(asString(opportunity.automated_process)))
-    const hasBuildTime = stage === 'preview'
-      || (typeof opportunity.build_time_days === 'number' && opportunity.build_time_days >= 5 && opportunity.build_time_days <= 21)
+    const hasHardTruth = Boolean(asString(opportunity.hard_truth))
+    const hasUrgencyReason = Boolean(asString(opportunity.urgency_reason))
     const mentionsClientContext = opportunityMentionsClientContext(opportunity, input, context)
     const savingsLooksReasonable = savingsMathLooksReasonable(opportunity, context)
     const issues: string[] = []
 
-    let score = 25
-    if (tools.length > 0) score += 15
-    else issues.push('No grounded client tools were attached to this recommendation.')
-    if (hasTechnicalFlow) score += 10
-    else issues.push('Technical flow is missing.')
-    if (hasStructuredFlow) score += 8
-    else if (hasTechnicalFlow) issues.push('Technical flow is present but not structured enough.')
-    if (hasSolidSavings) score += 8
+    let score = 35
+    if (hasSolidSavings) score += 15
     else issues.push('Hours saved estimate is weak.')
-    if (hasImplementation) score += 8
-    else issues.push('Implementation steps are missing.')
-    if (mentionsClientContext) score += 12
+    if (hasHardTruth) score += 15
+    else issues.push('Hard truth is missing.')
+    if (hasUrgencyReason) score += 10
+    else issues.push('Urgency reason is missing.')
+    if (mentionsClientContext) score += 15
     else issues.push('Recommendation does not clearly reflect the client-specific pain or stack.')
-    if (savingsLooksReasonable) score += 6
+    if (savingsLooksReasonable) score += 10
     else issues.push('Savings math falls outside the expected range.')
-    if (hasCurrentAndAutomatedProcess) score += 8
-    else issues.push('Current vs automated process detail is too thin.')
-    if (stage === 'preview') {
-      score += 10
-    } else {
-      if (validNodes.length > 0) score += 10
-      else issues.push('n8n nodes are missing or invalid.')
-      if (hasBuildTime) score += 10
-      else issues.push('Build time is missing or unrealistic.')
-    }
 
     opportunityIssues.push(issues)
     return Math.max(0, Math.min(score, 100))
@@ -1018,8 +878,6 @@ export function assessAuditConfidence(
   const readiness = typeof audit.automation_readiness_score === 'number'
     ? audit.automation_readiness_score
     : null
-  const toolsAnalysis = asRecord(audit.tools_analysis)
-  const roadmap = asRecord(audit.roadmap)
   const laborBreakdown = asRecord(audit.labor_arbitrage_breakdown)
   const contextSwitching = asRecord(audit.context_switching_analysis)
   const onboardingAssessment = asRecord(audit.onboarding_assessment)
@@ -1040,10 +898,6 @@ export function assessAuditConfidence(
   else issues.push('Executive summary is missing.')
   if (readiness != null && readiness >= 1 && readiness <= 100) overall += 5
   else issues.push('Automation readiness score is missing or invalid.')
-  if (asString(toolsAnalysis.biggest_friction_point)) overall += 5
-  else issues.push('Tools analysis is missing a clear friction point.')
-  if (stage === 'full' && asString(roadmap.phase_1_quick_wins)) overall += 5
-  else if (stage === 'full') issues.push('Roadmap is missing a credible quick-win phase.')
   if (stage === 'full' && asString(laborBreakdown.explanation) && asString(onboardingAssessment.current_state) && asNumber(contextSwitching.annual_cost) != null) {
     overall += 5
   } else if (stage === 'full') {
