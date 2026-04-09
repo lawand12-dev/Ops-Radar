@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsRadar — Design Reference v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #050810;
+    --bg-card: rgba(255,255,255,0.025);
+    --bg-card-hover: rgba(255,255,255,0.05);
+    --blue: #3b82f6;
+    --blue-glow: rgba(59,130,246,0.35);
+    --cyan: #06b6d4;
+    --purple: #8b5cf6;
+    --text: #eef2ff;
+    --text-dim: rgba(255,255,255,0.5);
+    --text-muted: rgba(255,255,255,0.3);
+    --border: rgba(255,255,255,0.06);
+    --border-hover: rgba(255,255,255,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ====== ANIMATED BACKGROUND ====== */
+  .hero-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Animated gradient orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: float 12s ease-in-out infinite;
+  }
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%);
+    top: -200px; left: -100px;
+    animation-delay: 0s;
+  }
+  .orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%);
+    bottom: -150px; right: -100px;
+    animation-delay: -4s;
+    animation-duration: 15s;
+  }
+  .orb-3 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(6,182,212,0.2), transparent 70%);
+    top: 50%; left: 60%;
+    animation-delay: -8s;
+    animation-duration: 18s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -40px) scale(1.05); }
+    50% { transform: translate(-20px, 20px) scale(0.95); }
+    75% { transform: translate(40px, 30px) scale(1.03); }
+  }
+
+  /* Grid overlay */
+  .grid-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 10%, transparent 70%);
+  }
+
+  /* Noise texture */
+  .noise {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px;
+  }
+
+  /* ====== NAVIGATION ====== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(5,8,16,0.7);
+    backdrop-filter: blur(24px) saturate(1.2);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700; font-size: 18px;
+  }
+  .nav-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white;
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none; font-size: 13px;
+    font-weight: 400; transition: color 0.2s; letter-spacing: 0.01em;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-btn {
+    padding: 7px 18px; border-radius: 8px; font-size: 13px;
+    font-weight: 600; background: var(--blue); color: white;
+    border: none; cursor: pointer; transition: all 0.25s;
+  }
+  .nav-btn:hover { background: #2563eb; box-shadow: 0 0 20px var(--blue-glow); }
+
+  /* ====== HERO ====== */
+  .hero-content {
+    position: relative; z-index: 2;
+    text-align: center; padding: 140px 24px 80px;
+    max-width: 840px;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 100px;
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.15);
+    font-size: 11px; font-weight: 600; color: #60a5fa;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0; animation: slideUp 0.7s ease 0.2s forwards;
+  }
+  .badge-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #3b82f6;
+    animation: blink 2s infinite;
+  }
+
+  .hero-content h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(38px, 5.8vw, 68px);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.035em;
+    opacity: 0; animation: slideUp 0.7s ease 0.35s forwards;
+  }
+  .hero-content h1 .white {
+    background: linear-gradient(180deg, #ffffff 30%, rgba(255,255,255,0.6) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-content h1 .blue {
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .hero-desc {
+    font-size: clamp(15px, 1.6vw, 17px);
+    color: var(--text-dim); line-height: 1.75;
+    max-width: 520px; margin: 24px auto 0;
+    font-weight: 300;
+    opacity: 0; animation: slideUp 0.7s ease 0.5s forwards;
+  }
+
+  .hero-actions {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin-top: 36px;
+    opacity: 0; animation: slideUp 0.7s ease 0.65s forwards;
+  }
+  .btn-main {
+    padding: 13px 30px; border-radius: 12px;
+    background: var(--blue); color: white;
+    font-size: 14px; font-weight: 600;
+    border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px var(--blue-glow), 0 4px 12px rgba(0,0,0,0.3);
+    position: relative; overflow: hidden;
+  }
+  .btn-main::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .btn-main:hover::before { transform: translateX(100%); }
+  .btn-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px var(--blue-glow), 0 8px 20px rgba(0,0,0,0.4);
+  }
+
+  .btn-ghost {
+    padding: 13px 24px; border-radius: 12px;
+    background: transparent; color: var(--text-dim);
+    font-size: 14px; font-weight: 400;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
+
+  .hero-social {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin-top: 40px;
+    opacity: 0; animation: slideUp 0.7s ease 0.8s forwards;
+  }
+  .avatars { display: flex; }
+  .avatars span {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--bg);
+    margin-left: -7px; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: white;
+  }
+  .avatars span:first-child { margin-left: 0; }
+  .avatars span:nth-child(1) { background: #3b82f6; }
+  .avatars span:nth-child(2) { background: #8b5cf6; }
+  .avatars span:nth-child(3) { background: #06b6d4; }
+  .avatars span:nth-child(4) { background: #10b981; }
+  .hero-social-text { font-size: 12px; color: var(--text-muted); }
+  .hero-social-text strong { color: var(--text-dim); }
+
+  /* ====== TOOLS STRIP ====== */
+  .tools-strip {
+    position: relative; z-index: 2;
+    padding: 60px 24px 40px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .tools-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 24px;
+  }
+  .tools-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 40px; flex-wrap: wrap; opacity: 0.4;
+  }
+  .tools-row span {
+    font-size: 13px; font-weight: 500; color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  /* ====== SECTIONS ====== */
+  .section {
+    max-width: 1060px; margin: 0 auto;
+    padding: 100px 24px;
+  }
+  .section-tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--blue);
+    margin-bottom: 14px;
+  }
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(26px, 3.2vw, 40px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .section-sub {
+    font-size: 15px; color: var(--text-dim); line-height: 1.7;
+    max-width: 520px; font-weight: 300;
+  }
+
+  /* ====== PAIN POINTS ====== */
+  .pain { border-top: 1px solid var(--border); }
+  .pain-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-top: 48px;
+  }
+  .pain-card {
+    padding: 24px; border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    transition: all 0.35s ease;
+    cursor: default;
+  }
+  .pain-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  .pain-emoji {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 14px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.1);
+  }
+  .pain-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+  .pain-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ====== HOW IT WORKS ====== */
+  .how { text-align: center; border-top: 1px solid var(--border); }
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px; margin-top: 56px;
+    position: relative;
+  }
+  .steps::before {
+    content: ''; position: absolute;
+    top: 32px; left: 18%; right: 18%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
+  }
+  .step { position: relative; }
+  .step-num {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px; font-weight: 700; color: var(--blue);
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.15);
+    margin: 0 auto 18px;
+    position: relative; z-index: 1;
+    transition: all 0.3s;
+  }
+  .step:hover .step-num {
+    background: rgba(59,130,246,0.15);
+    box-shadow: 0 0 24px rgba(59,130,246,0.2);
+    transform: scale(1.05);
+  }
+  .step h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; font-weight: 600; margin-bottom: 8px;
+  }
+  .step p {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+    max-width: 260px; margin: 0 auto;
+  }
+
+  /* ====== SHOWCASE ====== */
+  .showcase { border-top: 1px solid var(--border); }
+  .showcase-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px; margin-top: 48px;
+  }
+  .show-card {
+    padding: 28px; border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    transition: all 0.35s ease;
+    cursor: default;
+    position: relative; overflow: hidden;
+  }
+  .show-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .show-card:hover::before { opacity: 1; }
+  .show-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 50px rgba(0,0,0,0.3);
+  }
+  .show-card.blue::before { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+  .show-card.purple::before { background: linear-gradient(90deg, var(--purple), #c084fc); }
+  .show-card.cyan::before { background: linear-gradient(90deg, var(--cyan), #2dd4bf); }
+  .show-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+  .show-tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 6px; margin-bottom: 14px;
+  }
+  .show-tag.t-blue { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.12); }
+  .show-tag.t-cyan { background: rgba(6,182,212,0.1); color: #22d3ee; border: 1px solid rgba(6,182,212,0.12); }
+  .show-tag.t-purple { background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.12); }
+  .show-tag.t-green { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.12); }
+
+  .show-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 17px; font-weight: 600; margin-bottom: 8px;
+  }
+  .show-card p { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+  .show-tools { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+  .chip {
+    font-size: 10px; padding: 3px 9px; border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); color: var(--text-muted);
+  }
+
+  /* ====== PRICING ====== */
+  .pricing {
+    text-align: center; border-top: 1px solid var(--border);
+  }
+  .price-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; max-width: 720px; margin: 48px auto 0;
+  }
+  .price-card {
+    padding: 32px 26px; border-radius: 16px; text-align: left;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    transition: all 0.35s;
+  }
+  .price-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 50px rgba(0,0,0,0.3);
+  }
+  .price-card.pro {
+    border-color: rgba(59,130,246,0.25);
+    background: linear-gradient(160deg, rgba(59,130,246,0.06) 0%, rgba(6,182,212,0.03) 100%);
+    position: relative;
+  }
+  .price-card.pro::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    border-radius: 16px 16px 0 0;
+  }
+  .price-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+  }
+  .price-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px; font-weight: 700; margin-bottom: 4px;
+  }
+  .price-amount {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px; font-weight: 800; margin: 16px 0;
+    background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .price-features {
+    list-style: none; padding: 0; margin: 20px 0;
+  }
+  .price-features li {
+    font-size: 13px; color: var(--text-dim); padding: 5px 0;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .price-features li .check {
+    color: var(--blue); font-weight: 700; font-size: 12px;
+    margin-top: 2px; flex-shrink: 0;
+  }
+  .price-btn {
+    width: 100%; padding: 11px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.25s; margin-top: 8px;
+  }
+  .price-btn-fill {
+    background: var(--blue); color: white; border: none;
+    box-shadow: 0 0 20px var(--blue-glow);
+  }
+  .price-btn-fill:hover { background: #2563eb; transform: translateY(-1px); }
+  .price-btn-line {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .price-btn-line:hover { border-color: var(--border-hover); }
+
+  /* ====== FINAL CTA ====== */
+  .cta-section {
+    text-align: center; padding: 100px 24px;
+    position: relative; overflow: hidden;
+  }
+  .cta-glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(59,130,246,0.07) 0%, transparent 60%);
+  }
+  .cta-section h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(26px, 3.5vw, 42px);
+    font-weight: 700; margin-bottom: 14px;
+    position: relative; z-index: 1;
+    letter-spacing: -0.02em;
+  }
+  .cta-section p {
+    font-size: 15px; color: var(--text-dim);
+    margin-bottom: 32px; position: relative; z-index: 1;
+  }
+  .cta-section .btn-main {
+    position: relative; z-index: 1;
+    padding: 15px 34px; font-size: 15px;
+  }
+
+  /* ====== FOOTER ====== */
+  footer {
+    padding: 32px 24px; text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  footer p { font-size: 12px; color: var(--text-muted); }
+
+  /* ====== SCROLL ANIMATIONS ====== */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ====== KEYFRAMES ====== */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ====== MOBILE ====== */
+  @media (max-width: 768px) {
+    nav { padding: 12px 18px; }
+    .nav-links { display: none; }
+    .pain-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; gap: 24px; }
+    .steps::before { display: none; }
+    .showcase-grid { grid-template-columns: 1fr; }
+    .price-grid { grid-template-columns: 1fr; }
+    .hero-actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-icon">O</div>
+    OpsRadar
+  </div>
+  <div class="nav-links">
+    <a href="#pain">Problems</a>
+    <a href="#how">How it works</a>
+    <a href="#showcase">Systems</a>
+    <a href="#pricing">Pricing</a>
+    <button class="nav-btn">Start Free Audit</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrapper">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="hero-content">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Free AI Operations Audit
+    </div>
+
+    <h1>
+      <span class="white">Your Agency Runs on</span><br>
+      <span class="blue">Manual Processes</span><br>
+      <span class="white">That Should Run Themselves</span>
+    </h1>
+
+    <p class="hero-desc">
+      Answer 8 questions. Our AI generates a custom automation blueprint —
+      what to eliminate, hours you'll reclaim, and the exact workflows to build.
+    </p>
+
+    <div class="hero-actions">
+      <button class="btn-main">Start Free Audit <span>→</span></button>
+      <button class="btn-ghost">See how it works</button>
+    </div>
+
+    <div class="hero-social">
+      <div class="avatars">
+        <span>M</span><span>K</span><span>A</span><span>R</span>
+      </div>
+      <p class="hero-social-text">Join <strong>100+ agencies</strong> already optimizing their ops</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="tools-strip">
+  <p class="tools-label">Integrates with your existing tools</p>
+  <div class="tools-row">
+    <span>Slack</span>
+    <span>HubSpot</span>
+    <span>Google Workspace</span>
+    <span>Notion</span>
+    <span>Airtable</span>
+    <span>Stripe</span>
+    <span>Salesforce</span>
+    <span>Calendly</span>
+  </div>
+</div>
+
+<!-- PAIN POINTS -->
+<section class="section pain reveal" id="pain">
+  <p class="section-tag">Sound Familiar?</p>
+  <h2 class="section-heading">This Is What's Costing You Money</h2>
+  <p class="section-sub">Your team spends 30–40% of their time on tasks that generate zero revenue.</p>
+
+  <div class="pain-grid">
+    <div class="pain-card">
+      <div class="pain-emoji">⏱</div>
+      <h3>Reporting eats 5+ hours every week</h3>
+      <p>Pulling from Google Ads, Meta, and GA4 into slides. Every single week.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🔄</div>
+      <h3>Same data entered 4 times</h3>
+      <p>CRM, project management, invoicing, and comms. One update means four manual entries.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">📧</div>
+      <h3>Follow-ups vanish into thin air</h3>
+      <p>Leads go cold because nobody sent the second email. Revenue disappears silently.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🤝</div>
+      <h3>Onboarding takes days</h3>
+      <p>Contracts, tool access, welcome emails — a checklist someone forgets to finish.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🔀</div>
+      <h3>Handoffs lose context</h3>
+      <p>Critical info lost in Slack threads when work moves between teams.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">📄</div>
+      <h3>Proposals take hours</h3>
+      <p>Custom proposals from scratch every time. Templates exist but nobody uses them.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how reveal" id="how">
+  <p class="section-tag">How It Works</p>
+  <h2 class="section-heading">A consulting-grade audit in 3 minutes</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Answer 8 Questions</h3>
+      <p>Your agency type, tools, team size, and where time gets wasted.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>AI Analyzes Your Ops</h3>
+      <p>Maps manual processes to automation opportunities with ROI estimates.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Get Your Blueprint</h3>
+      <p>A prioritized roadmap with steps specific to your exact stack.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SHOWCASE -->
+<section class="section showcase reveal" id="showcase">
+  <p class="section-tag">Built Systems</p>
+  <h2 class="section-heading">Real automation systems. Not theory.</h2>
+  <p class="section-sub">Production-ready workflows that run without human intervention.</p>
+
+  <div class="showcase-grid">
+    <div class="show-card blue">
+      <span class="show-tag t-blue">Lead Management</span>
+      <h3>AI Lead Qualification Engine</h3>
+      <p>Scores leads against 12 criteria, routes hot leads in 90 seconds, auto-nurtures cold leads with personalized sequences.</p>
+      <div class="show-tools">
+        <span class="chip">n8n</span>
+        <span class="chip">OpenAI</span>
+        <span class="chip">HubSpot</span>
+        <span class="chip">Slack</span>
+      </div>
+    </div>
+    <div class="show-card cyan">
+      <span class="show-tag t-cyan">Reporting</span>
+      <h3>Automated Client Reporting</h3>
+      <p>Pulls data from ad platforms, processes metrics, generates branded reports on schedule. Zero manual work.</p>
+      <div class="show-tools">
+        <span class="chip">n8n</span>
+        <span class="chip">Google Ads</span>
+        <span class="chip">Meta</span>
+        <span class="chip">Sheets</span>
+      </div>
+    </div>
+    <div class="show-card purple">
+      <span class="show-tag t-purple">Onboarding</span>
+      <h3>Client Onboarding System</h3>
+      <p>Triggers contracts, tool access, welcome sequences, and team notifications from a single form submission.</p>
+      <div class="show-tools">
+        <span class="chip">n8n</span>
+        <span class="chip">Notion</span>
+        <span class="chip">Gmail</span>
+        <span class="chip">Stripe</span>
+      </div>
+    </div>
+    <div class="show-card green">
+      <span class="show-tag t-green">Follow-ups</span>
+      <h3>Smart Follow-Up Engine</h3>
+      <p>Detects deal stage, writes contextual messages, sends at optimal times. No leads go cold.</p>
+      <div class="show-tools">
+        <span class="chip">n8n</span>
+        <span class="chip">OpenAI</span>
+        <span class="chip">CRM</span>
+        <span class="chip">Email</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section pricing reveal" id="pricing">
+  <p class="section-tag">Simple Pricing</p>
+  <h2 class="section-heading">Start free. Upgrade when ready.</h2>
+
+  <div class="price-grid">
+    <div class="price-card">
+      <p class="price-tag">Start Here</p>
+      <h3>Free Summary</h3>
+      <div class="price-amount">$0</div>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Top 3 automation opportunities</li>
+        <li><span class="check">✓</span> Total hours saved estimate</li>
+        <li><span class="check">✓</span> Automation readiness score</li>
+        <li><span class="check">✓</span> Priority roadmap overview</li>
+      </ul>
+      <button class="price-btn price-btn-line">Start Free Audit</button>
+    </div>
+    <div class="price-card pro">
+      <p class="price-tag">Full Blueprint</p>
+      <h3>Pro Report</h3>
+      <div class="price-amount">$29</div>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Everything in Free</li>
+        <li><span class="check">✓</span> Detailed implementation steps</li>
+        <li><span class="check">✓</span> Downloadable n8n workflow JSON</li>
+        <li><span class="check">✓</span> ROI calculator with dollar amounts</li>
+        <li><span class="check">✓</span> Tool recommendations</li>
+      </ul>
+      <button class="price-btn price-btn-fill">Get Full Blueprint</button>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>Stop guessing what to automate.<br>Know exactly.</h2>
+  <p>3 minutes. 8 questions. A complete automation blueprint.</p>
+  <button class="btn-main" style="padding:15px 36px; font-size:15px;">Start Your Free Audit →</button>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 OpsRadar. Built for agencies that refuse to waste time.</p>
+</footer>
+
+<script>
+// Scroll reveal animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
