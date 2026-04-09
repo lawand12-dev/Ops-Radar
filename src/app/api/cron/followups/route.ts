@@ -19,7 +19,6 @@
  */
 
 import { Resend } from 'resend'
-import { createAuditAccessToken, hasAuditAccessSecret } from '../../../../lib/audit-access'
 import { serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../../lib/supabase-server'
 
@@ -40,18 +39,8 @@ function fmtMoney(n: number) {
 }
 
 function buildResultsUrl(auditId: string, email: string | null | undefined) {
-  const baseUrl = `${BASE_URL}/results?id=${encodeURIComponent(auditId)}`
-  if (!hasAuditAccessSecret()) {
-    return baseUrl
-  }
-
-  const accessToken = createAuditAccessToken({
-    auditId,
-    scope: 'preview',
-    email: email ?? undefined,
-  })
-
-  return `${baseUrl}&access=${encodeURIComponent(accessToken)}`
+  void email
+  return `${BASE_URL}/results?id=${encodeURIComponent(auditId)}`
 }
 
 // ─── Email builders ───────────────────────────────────────────────────────────
@@ -80,9 +69,9 @@ function buildDay1Email(name: string, company: string, resultsUrl: string, score
               <p style="margin:0;font-size:32px;font-weight:800;color:#fbbf24;">${fmtMoney(annualWaste)}</p>
             </div>` : ''}
           </div>
-          <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">Your full blueprint includes automation flows, n8n nodes, step-by-step implementation guides, and a 90-day roadmap. It's all in your report — unlock it in 20 seconds.</p>
-          <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 0 24px rgba(59,130,246,0.3);">View My Full Blueprint →</a>
-          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;">Takes 20 seconds to unlock. No credit card.</p>
+          <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">Your report shows where time, money, and team energy are leaking right now, plus the highest-urgency fixes to prioritize.</p>
+          <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 0 24px rgba(59,130,246,0.3);">View My Diagnosis →</a>
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;">If you want help fixing it, book a call from the report.</p>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.ai</a></p>
@@ -116,8 +105,8 @@ function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: strin
               <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:11px;padding:4px 10px;border-radius:20px;">${buildTime}</span>
             </div>
           </div>` : ''}
-          <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">The full implementation flow, n8n nodes, and exact steps are in your report. We can have this running for you within the week.</p>
-          <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:12px;">See Full Blueprint →</a>
+          <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">The report explains why this is the most urgent operational leak to fix next and what it is costing you to leave it manual.</p>
+          <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:12px;">See the Diagnosis →</a>
           <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" style="display:block;text-align:center;background:rgba(173,198,255,0.07);border:1px solid rgba(173,198,255,0.18);color:#adc6ff;font-size:14px;font-weight:600;text-decoration:none;padding:14px;border-radius:12px;">Book a Free Strategy Call →</a>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">

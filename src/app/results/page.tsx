@@ -16,13 +16,6 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
-import HoneypotField from '../components/HoneypotField'
-import {
-  clearStoredAuditAccessToken,
-  getStoredAuditAccessToken,
-  storeAuditAccessToken,
-} from '../../lib/audit-access-client'
-import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -182,11 +175,6 @@ type ReportHandoff = {
 type ReportSectionItem = {
   id: string
   label: string
-  locked?: boolean
-}
-type BuildRequestDraft = {
-  title: string
-  source: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -330,68 +318,6 @@ function Divider() {
   )
 }
 
-// ─── Lock icon ────────────────────────────────────────────────────────────────
-
-function LockIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
-      <rect x="3" y="8" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-// ─── Locked section ───────────────────────────────────────────────────────────
-
-function LockedSection({
-  unlocked, onUnlock, children,
-}: {
-  unlocked: boolean
-  onUnlock: () => void
-  children: React.ReactNode
-}) {
-  if (unlocked) return <>{children}</>
-
-  return (
-    <div className="relative rounded-[14px] overflow-hidden">
-      <div
-        style={{
-          filter: 'blur(5px)',
-          pointerEvents: 'none',
-          userSelect: 'none',
-          opacity: 0.55,
-          transition: 'filter 0.5s ease, opacity 0.5s ease',
-        }}
-      >
-        {children}
-      </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center locked-overlay-animated">
-        <div
-          className="flex flex-col items-center gap-3 px-6 py-5 text-center rounded-[16px]"
-          style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.14)' }}
-        >
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-[#adc6ff]"
-            style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}
-          >
-            <LockIcon size={16} />
-          </div>
-          <p className="text-[12px] font-semibold text-on-surface/90 max-w-[230px] leading-[1.55]">
-            Unlock the full implementation blueprint instantly. No extra form, no extra gate.
-          </p>
-          <Button
-            onClick={onUnlock}
-            variant="outline"
-            className="px-4 py-2 h-auto rounded-[8px] text-[12px] font-bold text-primary border-primary/22 bg-primary/9 hover:bg-primary/15 hover:text-primary"
-          >
-            Unlock Full Blueprint →
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function PreviewBanner({ notice }: { notice?: string }) {
   return (
     <RevealSection>
@@ -405,14 +331,13 @@ function PreviewBanner({ notice }: { notice?: string }) {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider mb-4"
             style={{ background: 'rgba(173,198,255,0.08)', border: '1px solid rgba(173,198,255,0.18)', color: '#adc6ff' }}
           >
-            <LockIcon size={12} />
-            FREE PREVIEW
+            DIAGNOSIS SNAPSHOT
           </div>
           <h2 className="font-headline font-bold text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-on-surface mb-2">
-            Your high-level diagnosis is ready
+            Your diagnosis is ready
           </h2>
           <p className="text-[14px] text-on-surface-variant leading-[1.75] max-w-[640px]">
-            {notice ?? 'Unlock the full blueprint to get the implementation roadmap, detailed workflow logic, n8n nodes, and step-by-step build guidance.'}
+            {notice ?? 'This report shows where time, money, and operational trust are leaking right now.'}
           </p>
         </div>
       </section>
@@ -1497,10 +1422,7 @@ function ReportMap({
                   boxShadow: active ? '0 0 24px rgba(76,215,246,0.12)' : 'none',
                 }}
               >
-                <span className="flex items-center gap-2">
-                  <span>{section.label}</span>
-                  {section.locked && <LockIcon size={10} />}
-                </span>
+                <span>{section.label}</span>
               </button>
             )
           })}
@@ -1927,11 +1849,9 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
 // ─── Onboarding Assessment Section ───────────────────────────────────────────
 
 function OnboardingAssessmentSection({
-  data, unlocked, onUnlock,
+  data,
 }: {
   data: OnboardingAssessment
-  unlocked: boolean
-  onUnlock: () => void
 }) {
   return (
     <RevealSection>
@@ -1941,54 +1861,52 @@ function OnboardingAssessmentSection({
           Client Onboarding Audit
         </h2>
 
-        <LockedSection unlocked={unlocked} onUnlock={onUnlock}>
-          <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-            <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
-            <div className="p-6 space-y-5">
+        <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+          <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
+          <div className="p-6 space-y-5">
 
-              {data.current_state && (
+            {data.current_state && (
+              <div
+                className="p-4 rounded-[12px]"
+                style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
+                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {data.time_per_client_current && (
                 <div
                   className="p-4 rounded-[12px]"
                   style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
-                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
+                  <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
                 </div>
               )}
-
-              <div className="grid sm:grid-cols-2 gap-3">
-                {data.time_per_client_current && (
-                  <div
-                    className="p-4 rounded-[12px]"
-                    style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
-                    <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
-                  </div>
-                )}
-                {data.time_per_client_automated && (
-                  <div
-                    className="p-4 rounded-[12px]"
-                    style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
-                    <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
-                  </div>
-                )}
-              </div>
-
-              {data.revenue_impact && (
+              {data.time_per_client_automated && (
                 <div
                   className="p-4 rounded-[12px]"
-                  style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
+                  style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
-                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
+                  <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
                 </div>
               )}
             </div>
+
+            {data.revenue_impact && (
+              <div
+                className="p-4 rounded-[12px]"
+                style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
+                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+              </div>
+            )}
           </div>
-        </LockedSection>
+        </div>
       </section>
     </RevealSection>
   )
@@ -2109,380 +2027,6 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
   )
 }
 
-// ─── Build request modal ──────────────────────────────────────────────────────
-
-function BuildRequestModal({
-  oppTitle, contactName, contactEmail, auditId, source, reportStage, onClose,
-}: {
-  oppTitle:     string
-  contactName:  string
-  contactEmail: string
-  auditId:      string | null
-  source:       string
-  reportStage:  'preview' | 'full'
-  onClose:      () => void
-}) {
-  const [form, setForm]     = useState({ name: contactName, email: contactEmail, budget: '', timeline: '', notes: '' })
-  const [companyWebsite, setCompanyWebsite] = useState('')
-  const [startedAt] = useState(() => Date.now())
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
-  const [errMsg, setErrMsg] = useState('')
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  const canSubmit = form.name.trim() && form.email.trim() && form.budget && form.timeline
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!canSubmit) return
-    setStatus('submitting')
-    sendFunnelEvent({
-      event: 'build_request_submitted',
-      auditId,
-      source,
-      reportStage,
-      metadata: {
-        automation: oppTitle,
-        budget: form.budget,
-        timeline: form.timeline,
-      },
-    })
-    try {
-      const res = await fetch('/api/build-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audit_id: auditId,
-          automation_title: oppTitle,
-          ...form,
-          ...getAbuseProtectionPayload(startedAt, companyWebsite),
-        }),
-      })
-      if (!res.ok) {
-        const d = await res.json()
-        throw new Error(d.error ?? 'Failed to submit')
-      }
-      setStatus('success')
-      sendFunnelEvent({
-        event: 'build_request_success',
-        auditId,
-        source,
-        reportStage,
-        metadata: {
-          automation: oppTitle,
-          budget: form.budget,
-          timeline: form.timeline,
-        },
-      })
-    } catch (err) {
-      setErrMsg(err instanceof Error ? err.message : 'Something went wrong')
-      setStatus('error')
-    }
-  }
-
-  const inputStyle = { background: 'rgba(28,32,40,1)', border: '1px solid rgba(66,71,84,0.4)', color: '#e0e2ee' }
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ background: 'rgba(5,8,16,0.82)', backdropFilter: 'blur(10px)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div
-        className="w-full sm:max-w-[520px] rounded-t-[22px] sm:rounded-[22px] overflow-hidden bg-surface-container border border-outline-variant/20"
-        style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}
-      >
-        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa)' }} />
-        <div className="p-6 sm:p-7">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <h2 className="font-headline font-bold text-[19px] text-on-surface tracking-[-0.02em]">Get This Built</h2>
-              <p className="text-[12px] text-on-surface-variant mt-0.5">We&apos;ll scope it and get back to you within 24 hours.</p>
-            </div>
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="icon-sm"
-              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high shrink-0 ml-4 rounded-[8px]"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 2l10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </Button>
-          </div>
-
-          {status === 'success' ? (
-            <div className="text-center py-8">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                  <path d="M4 11l5 5 9-9" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h3 className="font-headline font-bold text-[18px] text-on-surface mb-2">Request Received!</h3>
-              <p className="text-[13px] text-on-surface-variant leading-[1.7] max-w-[320px] mx-auto">
-                We&apos;ll get back to you within 24 hours with a scoped plan and cost estimate.
-              </p>
-              <Button onClick={onClose} variant="outline" className="mt-6 px-6 py-2.5 h-auto rounded-[10px] text-[13px] font-semibold border-outline-variant/20 text-on-surface-variant hover:text-on-surface hover:border-outline-variant/40 bg-transparent">
-                Close
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">Automation</label>
-                <div className="px-3.5 py-2.5 rounded-[10px] text-[13px] font-medium text-[rgba(255,255,255,0.75)]" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                  {oppTitle}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {(['name', 'email'] as const).map(field => (
-                  <div key={field}>
-                    <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">
-                      {field === 'name' ? 'Your Name' : 'Email'}
-                    </label>
-                    <input
-                      type={field === 'email' ? 'email' : 'text'} required
-                      value={form[field]}
-                      onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                      className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none transition-colors duration-150"
-                      style={inputStyle}
-                      onFocus={e => (e.currentTarget.style.borderColor = 'rgba(173,198,255,0.4)')}
-                      onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(66,71,84,0.4)')}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { field: 'budget',   label: 'Budget Range', opts: ['Under $1K', '$1K–$3K', '$3K–$5K', '$5K+'] },
-                  { field: 'timeline', label: 'Timeline',     opts: ['This week', 'This month', 'No rush'] },
-                ].map(({ field, label, opts }) => (
-                  <div key={field}>
-                    <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">{label}</label>
-                    <div className="relative">
-                      <select
-                        required
-                        value={form[field as 'budget' | 'timeline']}
-                        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                        className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface outline-none appearance-none transition-colors duration-150"
-                        style={inputStyle}
-                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.45)')}
-                        onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
-                      >
-                        <option value="" disabled style={{ background: '#0d1229' }}>Select…</option>
-                        {opts.map(o => <option key={o} value={o} style={{ background: '#0d1229' }}>{o}</option>)}
-                      </select>
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11" height="11" viewBox="0 0 11 11" fill="none" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                        <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-2">
-                  Notes <span className="font-normal normal-case tracking-normal text-[rgba(255,255,255,0.18)]">(optional)</span>
-                </label>
-                <textarea
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder="Any specific requirements or things to know…"
-                  rows={3}
-                  className="w-full px-3 py-2.5 rounded-[10px] text-[13px] text-on-surface placeholder:text-on-surface-variant/30 outline-none resize-none transition-colors duration-150"
-                  style={inputStyle}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.45)')}
-                  onBlur={e  => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
-                />
-              </div>
-              {status === 'error' && <p className="text-[12px] text-[#f87171]">{errMsg}</p>}
-              <Button
-                type="submit"
-                disabled={!canSubmit || status === 'submitting'}
-                className="w-full py-3 h-auto rounded-[12px] font-bold text-[14px] text-white border-0"
-                style={{ background: 'linear-gradient(135deg, #adc6ff 0%, #a78bfa 100%)' }}
-              >
-                {status === 'submitting' ? 'Sending…' : 'Submit Request →'}
-              </Button>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Unlock section ───────────────────────────────────────────────────────────
-
-function UnlockSection({
-  auditId, defaultEmail, reportStage, onUnlocked, onUnlockRequested, onUnlockSent, onStrategyCallClick,
-}: {
-  auditId: string | null
-  defaultEmail: string
-  reportStage: 'preview' | 'full'
-  onUnlocked: (email: string, accessToken?: string) => void
-  onUnlockRequested: (email: string) => void
-  onUnlockSent: (email: string) => void
-  onStrategyCallClick: (source: string) => void
-}) {
-  const [unlockStatus, setUnlockStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
-
-  async function handleInstantUnlock() {
-    if (!auditId) {
-      setUnlockStatus('error')
-      return
-    }
-    setUnlockStatus('submitting')
-    onUnlockRequested(defaultEmail)
-    try {
-      const accessToken = getStoredAuditAccessToken(auditId)
-      const response = await fetch('/api/send-unlock-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { 'x-audit-access-token': accessToken } : {}),
-        },
-        body: JSON.stringify({ auditId }),
-      })
-
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data?.error ?? 'Something went wrong')
-      }
-
-      setUnlockStatus('success')
-      const resolvedEmail = typeof data?.email === 'string' ? data.email : defaultEmail
-      onUnlockSent(resolvedEmail)
-      setTimeout(
-        () => onUnlocked(
-          resolvedEmail,
-          typeof data?.accessToken === 'string' ? data.accessToken : undefined,
-        ),
-        350,
-      )
-    } catch {
-      setUnlockStatus('error')
-    }
-  }
-
-  return (
-    <RevealSection>
-      <section className="rounded-[22px] overflow-hidden bg-surface-container border-2 border-primary/25 shadow-[0_0_60px_rgba(173,198,255,0.07)]">
-        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
-        <div className="p-7 sm:p-10">
-
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wider mb-5"
-              style={{ background: 'rgba(173,198,255,0.07)', border: '1px solid rgba(173,198,255,0.2)', color: '#adc6ff' }}
-            >
-              <LockIcon size={12} />
-              UNLOCK YOUR FULL BLUEPRINT
-            </div>
-            <h3 className="font-headline font-extrabold text-[clamp(20px,2.8vw,30px)] tracking-[-0.025em] text-on-surface mb-3">
-              Get the Complete Implementation Plan
-            </h3>
-            <p className="text-[14px] text-on-surface-variant leading-[1.7] max-w-[480px] mx-auto">
-              Unlock automation flows, n8n nodes, step-by-step implementation guides, roadmap, and tool recommendations instantly.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-5">
-
-            {/* Path 1: Instant unlock */}
-            <div
-              className="p-6 rounded-[18px] flex flex-col gap-4"
-              style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.15)' }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-primary mb-2">Instant Access</p>
-                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Unlock the Full Blueprint Now</h4>
-                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
-                  No extra email step. No extra form. We upgrade this preview in place and reveal the full report immediately.
-                </p>
-              </div>
-              {unlockStatus === 'success' ? (
-                <div className="flex items-center gap-2.5 px-4 py-3 rounded-[10px]" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M2 8l4.5 4.5 7.5-7.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <p className="text-[12px] font-semibold text-emerald-400">Full blueprint unlocked. Loading the complete report…</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2.5">
-                  {unlockStatus === 'error' && (
-                    <p className="text-[11px] text-[#f87171]">
-                      {auditId ? 'Something went wrong while unlocking the report. Try again.' : 'We could not find this audit. Please run a new audit.'}
-                    </p>
-                  )}
-                  <Button
-                    type="button"
-                    onClick={handleInstantUnlock}
-                    disabled={unlockStatus === 'submitting' || !auditId}
-                    className="w-full px-5 py-3 h-auto rounded-[11px] text-[13px] font-bold gap-2 text-white shadow-[0_0_24px_rgba(59,130,246,0.26)] btn-spring"
-                    style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 52%, #7c3aed 100%)' }}
-                  >
-                    {unlockStatus === 'submitting' ? 'Unlocking…' : 'Unlock Full Blueprint'}
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </Button>
-                  <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">
-                    We still email the unlocked copy to your audit contact in the background when delivery is available, but access no longer depends on that step.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Path 2: Optional call */}
-            <div
-              className="p-6 rounded-[18px] flex flex-col gap-4"
-              style={{ background: 'rgba(76,215,246,0.03)', border: '1px solid rgba(76,215,246,0.12)' }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary mb-2">Optional Support</p>
-                <h4 className="font-headline font-bold text-[16px] text-on-surface mb-1">Book a Free Strategy Call</h4>
-                <p className="text-[12px] text-on-surface-variant leading-[1.6]">
-                  If you want help prioritizing or scoping the build, book a call. The report unlock is separate and instant.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                <Button asChild className="w-full px-5 py-3 h-auto rounded-[11px] text-[13px] font-bold gap-2 shadow-[0_0_20px_rgba(173,198,255,0.2)] hover:shadow-[0_0_30px_rgba(173,198,255,0.35)] btn-spring">
-                  <a
-                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => onStrategyCallClick(`unlock-section-${reportStage}-strategy-call`)}
-                  >
-                    Book Free Strategy Call
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </a>
-                </Button>
-                <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">
-                  Use this if you want an implementation timeline, budget guidance, or a done-for-you build plan.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </RevealSection>
-  )
-}
-
 // ─── Vertical roadmap timeline ────────────────────────────────────────────────
 
 function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
@@ -2541,15 +2085,12 @@ function ResultsContent() {
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
-  const [modalOpp,     setModalOpp]     = useState<BuildRequestDraft | null>(null)
-  const [unlocked,     setUnlocked]     = useState(false)
   const unlockRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
   const resultsViewRef = useRef<string | null>(null)
   const searchParams = useSearchParams()
   const auditId = searchParams.get('id')
-  const accessTokenFromUrl = (searchParams.get('access') ?? '').trim().slice(0, 2048)
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateAuditSessionId()
@@ -2560,23 +2101,12 @@ function ResultsContent() {
     resultsViewRef.current = null
   }, [auditId])
 
-  useEffect(() => {
-    if (!auditId || !accessTokenFromUrl) return
-
-    storeAuditAccessToken(auditId, accessTokenFromUrl)
-
-    const nextUrl = new URL(window.location.href)
-    nextUrl.searchParams.delete('access')
-    window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`)
-  }, [accessTokenFromUrl, auditId])
-
   const applyLoadedAudit = useCallback((
     nextAudit: AuditResult,
     meta?: { company?: string | null; name?: string | null; email?: string | null; answers?: unknown },
   ) => {
     setError(false)
     setAudit(nextAudit)
-    setUnlocked(nextAudit.report_stage === 'full')
     if (meta?.company) setCompany(meta.company)
     if (meta?.name) setContactName(meta.name)
     if (meta?.email) setContactEmail(meta.email)
@@ -2604,30 +2134,17 @@ function ResultsContent() {
     applyLoadedAudit(sessionAudit)
   }, [applyLoadedAudit, readSessionAudit])
 
-  const loadAuditById = useCallback(async (id: string, preferredAccessToken = '') => {
-    const accessToken = preferredAccessToken || getStoredAuditAccessToken(id)
-    if (!accessToken) {
-      loadFromSession()
-      return
-    }
-
+  const loadAuditById = useCallback(async (id: string) => {
     for (const retryDelay of [0, 350, 900]) {
       if (retryDelay > 0) {
         await wait(retryDelay)
       }
 
       const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}`, {
-        headers: {
-          'x-audit-access-token': accessToken,
-        },
         cache: 'no-store',
       })
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearStoredAuditAccessToken(id)
-          break
-        }
         continue
       }
 
@@ -2680,12 +2197,12 @@ function ResultsContent() {
 
     queueMicrotask(() => {
       if (auditId) {
-        loadAuditById(auditId, accessTokenFromUrl).catch(() => setError(true))
+        loadAuditById(auditId).catch(() => setError(true))
       } else {
         loadFromSession()
       }
     })
-  }, [accessTokenFromUrl, auditId, applyLoadedAudit, loadAuditById, loadFromSession, readSessionAudit])
+  }, [auditId, applyLoadedAudit, loadAuditById, loadFromSession, readSessionAudit])
 
   const trackStrategyCallClick = useCallback((source: string) => {
     sendFunnelEvent({
@@ -2694,55 +2211,8 @@ function ResultsContent() {
       auditId,
       source,
       reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
-      metadata: {
-        unlocked,
-      },
     })
-  }, [audit?.report_stage, auditId, unlocked])
-
-  const openBuildRequest = useCallback((title: string, source: string) => {
-    sendFunnelEvent({
-      event: 'build_request_opened',
-      sessionId: sessionIdRef.current,
-      auditId,
-      source,
-      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
-      metadata: {
-        automation: title,
-      },
-    })
-    setModalOpp({ title, source })
   }, [audit?.report_stage, auditId])
-
-  function handleUnlocked(email: string, nextAccessToken?: string) {
-    setContactEmail(email)
-    if (auditId && nextAccessToken) {
-      storeAuditAccessToken(auditId, nextAccessToken)
-    }
-    if (auditId) {
-      loadAuditById(auditId, nextAccessToken ?? '').catch(() => setError(true))
-    } else {
-      setUnlocked(true)
-    }
-    sendFunnelEvent({
-      event: 'report_unlocked',
-      sessionId: sessionIdRef.current,
-      auditId,
-      reportStage: 'full',
-    })
-    window.scrollBy({ top: -100, behavior: 'smooth' })
-  }
-
-  function scrollToUnlock(source = 'results-unlock') {
-    sendFunnelEvent({
-      event: 'unlock_cta_clicked',
-      sessionId: sessionIdRef.current,
-      auditId,
-      source,
-      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
-    })
-    unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
 
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit

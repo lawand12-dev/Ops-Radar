@@ -1,6 +1,4 @@
 import { ImageResponse } from 'next/og'
-import { isPreviewAuditReport } from '../../lib/audit-report'
-import { verifyAuditAccessToken } from '../../lib/audit-access'
 import { getServerSupabaseClient } from '../../lib/supabase-server'
 
 export const runtime = 'nodejs'
@@ -19,9 +17,6 @@ export default async function Image({
   const id = typeof resolvedSearchParams?.id === 'string'
     ? resolvedSearchParams.id
     : ''
-  const accessToken = typeof resolvedSearchParams?.access === 'string'
-    ? resolvedSearchParams.access.trim().slice(0, 2048)
-    : ''
 
   let company    = ''
   let score      = 0
@@ -29,7 +24,7 @@ export default async function Image({
   let oppCount   = 0
   let headline   = 'Your Automation Audit Is Ready'
 
-  if (id && accessToken) {
+  if (id) {
     const supabase = getServerSupabaseClient()
     const { data } = await supabase
       .from('audits')
@@ -37,9 +32,7 @@ export default async function Image({
       .eq('id', id)
       .maybeSingle()
 
-    const requiredScope = data?.result && isPreviewAuditReport(data.result) ? 'preview' : 'full'
-
-    if (data && verifyAuditAccessToken(accessToken, id, requiredScope)) {
+    if (data?.result) {
       company    = data.company ?? ''
       const r    = data.result as Record<string, unknown> | null
       score      = (r?.automation_readiness_score as number) ?? 0

@@ -186,9 +186,6 @@ function detectTools(input: AuditLikeInput): ToolCatalogEntry[] {
   const rawTools = unique([
     ...splitList(input.tools),
     ...splitList(input.websiteDetectedStack ?? ''),
-    input.crmTool,
-    input.progressTracking,
-    input.leadEntry,
   ])
 
   const detected: ToolCatalogEntry[] = []
@@ -279,7 +276,7 @@ function buildGroundingContext(input: AuditLikeInput): GroundingContext {
     detectedTools,
     allowedNodes,
     allowedToolNames: detectedTools.map((tool) => tool.canonicalName),
-    primaryCrm: findToolCatalogEntry(input.crmTool)?.canonicalName ?? input.crmTool ?? null,
+    primaryCrm: null,
     hourlyRate: estimateHourlyRate(input),
   }
 }
@@ -295,7 +292,7 @@ export function buildAuditGroundingPrompt(input: AuditLikeInput): string {
 GROUNDING CONTEXT — use this as the source of truth for tool references and savings calculations:
 - Detected client tools: ${quoteList(context.allowedToolNames)}
 - Public website stack hints: ${quoteList(splitList(input.websiteDetectedStack ?? ''))}
-- Primary CRM: ${context.primaryCrm ? `"${context.primaryCrm}"` : 'unknown'}
+- Stated operations state: "${input.crmTool}"
 - Estimated loaded labor rate for savings math: $${context.hourlyRate}/hour
 
 GROUNDING RULES:
@@ -352,18 +349,18 @@ function deriveBiggestFrictionPoint(
 function deriveCurrentStackRating(input: AuditLikeInput, context: GroundingContext): number {
   const toolCount = unique([
     ...splitList(input.tools),
-    input.crmTool,
-    input.leadEntry,
-    input.progressTracking,
+    ...splitList(input.websiteDetectedStack ?? ''),
   ]).filter(Boolean).length
   const signalCount = splitSignals(input.toolSignals ?? '').length
-  const crmToken = normalizeToken(input.crmTool)
+  const opsStateToken = normalizeToken(input.crmTool)
 
   let rating = 8
   if (toolCount >= 8) rating -= 2
   else if (toolCount >= 5) rating -= 1
   if (signalCount >= 2) rating -= 1
-  if (crmToken.includes('spreadsheet') || crmToken.includes('manual')) rating -= 2
+  if (opsStateToken.includes('pure chaos')) rating -= 2
+  else if (opsStateToken.includes('patchwork')) rating -= 1
+  else if (opsStateToken.includes('mostly systematized')) rating += 1
   if (context.allowedToolNames.length >= 4) rating += 1
 
   return Math.max(2, Math.min(rating, 9))
@@ -447,9 +444,7 @@ function buildFallbackContextSwitching(
 ): Record<string, unknown> {
   const toolsCount = Math.max(context.allowedToolNames.length, unique([
     ...splitList(input.tools),
-    input.crmTool,
-    input.leadEntry,
-    input.progressTracking,
+    ...splitList(input.websiteDetectedStack ?? ''),
   ]).filter(Boolean).length)
   const switchingHeadcount = Math.max(1, Math.min(Math.round(midpointForTeamSize(input.teamSize) * 0.35), 6))
   const estimatedDailySwitches = Math.max(10, Math.min(70, Math.round(toolsCount * (switchingHeadcount + 2))))
@@ -465,20 +460,14 @@ function buildFallbackContextSwitching(
 }
 
 function buildFallbackOnboardingAssessment(input: AuditLikeInput): Record<string, unknown> {
-  const normalizedOnboarding = normalizeToken(input.onboarding)
-  const currentHours = normalizedOnboarding.includes('wing it')
-    ? '4-6 hours'
-    : normalizedOnboarding.includes('email') || normalizedOnboarding.includes('manual')
-      ? '3-5 hours'
-      : '2-4 hours'
-  const automatedTime = normalizedOnboarding.includes('wing it') ? '35-50 minutes' : '25-40 minutes'
   const clientLoad = midpointForClientLoad(input.activeClients)
+  const costLine = asString(input.failureImpact)?.toLowerCase() || 'more wasted time, slower delivery, and less room to grow'
 
   return {
-    current_state: `Right now onboarding looks like: ${input.onboarding}.`,
-    time_per_client_current: currentHours,
-    time_per_client_automated: automatedTime,
-    revenue_impact: `At roughly ${clientLoad} active clients, compressing onboarding admin creates more delivery capacity and lowers the odds of rough starts that hurt trust.`,
+    current_state: `Right now, when "${input.automationWish}" breaks, ${input.leadEntry.toLowerCase()}.`,
+    time_per_client_current: input.timeHeavy,
+    time_per_client_automated: 'Meaningfully lower once the bottleneck is systemized',
+    revenue_impact: `At roughly ${clientLoad} active clients, letting this stay manual for another 6 months means ${costLine}.`,
   }
 }
 
@@ -521,36 +510,39 @@ function buildFallbackBenchmarks(
 }
 
 function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingContext): OpportunityLike[] {
-  const crm = context.primaryCrm && context.allowedToolNames.includes(context.primaryCrm)
-    ? context.primaryCrm
-    : context.allowedToolNames[0] ?? 'the CRM'
+  const primaryTool = context.allowedToolNames[0] ?? 'Slack'
+  const secondaryTool = context.allowedToolNames[1] ?? primaryTool
+  const process = input.automationWish
+  const breakage = input.leadEntry
+  const cost = input.failureImpact || 'the team keeps paying in wasted hours, slower delivery, and avoidable stress'
+  const frequency = input.processFrequency ? input.processFrequency.toLowerCase() : 'every week'
 
   return [
     {
-      title: `${crm} lead capture and qualification`,
-      hard_truth: `New lead intake is still creating drag around "${input.automationWish}". Slow qualification means slower follow-up and wasted sales capacity.`,
-      urgency_reason: `Every week this runs manually is another week of delayed follow-ups and potential deals falling through the cracks.`,
-      difficulty: 'easy',
-      hours_saved_weekly: 6,
-    },
-    {
-      title: 'Client onboarding handoff automation',
-      hard_truth: `The current onboarding process (${input.onboarding}) is creating avoidable handoff risk and inconsistent client setup quality.`,
-      urgency_reason: `Rough onboarding experiences compound — each bad start increases churn risk and damages referrals.`,
+      title: `${primaryTool} bottleneck containment`,
+      hard_truth: `"${process}" is still manual enough that ${cost}.`,
+      urgency_reason: `This happens ${frequency}, and when it breaks ${breakage.toLowerCase()}.`,
       difficulty: 'medium',
       hours_saved_weekly: 8,
     },
     {
-      title: 'Operational reporting and status sync',
-      hard_truth: `Tracking work through "${input.progressTracking}" makes reporting slower and increases the chance that client updates are late or incomplete.`,
-      urgency_reason: `Late status updates erode client trust faster than almost any other ops failure — and this one is entirely preventable.`,
+      title: `${primaryTool} to ${secondaryTool} handoff stabilization`,
+      hard_truth: `Manual bridges between ${primaryTool} and ${secondaryTool} are making the highest-cost process harder to trust under pressure.`,
+      urgency_reason: `Every delay compounds because the team keeps re-checking status instead of moving work forward.`,
       difficulty: 'medium',
-      hours_saved_weekly: 5,
+      hours_saved_weekly: 6,
     },
     {
-      title: 'Cross-tool data consistency workflow',
-      hard_truth: `The stack (${input.tools}) relies on manual updates across tools, which makes data drift and duplicate entry almost guaranteed as the agency grows.`,
-      urgency_reason: `Data inconsistency gets exponentially worse as client volume grows — fixing it now costs a fraction of what it will cost at scale.`,
+      title: `${primaryTool} repetitive-work compression`,
+      hard_truth: `The team is still losing ${input.timeHeavy.toLowerCase()} to work that should not require expensive humans.`,
+      urgency_reason: `This is the kind of drag that quietly burns margin and morale at the same time.`,
+      difficulty: 'medium',
+      hours_saved_weekly: 7,
+    },
+    {
+      title: `${secondaryTool} exception detection and alerts`,
+      hard_truth: `The current breakage pattern — "${breakage}" — means failures stay expensive for too long before anyone can respond cleanly.`,
+      urgency_reason: `Slow detection turns small mistakes into client-facing problems, which is why this carries outsized urgency.`,
       difficulty: 'complex',
       hours_saved_weekly: 10,
     },
@@ -663,7 +655,7 @@ function normalizeTopLevelFields(
 
   if (stage === 'preview') {
     normalized.preview_notice = asString(raw.preview_notice)
-      ?? 'Unlock the full blueprint to get the roadmap, implementation steps, node-level architecture, and execution guidance.'
+      ?? 'Book a call if you want help prioritizing or fixing what this diagnosis surfaced.'
     return normalized
   }
 
