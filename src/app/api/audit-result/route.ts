@@ -1,8 +1,3 @@
-import { isPreviewAuditReport } from '../../../lib/audit-report'
-import {
-  extractAuditAccessToken,
-  verifyAuditAccessToken,
-} from '../../../lib/audit-access'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../lib/security'
 import { getServerSupabaseClient } from '../../../lib/supabase-server'
@@ -20,10 +15,9 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url)
     const auditId = sanitizeString(url.searchParams.get('id') ?? '', 200)
-    const accessToken = extractAuditAccessToken(request)
 
-    if (!auditId || !accessToken) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS })
+    if (!auditId) {
+      return Response.json({ error: 'Missing audit id' }, { status: 400, headers: NO_STORE_HEADERS })
     }
 
     const supabase = getServerSupabaseClient()
@@ -37,13 +31,6 @@ export async function GET(request: Request) {
       return Response.json({ error: 'Audit not found' }, { status: 404, headers: NO_STORE_HEADERS })
     }
 
-    const requiredScope = isPreviewAuditReport(data.result) ? 'preview' : 'full'
-    const grantedAccess = verifyAuditAccessToken(accessToken, auditId, requiredScope)
-
-    if (!grantedAccess) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS })
-    }
-
     return Response.json(
       {
         audit: data.result,
@@ -53,7 +40,6 @@ export async function GET(request: Request) {
           email: data.email,
           answers: data.answers,
         },
-        grantedScope: grantedAccess.scope,
       },
       { headers: NO_STORE_HEADERS },
     )

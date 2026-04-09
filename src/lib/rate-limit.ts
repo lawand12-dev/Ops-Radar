@@ -18,7 +18,6 @@ type RateLimitName =
   | 'notify'
   | 'notify-chat-lead'
   | 'quick-win-onboarding'
-  | 'send-unlock-email'
 
 const rateLimiter = new Map<string, RateLimitEntry>()
 
@@ -35,7 +34,6 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; windowMs: number }> = 
   notify: { limit: 5, windowMs: ONE_HOUR_MS },
   'notify-chat-lead': { limit: 10, windowMs: ONE_HOUR_MS },
   'quick-win-onboarding': { limit: 10, windowMs: ONE_HOUR_MS },
-  'send-unlock-email': { limit: 10, windowMs: ONE_HOUR_MS },
 }
 
 function pruneExpiredEntries(now: number) {

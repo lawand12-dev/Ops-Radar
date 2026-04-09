@@ -3,7 +3,6 @@ import {
   getAdminSessionTokenFromCookieHeader,
   isValidAdminSessionToken,
 } from '../../../../lib/admin-session'
-import { createAuditAccessToken, hasAuditAccessSecret } from '../../../../lib/audit-access'
 import { sanitizeString, serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient } from '../../../../lib/supabase-server'
 
@@ -61,16 +60,7 @@ export async function GET(request: NextRequest) {
       }
 
       return Response.json({
-        audits: ((data ?? []) as AdminAuditRow[]).map((audit) => ({
-          ...audit,
-          previewAccessToken: hasAuditAccessSecret()
-            ? createAuditAccessToken({
-              auditId: audit.id,
-              scope: 'preview',
-              email: typeof audit.email === 'string' ? audit.email : undefined,
-            })
-            : null,
-        })),
+        audits: (data ?? []) as AdminAuditRow[],
       }, { headers: JSON_HEADERS })
     }
 

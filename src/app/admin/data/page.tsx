@@ -566,8 +566,6 @@ export default function AdminDataPage() {
     const leadModalOpened = countUniqueEvents(auditEvents, 'lead_modal_opened')
     const auditSubmitted = Math.max(countUniqueEvents(auditEvents, 'audit_submitted'), counts.audits)
     const resultsViewed = countUniqueEvents(auditEvents, 'results_viewed')
-    const unlockIntent = countUniqueEvents(auditEvents, 'unlock_cta_clicked')
-    const unlockEmailSent = countUniqueEvents(auditEvents, 'unlock_email_sent')
     const strategyCalls = countUniqueEvents(auditEvents, 'strategy_call_clicked')
     const buildRequestSuccess = Math.max(countUniqueEvents(auditEvents, 'build_request_success'), counts.build_requests)
 
@@ -578,7 +576,6 @@ export default function AdminDataPage() {
       { label: 'Opened Lead Modal', count: leadModalOpened, color: '#a78bfa' },
       { label: 'Submitted Audit', count: auditSubmitted, color: '#f59e0b' },
       { label: 'Viewed Results', count: resultsViewed, color: '#fb7185' },
-      { label: 'Unlock Email Sent', count: unlockEmailSent, color: '#34d399' },
       { label: 'Strategy Call Clicked', count: strategyCalls, color: '#c084fc' },
       { label: 'Build Request Sent', count: buildRequestSuccess, color: '#f97316' },
     ]
@@ -587,11 +584,6 @@ export default function AdminDataPage() {
       auditEvents.filter((event) => event.event_name === 'report_section_viewed'),
       (event) => event.section_id,
     ).slice(0, 8)
-
-    const unlockSources = summarizeBy(
-      auditEvents.filter((event) => event.event_name === 'unlock_cta_clicked'),
-      (event) => event.source,
-    ).slice(0, 6)
 
     const strategySources = summarizeBy(
       auditEvents.filter((event) => event.event_name === 'strategy_call_clicked'),
@@ -607,13 +599,10 @@ export default function AdminDataPage() {
       started,
       auditSubmitted,
       resultsViewed,
-      unlockIntent,
-      unlockEmailSent,
       strategyCalls,
       buildRequestSuccess,
       stageRows,
       topSections,
-      unlockSources,
       strategySources,
       buildSources,
     }
@@ -745,12 +734,6 @@ export default function AdminDataPage() {
               color="#38bdf8"
             />
             <FunnelStatCard
-              label="Unlock Intent"
-              value={funnel.unlockIntent}
-              detail={`${funnel.unlockEmailSent} email unlocks sent`}
-              color="#a78bfa"
-            />
-            <FunnelStatCard
               label="Strategy Calls"
               value={funnel.strategyCalls}
               detail={`${percentage(funnel.strategyCalls, Math.max(funnel.resultsViewed, 1))} of report viewers clicked a call CTA`}
@@ -815,12 +798,6 @@ export default function AdminDataPage() {
                 title: 'Top Report Sections',
                 subtitle: 'Which blocks people actually reach on the results page',
                 rows: funnel.topSections,
-                formatter: (key: string) => formatLabel(key),
-              },
-              {
-                title: 'Unlock CTA Sources',
-                subtitle: 'Which sections trigger unlock intent',
-                rows: funnel.unlockSources,
                 formatter: (key: string) => formatLabel(key),
               },
               {

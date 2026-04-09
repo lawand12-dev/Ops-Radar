@@ -60,7 +60,6 @@ type AuditRow = {
   company: string;
   answers: Answers;
   result: AuditResult;
-  previewAccessToken?: string | null;
 }
 
 // Helpers
@@ -99,12 +98,10 @@ function diffBadge(d: string) {
 
 // Expanded row detail
 function AuditDetail({ audit }: { audit: AuditRow }) {
-  const { answers, result, id, previewAccessToken } = audit
+  const { answers, result, id } = audit
   const opps = result.opportunities ?? []
   const tools = result.tools_analysis
-  const reportHref = previewAccessToken
-    ? `/results?id=${encodeURIComponent(id)}&access=${encodeURIComponent(previewAccessToken)}`
-    : `/results?id=${encodeURIComponent(id)}`
+  const reportHref = `/results?id=${encodeURIComponent(id)}`
 
   return (
     <div className="mt-4 space-y-5 text-[13px]">

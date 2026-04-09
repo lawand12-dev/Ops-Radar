@@ -1,9 +1,5 @@
 import { type AuditInput } from '../../../lib/prompts'
 import { generateAuditReport } from '../../../lib/audit-report'
-import {
-  createAuditAccessToken,
-  hasAuditAccessSecret,
-} from '../../../lib/audit-access'
 import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
 import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
 import {
@@ -189,7 +185,7 @@ export async function POST(request: Request) {
       futureVision,
     }
 
-    const audit = await generateAuditReport(auditInput, 'preview')
+    const audit = await generateAuditReport(auditInput, 'full')
 
     const insertPayload = {
       name,
@@ -247,19 +243,7 @@ export async function POST(request: Request) {
       body: JSON.stringify(notifyPayload),
     }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
-    if (!storedAuditId || !hasAuditAccessSecret()) {
-      return Response.json({ audit })
-    }
-
-    return Response.json({
-      id: storedAuditId,
-      audit,
-      accessToken: createAuditAccessToken({
-        auditId: storedAuditId,
-        scope: 'preview',
-        email,
-      }),
-    })
+    return Response.json(storedAuditId ? { id: storedAuditId, audit } : { audit })
   } catch (err) {
     console.error('generate-audit error:', err)
     return serverErrorResponse()

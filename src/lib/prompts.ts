@@ -35,6 +35,18 @@ ARCHITECTURE PRIORITIZATION:
 - If the owner is the founder or multiple people, call out concentration risk and handoff confusion explicitly.
 - If failure impact touches revenue, client trust, or delivery, emphasize the cost of inaction in the urgency_reason.
 
+ACCURACY RULES — non-negotiable:
+1. NEVER fabricate numbers. Every dollar figure must be calculated from their actual inputs (team size × estimated hourly rate × hours wasted).
+2. Use CONSERVATIVE estimates. If you're guessing, guess LOW. A realistic $15K/year waste is more believable than an inflated $50K/year waste.
+3. CALIBRATE by revenue. A $20K/month agency can't be wasting $100K/year. The waste number should be 10-30% of their annual revenue at most.
+4. MATCH urgency to process frequency. A weekly process wasting 5 hours is less urgent than a daily process wasting 2 hours. Multiply frequency by impact for urgency scoring.
+5. DETECT contradictions. If they say "mostly systematized" but list 15 tools with manual processes, gently call out the contradiction in the executive_summary.
+6. READ their emotional language. If they use words like "drowning", "chaos", "burning out" in free text fields, reflect that back in the hard_truth copy. If they sound calm and analytical, match that tone.
+7. The urgency_reason for each opportunity must reference a SPECIFIC consequence — not generic fear. Bad: "This is costing you money." Good: "Every week you delay this, your account managers spend 6 hours on work Claude could do in 6 minutes — and they're interviewing with your competitors because of it."
+8. The executive_summary must include ONE specific number they can't unsee. Not a range. Not "thousands." A precise dollar figure calculated from their inputs.
+9. Rank opportunities by URGENCY × IMPACT, not by ease. The #1 opportunity is the one that's bleeding them the most RIGHT NOW, even if it's complex to fix.
+10. If evidence is thin (they gave short answers), lower confidence and stay conservative. Do not generate 6 opportunities from 2 data points.
+
 INDUSTRY BENCHMARKS — include benchmark comparisons in every audit:
 
 TEAM SIZE BENCHMARKS (hours wasted on manual ops per week):
@@ -155,7 +167,8 @@ OUTPUT FORMAT — respond in valid JSON:
       "quick_win": boolean,
       "urgency_reason": "why fixing this matters RIGHT NOW — 1 sentence creating urgency"
     }
-  ]
+  ],
+  "preview_notice": "1 sentence telling them they can book a call if they want help fixing the diagnosis"
 }
 
 Every number must be calculated from their actual inputs. Reference their exact tools by name when possible.`
@@ -204,20 +217,18 @@ Public Website Stack Signals: ${sanitizeString(data.websiteDetectedStack || 'Not
 Public Website Stack Evidence: ${sanitizeString(data.websiteStackEvidence || 'Not provided')}
 Website Visual Analysis: ${sanitizeString(data.websiteVisualContext || 'Not provided')}
 Website Visual Evidence: ${sanitizeString(data.websiteVisualEvidence || 'Not provided')}
-CRM They Use: ${sanitizeString(data.crmTool)}
-Biggest Time Drains: ${sanitizeString(data.timeHeavy)}
-How New Leads Enter System: ${sanitizeString(data.leadEntry)}
-Post-Close Onboarding Process: ${sanitizeString(data.onboarding)}
-How They Track Projects: ${sanitizeString(data.progressTracking)}
-#1 Process They'd Automate: ${sanitizeString(data.automationWish)}
+Current Operations State: ${sanitizeString(data.crmTool)}
+Hours Lost Weekly to Low-Leverage Work: ${sanitizeString(data.timeHeavy)}
+When Operations Break: ${sanitizeString(data.leadEntry)}
+#1 Process That Hurts the Business Most When It Fails: ${sanitizeString(data.automationWish)}
 How Often That Process Happens: ${sanitizeString(data.processFrequency || 'Not provided')}
 Who Currently Owns That Process: ${sanitizeString(data.processOwner || 'Not provided')}
-What Happens If It Slips: ${sanitizeString(data.failureImpact || 'Not provided')}
-Their 6-Month Operations Vision: ${sanitizeString(data.futureVision)}
+The Real Cost of Leaving It Manual for 6 Months: ${sanitizeString(data.failureImpact || data.onboarding || 'Not provided')}
+What Changes If Their Top 3 Pains Disappear: ${sanitizeString(data.futureVision || data.progressTracking)}
 
 ${buildAuditGroundingPrompt(data)}
 
-Generate the audit JSON. Every number must be derived from these actual inputs. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Prioritize opportunities that directly address their stated 6-month vision.`
+Generate the audit JSON. Every number must be derived from these actual inputs. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Prioritize the bottlenecks with the strongest urgency × impact signal, then tie the diagnosis back to what changes for the business if those pains disappear.`
 }
 
 export function buildAuditRepairPrompt(
