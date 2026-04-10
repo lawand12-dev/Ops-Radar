@@ -4,7 +4,7 @@ import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardContent } from '<npm>/components/ui/card'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
-import ShaderBackground from '<npm>/components/ui/shader-background'
+import BeamsBackground from '<npm>/components/ui/beams-background'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
@@ -182,71 +182,9 @@ export default function Home() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
-        <div className="absolute inset-0 bg-[#030712]" />
-        <div className="absolute inset-x-0 bottom-[-8%] top-[6%] z-[1] pointer-events-none [mask-image:linear-gradient(180deg,transparent_0%,transparent_18%,black_34%,black_100%)] [-webkit-mask-image:linear-gradient(180deg,transparent_0%,transparent_18%,black_34%,black_100%)]">
-          <div className="absolute inset-0 opacity-26 [transform:translateY(-8%)_scale(1.08)]">
-            <svg
-              aria-hidden="true"
-              className="h-full w-full"
-              viewBox="0 0 1600 900"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="heroLineStrong" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#4338ca" stopOpacity="0.24" />
-                  <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.76" />
-                  <stop offset="100%" stopColor="#f472b6" stopOpacity="0.24" />
-                </linearGradient>
-                <linearGradient id="heroLineSoft" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#312e81" stopOpacity="0.14" />
-                  <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.42" />
-                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.14" />
-                </linearGradient>
-              </defs>
-
-              <g fill="none" strokeLinecap="round">
-                <path d="M-120 760C120 680 290 890 520 790C760 684 920 442 1120 474C1320 506 1468 712 1710 680" stroke="url(#heroLineStrong)" strokeWidth="5" />
-                <path d="M-100 820C150 730 330 946 600 822C872 698 1006 518 1228 548C1448 578 1550 736 1728 720" stroke="url(#heroLineStrong)" strokeWidth="4.2" />
-                <path d="M-80 698C170 666 330 838 532 752C736 664 886 480 1048 486C1210 492 1360 628 1710 640" stroke="url(#heroLineSoft)" strokeWidth="3.2" />
-                <path d="M-80 862C174 806 334 870 556 780C780 690 928 612 1184 618C1438 624 1556 690 1716 704" stroke="url(#heroLineSoft)" strokeWidth="3.6" />
-                <path d="M120 894C298 786 424 732 646 742C868 752 1014 824 1212 800C1410 776 1522 684 1712 700" stroke="url(#heroLineStrong)" strokeWidth="4.4" />
-                <path d="M252 878C432 736 572 612 760 620C948 628 1112 760 1324 756C1534 752 1658 706 1744 688" stroke="url(#heroLineStrong)" strokeWidth="3.4" />
-                <path d="M356 900C520 792 632 690 798 666C966 642 1128 710 1312 724C1498 738 1624 718 1736 690" stroke="url(#heroLineSoft)" strokeWidth="2.8" />
-              </g>
-            </svg>
-          </div>
-          <ShaderBackground
-            className="absolute inset-0 h-full w-full opacity-54 [transform:translateY(-8%)_scale(1.08)]"
-          />
-        </div>
-        <div
-          className="absolute inset-0 z-[2] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 16% 18%, rgba(37,99,235,0.16), transparent 22%), radial-gradient(circle at 76% 18%, rgba(79,70,229,0.12), transparent 20%), linear-gradient(180deg, rgba(2,5,12,0.12) 0%, rgba(7,17,31,0.2) 34%, rgba(4,8,18,0.42) 100%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 z-[3] pointer-events-none opacity-[0.028]"
-          style={{
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.82%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")',
-          }}
-        />
-        <div
-          className="absolute inset-0 z-[3] pointer-events-none opacity-55"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(173,198,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.04) 1px, transparent 1px)',
-            backgroundSize: '72px 72px',
-            maskImage: 'linear-gradient(180deg, transparent 0%, transparent 18%, black 42%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(180deg, transparent 0%, transparent 18%, black 42%, transparent 100%)',
-          }}
-        />
-        <div className="pointer-events-none absolute inset-x-[18%] top-[7%] z-[4] h-[260px] rounded-full bg-slate-950/42 blur-[120px]" />
-        <div className="pointer-events-none absolute left-[-8%] top-[8%] z-[4] h-[420px] w-[420px] rounded-full bg-primary/[0.15] blur-[130px]" />
-        <div className="pointer-events-none absolute right-[-8%] top-[12%] z-[4] h-[380px] w-[380px] rounded-full bg-secondary/10 blur-[130px]" />
+        <BeamsBackground intensity="full" />
+        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/40 via-transparent to-black/50" />
+        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/50 via-transparent to-black/30" />
 
         <ResponsiveHeroBanner
           navLinks={HOME_NAV_LINKS}
