@@ -70,28 +70,10 @@ const QUICK_ACTIONS = [
 
 // ── Extend Window for SpeechRecognition ───────────────────────────────────────
 
-interface SpeechRecognitionEvent {
-  results: { [index: number]: { [index: number]: { transcript: string } } }
-}
-interface SpeechRecognitionErrorEvent {
-  error: string
-}
-interface SpeechRecognitionInstance {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  onstart: (() => void) | null
-  onend: (() => void) | null
-  onresult: ((event: SpeechRecognitionEvent) => void) | null
-  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
-  start: () => void
-}
-type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance
-
 declare global {
   interface Window {
-    SpeechRecognition?: SpeechRecognitionConstructor
-    webkitSpeechRecognition?: SpeechRecognitionConstructor
+    SpeechRecognition: any
+    webkitSpeechRecognition: any
   }
 }
 
@@ -102,6 +84,7 @@ const FloatingAiAssistant = () => {
   const [message, setMessage] = useState('')
   const [charCount, setCharCount] = useState(0)
   const [isListening, setIsListening] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
   const maxChars = 2000
 
   // Backend state (ported from ChatWidget)
@@ -119,6 +102,7 @@ const FloatingAiAssistant = () => {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const recognitionRef = useRef<any>(null)
   const leadStartedAtRef = useRef(Date.now())
   const convIdRef = useRef<string | null>(null)
   const visitorIdRef = useRef<string | null>(null)
@@ -449,30 +433,88 @@ const FloatingAiAssistant = () => {
 
   // ── Voice input (Web Speech API) ───────────────────────────────────────────
 
-  const handleVoiceInput = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  const handleVoiceInput = async () => {
+    setVoiceError(null)
+
+    // Check browser support
+    const SpeechRecognition =
+      (typeof window !== 'undefined' &&
+       (window.SpeechRecognition || window.webkitSpeechRecognition))
+
     if (!SpeechRecognition) {
-      alert('Voice input not supported in this browser')
+      setVoiceError("Voice input works best in Chrome, Edge, or Safari")
+      setTimeout(() => setVoiceError(null), 4000)
       return
     }
+
+    // If already listening, stop it
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      return
+    }
+
+    // Request microphone permission first
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch {
+      setVoiceError("Microphone access denied. Please allow microphone in browser settings.")
+      setTimeout(() => setVoiceError(null), 5000)
+      return
+    }
+
+    // Initialize recognition
     const recognition = new SpeechRecognition()
     recognition.lang = 'en-US'
     recognition.continuous = false
-    recognition.interimResults = false
+    recognition.interimResults = true
+    recognition.maxAlternatives = 1
 
-    recognition.onstart = () => setIsListening(true)
-    recognition.onend = () => setIsListening(false)
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
-      setMessage(prev => prev + transcript)
-      setCharCount(prev => prev + transcript.length)
+    recognition.onstart = () => {
+      console.log('Voice recognition started')
+      setIsListening(true)
     }
-    recognition.onerror = (event) => {
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join('')
+
+      console.log('Transcript:', transcript)
+      setMessage(prev => {
+        return prev + ' ' + transcript
+      })
+      setCharCount((prev) => prev + transcript.length)
+    }
+
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
+      setIsListening(false)
+      if (event.error === 'not-allowed') {
+        setVoiceError("Microphone permission denied")
+      } else if (event.error === 'no-speech') {
+        setVoiceError("No speech detected. Try again.")
+      } else {
+        setVoiceError(`Voice error: ${event.error}`)
+      }
+      setTimeout(() => setVoiceError(null), 4000)
+    }
+
+    recognition.onend = () => {
+      console.log('Voice recognition ended')
       setIsListening(false)
     }
 
-    recognition.start()
+    recognitionRef.current = recognition
+
+    try {
+      recognition.start()
+    } catch (err) {
+      console.error('Failed to start recognition:', err)
+      setIsListening(false)
+      setVoiceError("Couldn't start voice input. Try again.")
+      setTimeout(() => setVoiceError(null), 4000)
+    }
   }
 
   const showQuickActions = msgs.length === 1 && msgs[0].role === 'assistant'
@@ -696,8 +738,14 @@ const FloatingAiAssistant = () => {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               />
               {isListening && (
-                <div className="px-5 pb-1 text-xs text-red-400 animate-pulse">
-                  Listening...
+                <div className="px-6 py-2 text-xs text-red-400 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  Listening... speak now
+                </div>
+              )}
+              {voiceError && (
+                <div className="px-6 py-2 text-xs text-amber-400">
+                  {voiceError}
                 </div>
               )}
             </div>
@@ -709,16 +757,14 @@ const FloatingAiAssistant = () => {
                   {/* Voice Button */}
                   <button
                     onClick={handleVoiceInput}
-                    className={`group relative p-2.5 border rounded-lg cursor-pointer transition-all duration-300 transform hover:scale-110 ${
+                    className={`group relative p-2.5 border rounded-lg cursor-pointer transition-all duration-300 transform ${
                       isListening
-                        ? 'text-red-400 border-red-500/50 bg-red-500/10'
-                        : 'text-zinc-500 border-zinc-700/30 bg-transparent hover:text-blue-400 hover:bg-zinc-800/80 hover:border-blue-500/30'
+                        ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse scale-110'
+                        : 'bg-transparent border-zinc-700/30 text-zinc-500 hover:text-blue-400 hover:bg-zinc-800/80 hover:scale-110 hover:border-blue-500/30'
                     }`}
+                    aria-label={isListening ? "Stop listening" : "Start voice input"}
                   >
-                    <Mic className="w-4 h-4 transition-all duration-300 group-hover:scale-125" />
-                    {isListening && (
-                      <span className="absolute inset-0 rounded-lg border-2 border-red-500 animate-ping opacity-40" />
-                    )}
+                    <Mic className="w-4 h-4" />
                   </button>
                 </div>
 
