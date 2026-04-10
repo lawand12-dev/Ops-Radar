@@ -9,35 +9,48 @@ import BeamsBackground from '<npm>/components/ui/beams-background'
 export const metadata: Metadata = {
   title: "About",
   description:
-    "OpsRadar builds and maintains automation systems for agencies. We exist because agencies shouldn't waste time on busywork — we handle the ops so you can focus on growth.",
+    "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
   openGraph: {
     title: "About — OpsRadar",
     description:
-      "OpsRadar builds and maintains automation systems for agencies. We exist because agencies shouldn't waste time on busywork — we handle the ops so you can focus on growth.",
+      "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
     images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     title: "About — OpsRadar",
     description:
-      "OpsRadar builds and maintains automation systems for agencies. We exist because agencies shouldn't waste time on busywork — we handle the ops so you can focus on growth.",
+      "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
     images: ["/logo.png"],
   },
 }
 
+// ── Nav ───────────────────────────────────────────────────────────────────────
+
+const NAV_LINKS = [
+  { label: 'Home', href: '/' },
+  { label: 'Services', href: '/services' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about', isActive: true },
+]
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const DIFF_POINTS = [
+const WHY_TRUST = [
   {
-    title: 'We Own the Infrastructure',
-    desc: 'Your workflows run on our servers, not a third-party cloud you\'ve never heard of. We monitor uptime, handle deployments, and know immediately when something fails — before you do.',
+    title: 'One person, full accountability.',
+    desc: 'I scope it, build it, host it, and maintain it. There\u2019s no handoff between departments. If something breaks, I\u2019m the one who fixes it \u2014 and I know the system because I built it.',
   },
   {
-    title: 'No Per-Task Fees',
-    desc: 'Unlike Zapier or Make, n8n charges nothing per task execution. Run 10 automations or 10,000 — the cost stays the same. Scaling your ops doesn\'t mean scaling your bill.',
+    title: 'Agency experience, not just technical skill.',
+    desc: 'I came up on the agency side. I\u2019ve watched smart teams lose margin to broken handoffs, duplicate entry, and automation setups nobody trusted two weeks after launch. OpsRadar exists because I got tired of seeing operational debt dressed up as process.',
   },
   {
-    title: 'Human Quality Gate',
-    desc: 'AI helps us scope and draft workflows faster. But a human reviews every single workflow before it touches your live business. Speed without skipping the part that matters.',
+    title: 'No per-task fees. No vendor lock-in.',
+    desc: 'Everything runs on n8n \u2014 open-source, self-hosted on my infrastructure. You own your workflows. If you ever want to leave, I export everything and document it. You never lose access.',
+  },
+  {
+    title: 'AI-assisted, human-verified.',
+    desc: 'I use AI to scope and draft workflows faster. But every single workflow is reviewed by a human (me) before it touches your live business. Speed without cutting corners.',
   },
 ]
 
@@ -57,95 +70,87 @@ export default function AboutPage() {
         <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
-      <SiteHeader
-        sticky
-        navLinks={[
-          { label: 'Home', href: '/' },
-          { label: 'Services', href: '/services' },
-          { label: 'Pricing', href: '/pricing' },
-          { label: 'About', href: '/about', isActive: true },
-          { label: 'Problems', href: '/#pain' },
-          { label: 'How It Works', href: '/#how' },
-          { label: 'Systems', href: '/#showcase' },
-        ]}
-      />
+      <SiteHeader sticky navLinks={NAV_LINKS} />
 
-      {/* ── Header ───────────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative px-6 pb-20 pt-16 sm:pt-20">
         <div className="relative z-10 max-w-3xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            About OpsRadar
+            About
           </p>
           <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-[-0.04em] text-white leading-[1.08]">
-            We Exist Because Agencies Shouldn&apos;t{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Waste Time on Busywork
-            </span>
+            Who is Lawand, and why should you trust him?
           </h1>
         </div>
       </section>
 
-      {/* ── The Story ────────────────────────────────────────────────── */}
-      <section className="max-w-3xl mx-auto px-6 py-24">
-        <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-        <FadeInOnScroll>
-          <div className="space-y-6">
-            <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              Most agencies know they need automation. But learning n8n, Zapier, or Make takes months.
-              Hiring a developer costs thousands per month. And the freelancer who built your last
-              integration disappeared after delivery.
-            </p>
-            <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              OpsRadar exists to solve that. We build, host, and maintain your automations — so you get
-              the results without the overhead. Every workflow is built on n8n, an open-source platform
-              with no per-task fees, running on infrastructure we own and monitor 24/7.
-            </p>
-            <p className="text-base md:text-lg text-white/90 leading-relaxed font-medium">
-              We&apos;re not a tool you have to learn. We&apos;re not a course you have to take.
-              We&apos;re the engineering layer that makes your operations run themselves.
-            </p>
+      {/* ── The Short Version ────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="max-w-3xl mx-auto px-6 py-24">
+          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
+            <div className="space-y-6">
+              <p className="text-base md:text-lg text-white/60 leading-relaxed">
+                I&apos;m Lawand Soran. I build automation systems for agencies
+                from Kurdistan. No middlemen. No account managers. You work
+                directly with the person building your workflow.
+              </p>
+              <p className="text-base md:text-lg text-white/60 leading-relaxed">
+                OpsRadar is not a SaaS tool. It&apos;s not an agency. It&apos;s one
+                operator who builds, hosts, and maintains your automation
+                layer so you can focus on clients.
+              </p>
+            </div>
+            <div>
+              <p className="text-base md:text-lg text-white/90 leading-relaxed font-medium">
+                I&apos;m not a tool you have to learn. I&apos;m not a course you
+                have to take. I&apos;m the engineering layer that makes your
+                operations run themselves.
+              </p>
+            </div>
           </div>
-        </FadeInOnScroll>
-        <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-      </section>
+          <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        </section>
+      </FadeInOnScroll>
 
+      {/* ── Founder card (existing component) ────────────────────────── */}
       <FounderPhilosophySection
         name={FOUNDER_PROFILE.name}
         title={FOUNDER_PROFILE.title}
         summary={FOUNDER_PROFILE.summary}
       />
 
-      {/* ── How We're Different ───────────────────────────────────────── */}
-      <section className="max-w-3xl mx-auto px-6 py-24">
-        <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-        <FadeInOnScroll>
+      {/* ── Why Trust Me ─────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="max-w-3xl mx-auto px-6 py-24">
+          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What Sets Us Apart
+            Why Trust Me
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            How We&apos;re Different
+            Four reasons agencies stay.
           </h2>
-        </FadeInOnScroll>
 
-        <div className="space-y-0">
-          {DIFF_POINTS.map(({ title, desc }, i) => (
-            <div key={title}>
-              {i === 0 && (
+          <div className="space-y-0">
+            {WHY_TRUST.map(({ title, desc }, i) => (
+              <div key={title}>
+                {i === 0 && (
+                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 md:gap-12 py-8 md:py-10">
+                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
+                    {title}
+                  </h3>
+                  <p className="text-[15px] leading-relaxed text-white/50">
+                    {desc}
+                  </p>
+                </div>
                 <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                  {title}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-white/50">
-                  {desc}
-                </p>
               </div>
-              <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      </FadeInOnScroll>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
       <section className="py-32 px-6 text-center">
@@ -154,9 +159,7 @@ export default function AboutPage() {
             Ready to stop doing it manually?
           </h2>
           <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
-            <Link href="/audit">
-              Start Free Audit &rarr;
-            </Link>
+            <Link href="/audit">Start Free Audit &rarr;</Link>
           </Button>
           <p className="mt-4 text-xs text-white/20">3 minutes &middot; Free &middot; No commitment</p>
         </div>
@@ -169,6 +172,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-6">
             <Link href="/" className="text-xs text-white/20 hover:text-white/50 transition-colors">Home</Link>
             <Link href="/services" className="text-xs text-white/20 hover:text-white/50 transition-colors">Services</Link>
+            <Link href="/pricing" className="text-xs text-white/20 hover:text-white/50 transition-colors">Pricing</Link>
             <Link href="/about" className="text-xs text-white/50 hover:text-white transition-colors font-semibold">About</Link>
             <Link href="/audit" className="text-xs text-white/20 hover:text-white/50 transition-colors">Free Audit &rarr;</Link>
           </div>
