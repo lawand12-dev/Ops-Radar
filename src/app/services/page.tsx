@@ -8,6 +8,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
 import SiteHeader from '<npm>/components/ui/site-header'
+import BeamsBackground from '<npm>/components/ui/beams-background'
 
 export const metadata: Metadata = {
   title: "Services",
@@ -199,7 +200,8 @@ const FAQS = [
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body overflow-x-hidden">
+    <div className="relative min-h-screen bg-surface-container-lowest text-on-surface font-body overflow-x-hidden">
+      <BeamsBackground intensity="subtle" />
       <SiteHeader
         sticky
         navLinks={[

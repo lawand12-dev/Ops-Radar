@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import BuildTiersSection from '<npm>/components/pricing/BuildTiers'
 import SiteHeader from '<npm>/components/ui/site-header'
+import BeamsBackground from '<npm>/components/ui/beams-background'
 
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
@@ -106,7 +107,8 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body">
+    <div className="relative min-h-screen bg-surface-container-lowest text-on-surface font-body">
+      <BeamsBackground intensity="subtle" />
       <SiteHeader
         sticky
         navLinks={[
