@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background'
+import WorkflowImage from '<npm>/components/ui/workflow-image'
 
 export const metadata: Metadata = {
   title: "Workflows",
@@ -48,33 +48,6 @@ const WORKFLOWS = [
   },
   // More workflows added here later
 ]
-
-// ── Workflow Screenshot ───────────────────────────────────────────────────────
-
-function WorkflowImage({ src, alt }: { src: string; alt: string }) {
-  return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)]"
-      style={{ borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.08)' }}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        width={1400}
-        height={800}
-        className="block w-full h-auto"
-        sizes="(max-width: 768px) 100vw, 896px"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none'
-        }}
-      />
-      {/* Placeholder fallback — visible when image doesn't load */}
-      <div className="absolute inset-0 flex items-center justify-center bg-white/[0.03]" style={{ aspectRatio: '1400/800' }}>
-        <span className="text-sm text-white/30 tracking-wide">Screenshot coming</span>
-      </div>
-    </div>
-  )
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
