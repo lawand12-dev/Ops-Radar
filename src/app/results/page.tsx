@@ -16,10 +16,6 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
-import {
-  getStoredAuditAccessToken,
-  storeAuditAccessToken,
-} from '../../lib/audit-access-client'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -179,7 +175,6 @@ type ReportHandoff = {
 type ReportSectionItem = {
   id: string
   label: string
-  locked?: boolean
 }
 type BuildRequestDraft = {
   title: string
@@ -327,32 +322,6 @@ function Divider() {
   )
 }
 
-function PreviewBanner({ notice }: { notice?: string }) {
-  return (
-    <RevealSection>
-      <section
-        className="rounded-[20px] overflow-hidden border"
-        style={{ background: 'rgba(173,198,255,0.04)', borderColor: 'rgba(173,198,255,0.15)' }}
-      >
-        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #4cd7f6)' }} />
-        <div className="p-6 sm:p-7">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider mb-4"
-            style={{ background: 'rgba(173,198,255,0.08)', border: '1px solid rgba(173,198,255,0.18)', color: '#adc6ff' }}
-          >
-            DIAGNOSIS SNAPSHOT
-          </div>
-          <h2 className="font-headline font-bold text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-on-surface mb-2">
-            Your diagnosis is ready
-          </h2>
-          <p className="text-[14px] text-on-surface-variant leading-[1.75] max-w-[640px]">
-            {notice ?? 'This report shows where time, money, and operational trust are leaking right now.'}
-          </p>
-        </div>
-      </section>
-    </RevealSection>
-  )
-}
 
 function ReportLoadingExperience({
   handoff,
@@ -596,7 +565,6 @@ function MagicMomentPanel({
   annualSavings,
   opportunities,
   topRisk,
-  isPreview,
 }: {
   company: string
   headline: string
@@ -605,7 +573,6 @@ function MagicMomentPanel({
   annualSavings: number
   opportunities: Opportunity[]
   topRisk: string
-  isPreview: boolean
 }) {
   const [step, setStep] = useState(0)
   const tools = collectSignalTools(opportunities)
@@ -717,7 +684,7 @@ function MagicMomentPanel({
               {[
                 { label: 'Readiness', value: readiness, suffix: '/100', color: '#4cd7f6' },
                 { label: 'Hours Back', value: hoursWeekly, suffix: 'h/wk', color: '#34d399' },
-                { label: 'Build Paths', value: opportunities.length, suffix: isPreview ? 'preview' : 'mapped', color: '#ffb786' },
+                { label: 'Build Paths', value: opportunities.length, suffix: 'mapped', color: '#ffb786' },
                 { label: 'Top Priority', value: 1, suffix: opportunities[0] ? 'ready' : 'queued', color: '#adc6ff' },
               ].map((stat) => (
                 <div
@@ -779,14 +746,12 @@ function TransformationStrip({
   topRisk,
   hoursWeekly,
   annualSavings,
-  isPreview,
 }: {
   company: string
   leadOpportunity: Opportunity | null
   topRisk: string
   hoursWeekly: number
   annualSavings: number
-  isPreview: boolean
 }) {
   const tools = collectSignalTools(leadOpportunity ? [leadOpportunity] : []).slice(0, 4)
   const yearlyDisplay = annualSavings >= 1000 ? `$${Math.round(annualSavings / 1000)}K` : `$${Math.round(annualSavings)}`
@@ -896,11 +861,6 @@ function TransformationStrip({
                   {leadOpportunity.title}
                 </p>
               </div>
-              {isPreview && (
-                <p className="text-[11px] text-on-surface-variant/50">
-                  Full blueprint unlocks exact sequencing, node details, and implementation steps.
-                </p>
-              )}
             </div>
             <WorkflowDiagram technicalFlow={leadOpportunity.technical_flow} />
           </div>
@@ -1859,12 +1819,8 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
 
 function OnboardingAssessmentSection({
   data,
-  unlocked,
-  onUnlock,
 }: {
   data: OnboardingAssessment
-  unlocked: boolean
-  onUnlock: () => void
 }) {
   return (
     <RevealSection>
@@ -1874,54 +1830,52 @@ function OnboardingAssessmentSection({
           Client Onboarding Audit
         </h2>
 
-        <LockedSection unlocked={unlocked} onUnlock={onUnlock}>
-          <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-            <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
-            <div className="p-6 space-y-5">
+        <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+          <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
+          <div className="p-6 space-y-5">
 
-              {data.current_state && (
+            {data.current_state && (
+              <div
+                className="p-4 rounded-[12px]"
+                style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
+                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {data.time_per_client_current && (
                 <div
                   className="p-4 rounded-[12px]"
                   style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
-                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
+                  <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
                 </div>
               )}
-
-              <div className="grid sm:grid-cols-2 gap-3">
-                {data.time_per_client_current && (
-                  <div
-                    className="p-4 rounded-[12px]"
-                    style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
-                    <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
-                  </div>
-                )}
-                {data.time_per_client_automated && (
-                  <div
-                    className="p-4 rounded-[12px]"
-                    style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
-                    <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
-                  </div>
-                )}
-              </div>
-
-              {data.revenue_impact && (
+              {data.time_per_client_automated && (
                 <div
                   className="p-4 rounded-[12px]"
-                  style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
+                  style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
-                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
+                  <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
                 </div>
               )}
             </div>
+
+            {data.revenue_impact && (
+              <div
+                className="p-4 rounded-[12px]"
+                style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
+                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+              </div>
+            )}
           </div>
-        </LockedSection>
+        </div>
       </section>
     </RevealSection>
   )
@@ -2086,161 +2040,7 @@ function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
   )
 }
 
-// ─── Lock icon ────────────────────────────────────────────────────────────────
 
-function LockIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="3" y="7" width="10" height="8" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-// ─── Locked section overlay ───────────────────────────────────────────────────
-
-function LockedSection({
-  unlocked,
-  onUnlock,
-  children,
-}: {
-  unlocked: boolean
-  onUnlock: () => void
-  children: React.ReactNode
-}) {
-  if (unlocked) return <>{children}</>
-  return (
-    <div className="relative">
-      <div className="pointer-events-none select-none blur-[3px] opacity-60">{children}</div>
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-[16px]"
-        style={{ background: 'rgba(6,12,30,0.6)', backdropFilter: 'blur(2px)' }}
-      >
-        <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-primary"
-          style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}
-        >
-          <LockIcon size={20} />
-        </div>
-        <p className="text-[13px] font-semibold text-on-surface-variant text-center max-w-[240px]">
-          Unlock the full blueprint to see this section
-        </p>
-        <button
-          onClick={onUnlock}
-          className="px-5 py-2 rounded-[10px] text-[13px] font-bold text-primary border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors"
-        >
-          Unlock Now
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Unlock section ───────────────────────────────────────────────────────────
-
-function UnlockSection({
-  auditId,
-  defaultEmail,
-  reportStage,
-  onUnlocked,
-  onUnlockRequested,
-  onUnlockSent,
-  onStrategyCallClick,
-}: {
-  auditId: string | null
-  defaultEmail: string
-  reportStage: 'preview' | 'full'
-  onUnlocked: () => void
-  onUnlockRequested: (email: string) => void
-  onUnlockSent: (email: string) => void
-  onStrategyCallClick: (source: string) => void
-}) {
-  const [email, setEmail]   = useState(defaultEmail)
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!email.trim() || !auditId) return
-    onUnlockRequested(email)
-    setStatus('sending')
-    try {
-      const accessToken = getStoredAuditAccessToken(auditId)
-      const res = await fetch('/api/send-unlock-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(accessToken ? { 'x-audit-access-token': accessToken } : {}) },
-        body: JSON.stringify({ email, auditId }),
-      })
-      const data = await res.json()
-      if (res.ok && data.ok) {
-        if (data.accessToken) storeAuditAccessToken(auditId, data.accessToken)
-        setStatus('sent')
-        onUnlockSent(email)
-        onUnlocked()
-      } else {
-        setStatus('error')
-      }
-    } catch {
-      setStatus('error')
-    }
-  }
-
-  return (
-    <RevealSection>
-      <section
-        id="unlock-blueprint"
-        className="rounded-[22px] overflow-hidden relative p-8 sm:p-12 bg-surface-container border border-primary/20"
-        style={{ boxShadow: '0 0 60px rgba(173,198,255,0.08)' }}
-      >
-        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3b82f6, #22d3ee, transparent)' }} />
-        <div className="max-w-[500px] mx-auto text-center">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 text-primary" style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}>
-            <LockIcon size={24} />
-          </div>
-          <h2 className="font-headline font-extrabold text-[clamp(20px,3vw,30px)] tracking-[-0.025em] text-on-surface mb-3">
-            {reportStage === 'preview' ? 'Unlock Your Full Blueprint' : 'Get This Sent to Your Inbox'}
-          </h2>
-          <p className="text-[14px] text-on-surface-variant leading-[1.7] mb-8">
-            Enter your email and we&apos;ll send you the complete audit — including your 90-day roadmap, onboarding analysis, and stack recommendations.
-          </p>
-
-          {status === 'sent' ? (
-            <div className="p-5 rounded-[14px]" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
-              <p className="text-[15px] font-bold text-emerald-400 mb-1">Check your inbox!</p>
-              <p className="text-[13px] text-on-surface-variant">We sent your full blueprint to <strong className="text-on-surface">{email}</strong></p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                required
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-[10px] text-[14px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary/40"
-              />
-              <button
-                type="submit"
-                disabled={status === 'sending'}
-                className="px-6 py-3 rounded-[10px] text-[14px] font-bold text-white disabled:opacity-60 transition-all"
-                style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.35)' }}
-              >
-                {status === 'sending' ? 'Sending…' : 'Send My Blueprint'}
-              </button>
-            </form>
-          )}
-
-          {status === 'error' && (
-            <p className="mt-3 text-[12px] text-red-400">Something went wrong. Please try again.</p>
-          )}
-
-          <p className="mt-6 text-[12px] text-on-surface-variant/40">
-            Or <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer" onClick={() => onStrategyCallClick('unlock-section-calendly')} className="underline hover:text-on-surface-variant transition-colors">book a free strategy call</a> instead.
-          </p>
-        </div>
-      </section>
-    </RevealSection>
-  )
-}
 
 // ─── Build request modal ──────────────────────────────────────────────────────
 
@@ -2412,9 +2212,7 @@ function ResultsContent() {
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
-  const [unlocked,    setUnlocked]    = useState(false)
   const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
-  const unlockRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
   const resultsViewRef = useRef<string | null>(null)
@@ -2543,17 +2341,6 @@ function ResultsContent() {
     })
   }, [audit?.report_stage, auditId])
 
-  const scrollToUnlock = useCallback((source = 'results-unlock') => {
-    sendFunnelEvent({
-      event: 'build_request_opened',
-      sessionId: sessionIdRef.current,
-      auditId,
-      source,
-      reportStage: 'preview',
-    })
-    unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [auditId])
-
   const openBuildRequest = useCallback((title: string, source: string) => {
     sendFunnelEvent({
       event: 'build_request_opened',
@@ -2565,13 +2352,8 @@ function ResultsContent() {
     setModalOpp({ title, source })
   }, [audit?.report_stage, auditId])
 
-  const handleUnlocked = useCallback(() => {
-    setUnlocked(true)
-  }, [])
-
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit
-  const isPreview     = currentAudit?.report_stage === 'preview'
   const readiness     = currentAudit?.automation_readiness_score ?? currentAudit?.summary?.automation_readiness_score ?? 50
   const headline      = currentAudit?.summary?.headline ?? currentAudit?.executive_summary ?? 'Your Automation Audit'
   const opportunities = Array.isArray(currentAudit?.opportunities) ? currentAudit.opportunities : []
@@ -2592,13 +2374,13 @@ function ResultsContent() {
     }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
   const removedTools  = toolsAnalysis.redundant_tools ?? []
-  const hasLockedStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
+  const hasStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
   const hasBenchmarks = Boolean(currentAudit?.benchmarks)
   const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
   const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis)
   const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment)
   const hasRoadmap    = Boolean(roadmap.week_1 || roadmap.month_1 || roadmap.month_3)
-  const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasLockedStackDetails
+  const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasStackDetails
   const pathToVision  = currentAudit?.roadmap?.path_to_vision
   const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
   const leadOpportunity = opportunities[0] ?? null
@@ -2610,10 +2392,9 @@ function ResultsContent() {
       hasLaborBreakdown ? { id: 'labor-arbitrage', label: 'Labor' } : null,
       hasContextSwitching ? { id: 'context-switching', label: 'Switching' } : null,
       opportunities.length > 0 ? { id: 'automation-opportunities', label: 'Blueprint' } : null,
-      hasOnboardingAssessment ? { id: 'client-onboarding', label: 'Onboarding', locked: !unlocked } : null,
-      hasRoadmap ? { id: 'implementation-roadmap', label: 'Roadmap', locked: !unlocked } : null,
-      hasStack ? { id: 'stack-recommendations', label: 'Stack', locked: hasLockedStackDetails && !unlocked } : null,
-      !unlocked ? { id: 'unlock-blueprint', label: 'Unlock' } : null,
+      hasOnboardingAssessment ? { id: 'client-onboarding', label: 'Onboarding' } : null,
+      hasRoadmap ? { id: 'implementation-roadmap', label: 'Roadmap' } : null,
+      hasStack ? { id: 'stack-recommendations', label: 'Stack' } : null,
       { id: 'done-for-you-build', label: 'Build' },
     ].filter((section): section is ReportSectionItem => Boolean(section))
   ), [
@@ -2622,11 +2403,10 @@ function ResultsContent() {
     hasLaborBreakdown,
     hasContextSwitching,
     hasOnboardingAssessment,
-    hasLockedStackDetails,
+    hasStackDetails,
     hasRoadmap,
     hasStack,
     opportunities.length,
-    unlocked,
   ])
   const reportSectionIds = reportSections.map((section) => section.id).join('|')
   const resolvedActiveSection = reportSections.some((section) => section.id === activeSection)
@@ -2646,11 +2426,10 @@ function ResultsContent() {
       auditId,
       reportStage: currentAudit.report_stage === 'full' ? 'full' : 'preview',
       metadata: {
-        unlocked,
         opportunities: opportunities.length,
       },
     })
-  }, [auditId, currentAudit, opportunities.length, unlocked])
+  }, [auditId, currentAudit, opportunities.length])
 
   useEffect(() => {
     if (typeof document === 'undefined' || reportSections.length === 0) return
@@ -2673,9 +2452,6 @@ function ResultsContent() {
             auditId,
             sectionId: entry.target.id,
             reportStage: currentAudit?.report_stage === 'full' ? 'full' : 'preview',
-            metadata: {
-              unlocked,
-            },
           })
         })
 
@@ -2694,7 +2470,7 @@ function ResultsContent() {
 
     elements.forEach((element) => observer.observe(element))
     return () => observer.disconnect()
-  }, [auditId, currentAudit?.report_stage, reportSectionIds, reportSections, unlocked])
+  }, [auditId, currentAudit?.report_stage, reportSectionIds, reportSections])
 
   if (!currentAudit && !error) {
     return <ReportLoadingExperience handoff={handoff} />
@@ -2733,27 +2509,16 @@ function ResultsContent() {
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
               </div>
-              {!unlocked ? (
-                <Button
-                  onClick={() => scrollToUnlock('top-nav-unlock')}
-                  variant="outline"
-                  className="h-auto rounded-full border-primary/22 bg-primary/8 px-4 py-2 text-[12px] font-bold text-primary hover:bg-primary/15 hover:text-primary gap-1.5"
-                >
-                  <LockIcon size={12} />
-                  Unlock Blueprint
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => window.print()}
-                  variant="outline"
-                  className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5"
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Download PDF
-                </Button>
-              )}
+              <Button
+                onClick={() => window.print()}
+                variant="outline"
+                className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Download PDF
+              </Button>
             </div>
           </div>
         </div>
@@ -2798,7 +2563,6 @@ function ResultsContent() {
             annualSavings={annualSavings}
             opportunities={opportunities}
             topRisk={topRisk}
-            isPreview={isPreview}
           />
 
           <TransformationStrip
@@ -2807,7 +2571,6 @@ function ResultsContent() {
             topRisk={topRisk}
             hoursWeekly={hoursWeekly}
             annualSavings={annualSavings}
-            isPreview={isPreview}
           />
 
           <ForensicMatchPanel
@@ -2857,8 +2620,6 @@ function ResultsContent() {
 
       {/* ── Main sections ──────────────────────────────────────────────────── */}
       <main className="max-w-[900px] mx-auto px-6 pb-28 space-y-20 mt-4">
-
-        {isPreview && <PreviewBanner notice={a.preview_notice} />}
 
         {/* 01 · Executive Summary */}
         {a.executive_summary && (
@@ -2972,8 +2733,6 @@ function ResultsContent() {
           <div id="client-onboarding" data-report-section>
             <OnboardingAssessmentSection
               data={a.onboarding_assessment}
-              unlocked={unlocked}
-              onUnlock={() => scrollToUnlock('onboarding-section-unlock')}
             />
           </div>
         )}
@@ -2991,8 +2750,7 @@ function ResultsContent() {
                   Phased to deliver quick wins first, then compound value over time.
                 </p>
 
-                <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('roadmap-section-unlock')}>
-                  <div className="space-y-5">
+                <div className="space-y-5">
                     <VerticalRoadmap roadmap={roadmap} />
                     {pathToVision && (
                       <div
@@ -3017,7 +2775,6 @@ function ResultsContent() {
                       </div>
                     )}
                   </div>
-                </LockedSection>
               </section>
             </RevealSection>
           </div>
@@ -3036,8 +2793,7 @@ function ResultsContent() {
                   <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
                 </div>
 
-                {hasLockedStackDetails && (
-                  <LockedSection unlocked={unlocked} onUnlock={() => scrollToUnlock('stack-section-unlock')}>
+                {hasStackDetails && (
                     <div className="space-y-4">
                       {toolsAnalysis.biggest_friction_point && (
                         <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
@@ -3073,41 +2829,9 @@ function ResultsContent() {
                         )}
                       </div>
                     </div>
-                  </LockedSection>
                 )}
               </section>
             </RevealSection>
-          </div>
-        )}
-
-        {/* Unlock section */}
-        {!unlocked && (
-          <div id="unlock-blueprint" ref={unlockRef} data-report-section>
-            <UnlockSection
-              auditId={auditId}
-              defaultEmail={contactEmail}
-              reportStage={isPreview ? 'preview' : 'full'}
-              onUnlocked={handleUnlocked}
-              onUnlockRequested={(email) => {
-                sendFunnelEvent({
-                  event: 'unlock_email_requested',
-                  sessionId: sessionIdRef.current,
-                  auditId,
-                  reportStage: 'preview',
-                  metadata: { hasEmail: Boolean(email) },
-                })
-              }}
-              onUnlockSent={(email) => {
-                sendFunnelEvent({
-                  event: 'unlock_email_sent',
-                  sessionId: sessionIdRef.current,
-                  auditId,
-                  reportStage: 'preview',
-                  metadata: { hasEmail: Boolean(email) },
-                })
-              }}
-              onStrategyCallClick={trackStrategyCallClick}
-            />
           </div>
         )}
 
@@ -3165,7 +2889,7 @@ function ResultsContent() {
           contactEmail={contactEmail}
           auditId={auditId}
           source={modalOpp.source}
-          reportStage={isPreview ? 'preview' : 'full'}
+          reportStage="full"
           onClose={() => setModalOpp(null)}
         />
       )}
