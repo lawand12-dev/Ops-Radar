@@ -15,6 +15,7 @@ import {
   serializeWebsiteStackSignals,
 } from '../../../lib/website-intel'
 import { analyzeWebsiteVisualSignals, serializeWebsiteVisualEvidence } from '../../../lib/website-visual-intel'
+import { researchAgency, serializeAgencyResearch } from '../../../lib/website-agent'
 import type { NotifyPayload } from '../notify/route'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -142,11 +143,13 @@ export async function POST(request: Request) {
     const normalizedWebsiteUrl = normalizeWebsiteUrlInput(websiteUrl ?? '')
     let websiteSignals = null
     let websiteVisualSignals = null
+    let agencyResearch = null
 
     if (normalizedWebsiteUrl) {
-      const [websiteSignalsResult, websiteVisualSignalsResult] = await Promise.allSettled([
+      const [websiteSignalsResult, websiteVisualSignalsResult, agencyResearchResult] = await Promise.allSettled([
         fetchWebsiteSignals(normalizedWebsiteUrl),
         analyzeWebsiteVisualSignals(normalizedWebsiteUrl),
+        researchAgency(normalizedWebsiteUrl),
       ])
 
       websiteSignals = websiteSignalsResult.status === 'fulfilled'
@@ -154,6 +157,9 @@ export async function POST(request: Request) {
         : null
       websiteVisualSignals = websiteVisualSignalsResult.status === 'fulfilled'
         ? websiteVisualSignalsResult.value
+        : null
+      agencyResearch = agencyResearchResult.status === 'fulfilled'
+        ? agencyResearchResult.value
         : null
     }
 
@@ -172,6 +178,7 @@ export async function POST(request: Request) {
       websiteStackEvidence: serializeWebsiteStackSignals(websiteSignals?.detectedStack ?? []),
       websiteVisualContext: websiteVisualSignals?.summary ?? '',
       websiteVisualEvidence: serializeWebsiteVisualEvidence(websiteVisualSignals?.evidence ?? []),
+      agencyResearchIntel: agencyResearch ? serializeAgencyResearch(agencyResearch) : '',
       crmTool,
       timeHeavy,
       leadEntry,
