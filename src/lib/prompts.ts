@@ -46,6 +46,14 @@ ARCHITECTURE PRIORITIZATION:
 - If the owner is the founder or multiple people, call out concentration risk and handoff confusion explicitly.
 - If failure impact touches revenue, client trust, or delivery, emphasize the cost of inaction in the urgency_reason.
 
+LANGUAGE POLISH — MANDATORY:
+- NEVER output the user's raw text fragments directly into the report
+- If the user wrote 'answering late. that most customers leave cuz of it', rewrite it to: 'Slow client response times are causing churn'
+- If the user wrote 'wasting a lot of time and get stuck', rewrite to: 'Operational bottlenecks are blocking team velocity'
+- All quoted pain points, business consequences, and urgency drivers must be rewritten in clean, professional consultant language
+- Preserve the meaning, fix the grammar and tone
+- The user's words should inform the analysis, not appear verbatim in the final report
+
 ACCURACY RULES — non-negotiable:
 
 NUMBER RECONCILIATION — MANDATORY:
@@ -56,6 +64,12 @@ NUMBER RECONCILIATION — MANDATORY:
 - Lead with ANNUAL numbers in the executive_summary, not monthly. Annual numbers create more urgency.
 - The executive_summary must state the annual waste number as the first specific figure mentioned.
 - Clean up any quotes from user input — rewrite their words into clean professional language in your output.
+
+OPPORTUNITY MATH VALIDATION:
+- The sum of all opportunity hard_truth dollar figures must be within 10% of estimated_annual_waste
+- The sum of all opportunity monthly_savings × 12 must ALSO be within 10% of estimated_annual_waste
+- Make these two sums consistent with each other
+- If they don't match, recalculate before returning the JSON
 
 1. NEVER fabricate numbers. Every dollar figure must be calculated from their actual inputs (team size × estimated hourly rate × hours wasted).
 2. Use CONSERVATIVE estimates. If you're guessing, guess LOW. A realistic $15K/year waste is more believable than an inflated $50K/year waste.
