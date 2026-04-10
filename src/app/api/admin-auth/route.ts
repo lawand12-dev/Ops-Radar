@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const response = Response.json({ ok: true })
   response.headers.append(
     'Set-Cookie',
-    `${ADMIN_SESSION_COOKIE}=${createAdminSessionToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ADMIN_SESSION_MAX_AGE}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
+    `${ADMIN_SESSION_COOKIE}=${createAdminSessionToken()}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${ADMIN_SESSION_MAX_AGE}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
   )
   return response
 }
@@ -44,7 +44,7 @@ export async function DELETE() {
   const response = Response.json({ ok: true })
   response.headers.append(
     'Set-Cookie',
-    `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
+    `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
   )
   return response
 }
