@@ -105,17 +105,6 @@ type AuditResult = {
     headline?: string
   }
   opportunities: Opportunity[]
-  roadmap?: {
-    phase_1_quick_wins?: string
-    phase_2_core_systems?: string
-    phase_3_intelligence_layer?: string
-    path_to_vision?: string
-  }
-  priority_roadmap?: {
-    week_1?: string
-    month_1?: string
-    month_3?: string
-  }
   tools_analysis?: {
     current_stack_rating: number
     missing_integrations?: string[]
@@ -125,7 +114,6 @@ type AuditResult = {
   }
 }
 
-type NormalizedRoadmap = { week_1: string; month_1: string; month_3: string }
 type WebsiteEvidenceCard = {
   label: string
   detail: string
@@ -338,7 +326,7 @@ function ReportLoadingExperience({
     `Tracing workflow drag around ${automationWish.toLowerCase()}`,
     `Estimating labor loss and execution bottlenecks`,
     `Designing the fastest path to ${futureVision.toLowerCase()}`,
-    'Packaging the report into a client-ready blueprint',
+    'Packaging the report into a client-ready diagnosis',
   ]
   const [step, setStep] = useState(0)
   const [progress, setProgress] = useState(10)
@@ -384,7 +372,7 @@ function ReportLoadingExperience({
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
               </span>
-              Building your blueprint
+              Building your diagnosis
             </div>
 
             <h1 className="font-headline text-[clamp(32px,5.6vw,68px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-on-surface">
@@ -396,13 +384,13 @@ function ReportLoadingExperience({
             </h1>
 
             <p className="mt-5 max-w-[640px] text-[16px] leading-[1.8] text-on-surface-variant">
-              We’re not loading a template. We’re synthesizing a custom operations blueprint for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
+              We’re not loading a template. We’re synthesizing a custom operations diagnosis for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
             </p>
 
             <div className="mt-7 rounded-[22px] border border-white/7 bg-surface-container-low/80 p-5 backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between gap-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/45">
-                  Blueprint synthesis progress
+                  Diagnosis synthesis progress
                 </p>
                 <p className="font-headline text-[24px] font-extrabold tabular-nums text-primary">
                   {progress}%
@@ -989,10 +977,10 @@ function ForensicMatchPanel({
             </p>
             <div className="rounded-[18px] border border-primary/14 bg-primary/6 px-4 py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
-                Core pain statement
+                Core pain point
               </p>
-              <p className="font-headline text-[21px] font-bold leading-[1.45] tracking-[-0.025em] text-on-surface">
-                “{quote}”
+              <p className="font-headline text-[18px] font-bold leading-[1.5] tracking-[-0.02em] text-on-surface">
+                {quote}
               </p>
             </div>
 
@@ -1191,7 +1179,7 @@ function WebsiteEvidencePanel({
               Verified On Your Site
             </p>
             <h2 className="font-headline text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              The system found public signals that support the blueprint for {company || 'your team'}.
+              The system found public signals that support the diagnosis for {company || 'your team'}.
             </h2>
           </div>
           {websiteUrl && (
@@ -1234,7 +1222,7 @@ function WebsiteEvidencePanel({
                           {item.label}
                         </p>
                         <p className="font-headline text-[18px] font-bold leading-[1.45] tracking-[-0.02em] text-on-surface">
-                          “{item.detail}”
+                          "{item.detail}"
                         </p>
                       </div>
                     ))}
@@ -1996,52 +1984,6 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
   )
 }
 
-// ─── Vertical roadmap timeline ────────────────────────────────────────────────
-
-function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
-  const phases = [
-    { id: 'p1', num: '01', timeline: 'Week 1–2', title: 'Quick Wins',        desc: roadmap.week_1,  color: '#10b981' },
-    { id: 'p2', num: '02', timeline: 'Month 1',  title: 'Core Systems',       desc: roadmap.month_1, color: '#3b82f6' },
-    { id: 'p3', num: '03', timeline: 'Month 3',  title: 'Intelligence Layer', desc: roadmap.month_3, color: '#8b5cf6' },
-  ]
-
-  return (
-    <div className="relative pl-[28px]">
-      <div
-        className="absolute left-[11px] top-[20px] bottom-[20px] w-[2px] rounded-full"
-        style={{ background: 'linear-gradient(180deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%)' }}
-      />
-      <div className="space-y-5">
-        {phases.map(({ id, num, timeline, title, desc, color }) => (
-          <div key={id} className="flex gap-5 relative">
-            <div
-              className="absolute -left-[28px] w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: `${color}18`, border: `2px solid ${color}`, boxShadow: `0 0 14px ${color}40`, top: '14px' }}
-            >
-              <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-            </div>
-            <div
-              className="flex-1 p-5 rounded-[14px] transition-all duration-300 hover:-translate-y-0.5 bg-surface-container border border-outline-variant/10"
-              style={{ borderTopColor: `${color}40` }}
-            >
-              <div className="flex items-center gap-3 mb-2.5">
-                <span className="font-mono text-[9px] font-bold tracking-[2.5px] text-on-surface-variant/30">{num}</span>
-                <span className="px-2.5 py-[3px] rounded-full text-[10px] font-semibold" style={{ background: `${color}15`, border: `1px solid ${color}30`, color }}>
-                  {timeline}
-                </span>
-              </div>
-              <p className="font-headline text-[16px] font-bold text-on-surface mb-1.5">{title}</p>
-              <p className="text-[13px] text-on-surface-variant leading-[1.7]">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-
-
 // ─── Build request modal ──────────────────────────────────────────────────────
 
 function BuildRequestModal({
@@ -2361,17 +2303,6 @@ function ResultsContent() {
     opportunities.reduce((sum, opportunity) => sum + (opportunity.hours_saved_weekly ?? 0), 0)
   const annualSavings = currentAudit?.summary?.total_annual_cost_savings ?? currentAudit?.estimated_annual_waste ?? 0
   const toolsAnalysis = currentAudit?.tools_analysis ?? { current_stack_rating: 0 }
-  const roadmap: NormalizedRoadmap = currentAudit?.roadmap
-    ? {
-      week_1: currentAudit.roadmap.phase_1_quick_wins ?? '',
-      month_1: currentAudit.roadmap.phase_2_core_systems ?? '',
-      month_3: currentAudit.roadmap.phase_3_intelligence_layer ?? '',
-    }
-    : {
-      week_1: currentAudit?.priority_roadmap?.week_1 ?? '',
-      month_1: currentAudit?.priority_roadmap?.month_1 ?? '',
-      month_3: currentAudit?.priority_roadmap?.month_3 ?? '',
-    }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
   const removedTools  = toolsAnalysis.redundant_tools ?? []
   const hasStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
@@ -2379,9 +2310,7 @@ function ResultsContent() {
   const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
   const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis)
   const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment)
-  const hasRoadmap    = Boolean(roadmap.week_1 || roadmap.month_1 || roadmap.month_3)
   const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasStackDetails
-  const pathToVision  = currentAudit?.roadmap?.path_to_vision
   const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
   const leadOpportunity = opportunities[0] ?? null
   const reportSections = useMemo(() => (
@@ -2391,9 +2320,9 @@ function ResultsContent() {
       hasBenchmarks ? { id: 'industry-benchmarks', label: 'Benchmarks' } : null,
       hasLaborBreakdown ? { id: 'labor-arbitrage', label: 'Labor' } : null,
       hasContextSwitching ? { id: 'context-switching', label: 'Switching' } : null,
-      opportunities.length > 0 ? { id: 'automation-opportunities', label: 'Blueprint' } : null,
+      opportunities.length > 0 ? { id: 'automation-opportunities', label: 'Opportunities' } : null,
       hasOnboardingAssessment ? { id: 'client-onboarding', label: 'Onboarding' } : null,
-      hasRoadmap ? { id: 'implementation-roadmap', label: 'Roadmap' } : null,
+      { id: 'implementation-roadmap', label: '90-Day Path' },
       hasStack ? { id: 'stack-recommendations', label: 'Stack' } : null,
       { id: 'done-for-you-build', label: 'Build' },
     ].filter((section): section is ReportSectionItem => Boolean(section))
@@ -2404,7 +2333,6 @@ function ResultsContent() {
     hasContextSwitching,
     hasOnboardingAssessment,
     hasStackDetails,
-    hasRoadmap,
     hasStack,
     opportunities.length,
   ])
@@ -2706,7 +2634,7 @@ function ResultsContent() {
               <div>
                 <SectionLabel num="06" text="Automation Opportunities" />
                 <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface">
-                  Your Automation Blueprint
+                  Where You&apos;re Bleeding The Most
                 </h2>
               </div>
               <span
@@ -2737,48 +2665,35 @@ function ResultsContent() {
           </div>
         )}
 
-        {/* 07 · Implementation Roadmap */}
-        {hasRoadmap && (
-          <div id="implementation-roadmap" data-report-section>
-            <RevealSection>
-              <section>
-                <SectionLabel num="08" text="Implementation Roadmap" />
-                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
-                  Your 90-Day Plan
-                </h2>
-                <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
-                  Phased to deliver quick wins first, then compound value over time.
-                </p>
-
-                <div className="space-y-5">
-                    <VerticalRoadmap roadmap={roadmap} />
-                    {pathToVision && (
-                      <div
-                        className="p-6 rounded-[18px] relative overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(173,198,255,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}
-                      >
-                        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, transparent)' }} />
-                        <div className="flex items-start gap-4">
-                          <div
-                            className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5"
-                            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
-                          >
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                              <path d="M9 2l1.8 3.6L15 6.6l-3 2.9.7 4.1L9 11.8l-3.7 1.8.7-4.1-3-2.9 4.2-.9L9 2z" stroke="#a78bfa" strokeWidth="1.4" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#a78bfa] mb-2">Path to Your Vision</p>
-                            <p className="text-[14px] text-on-surface-variant leading-[1.75]">{pathToVision}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-              </section>
-            </RevealSection>
-          </div>
-        )}
+        {/* 07 · 90-Day Path CTA */}
+        <div id="implementation-roadmap" data-report-section>
+          <RevealSection>
+            <section>
+              <SectionLabel num="08" text="Your 90-Day Path" />
+              <div
+                className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10"
+                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+              >
+                <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, #4cd7f6)' }} />
+                <div className="p-7 text-center">
+                  <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-6">
+                    Your 90-day path is specific to your stack and business. We&apos;ll walk you through it on your strategy call.
+                  </p>
+                  <a
+                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackStrategyCallClick('roadmap-cta')}
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-[13px] text-[15px] font-bold text-white transition-all duration-200 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_45px_rgba(139,92,246,0.5)]"
+                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                  >
+                    Book Your Call →
+                  </a>
+                </div>
+              </div>
+            </section>
+          </RevealSection>
+        </div>
 
         {/* 08 · Tools Analysis */}
         {hasStack && (

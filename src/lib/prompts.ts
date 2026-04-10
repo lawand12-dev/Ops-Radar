@@ -13,6 +13,17 @@ ANALYSIS FRAMEWORK — apply all three to every audit:
 
 3. REVENUE DRAG: Use their client count and onboarding process answers. If onboarding takes 3 days manually but could take 3 hours automated, multiply the time saved by their client volume. Show what faster onboarding means for revenue capacity.
 
+AGENCY RESEARCH INTELLIGENCE — use this to make the diagnosis sharper:
+- If their website uses generic language, call out their positioning weakness in the hard truths
+- If they have no case studies, mention the trust gap
+- If their tech stack shows they use HubSpot/GoHighLevel/etc, weave those tools into your recommendations
+- If their blog is stale, flag it as operational neglect
+- If they have no pricing page, mention the manual sales cost
+- If LinkedIn shows small team but services page lists 10+ offerings, flag scope vs capacity risk
+- Quote one specific thing you found on their site in the executive summary to prove you did the research
+- If you couldn't fetch the site, say so honestly — don't fabricate
+- Use weakness signals to sharpen the hard_truth and urgency_reason fields
+
 PERSONALIZATION RULES:
 - Reference their EXACT tools by name in every recommendation
 - Reference their EXACT agency type in framing
@@ -36,6 +47,16 @@ ARCHITECTURE PRIORITIZATION:
 - If failure impact touches revenue, client trust, or delivery, emphasize the cost of inaction in the urgency_reason.
 
 ACCURACY RULES — non-negotiable:
+
+NUMBER RECONCILIATION — MANDATORY:
+- estimated_annual_waste MUST equal estimated_monthly_waste × 12
+- labor_arbitrage.annual_labor_waste must be LESS THAN OR EQUAL to estimated_annual_waste (labor is a subset of total waste)
+- context_switching.annual_cost must also be LESS THAN OR EQUAL to estimated_annual_waste
+- The sum of all opportunity annual_savings should approximately equal estimated_annual_waste (within 15%)
+- Lead with ANNUAL numbers in the executive_summary, not monthly. Annual numbers create more urgency.
+- The executive_summary must state the annual waste number as the first specific figure mentioned.
+- Clean up any quotes from user input — rewrite their words into clean professional language in your output.
+
 1. NEVER fabricate numbers. Every dollar figure must be calculated from their actual inputs (team size × estimated hourly rate × hours wasted).
 2. Use CONSERVATIVE estimates. If you're guessing, guess LOW. A realistic $15K/year waste is more believable than an inflated $50K/year waste.
 3. CALIBRATE by revenue. A $20K/month agency can't be wasting $100K/year. The waste number should be 10-30% of their annual revenue at most.
@@ -188,6 +209,7 @@ export type AuditInput = {
   websiteStackEvidence?: string
   websiteVisualContext?: string
   websiteVisualEvidence?: string
+  agencyResearchIntel?: string
   crmTool: string
   timeHeavy: string
   leadEntry: string
@@ -217,6 +239,7 @@ Public Website Stack Signals: ${sanitizeString(data.websiteDetectedStack || 'Not
 Public Website Stack Evidence: ${sanitizeString(data.websiteStackEvidence || 'Not provided')}
 Website Visual Analysis: ${sanitizeString(data.websiteVisualContext || 'Not provided')}
 Website Visual Evidence: ${sanitizeString(data.websiteVisualEvidence || 'Not provided')}
+Agency Research Intelligence: ${sanitizeString(data.agencyResearchIntel || 'Not provided')}
 Current Operations State: ${sanitizeString(data.crmTool)}
 Hours Lost Weekly to Low-Leverage Work: ${sanitizeString(data.timeHeavy)}
 When Operations Break: ${sanitizeString(data.leadEntry)}
