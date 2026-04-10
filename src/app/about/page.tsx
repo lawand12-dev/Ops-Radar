@@ -90,12 +90,12 @@ export default function AboutPage() {
           <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
             <div className="space-y-6">
-              <p className="text-base md:text-lg text-white/60 leading-relaxed">
+              <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
                 I&apos;m Lawand Soran. I build automation systems for agencies
                 from Kurdistan. No middlemen. No account managers. You work
                 directly with the person building your workflow.
               </p>
-              <p className="text-base md:text-lg text-white/60 leading-relaxed">
+              <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
                 OpsRadar is not a SaaS tool. It&apos;s not an agency. It&apos;s one
                 operator who builds, hosts, and maintains your automation
                 layer so you can focus on clients.
@@ -141,7 +141,7 @@ export default function AboutPage() {
                   <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
                     {title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-white/50">
+                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
                     {desc}
                   </p>
                 </div>

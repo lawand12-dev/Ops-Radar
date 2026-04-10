@@ -9,17 +9,17 @@ import BeamsBackground from '<npm>/components/ui/beams-background'
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "We build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by us.",
+    "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
   openGraph: {
     title: "Services — OpsRadar",
     description:
-      "We build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by us.",
+      "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
     images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
-      "We build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by us.",
+      "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
     images: ["/logo.png"],
   },
 }
@@ -35,18 +35,18 @@ const NAV_LINKS = [
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WHAT_WE_BUILD = [
+const WHAT_I_BUILD = [
   {
     title: 'Lead Qualification & Routing',
-    desc: 'New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds \u2014 automatically.',
+    desc: 'New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds — automatically.',
   },
   {
     title: 'Client Onboarding',
-    desc: 'A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup \u2014 all without anyone on your team lifting a finger.',
+    desc: 'A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup — all without anyone on your team lifting a finger.',
   },
   {
     title: 'Automated Reporting',
-    desc: 'Pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically \u2014 every week, with zero manual work.',
+    desc: 'I pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
   },
   {
     title: 'Email & Follow-up Sequences',
@@ -54,39 +54,39 @@ const WHAT_WE_BUILD = [
   },
   {
     title: 'Invoice & Payment Processing',
-    desc: 'Project completion triggers invoice generation, sends it to the client, follows up if unpaid, and notifies your team when it clears \u2014 no one has to chase payments manually.',
+    desc: 'Project completion triggers invoice generation, sends it to the client, follows up if unpaid, and notifies your team when it clears — no one has to chase payments manually.',
   },
   {
     title: 'Data Sync Between Tools',
-    desc: 'Keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere \u2014 no duplicate entry, no data drift.',
+    desc: 'I keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.',
   },
 ]
 
 const PROCESS_STEPS = [
   {
     n: '01',
-    title: 'You tell us the problem.',
-    desc: 'Start with a free audit or a quick call. Tell us which manual tasks are burning your team\u2019s time. No technical knowledge needed \u2014 plain English is fine.',
+    title: 'You tell me the problem.',
+    desc: 'Start with a free audit or a quick call. Tell me which manual tasks are burning your team\u2019s time. No technical knowledge needed — plain English is fine.',
   },
   {
     n: '02',
-    title: 'We scope & price it.',
-    desc: 'Within 48 hours you get a clear proposal: exactly what we\u2019ll build, how long it takes, and a fixed price. You approve before anything starts.',
+    title: 'I scope & price it.',
+    desc: 'Within 48 hours you get a clear proposal: exactly what I\u2019ll build, how long it takes, and a fixed price. You approve before anything starts.',
   },
   {
     n: '03',
-    title: 'We build & test.',
-    desc: 'We build the automation in n8n, integrate it with your existing tools, and test every path \u2014 including edge cases and error handling.',
+    title: 'I build & test.',
+    desc: 'I build the automation in n8n, integrate it with your existing tools, and test every path — including edge cases and error handling.',
   },
   {
     n: '04',
     title: 'You review & approve.',
-    desc: 'We walk you through the live workflow in a recorded session. Nothing goes live until you\u2019ve reviewed it and given the green light.',
+    desc: 'I walk you through the live workflow in a recorded session. Nothing goes live until you\u2019ve reviewed it and given the green light.',
   },
   {
     n: '05',
     title: 'It runs 24/7.',
-    desc: 'We deploy to our hosted infrastructure, set up monitoring, and maintain the workflow long-term. If something breaks at 3am \u2014 we fix it, not you.',
+    desc: 'I deploy to my hosted infrastructure, set up monitoring, and maintain the workflow long-term. If something breaks at 3am — I fix it, not you.',
   },
 ]
 
@@ -97,23 +97,23 @@ const FAQS = [
   },
   {
     q: 'How long does it take to build?',
-    a: 'Most single-workflow builds take 5\u201310 business days. More complex multi-workflow systems take 2\u20134 weeks. We give you a specific timeline in the proposal before you commit.',
+    a: 'Most single-workflow builds take 5\u201310 business days. More complex multi-workflow systems take 2\u20134 weeks. I give you a specific timeline in the proposal before you commit.',
   },
   {
     q: 'What if something breaks?',
-    a: 'On the Managed plan, we monitor every workflow 24/7 and fix it before you notice. On the One-Time Build plan, we include 30 days of free bug fixes after delivery.',
+    a: 'On the Managed plan, I monitor every workflow 24/7 and fix it before you notice. On the One-Time Build plan, I include 30 days of free bug fixes after delivery.',
   },
   {
-    q: 'Do we need technical knowledge?',
-    a: 'No. You describe your problem in plain English \u2014 we handle all the technical implementation. You\u2019ll review the workflow in a walkthrough session, but you won\u2019t need to touch any code.',
+    q: 'Do I need technical knowledge?',
+    a: 'No. You describe your problem in plain English — I handle all the technical implementation. You\u2019ll review the workflow in a walkthrough session, but you won\u2019t need to touch any code.',
   },
   {
-    q: 'Can we see the workflow before it goes live?',
-    a: 'Always. We record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.',
+    q: 'Can I see the workflow before it goes live?',
+    a: 'Always. I record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.',
   },
   {
-    q: 'What happens if we cancel?',
-    a: 'Cancel anytime with 30 days notice. We export your workflows and document them fully so you can self-host or hand them to your team. You never lose access.',
+    q: 'What happens if I cancel?',
+    a: 'Cancel anytime with 30 days notice. I export your workflows and document them fully so you can self-host or hand them to your team. You never lose access.',
   },
 ]
 
@@ -135,11 +135,11 @@ export default function ServicesPage() {
             Services
           </p>
           <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.08] mb-6">
-            What specifically do we build?
+            What specifically do I build?
           </h1>
-          <p className="text-lg md:text-xl text-white/50 max-w-2xl mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
             Six types of automation. All on n8n. All hosted, monitored, and
-            maintained by us. You describe the problem \u2014 we handle everything else.
+            maintained by me. You describe the problem \u2014 I handle everything else.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
@@ -154,7 +154,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ── What We Build ─────────────────────────────────────────────── */}
+      {/* ── What I Build ──────────────────────────────────────────────── */}
       <FadeInOnScroll>
         <section className="max-w-5xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
@@ -165,7 +165,7 @@ export default function ServicesPage() {
           </h2>
 
           <div className="space-y-0">
-            {WHAT_WE_BUILD.map(({ title, desc }, i) => (
+            {WHAT_I_BUILD.map(({ title, desc }, i) => (
               <div key={title}>
                 {i === 0 && (
                   <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -174,7 +174,7 @@ export default function ServicesPage() {
                   <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
                     {title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-white/50">
+                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
                     {desc}
                   </p>
                 </div>
@@ -211,7 +211,7 @@ export default function ServicesPage() {
                   <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
                     {title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-white/50">
+                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
                     {desc}
                   </p>
                 </div>
@@ -239,7 +239,7 @@ export default function ServicesPage() {
       <section className="py-32 px-6 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            See what we&apos;d automate for you.
+            See what I&apos;d automate for you.
           </h2>
           <p className="text-white/40 mb-10 leading-relaxed">
             3-minute audit. Instant results. No commitment.

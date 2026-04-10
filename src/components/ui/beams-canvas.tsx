@@ -323,6 +323,7 @@ export interface BeamsCanvasProps {
   noiseIntensity?: number
   scale?: number
   rotation?: number
+  onReady?: () => void
 }
 
 export default function BeamsCanvas({
@@ -334,6 +335,7 @@ export default function BeamsCanvas({
   noiseIntensity = 1.75,
   scale = 0.2,
   rotation = 0,
+  onReady,
 }: BeamsCanvasProps) {
   const meshRef = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>>(null!)
 
@@ -397,7 +399,7 @@ export default function BeamsCanvas({
   )
 
   return (
-    <Canvas dpr={[1, 2]} frameloop="always" className="w-full h-full relative">
+    <Canvas dpr={[1, 2]} frameloop="always" className="w-full h-full relative" onCreated={() => onReady?.()}>
       <group rotation={[0, 0, degToRad(rotation)]}>
         <PlaneNoise ref={meshRef} material={beamMaterial} count={beamNumber} width={beamWidth} height={beamHeight} />
         <DirLight color={lightColor} position={[0, 3, 10]} />
