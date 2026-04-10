@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
-import ChatWidget from "./components/ChatWidget";
+import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
 import ChatNotification from "./components/ChatNotification";
 import MobileDock from "<npm>/components/ui/mobile-dock";
 
@@ -111,7 +111,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <ChatNotification />
-        <ChatWidget />
+        <FloatingAiAssistant />
         <MobileDock />
       </body>
     </html>
