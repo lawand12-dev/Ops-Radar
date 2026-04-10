@@ -17,9 +17,6 @@ const RETAINER_TIERS = [
     name: 'Starter',
     price: '$300',
     period: '/mo',
-    color: '#10b981',
-    border: 'rgba(16,185,129,0.2)',
-    bg: 'rgba(16,185,129,0.05)',
     features: [
       'Monitor up to 1 workflow',
       'Fix broken integrations within 72h',
@@ -32,9 +29,6 @@ const RETAINER_TIERS = [
     name: 'Maintenance',
     price: '$800',
     period: '/mo',
-    color: '#06b6d4',
-    border: 'rgba(6,182,212,0.2)',
-    bg: 'rgba(6,182,212,0.05)',
     features: [
       'Monitor up to 3 workflows',
       'Fix broken integrations within 48h',
@@ -47,9 +41,6 @@ const RETAINER_TIERS = [
     name: 'Growth',
     price: '$1,800',
     period: '/mo',
-    color: '#3b82f6',
-    border: 'rgba(59,130,246,0.3)',
-    bg: 'rgba(59,130,246,0.07)',
     badge: 'Best Value',
     features: [
       'Monitor unlimited workflows',
@@ -65,9 +56,6 @@ const RETAINER_TIERS = [
     name: 'Operator',
     price: '$3,500',
     period: '/mo',
-    color: '#8b5cf6',
-    border: 'rgba(139,92,246,0.2)',
-    bg: 'rgba(139,92,246,0.05)',
     features: [
       'Everything in Growth',
       '1 Core System build per month included',
@@ -107,8 +95,11 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="relative min-h-screen bg-surface-container-lowest text-on-surface font-body">
-      <BeamsBackground intensity="subtle" />
+    <div className="relative min-h-screen bg-[#000000] text-white font-body">
+      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
+        <BeamsBackground intensity="subtle" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
+      </div>
       <SiteHeader
         sticky
         navLinks={[
@@ -123,142 +114,140 @@ export default function PricingPage() {
       />
 
       {/* Hero */}
-      <header className="relative overflow-hidden px-6 pb-16 pt-16 text-center sm:pt-20">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59,130,246,0.1) 0%, transparent 70%)' }} />
+      <header className="relative px-6 pb-16 pt-16 text-center sm:pt-20">
         <div className="relative z-10 max-w-3xl mx-auto">
-          <span className="section-tag justify-center mb-5">Pricing</span>
-          <h1 className="section-title mb-5 text-4xl md:text-6xl">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
+            Pricing
+          </p>
+          <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-[-0.03em] text-white mb-5">
             Transparent pricing.<br />
-            <span className="text-gradient-animated">No surprises.</span>
+            <span className="text-white/50">No surprises.</span>
           </h1>
-          <p className="section-copy mx-auto">
+          <p className="text-white/40 mx-auto max-w-lg leading-relaxed">
             One-time builds with fixed scope. Monthly retainers with real SLAs.
             Start with the free audit to know exactly which tier fits your needs.
           </p>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 pb-32 space-y-24">
+      <main className="relative z-10 max-w-6xl mx-auto px-6 pb-32 space-y-28">
 
         {/* One-time builds */}
         <BuildTiersSection />
 
         {/* Managed retainers */}
         <section>
-          <div className="mb-10">
-            <span className="section-tag">Managed Retainers</span>
-            <h2 className="section-title mt-2 text-3xl">We run your automation stack.</h2>
-            <p className="section-copy mt-2">Monthly plans that cover monitoring, maintenance, new builds, and ongoing support.</p>
+          <div className="mb-12">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+              Managed Retainers
+            </p>
+            <h2 className="font-headline text-3xl font-extrabold tracking-[-0.03em] text-white">
+              We run your automation stack.
+            </h2>
+            <p className="text-white/40 mt-2">
+              Monthly plans that cover monitoring, maintenance, new builds, and ongoing support.
+            </p>
           </div>
-          <div className="grid md:grid-cols-4 gap-6">
+
+          <div className="space-y-0">
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
             {RETAINER_TIERS.map((tier) => (
-              <div
-                key={tier.name}
-                className="surface-card relative flex flex-col overflow-hidden rounded-[24px]"
-                style={{
-                  borderColor: tier.border,
-                  background: `linear-gradient(180deg, ${tier.bg} 0%, rgba(8,12,19,0.98) 100%)`,
-                  boxShadow: `0 22px 70px ${tier.color}10`,
-                }}
-              >
-                {tier.badge && (
-                  <div
-                    className="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
-                    style={{ background: `${tier.color}20`, border: `1px solid ${tier.color}40`, color: tier.color }}
-                  >
-                    {tier.badge}
-                  </div>
-                )}
-                <div className="h-[2px]" style={{ background: `linear-gradient(90deg, ${tier.color}, ${tier.color}00)` }} />
-                <div className="p-7 flex flex-col flex-1 gap-6">
+              <div key={tier.name}>
+                <div className="grid grid-cols-1 md:grid-cols-[200px_120px_1fr] gap-4 md:gap-10 py-8 md:py-10 items-start">
                   <div>
-                    <h3 className="font-headline text-[22px] font-bold text-on-surface">{tier.name}</h3>
-                    <div className="flex items-baseline gap-1 mt-3">
-                      <span className="font-headline text-[36px] font-extrabold leading-none" style={{ color: tier.color }}>{tier.price}</span>
-                      <span className="text-on-surface-variant text-[14px]">{tier.period}</span>
-                    </div>
-                    <p className="text-[11px] text-on-surface-variant/40 mt-1">Cancel anytime. No contracts.</p>
+                    <h3 className="text-base font-semibold text-white/90">
+                      {tier.name}
+                    </h3>
+                    {tier.badge && (
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+                        {tier.badge}
+                      </span>
+                    )}
                   </div>
-                  <ul className="flex-1 space-y-2.5">
-                    {tier.features.map(f => (
-                      <li key={f} className="flex items-start gap-2.5 text-[13px] text-on-surface-variant">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mt-[2px] shrink-0" style={{ color: tier.color }}>
-                          <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.12"/>
-                          <path d="M4.5 7l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-[11px] text-on-surface-variant/40 italic leading-[1.6]">{tier.cta}</p>
-                  <a
-                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
-                    target="_blank" rel="noopener noreferrer"
-                    className="block text-center py-3 rounded-[12px] text-[13px] font-bold transition-all"
-                    style={{ background: `${tier.color}15`, border: `1px solid ${tier.color}35`, color: tier.color }}
-                  >
-                    Get Started →
-                  </a>
+                  <div>
+                    <span className="font-headline text-2xl font-extrabold text-white">{tier.price}</span>
+                    <span className="text-white/40 text-sm">{tier.period}</span>
+                  </div>
+                  <div>
+                    <ul className="space-y-1.5 mb-3">
+                      {tier.features.map(f => (
+                        <li key={f} className="text-[14px] text-white/50">
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-[12px] text-white/25 italic">{tier.cta}</p>
+                  </div>
                 </div>
+                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
               </div>
             ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <a
+              href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+              target="_blank" rel="noopener noreferrer"
+              className="text-[13px] font-semibold text-white/50 hover:text-white/80 transition-colors"
+            >
+              Book a call to discuss retainers &rarr;
+            </a>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="max-w-2xl mx-auto">
-          <h2 className="section-title mb-8 text-center text-2xl">Common questions</h2>
-          <div className="space-y-3">
+        <section className="max-w-3xl mx-auto">
+          <h2 className="font-headline text-2xl font-extrabold tracking-[-0.03em] text-white mb-10 text-center">
+            Common questions
+          </h2>
+          <div className="space-y-0">
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
             {FAQ.map(({ q, a }) => (
-              <div
-                key={q}
-                className="surface-card rounded-[18px] p-5"
-              >
-                <p className="font-semibold text-[14px] text-on-surface mb-2">{q}</p>
-                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{a}</p>
+              <div key={q}>
+                <div className="py-6">
+                  <p className="font-semibold text-[14px] text-white/80 mb-2">{q}</p>
+                  <p className="text-[13px] text-white/40 leading-[1.7]">{a}</p>
+                </div>
+                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
               </div>
             ))}
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="surface-panel relative overflow-hidden rounded-[28px] border border-primary/20 p-12 text-center">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 60% at 50% 100%, rgba(59,130,246,0.08) 0%, transparent 70%)' }} />
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
-          <div className="relative z-10">
-            <h2 className="section-title mb-4 text-3xl md:text-4xl">
-              Not sure which tier you need?
-            </h2>
-            <p className="section-copy mb-8 mx-auto max-w-md">
-              The free audit identifies exactly what to build and how complex it is.
-              Takes 3 minutes. Instant results.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/audit"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-[13px] bg-primary text-on-primary font-bold text-[15px] shadow-[0_0_30px_rgba(173,198,255,0.25)]"
-              >
-                Start Free Audit →
-              </Link>
-              <a
-                href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-7 py-4 rounded-[13px] font-semibold text-[14px] border border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface transition-all"
-              >
-                Book a Call Instead
-              </a>
-            </div>
+        <section className="text-center py-12">
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
+            Not sure which tier you need?
+          </h2>
+          <p className="text-white/40 mb-8 mx-auto max-w-md">
+            The free audit identifies exactly what to build and how complex it is.
+            Takes 3 minutes. Instant results.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/audit"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-white text-black font-semibold text-[15px]"
+            >
+              Start Free Audit &rarr;
+            </Link>
+            <a
+              href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-4 rounded-lg font-semibold text-[14px] border border-white/10 text-white/50 hover:border-white/20 hover:text-white/70 transition-all"
+            >
+              Book a Call Instead
+            </a>
           </div>
         </section>
       </main>
 
-      <footer className="footer-shell py-8">
+      <footer className="border-t py-8" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <div className="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-4">
-          <div className="text-lg font-bold text-on-surface">OpsRadar</div>
-          <p className="text-xs uppercase tracking-widest text-on-surface-variant/70">© 2026 OpsRadar. All rights reserved.</p>
+          <div className="text-lg font-bold text-white">OpsRadar</div>
+          <p className="text-xs uppercase tracking-widest text-white/20">&copy; 2026 OpsRadar. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/services" className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Services</Link>
-            <Link href="/audit"    className="text-xs uppercase tracking-widest text-on-surface-variant/70 hover:text-on-surface transition-colors">Free Audit</Link>
+            <Link href="/services" className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">Services</Link>
+            <Link href="/audit"    className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">Free Audit</Link>
           </div>
         </div>
       </footer>

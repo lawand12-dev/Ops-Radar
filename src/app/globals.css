@@ -1155,23 +1155,23 @@ body::after {
 }
 
 .dark {
-  --surface-container-lowest: #0a0e16;
-  --surface-container-low: #181c24;
-  --surface-container: #1c2028;
-  --surface-container-high: #262a33;
-  --surface-container-highest: #31353e;
-  --surface-bright: #353943;
-  --surface-variant: #31353e;
+  --surface-container-lowest: #000000;
+  --surface-container-low: #0a0a0a;
+  --surface-container: #111111;
+  --surface-container-high: #191919;
+  --surface-container-highest: #222222;
+  --surface-bright: #2a2a2a;
+  --surface-variant: #222222;
   --on-surface: #e0e2ee;
-  --on-surface-variant: #c2c6d6;
+  --on-surface-variant: #999999;
   --outline: #8c909f;
   --outline-variant: #424754;
 
-  --background: #0a0e16;
+  --background: #000000;
   --foreground: #e0e2ee;
-  --card: #1c2028;
+  --card: #0a0a0a;
   --card-foreground: #e0e2ee;
-  --popover: #1c2028;
+  --popover: #0a0a0a;
   --popover-foreground: #e0e2ee;
   --primary: #adc6ff;
   --primary-foreground: #002e6a;
@@ -1185,17 +1185,17 @@ body::after {
   --brand-tertiary-container: #df7412;
   --brand-error: #ffb4ab;
   --brand-error-container: #93000a;
-  --secondary: #262a33;
+  --secondary: #191919;
   --secondary-foreground: #e0e2ee;
-  --muted: #262a33;
-  --muted-foreground: #c2c6d6;
-  --accent: #31353e;
+  --muted: #191919;
+  --muted-foreground: #999999;
+  --accent: #222222;
   --accent-foreground: #e0e2ee;
   --destructive: #ffb4ab;
   --border: rgba(66, 71, 84, 0.25);
   --input: rgba(66, 71, 84, 0.25);
   --ring: #adc6ff;
-  --sidebar: #181c24;
+  --sidebar: #0a0a0a;
   --sidebar-foreground: #e0e2ee;
   --sidebar-primary: #adc6ff;
   --sidebar-primary-foreground: #002e6a;
@@ -1204,13 +1204,13 @@ body::after {
   --sidebar-border: rgba(66, 71, 84, 0.25);
   --sidebar-ring: #adc6ff;
 
-  --page-bg-start: #070b12;
-  --page-bg-mid: #0a0e16;
-  --page-bg-end: #090d15;
-  --page-spot-1: rgba(77, 142, 255, 0.14);
-  --page-spot-2: rgba(3, 181, 211, 0.1);
+  --page-bg-start: #000000;
+  --page-bg-mid: #000000;
+  --page-bg-end: #000000;
+  --page-spot-1: rgba(77, 142, 255, 0.06);
+  --page-spot-2: rgba(3, 181, 211, 0.04);
 
-  --blog-shell-bg: #0a0e16;
+  --blog-shell-bg: #000000;
   --blog-accent-1: rgba(77, 142, 255, 0.18);
   --blog-accent-2: rgba(3, 181, 211, 0.12);
   --blog-panel-start: rgba(28, 32, 40, 0.86);
