@@ -38,12 +38,11 @@ const STRING_FIELDS: Array<keyof RequestBody> = [
   'progressTracking',
   'automationWish',
   'processFrequency',
-  'processOwner',
   'failureImpact',
   'futureVision',
 ]
 
-const OPTIONAL_STRING_FIELDS: Array<keyof RequestBody> = ['toolSignals', 'websiteUrl']
+const OPTIONAL_STRING_FIELDS: Array<keyof RequestBody> = ['toolSignals', 'websiteUrl', 'processOwner']
 const ARRAY_COMPATIBLE_FIELDS = new Set<keyof RequestBody>(['tools', 'timeHeavy', 'onboarding'])
 
 function normalizeAuditField(
