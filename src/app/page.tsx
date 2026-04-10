@@ -95,6 +95,34 @@ export default function Home() {
           partners={[]}
           contentClassName="items-start pt-16 sm:pt-20 lg:pt-24"
         />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 -mt-8">
+          <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-[11px] text-white/40">
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              3-minute AI audit
+            </span>
+            <span className="text-white/20">&middot;</span>
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              No signup. No credit card.
+            </span>
+            <span className="text-white/20">&middot;</span>
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Real dollar numbers, not fluff
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* ── 2. Who ───────────────────────────────────────────────────── */}
@@ -291,6 +319,32 @@ export default function Home() {
           <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
             <Link href="/audit">Start Free Audit &rarr;</Link>
           </Button>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/40">
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              3-minute AI audit
+            </span>
+            <span className="text-white/20">&middot;</span>
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              No signup. No credit card.
+            </span>
+            <span className="text-white/20">&middot;</span>
+            <span className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Real dollar numbers, not fluff
+            </span>
+          </div>
         </div>
       </section>
 
