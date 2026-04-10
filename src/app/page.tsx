@@ -8,85 +8,66 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 export const metadata: Metadata = {
   title: "OpsRadar — Done-For-You Automation for Agencies",
   description:
-    "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+    "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
   openGraph: {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
     images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
     images: ["/logo.png"],
   },
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Nav ───────────────────────────────────────────────────────────────────────
 
-const PAIN_POINTS = [
-  {
-    title: 'Reporting Waste',
-    desc: 'Account managers spending 10+ hours a week manually compiling client data into decks.',
-  },
-  {
-    title: 'Data Re-entry',
-    desc: 'Information living in 5 different tools, requiring constant manual copying between CRM and PM tools.',
-  },
-  {
-    title: 'Follow-ups Failing',
-    desc: 'Leads falling through the cracks because the manual follow-up process gets forgotten during busy weeks.',
-  },
-  {
-    title: 'Slow Onboarding',
-    desc: 'Taking 7 days to get a client into your Slack and PM tool instead of 7 minutes.',
-  },
-  {
-    title: 'Context Loss',
-    desc: 'Critical sales notes never making it to the fulfillment team during handoffs.',
-  },
-  {
-    title: 'Slow Proposals',
-    desc: 'Losing deals to faster competitors because it takes you 48 hours to generate a custom proposal.',
-  },
-]
-
-const SOLUTIONS = [
-  {
-    tag: 'Sales Ops',
-    title: 'Lead Qualification',
-    desc: 'Automatically grade leads based on CRM data, LinkedIn profiles, and company size before they hit your calendar.',
-    tools: ['GoHighLevel', 'OpenAI', 'Clay'],
-  },
-  {
-    tag: 'Reporting',
-    title: 'Automated Reporting',
-    desc: 'Real-time dashboards that pull from Meta, Google, and Stripe, delivered to clients via Slack or email weekly.',
-    tools: ['Looker Studio', 'Supermetrics', 'Slack'],
-  },
-  {
-    tag: 'Retention',
-    title: 'Client Onboarding',
-    desc: 'Trigger contract signing, folder creation, Slack channel invites, and welcome emails with a single CRM stage change.',
-    tools: ['PandaDoc', 'ClickUp', 'Gmail'],
-  },
-  {
-    tag: 'Engagement',
-    title: 'Smart Follow-ups',
-    desc: 'Multi-channel sequence that pauses as soon as a meeting is booked or a payment is received.',
-    tools: ['Instantly', 'HubSpot', 'n8n'],
-  },
-]
-
-const HOME_NAV_LINKS = [
+const NAV_LINKS = [
   { label: 'Home', href: '/', isActive: true },
   { label: 'Services', href: '/services' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
-  { label: 'Problems', href: '/#pain' },
-  { label: 'How It Works', href: '/#how' },
-  { label: 'Systems', href: '/#showcase' },
+]
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const WHAT_WE_DO = [
+  {
+    title: 'We diagnose.',
+    desc: '3-minute AI audit identifies exactly where your agency is losing time and money.',
+  },
+  {
+    title: 'We build.',
+    desc: 'Custom n8n workflows built on our infrastructure, tested, documented, delivered in 5\u201314 days.',
+  },
+  {
+    title: 'We maintain.',
+    desc: 'We host, monitor, and fix broken workflows 24/7. You never touch the automation layer.',
+  },
+]
+
+const WHY_US = [
+  {
+    title: 'Freelancers disappear. We stay.',
+    desc: 'Every build includes a bug-fix window + option to continue on retainer.',
+  },
+  {
+    title: 'Zapier charges per task. We don\u2019t.',
+    desc: 'n8n runs on our infrastructure with zero per-task fees. Run 100 or 100,000 tasks \u2014 same cost.',
+  },
+  {
+    title: 'AI-first, human-verified.',
+    desc: 'AI builds fast. A human (me) reviews every workflow before it touches your business.',
+  },
+]
+
+const FOUNDER_BULLETS = [
+  'Direct founder access',
+  '8-hour timezone advantage for US/EU clients',
+  'Work delivered in days, not weeks',
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -95,24 +76,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#000000] text-white font-body selection:bg-primary/20">
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      {/* ── 1. Hero ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
         <BeamsBackground intensity="full" />
         <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/40 via-transparent to-black/60" />
         <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
         <ResponsiveHeroBanner
-          navLinks={HOME_NAV_LINKS}
+          navLinks={NAV_LINKS}
           badgeLabel=""
-          badgeText="Done-for-you automation for agencies that need reliable execution"
-          title="We Build Your Automations."
-          titleLine2="You Focus on Growth."
-          description="I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow."
+          badgeText="Done-for-you agency automation"
+          title="Your agency's operations,"
+          titleLine2="running on autopilot."
+          description="Hi, I'm Lawand. I build, host, and maintain custom automations for agencies using n8n. You tell me what's broken. I fix it. You never touch a workflow."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
-          secondaryButtonText="See How It Works"
-          secondaryButtonHref="#how"
+          secondaryButtonText="Book a 20-min call"
+          secondaryButtonHref="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
           showSecondaryIcon={false}
           partnersTitle=""
           partners={[]}
@@ -120,86 +101,109 @@ export default function Home() {
         />
       </section>
 
-      {/* ── Pain Points ──────────────────────────────────────────────── */}
-      <section id="pain" className="py-32 px-6 max-w-5xl mx-auto">
-        <FadeInOnScroll className="mb-20">
+      {/* ── 2. Who ───────────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="py-28 px-6 max-w-5xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            The Problem
+            Who
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] max-w-xl" style={{ letterSpacing: '-0.03em' }}>
-            Operational debt is the silent agency killer.
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
+            Built by one operator, not an agency of middlemen.
           </h2>
-        </FadeInOnScroll>
 
-        <div className="space-y-0">
-          {PAIN_POINTS.map(({ title, desc }, i) => (
-            <div key={title}>
-              {i === 0 && (
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-16 py-8 md:py-10">
-                <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]" style={{ letterSpacing: '0.01em' }}>
-                  {title}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-white/50">
-                  {desc}
-                </p>
-              </div>
-              <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            </div>
-          ))}
-        </div>
-      </section>
+          <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-      {/* ── Solutions Showcase ─────────────────────────────────────────── */}
-      <section id="showcase" className="py-32 px-6 max-w-5xl mx-auto">
-        <FadeInOnScroll className="mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 py-12">
+            <p className="text-[15px] leading-[1.8] text-white/60">
+              I&apos;m Lawand Soran, founder of OpsRadar. I build automation
+              systems for agencies from Kurdistan. No middlemen. No account
+              managers. You work directly with the person building your workflow.
+            </p>
+            <ul className="space-y-5">
+              {FOUNDER_BULLETS.map(b => (
+                <li key={b} className="flex items-start gap-3">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
+                  <span className="text-[15px] text-white/80">{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        </section>
+      </FadeInOnScroll>
+
+      {/* ── 3. What We Do ────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="py-28 px-6 max-w-5xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Solutions
+            What
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] max-w-xl" style={{ letterSpacing: '-0.03em' }}>
-            Enterprise-grade systems for boutique agencies.
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
+            Three things we do, and nothing else.
           </h2>
-        </FadeInOnScroll>
 
-        <div className="space-y-0">
-          {SOLUTIONS.map(({ tag, title, desc, tools }, i) => (
-            <div key={title}>
-              {i === 0 && (
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              )}
-              <div className="py-10 md:py-12">
-                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/30 mb-3">
-                  {tag}
-                </p>
-                <h3 className="text-xl md:text-2xl font-bold text-white/90 mb-4 tracking-[-0.02em]" style={{ letterSpacing: '-0.02em' }}>
-                  {title}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-white/50 max-w-2xl mb-5">
-                  {desc}
-                </p>
-                <div className="flex gap-4 flex-wrap">
-                  {tools.map(t => (
-                    <span key={t} className="text-[13px] text-white/30 hover:text-white/60 transition-colors">
-                      {t}
-                    </span>
-                  ))}
+          <div className="space-y-0">
+            {WHAT_WE_DO.map(({ title, desc }, i) => (
+              <div key={title}>
+                {i === 0 && (
+                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 md:gap-16 py-8 md:py-10">
+                  <h3 className="text-lg font-bold text-white/90 tracking-[-0.01em]">
+                    {title}
+                  </h3>
+                  <p className="text-[15px] leading-relaxed text-white/50">
+                    {desc}
+                  </p>
                 </div>
+                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
               </div>
-              <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      </FadeInOnScroll>
 
-      {/* ── CTA ──────────────────────────────────────────────────────── */}
-      <section className="py-40 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-headline text-4xl md:text-6xl font-extrabold mb-8 tracking-[-0.03em] text-white" style={{ letterSpacing: '-0.03em' }}>
-            Stop managing automations.{' '}
-            <br />
-            <span className="text-white/50">Start using them.</span>
+      {/* ── 4. Why Us ────────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="py-28 px-6 max-w-5xl mx-auto">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+            Why
+          </p>
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
+            Why agencies choose OpsRadar over freelancers and Zapier.
           </h2>
+
+          <div className="space-y-0">
+            {WHY_US.map(({ title, desc }, i) => (
+              <div key={title}>
+                {i === 0 && (
+                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 md:gap-16 py-8 md:py-10">
+                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
+                    {title}
+                  </h3>
+                  <p className="text-[15px] leading-relaxed text-white/50">
+                    {desc}
+                  </p>
+                </div>
+                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              </div>
+            ))}
+          </div>
+        </section>
+      </FadeInOnScroll>
+
+      {/* ── 5. Final CTA ─────────────────────────────────────────────── */}
+      <section className="py-40 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="font-headline text-4xl md:text-6xl font-extrabold mb-5 tracking-[-0.03em] text-white">
+            See exactly what to automate, in 3 minutes.
+          </h2>
+          <p className="text-white/40 mb-10 text-lg">
+            Free audit. No signup. No credit card.
+          </p>
           <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
             <Link href="/audit">Start Free Audit &rarr;</Link>
           </Button>
@@ -215,6 +219,7 @@ export default function Home() {
           </p>
           <div className="flex gap-6">
             <Link href="/services" className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Services</Link>
+            <Link href="/pricing"  className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Pricing</Link>
             <Link href="/about"    className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">About</Link>
             <Link href="/audit"    className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Free Audit</Link>
           </div>
