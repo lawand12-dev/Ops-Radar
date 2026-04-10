@@ -1,7 +1,7 @@
 "use client"
 
 import { LimelightNav } from "<npm>/components/ui/limelight-nav"
-import { Home, Zap, DollarSign, User, FileText } from "lucide-react"
+import { Home, Zap, Workflow, DollarSign, User, FileText } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 
 export default function MobileDock() {
@@ -20,6 +20,12 @@ export default function MobileDock() {
       icon: <Zap />,
       label: "Services",
       onClick: () => router.push("/services"),
+    },
+    {
+      id: "workflows",
+      icon: <Workflow />,
+      label: "Workflows",
+      onClick: () => router.push("/workflows"),
     },
     {
       id: "audit",
