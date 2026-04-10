@@ -39,14 +39,48 @@ const NAV_LINKS = [
 const WORKFLOWS = [
   {
     category: 'CLIENT OPS',
+    categoryColor: 'text-blue-400/80',
     title: 'Zero-Touch Client Onboarding',
     description:
-      "When a contract gets signed, this workflow kicks off everything automatically: AI parses the contract to extract client details, creates a dedicated Google Drive folder, spins up a Slack channel, and sends the welcome email. Your team goes from 'deal closed' to 'client fully onboarded' without touching a thing.",
+      "The moment a contract gets signed, this workflow handles everything manually done before. AI parses the contract to extract client details, a Google Drive folder is created for assets, a dedicated Slack channel goes live for team communication, and a personalized welcome email ships out. Your ops team goes from 'deal closed' to 'client fully onboarded' without lifting a finger.",
     image: '/workflows/workflow-1.png',
-    stats: 'Saves ~6 hours per client · 5 tool integrations · Delivered in 4 days',
-    flow: 'Contract Webhook → AI Parse → Drive → Slack → Gmail → Response',
+    stats: 'Saves ~6 hours per client · 5 tool integrations · Runs 24/7',
+    flow: 'Contract Webhook → AI Parse → Drive Folder → Slack Channel → Welcome Email → Done',
+    tools: ['Webhook', 'OpenAI', 'Google Drive', 'Slack', 'Gmail'],
   },
-  // More workflows added here later
+  {
+    category: 'REVENUE OPS',
+    categoryColor: 'text-emerald-400/80',
+    title: 'Daily Client Performance Briefing',
+    description:
+      "Every weekday at 8AM, this workflow pulls live ad metrics and analytics data, compares them against yesterday's numbers, and sends an AI-generated executive briefing to the team. When something goes wrong — a sudden spend spike, a conversion drop, a delivery issue — it routes an urgent Slack alert instead of the regular report. Your account managers walk in already knowing what needs attention.",
+    image: '/workflows/workflow-2.png',
+    stats: 'Saves ~10 hours per week · 6 tool integrations · Runs every weekday',
+    flow: 'Schedule → Ad Metrics + GA4 → Merge → AI Analysis → Routing → Slack or Email',
+    tools: ['Schedule', 'HTTP Request', 'OpenAI', 'Slack', 'Gmail'],
+  },
+  {
+    category: 'SALES OPS',
+    categoryColor: 'text-purple-400/80',
+    title: 'AI Lead Qualification & Routing',
+    description:
+      'Every new lead hits the webhook, gets enriched with firmographic data, then runs through an AI scorer with conversation memory that grades them 1-100 based on company size, role, and intent. Hot leads (70+) fire straight into HubSpot and ping the sales team in Slack for immediate follow-up. Cold leads go to the nurture sequence automatically. No more hot leads cooling off because someone was busy.',
+    image: '/workflows/workflow-3.png',
+    stats: 'Saves ~12 hours per week · 5 tool integrations · Real-time scoring',
+    flow: 'Webhook → Enrich → AI Scorer → Hot/Cold Router → HubSpot + Slack',
+    tools: ['Webhook', 'GPT-4o', 'Postgres', 'HubSpot', 'Slack'],
+  },
+  {
+    category: 'CONTENT OPS',
+    categoryColor: 'text-orange-400/80',
+    title: 'AI Content Machine — Multi-Channel Repurposing',
+    description:
+      'Feed it one article, it generates a LinkedIn post, Twitter thread, Instagram caption, and Facebook post — all tailored to each platform\'s voice and audience. Every piece gets logged to a Google Sheet for tracking, then routed through a Slack approval request. You write once, publish everywhere, and never burn hours on manual repurposing again.',
+    image: '/workflows/workflow-4.png',
+    stats: 'Saves ~8 hours per article · 7 tool integrations · One input, four channels',
+    flow: 'Content Webhook → Fetch → Extract → AI Strategist → 4 Channels → Merge → Sheets → Slack',
+    tools: ['Webhook', 'OpenAI', 'Google Sheets', 'Slack'],
+  },
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -83,18 +117,20 @@ export default function WorkflowsPage() {
       <section className="max-w-4xl mx-auto px-6 py-24">
         {WORKFLOWS.map((wf, i) => (
           <FadeInOnScroll key={wf.title}>
-            <div className="py-16 first:pt-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-blue-400/80 mb-4">
+            <div className="py-20 first:pt-0">
+              <p className={`text-[11px] font-bold uppercase tracking-[0.25em] ${wf.categoryColor} mb-4`}>
                 {wf.category}
               </p>
-              <h2 className="font-headline text-2xl md:text-3xl font-extrabold tracking-[-0.02em] text-white mb-4">
+              <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-[-0.02em] text-white mb-5">
                 {wf.title}
               </h2>
-              <p className="text-[15px] leading-[1.8] text-white/[0.65] max-w-2xl mb-10">
+              <p className="text-base leading-[1.8] text-white/[0.7] max-w-2xl mb-10">
                 {wf.description}
               </p>
 
-              <WorkflowImage src={wf.image} alt={`${wf.title} — n8n workflow canvas`} />
+              <div className="rounded-2xl overflow-hidden border border-white/10">
+                <WorkflowImage src={wf.image} alt={`${wf.title} — n8n workflow canvas`} />
+              </div>
 
               <p className="mt-6 text-[13px] text-white/40 tracking-wide">
                 {wf.stats}
@@ -102,6 +138,17 @@ export default function WorkflowsPage() {
               <p className="mt-2 text-[13px] text-white/30 font-mono tracking-wide">
                 {wf.flow}
               </p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {wf.tools.map((tool) => (
+                  <span
+                    key={tool}
+                    className="inline-block rounded-full bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-white/50 tracking-wide"
+                  >
+                    {tool}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {i < WORKFLOWS.length - 1 && (

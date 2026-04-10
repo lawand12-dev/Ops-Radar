@@ -157,12 +157,29 @@ export default function Home() {
 
           <div className="h-px w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-          <div className="max-w-2xl mx-auto">
-            <WorkflowImage
-              src="/workflows/workflow-1.png"
-              alt="Zero-Touch Client Onboarding — n8n workflow"
-              sizes="(max-width: 768px) 100vw, 672px"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {[
+              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-blue-400/80' },
+              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-emerald-400/80' },
+              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-purple-400/80' },
+              { src: '/workflows/workflow-4.png', title: 'AI Content Machine', category: 'CONTENT OPS', color: 'text-orange-400/80' },
+            ].map((wf) => (
+              <Link key={wf.src} href="/workflows" className="group block">
+                <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/20">
+                  <WorkflowImage
+                    src={wf.src}
+                    alt={`${wf.title} — n8n workflow`}
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                  />
+                </div>
+                <p className={`mt-3 text-[10px] font-bold uppercase tracking-[0.25em] ${wf.color}`}>
+                  {wf.category}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
+                  {wf.title}
+                </p>
+              </Link>
+            ))}
           </div>
 
           <div className="mt-10 text-center">
