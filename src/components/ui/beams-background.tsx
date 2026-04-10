@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import dynamic from "next/dynamic"
 
 const BeamsCanvas = dynamic(() => import("./beams-canvas"), {
@@ -37,6 +37,7 @@ interface BeamsBackgroundProps {
 export default function BeamsBackground({ intensity }: BeamsBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [canvasReady, setCanvasReady] = useState(false)
 
   useEffect(() => {
     const el = containerRef.current
@@ -47,6 +48,10 @@ export default function BeamsBackground({ intensity }: BeamsBackgroundProps) {
     )
     observer.observe(el)
     return () => observer.disconnect()
+  }, [])
+
+  const handleCanvasReady = useCallback(() => {
+    setCanvasReady(true)
   }, [])
 
   const config = intensity === "full" ? FULL_CONFIG : SUBTLE_CONFIG
@@ -69,9 +74,49 @@ export default function BeamsBackground({ intensity }: BeamsBackgroundProps) {
           : { position: "absolute", inset: 0 }
       }
     >
-      {/* CSS gradient fallback while canvas loads */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black" />
-      {isVisible && <BeamsCanvas {...config} />}
+      {/* CSS gradient fallback — renders instantly while Three.js initializes */}
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: canvasReady ? 0 : 1,
+          transition: "opacity 400ms ease-out",
+          background: "linear-gradient(43deg, #000000 0%, #000000 100%)",
+        }}
+      >
+        {/* Animated faint beam streaks via pure CSS */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "repeating-linear-gradient(" +
+              "43deg, " +
+              "transparent, " +
+              "transparent 8%, " +
+              "rgba(255,255,255,0.015) 8.5%, " +
+              "transparent 9%, " +
+              "transparent 14%, " +
+              "rgba(255,255,255,0.025) 14.5%, " +
+              "transparent 15%, " +
+              "transparent 22%, " +
+              "rgba(255,255,255,0.01) 22.5%, " +
+              "transparent 23%, " +
+              "transparent 35%, " +
+              "rgba(255,255,255,0.02) 35.5%, " +
+              "transparent 36%" +
+              ")",
+            animation: "beamsFallbackShift 8s linear infinite",
+          }}
+        />
+        {/* Soft glow spot */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 40% at 50% 40%, rgba(255,255,255,0.04), transparent 70%)",
+          }}
+        />
+      </div>
+      {isVisible && <BeamsCanvas {...config} onReady={handleCanvasReady} />}
     </div>
   )
 }

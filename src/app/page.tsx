@@ -34,40 +34,34 @@ const NAV_LINKS = [
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WHAT_WE_DO = [
+const WHAT_I_DO = [
   {
-    title: 'We diagnose.',
-    desc: '3-minute AI audit identifies exactly where your agency is losing time and money.',
+    title: 'I diagnose.',
+    desc: 'A 3-minute AI audit identifies exactly where your agency is losing time and money. Free, no signup.',
   },
   {
-    title: 'We build.',
-    desc: 'Custom n8n workflows built on our infrastructure, tested, documented, delivered in 5\u201314 days.',
+    title: 'I build.',
+    desc: 'Custom n8n workflows built on my infrastructure, tested, documented, delivered in days.',
   },
   {
-    title: 'We maintain.',
-    desc: 'We host, monitor, and fix broken workflows 24/7. You never touch the automation layer.',
+    title: 'I maintain.',
+    desc: 'I host, monitor, and fix broken workflows. You never touch the automation layer.',
   },
 ]
 
 const WHY_US = [
   {
-    title: 'Freelancers disappear. We stay.',
-    desc: 'Every build includes a bug-fix window + option to continue on retainer.',
+    title: 'Freelancers disappear. I stay.',
+    desc: 'Every build includes a bug-fix window plus optional retainer for ongoing care.',
   },
   {
-    title: 'Zapier charges per task. We don\u2019t.',
-    desc: 'n8n runs on our infrastructure with zero per-task fees. Run 100 or 100,000 tasks \u2014 same cost.',
+    title: 'Zapier charges per task. n8n doesn\u2019t.',
+    desc: 'Your workflows run on my infrastructure with zero per-task fees. Run 100 or 100,000 tasks. Same cost.',
   },
   {
-    title: 'AI-first, human-verified.',
-    desc: 'AI builds fast. A human (me) reviews every workflow before it touches your business.',
+    title: 'AI builds fast. I verify every line.',
+    desc: 'AI accelerates the build. A human (me) reviews every workflow before it touches your business.',
   },
-]
-
-const FOUNDER_BULLETS = [
-  'Direct founder access',
-  '8-hour timezone advantage for US/EU clients',
-  'Work delivered in days, not weeks',
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -88,7 +82,7 @@ export default function Home() {
           badgeText="Done-for-you agency automation"
           title="Your agency's operations,"
           titleLine2="running on autopilot."
-          description="Hi, I'm Lawand. I build, host, and maintain custom automations for agencies using n8n. You tell me what's broken. I fix it. You never touch a workflow."
+          description="I'm Lawand. I build, host, and maintain custom automations for agencies using n8n. You tell me what's broken. I fix it. You never touch a workflow."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
@@ -103,29 +97,45 @@ export default function Home() {
 
       {/* ── 2. Who ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-28 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-5xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Who
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Built by one operator, not an agency of middlemen.
+            One operator. No middlemen.
           </h2>
 
           <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 py-12">
-            <p className="text-[15px] leading-[1.8] text-white/60">
+            <p className="text-[15px] leading-[1.8] text-white/[0.65]">
               I&apos;m Lawand Soran, founder of OpsRadar. I build automation
-              systems for agencies from Kurdistan. No middlemen. No account
-              managers. You work directly with the person building your workflow.
+              systems for agencies from Kurdistan. You work directly with
+              the person building your workflow &mdash; no account managers,
+              no sales handoffs, no project managers between you and the work.
             </p>
-            <ul className="space-y-5">
-              {FOUNDER_BULLETS.map(b => (
-                <li key={b} className="flex items-start gap-3">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
-                  <span className="text-[15px] text-white/80">{b}</span>
-                </li>
-              ))}
+            <ul className="space-y-6">
+              <li className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
+                <span className="text-[15px] text-white/80">
+                  <span className="font-semibold text-white/90">Direct founder access</span>
+                  {' '}&mdash; every message reaches me, not a ticket queue
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
+                <span className="text-[15px] text-white/80">
+                  <span className="font-semibold text-white/90">8-hour timezone advantage</span>
+                  {' '}&mdash; work ships while your team sleeps
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
+                <span className="text-[15px] text-white/80">
+                  <span className="font-semibold text-white/90">Days, not weeks</span>
+                  {' '}&mdash; most builds delivered in 5&ndash;14 days
+                </span>
+              </li>
             </ul>
           </div>
 
@@ -133,18 +143,18 @@ export default function Home() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── 3. What We Do ────────────────────────────────────────────── */}
+      {/* ── 3. What ──────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-28 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-5xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             What
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Three things we do, and nothing else.
+            Three things I do, nothing else.
           </h2>
 
           <div className="space-y-0">
-            {WHAT_WE_DO.map(({ title, desc }, i) => (
+            {WHAT_I_DO.map(({ title, desc }, i) => (
               <div key={title}>
                 {i === 0 && (
                   <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -153,7 +163,7 @@ export default function Home() {
                   <h3 className="text-lg font-bold text-white/90 tracking-[-0.01em]">
                     {title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-white/50">
+                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
                     {desc}
                   </p>
                 </div>
@@ -164,14 +174,14 @@ export default function Home() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── 4. Why Us ────────────────────────────────────────────────── */}
+      {/* ── 4. Why ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-28 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-5xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Why
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Why agencies choose OpsRadar over freelancers and Zapier.
+            Why agencies choose OpsRadar.
           </h2>
 
           <div className="space-y-0">
@@ -184,7 +194,7 @@ export default function Home() {
                   <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
                     {title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-white/50">
+                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
                     {desc}
                   </p>
                 </div>
