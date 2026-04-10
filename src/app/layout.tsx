@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import ChatWidget from "./components/ChatWidget";
 import ChatNotification from "./components/ChatNotification";
+import MobileDock from "<npm>/components/ui/mobile-dock";
 
 const sansFont = localFont({
   src: [
@@ -111,6 +112,7 @@ export default function RootLayout({
         {children}
         <ChatNotification />
         <ChatWidget />
+        <MobileDock />
       </body>
     </html>
   );
