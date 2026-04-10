@@ -1020,46 +1020,49 @@ function ForensicMatchPanel({
               </div>
             )}
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <div className="rounded-[18px] border border-emerald-400/14 bg-emerald-400/7 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300/80 mb-2">
-                  Detected Publicly
-                </p>
-                <div className="space-y-2.5">
-                  {(detectedHighlights.length > 0 ? detectedHighlights : ['No strong public site signals were available.']).map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
-                    >
-                      <p className="text-[13px] leading-[1.6] text-on-surface">
-                        {item}
-                      </p>
+            {(detectedHighlights.length > 0 || inferredHighlights.length > 0) && (
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {detectedHighlights.length > 0 && (
+                  <div className="rounded-[18px] border border-emerald-400/14 bg-emerald-400/7 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300/80 mb-2">
+                      Detected Publicly
+                    </p>
+                    <div className="space-y-2.5">
+                      {detectedHighlights.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                        >
+                          <p className="text-[13px] leading-[1.6] text-on-surface">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                )}
 
-              <div className="rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
-                  Inferred By OpsRadar
-                </p>
-                <div className="space-y-2.5">
-                  {(inferredHighlights.length > 0
-                    ? inferredHighlights
-                    : ['OpsRadar used your pain, stack, and public evidence to rank the most likely highest-leverage build.']
-                  ).map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
-                    >
-                      <p className="text-[13px] leading-[1.6] text-on-surface">
-                        {item}
-                      </p>
+                {inferredHighlights.length > 0 && (
+                  <div className="rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
+                      Inferred By OpsRadar
+                    </p>
+                    <div className="space-y-2.5">
+                      {inferredHighlights.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                        >
+                          <p className="text-[13px] leading-[1.6] text-on-surface">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
           </div>
 
