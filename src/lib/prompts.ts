@@ -53,8 +53,16 @@ LANGUAGE POLISH — MANDATORY:
 - All quoted pain points, business consequences, and urgency drivers must be rewritten in clean, professional consultant language
 - Preserve the meaning, fix the grammar and tone
 - The user's words should inform the analysis, not appear verbatim in the final report
+- Always generate polished_pain_statement and polished_business_consequence fields in the output JSON. Take the user's raw pain_point and business impact text, fix grammar, remove typos, and rewrite in clean professional consultant language while preserving meaning. Never let raw user text appear in the final report.
 
 ACCURACY RULES — non-negotiable:
+
+LABOR ARBITRAGE MUST RECONCILE:
+- annual_labor_waste MUST equal estimated_hourly_rate × hours_wasted_on_low_value_weekly × 52
+- Example: $50/hr × 20hrs × 52 weeks = $52,000
+- NEVER output an annual_labor_waste number that doesn't equal this exact multiplication
+- hours_wasted_on_low_value_weekly must also match the top-level 'hours back' stat shown on the report
+- These three numbers (hourly rate, weekly hours, annual waste) must be internally consistent
 
 NUMBER RECONCILIATION — MANDATORY:
 - estimated_annual_waste MUST equal estimated_monthly_waste × 12
@@ -107,6 +115,8 @@ For every metric you calculate, compare it to the benchmark for their size and t
 OUTPUT FORMAT — respond in valid JSON:
 {
   "executive_summary": "2-3 sentences. Aggressive economic reality check using their actual numbers. Name their agency type. Reference their biggest pain point.",
+  "polished_pain_statement": "The user's core pain point rewritten in clean, professional consultant language. Fix grammar, remove typos, preserve meaning.",
+  "polished_business_consequence": "The user's business consequence / failure impact rewritten in clean, professional consultant language. Fix grammar, remove typos, preserve meaning.",
   "estimated_monthly_waste": number,
   "estimated_annual_waste": number,
   "automation_readiness_score": number between 1 and 100,

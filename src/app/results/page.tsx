@@ -91,6 +91,8 @@ type AuditResult = {
   report_stage?: 'preview' | 'full'
   preview_notice?: string
   executive_summary?: string
+  polished_pain_statement?: string
+  polished_business_consequence?: string
   estimated_monthly_waste?: number
   estimated_annual_waste?: number
   automation_readiness_score?: number
@@ -861,18 +863,20 @@ function TransformationStrip({
 function ForensicMatchPanel({
   company,
   context,
+  audit,
   leadOpportunity,
   topRisk,
 }: {
   company: string
   context: AuditContext | null
+  audit: AuditResult | null
   leadOpportunity: Opportunity | null
   topRisk: string
 }) {
-  const quote = context?.automationWish?.trim() || topRisk
+  const quote = audit?.polished_pain_statement?.trim() || context?.automationWish?.trim() || topRisk
   const frequency = context?.processFrequency?.trim()
   const owner = context?.processOwner?.trim()
-  const failureImpact = context?.failureImpact?.trim()
+  const failureImpact = audit?.polished_business_consequence?.trim() || context?.failureImpact?.trim()
   const declaredTools = uniqueStrings([
     ...splitCommaList(context?.tools),
     ...(context?.crmTool ? [context.crmTool] : []),
@@ -2507,6 +2511,7 @@ function ResultsContent() {
           <ForensicMatchPanel
             company={company}
             context={auditContext}
+            audit={a}
             leadOpportunity={leadOpportunity}
             topRisk={topRisk}
           />
