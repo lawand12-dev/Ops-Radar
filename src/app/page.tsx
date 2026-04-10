@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import BeamsBackground from '<npm>/components/ui/beams-background'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
+import WorkflowImage from '<npm>/components/ui/workflow-image'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Done-For-You Automation for Agencies",
@@ -158,25 +158,11 @@ export default function Home() {
           <div className="h-px w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
           <div className="max-w-2xl mx-auto">
-            <div
-              className="relative w-full overflow-hidden rounded-2xl"
-              style={{ borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.08)' }}
-            >
-              <Image
-                src="/workflows/workflow-1.png"
-                alt="Zero-Touch Client Onboarding — n8n workflow"
-                width={1400}
-                height={800}
-                className="block w-full h-auto"
-                sizes="(max-width: 768px) 100vw, 672px"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none'
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-white/[0.03]" style={{ aspectRatio: '1400/800' }}>
-                <span className="text-sm text-white/30 tracking-wide">Screenshot coming</span>
-              </div>
-            </div>
+            <WorkflowImage
+              src="/workflows/workflow-1.png"
+              alt="Zero-Touch Client Onboarding — n8n workflow"
+              sizes="(max-width: 768px) 100vw, 672px"
+            />
           </div>
 
           <div className="mt-10 text-center">
