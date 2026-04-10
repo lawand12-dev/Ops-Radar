@@ -151,11 +151,38 @@ export default function Home() {
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Recent Work
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-6">
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-3">
             Automations I&apos;ve built and shipped
           </h2>
+          <p className="text-[15px] text-white/40 mb-6">
+            Real automations, built and shipped &mdash; including advanced AI-powered lead intelligence systems.
+          </p>
 
           <div className="h-px w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+          {/* Flagship preview */}
+          <Link href="/workflows" className="group block mb-6">
+            <div className="rounded-xl overflow-hidden p-px bg-gradient-to-r from-pink-500/60 via-purple-500/60 to-pink-500/60 shadow-[0_0_30px_rgba(236,72,153,0.15)] transition-shadow group-hover:shadow-[0_0_40px_rgba(236,72,153,0.25)]">
+              <div className="rounded-[11px] overflow-hidden bg-black">
+                <WorkflowImage
+                  src="/workflows/workflow-5.png"
+                  alt="AI Inbound Lead Intelligence System — n8n workflow"
+                  sizes="(max-width: 640px) 100vw, 100vw"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-400/80">
+                Sales Intelligence
+              </p>
+              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-pink-300">
+                Flagship
+              </span>
+            </div>
+            <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
+              AI Inbound Lead Intelligence System
+            </p>
+          </Link>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[

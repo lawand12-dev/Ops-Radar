@@ -38,6 +38,18 @@ const NAV_LINKS = [
 
 const WORKFLOWS = [
   {
+    category: 'SALES INTELLIGENCE',
+    categoryColor: 'text-pink-400/80',
+    title: 'AI Inbound Lead Intelligence System',
+    description:
+      "The most advanced lead system I build. Every inbound lead triggers parallel enrichment — we pull their company website, firmographic data, and LinkedIn profile simultaneously. An AI research agent synthesizes everything into a full lead brief, then a scoring engine grades them. Hot leads automatically get a personalized AI-written icebreaker ready for sales to send, while warm and cold leads flow into nurture sequences. Sales stops researching. Sales starts closing.",
+    image: '/workflows/workflow-5.png',
+    stats: 'Saves ~15 hours per week · 8 tool integrations · Full research in under 30 seconds',
+    flow: 'Webhook → Normalize → Parallel Enrichment → Merge → AI Research → AI Scoring → Hot/Cold Router → Personalized Icebreaker or Nurture',
+    tools: ['Webhook', 'HTTP Request', 'OpenAI', 'Merge', 'Gmail', 'Slack', 'Google Sheets'],
+    flagship: true,
+  },
+  {
     category: 'CLIENT OPS',
     categoryColor: 'text-blue-400/80',
     title: 'Zero-Touch Client Onboarding',
@@ -118,9 +130,16 @@ export default function WorkflowsPage() {
         {WORKFLOWS.map((wf, i) => (
           <FadeInOnScroll key={wf.title}>
             <div className="py-20 first:pt-0">
-              <p className={`text-[11px] font-bold uppercase tracking-[0.25em] ${wf.categoryColor} mb-4`}>
-                {wf.category}
-              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <p className={`text-[11px] font-bold uppercase tracking-[0.25em] ${wf.categoryColor}`}>
+                  {wf.category}
+                </p>
+                {'flagship' in wf && wf.flagship && (
+                  <span className="inline-flex items-center rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-pink-300">
+                    Flagship
+                  </span>
+                )}
+              </div>
               <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-[-0.02em] text-white mb-5">
                 {wf.title}
               </h2>
@@ -128,8 +147,20 @@ export default function WorkflowsPage() {
                 {wf.description}
               </p>
 
-              <div className="rounded-2xl overflow-hidden border border-white/10">
-                <WorkflowImage src={wf.image} alt={`${wf.title} — n8n workflow canvas`} />
+              <div
+                className={`rounded-2xl overflow-hidden ${
+                  'flagship' in wf && wf.flagship
+                    ? 'p-px bg-gradient-to-r from-pink-500/60 via-purple-500/60 to-pink-500/60 shadow-[0_0_30px_rgba(236,72,153,0.15)]'
+                    : 'border border-white/10'
+                }`}
+              >
+                {'flagship' in wf && wf.flagship ? (
+                  <div className="rounded-[15px] overflow-hidden bg-black">
+                    <WorkflowImage src={wf.image} alt={`${wf.title} — n8n workflow canvas`} />
+                  </div>
+                ) : (
+                  <WorkflowImage src={wf.image} alt={`${wf.title} — n8n workflow canvas`} />
+                )}
               </div>
 
               <p className="mt-6 text-[13px] text-white/40 tracking-wide">
