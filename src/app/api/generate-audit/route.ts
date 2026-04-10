@@ -184,7 +184,18 @@ export async function POST(request: Request) {
       futureVision,
     }
 
-    const audit = await generateAuditReport(auditInput, 'full')
+    if (!(process.env.OPENAI_API_KEY ?? '').trim()) {
+      console.error('[generate-audit] OPENAI_API_KEY is not configured')
+      return Response.json({ error: 'Service configuration error. Please try again later.' }, { status: 503 })
+    }
+
+    let audit: Record<string, unknown>
+    try {
+      audit = await generateAuditReport(auditInput, 'full')
+    } catch (aiError) {
+      console.error('[generate-audit] AI generation failed:', aiError instanceof Error ? aiError.message : aiError)
+      return Response.json({ error: 'Audit generation failed. Please try again.' }, { status: 502 })
+    }
 
     const insertPayload = {
       name,
