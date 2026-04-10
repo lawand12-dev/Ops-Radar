@@ -8,6 +8,8 @@ export type FunnelEventName =
   | 'build_request_opened'
   | 'build_request_submitted'
   | 'build_request_success'
+  | 'unlock_email_requested'
+  | 'unlock_email_sent'
 
 export type FunnelEventPayload = {
   event: FunnelEventName

@@ -16,6 +16,10 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
+import {
+  getStoredAuditAccessToken,
+  storeAuditAccessToken,
+} from '../../lib/audit-access-client'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -175,6 +179,11 @@ type ReportHandoff = {
 type ReportSectionItem = {
   id: string
   label: string
+  locked?: boolean
+}
+type BuildRequestDraft = {
+  title: string
+  source: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -1850,8 +1859,12 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
 
 function OnboardingAssessmentSection({
   data,
+  unlocked,
+  onUnlock,
 }: {
   data: OnboardingAssessment
+  unlocked: boolean
+  onUnlock: () => void
 }) {
   return (
     <RevealSection>
@@ -1861,52 +1874,54 @@ function OnboardingAssessmentSection({
           Client Onboarding Audit
         </h2>
 
-        <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-          <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
-          <div className="p-6 space-y-5">
+        <LockedSection unlocked={unlocked} onUnlock={onUnlock}>
+          <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
+            <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
+            <div className="p-6 space-y-5">
 
-            {data.current_state && (
-              <div
-                className="p-4 rounded-[12px]"
-                style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
-                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
-              </div>
-            )}
-
-            <div className="grid sm:grid-cols-2 gap-3">
-              {data.time_per_client_current && (
+              {data.current_state && (
                 <div
                   className="p-4 rounded-[12px]"
                   style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
-                  <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
                 </div>
               )}
-              {data.time_per_client_automated && (
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                {data.time_per_client_current && (
+                  <div
+                    className="p-4 rounded-[12px]"
+                    style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
+                    <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
+                  </div>
+                )}
+                {data.time_per_client_automated && (
+                  <div
+                    className="p-4 rounded-[12px]"
+                    style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
+                    <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
+                  </div>
+                )}
+              </div>
+
+              {data.revenue_impact && (
                 <div
                   className="p-4 rounded-[12px]"
-                  style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
+                  style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
-                  <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
+                  <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
                 </div>
               )}
             </div>
-
-            {data.revenue_impact && (
-              <div
-                className="p-4 rounded-[12px]"
-                style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
-                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
-              </div>
-            )}
           </div>
-        </div>
+        </LockedSection>
       </section>
     </RevealSection>
   )
@@ -2071,6 +2086,318 @@ function VerticalRoadmap({ roadmap }: { roadmap: NormalizedRoadmap }) {
   )
 }
 
+// ─── Lock icon ────────────────────────────────────────────────────────────────
+
+function LockIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="7" width="10" height="8" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+// ─── Locked section overlay ───────────────────────────────────────────────────
+
+function LockedSection({
+  unlocked,
+  onUnlock,
+  children,
+}: {
+  unlocked: boolean
+  onUnlock: () => void
+  children: React.ReactNode
+}) {
+  if (unlocked) return <>{children}</>
+  return (
+    <div className="relative">
+      <div className="pointer-events-none select-none blur-[3px] opacity-60">{children}</div>
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-[16px]"
+        style={{ background: 'rgba(6,12,30,0.6)', backdropFilter: 'blur(2px)' }}
+      >
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center text-primary"
+          style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}
+        >
+          <LockIcon size={20} />
+        </div>
+        <p className="text-[13px] font-semibold text-on-surface-variant text-center max-w-[240px]">
+          Unlock the full blueprint to see this section
+        </p>
+        <button
+          onClick={onUnlock}
+          className="px-5 py-2 rounded-[10px] text-[13px] font-bold text-primary border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors"
+        >
+          Unlock Now
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Unlock section ───────────────────────────────────────────────────────────
+
+function UnlockSection({
+  auditId,
+  defaultEmail,
+  reportStage,
+  onUnlocked,
+  onUnlockRequested,
+  onUnlockSent,
+  onStrategyCallClick,
+}: {
+  auditId: string | null
+  defaultEmail: string
+  reportStage: 'preview' | 'full'
+  onUnlocked: () => void
+  onUnlockRequested: (email: string) => void
+  onUnlockSent: (email: string) => void
+  onStrategyCallClick: (source: string) => void
+}) {
+  const [email, setEmail]   = useState(defaultEmail)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!email.trim() || !auditId) return
+    onUnlockRequested(email)
+    setStatus('sending')
+    try {
+      const accessToken = getStoredAuditAccessToken(auditId)
+      const res = await fetch('/api/send-unlock-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(accessToken ? { 'x-audit-access-token': accessToken } : {}) },
+        body: JSON.stringify({ email, auditId }),
+      })
+      const data = await res.json()
+      if (res.ok && data.ok) {
+        if (data.accessToken) storeAuditAccessToken(auditId, data.accessToken)
+        setStatus('sent')
+        onUnlockSent(email)
+        onUnlocked()
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <RevealSection>
+      <section
+        id="unlock-blueprint"
+        className="rounded-[22px] overflow-hidden relative p-8 sm:p-12 bg-surface-container border border-primary/20"
+        style={{ boxShadow: '0 0 60px rgba(173,198,255,0.08)' }}
+      >
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3b82f6, #22d3ee, transparent)' }} />
+        <div className="max-w-[500px] mx-auto text-center">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 text-primary" style={{ background: 'rgba(173,198,255,0.1)', border: '1px solid rgba(173,198,255,0.2)' }}>
+            <LockIcon size={24} />
+          </div>
+          <h2 className="font-headline font-extrabold text-[clamp(20px,3vw,30px)] tracking-[-0.025em] text-on-surface mb-3">
+            {reportStage === 'preview' ? 'Unlock Your Full Blueprint' : 'Get This Sent to Your Inbox'}
+          </h2>
+          <p className="text-[14px] text-on-surface-variant leading-[1.7] mb-8">
+            Enter your email and we&apos;ll send you the complete audit — including your 90-day roadmap, onboarding analysis, and stack recommendations.
+          </p>
+
+          {status === 'sent' ? (
+            <div className="p-5 rounded-[14px]" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <p className="text-[15px] font-bold text-emerald-400 mb-1">Check your inbox!</p>
+              <p className="text-[13px] text-on-surface-variant">We sent your full blueprint to <strong className="text-on-surface">{email}</strong></p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                required
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-4 py-3 rounded-[10px] text-[14px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary/40"
+              />
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="px-6 py-3 rounded-[10px] text-[14px] font-bold text-white disabled:opacity-60 transition-all"
+                style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.35)' }}
+              >
+                {status === 'sending' ? 'Sending…' : 'Send My Blueprint'}
+              </button>
+            </form>
+          )}
+
+          {status === 'error' && (
+            <p className="mt-3 text-[12px] text-red-400">Something went wrong. Please try again.</p>
+          )}
+
+          <p className="mt-6 text-[12px] text-on-surface-variant/40">
+            Or <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" target="_blank" rel="noopener noreferrer" onClick={() => onStrategyCallClick('unlock-section-calendly')} className="underline hover:text-on-surface-variant transition-colors">book a free strategy call</a> instead.
+          </p>
+        </div>
+      </section>
+    </RevealSection>
+  )
+}
+
+// ─── Build request modal ──────────────────────────────────────────────────────
+
+function BuildRequestModal({
+  oppTitle, contactName, contactEmail, auditId, source, reportStage, onClose,
+}: {
+  oppTitle:     string
+  contactName:  string
+  contactEmail: string
+  auditId:      string | null
+  source:       string
+  reportStage:  'preview' | 'full'
+  onClose:      () => void
+}) {
+  const [form, setForm] = useState({ name: contactName, email: contactEmail, budget: '', timeline: '', notes: '' })
+  const [companyWebsite, setCompanyWebsite] = useState('')
+  const [startedAt] = useState(() => Date.now())
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [errMsg, setErrMsg] = useState('')
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  const canSubmit = form.name.trim() && form.email.trim() && form.budget && form.timeline
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!canSubmit) return
+    setStatus('submitting')
+    sendFunnelEvent({
+      event: 'build_request_submitted',
+      auditId,
+      source,
+      reportStage,
+      metadata: { automation: oppTitle, budget: form.budget, timeline: form.timeline },
+    })
+    try {
+      const res = await fetch('/api/build-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audit_id: auditId,
+          automation_title: oppTitle,
+          ...form,
+          company_website: companyWebsite,
+          time_on_page_seconds: Math.round((Date.now() - startedAt) / 1000),
+        }),
+      })
+      if (res.ok) {
+        setStatus('success')
+        sendFunnelEvent({ event: 'build_request_success', auditId, source, reportStage })
+      } else {
+        const d = await res.json().catch(() => ({}))
+        setErrMsg(d?.error || 'Something went wrong.')
+        setStatus('error')
+      }
+    } catch {
+      setErrMsg('Network error. Please try again.')
+      setStatus('error')
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(6,12,30,0.85)', backdropFilter: 'blur(6px)' }}>
+      <div
+        className="relative w-full max-w-[480px] rounded-[22px] overflow-hidden bg-surface-container border border-outline-variant/15"
+        style={{ boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}
+      >
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa)' }} />
+        <div className="p-6 sm:p-7">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h2 className="font-headline font-bold text-[19px] text-on-surface tracking-[-0.02em]">Get This Built</h2>
+              <p className="text-[12px] text-on-surface-variant mt-0.5">We&apos;ll scope it and get back to you within 24 hours.</p>
+            </div>
+            <Button onClick={onClose} variant="outline" className="h-8 w-8 p-0 rounded-full border-outline-variant/20 text-on-surface-variant hover:text-on-surface">✕</Button>
+          </div>
+
+          {status === 'success' ? (
+            <div className="py-8 text-center">
+              <p className="font-headline text-[22px] font-bold text-emerald-400 mb-2">Request Received!</p>
+              <p className="text-[14px] text-on-surface-variant">We&apos;ll review your audit and reach out within 24 hours with a scoped quote.</p>
+              <Button onClick={onClose} className="mt-6">Close</Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="text" name="website_trap" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} style={{ display: 'none' }} tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              <div className="grid sm:grid-cols-2 gap-3">
+                {(['name', 'email'] as const).map((field) => (
+                  <div key={field}>
+                    <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">{field === 'name' ? 'Your Name' : 'Email'}</label>
+                    <input
+                      type={field === 'email' ? 'email' : 'text'}
+                      required
+                      value={form[field]}
+                      onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/40"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Automation</label>
+                <input type="text" readOnly value={oppTitle} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface-variant bg-surface-container/50 border border-outline-variant/10" />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Budget Range</label>
+                  <select required value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 focus:outline-none focus:border-primary/40">
+                    <option value="">Select…</option>
+                    <option value="under-2k">Under $2,000</option>
+                    <option value="2k-5k">$2,000 – $5,000</option>
+                    <option value="5k-10k">$5,000 – $10,000</option>
+                    <option value="10k-plus">$10,000+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Timeline</label>
+                  <select required value={form.timeline} onChange={(e) => setForm((f) => ({ ...f, timeline: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 focus:outline-none focus:border-primary/40">
+                    <option value="">Select…</option>
+                    <option value="asap">ASAP</option>
+                    <option value="1-month">Within 1 month</option>
+                    <option value="1-3-months">1–3 months</option>
+                    <option value="flexible">Flexible</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Notes (optional)</label>
+                <textarea
+                  rows={3}
+                  value={form.notes}
+                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                  placeholder="Any context about your setup or priorities…"
+                  className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/40 resize-none"
+                />
+              </div>
+              {status === 'error' && <p className="text-[12px] text-red-400">{errMsg}</p>}
+              <Button type="submit" disabled={!canSubmit || status === 'submitting'} className="w-full py-3 h-auto font-bold text-[14px]">
+                {status === 'submitting' ? 'Submitting…' : 'Submit Build Request'}
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function ResultsContent() {
@@ -2085,6 +2412,8 @@ function ResultsContent() {
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
+  const [unlocked,    setUnlocked]    = useState(false)
+  const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
   const unlockRef = useRef<HTMLDivElement>(null)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
@@ -2213,6 +2542,32 @@ function ResultsContent() {
       reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
     })
   }, [audit?.report_stage, auditId])
+
+  const scrollToUnlock = useCallback((source = 'results-unlock') => {
+    sendFunnelEvent({
+      event: 'build_request_opened',
+      sessionId: sessionIdRef.current,
+      auditId,
+      source,
+      reportStage: 'preview',
+    })
+    unlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [auditId])
+
+  const openBuildRequest = useCallback((title: string, source: string) => {
+    sendFunnelEvent({
+      event: 'build_request_opened',
+      sessionId: sessionIdRef.current,
+      auditId,
+      source,
+      reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
+    })
+    setModalOpp({ title, source })
+  }, [audit?.report_stage, auditId])
+
+  const handleUnlocked = useCallback(() => {
+    setUnlocked(true)
+  }, [])
 
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit
