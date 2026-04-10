@@ -29,6 +29,7 @@ interface SiteHeaderProps {
 const DEFAULT_NAV_LINKS: SiteNavLink[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "Workflows", href: "/workflows" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ]

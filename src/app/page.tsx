@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
 const NAV_LINKS = [
   { label: 'Home', href: '/', isActive: true },
   { label: 'Services', href: '/services' },
+  { label: 'Workflows', href: '/workflows' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
@@ -143,6 +145,48 @@ export default function Home() {
         </section>
       </FadeInOnScroll>
 
+      {/* ── Recent Work ────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="py-32 px-6 max-w-5xl mx-auto">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+            Recent Work
+          </p>
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-6">
+            Automations I&apos;ve built and shipped
+          </h2>
+
+          <div className="h-px w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+          <div className="max-w-2xl mx-auto">
+            <div
+              className="relative w-full overflow-hidden rounded-2xl"
+              style={{ borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.08)' }}
+            >
+              <Image
+                src="/workflows/workflow-1.png"
+                alt="Zero-Touch Client Onboarding — n8n workflow"
+                width={1400}
+                height={800}
+                className="block w-full h-auto"
+                sizes="(max-width: 768px) 100vw, 672px"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none'
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-white/[0.03]" style={{ aspectRatio: '1400/800' }}>
+                <span className="text-sm text-white/30 tracking-wide">Screenshot coming</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link href="/workflows" className="text-sm text-white/50 hover:text-white/80 transition-colors">
+              See all workflows &rarr;
+            </Link>
+          </div>
+        </section>
+      </FadeInOnScroll>
+
       {/* ── 3. What ──────────────────────────────────────────────────── */}
       <FadeInOnScroll>
         <section className="py-32 px-6 max-w-5xl mx-auto">
@@ -228,9 +272,10 @@ export default function Home() {
             &copy; 2026 OpsRadar. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/services" className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Services</Link>
-            <Link href="/pricing"  className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Pricing</Link>
-            <Link href="/about"    className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">About</Link>
+            <Link href="/services"  className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Services</Link>
+            <Link href="/workflows" className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Workflows</Link>
+            <Link href="/pricing"   className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Pricing</Link>
+            <Link href="/about"     className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">About</Link>
             <Link href="/audit"    className="text-xs uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">Free Audit</Link>
           </div>
         </div>
