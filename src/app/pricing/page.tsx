@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import OpsRadarPricing from '<npm>/components/ui/pricing-component'
+import Footer from '<npm>/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
@@ -48,18 +48,7 @@ export default function PricingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-8" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-4">
-          <div className="text-lg font-bold text-white">OpsRadar</div>
-          <p className="text-xs uppercase tracking-widest text-white/20">&copy; 2026 OpsRadar. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/" className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">Home</Link>
-            <Link href="/services" className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">Services</Link>
-            <Link href="/about" className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">About</Link>
-            <Link href="/audit" className="text-xs uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors">Free Audit</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
