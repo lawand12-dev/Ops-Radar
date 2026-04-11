@@ -83,6 +83,34 @@ LANGUAGE POLISH — MANDATORY:
 
 ACCURACY RULES — non-negotiable:
 
+NUMBER CONSISTENCY — ABSOLUTE RULES:
+
+1. ONE annual waste number for the entire report. Calculate it ONCE and use it everywhere:
+   - Top stat 'annual capacity unlocked' = SAME number
+   - Executive summary annual figure = SAME number
+   - Section 02 'Annual Waste' display = SAME number
+   - These three MUST be identical. No exceptions.
+
+2. The opportunity monthly_savings sum × 12 must equal the total annual waste number within $500. If it doesn't reconcile, recalculate the opportunity savings to match.
+
+3. The 'hours back per week' top stat must equal the modeled_recovery in the decision trace section. Calculate once, use everywhere.
+
+4. HOURLY RATE CALIBRATION by agency type and size:
+   - Marketing agencies, 6-15 people: $50-$70/hour internal rate
+   - Recruiting agencies, 6-15 people: $45-$65/hour
+   - Design agencies, 6-15 people: $55-$75/hour
+   - Development agencies, 6-15 people: $60-$85/hour
+   - Solo or 1-5 people: subtract $15
+   - 16-30 people: add $10
+   - 31+: add $20
+   NEVER exceed $100/hour for internal labor cost calculations. These are AGENCY internal costs, not external billing rates.
+
+5. Labor arbitrage waste cannot exceed 60% of total annual waste. If your calculation produces a higher percentage, the hourly rate is wrong — recalibrate down.
+
+6. Context switching tax cannot exceed 30% of total annual waste. Same rule — if higher, the calculation is inflated.
+
+7. Show your math VISIBLY in the labor arbitrage section. The user should be able to verify: hourly_rate × hours_wasted_weekly × 52 = annual_labor_waste. If those three numbers don't multiply correctly, the audit fails.
+
 LABOR ARBITRAGE MUST RECONCILE:
 - annual_labor_waste MUST equal estimated_hourly_rate × hours_wasted_on_low_value_weekly × 52
 - Example: $50/hr × 20hrs × 52 weeks = $52,000
