@@ -15,8 +15,68 @@ import {
   serializeWebsiteStackSignals,
 } from '../../../lib/website-intel'
 import { analyzeWebsiteVisualSignals, serializeWebsiteVisualEvidence } from '../../../lib/website-visual-intel'
-import { researchAgency, serializeAgencyResearch } from '../../../lib/website-agent'
+import {
+  researchAgency,
+  findLinkedInJobSignals,
+  serializeAgencyResearch,
+  type AgencyResearch,
+} from '../../../lib/website-research-agent'
 import type { NotifyPayload } from '../notify/route'
+
+const RESEARCH_TIMEOUT_MS = 15_000
+const RESEARCH_CACHE_TTL_DAYS = 7
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms)
+    promise
+      .then((value) => {
+        clearTimeout(timer)
+        resolve(value)
+      })
+      .catch(() => {
+        clearTimeout(timer)
+        resolve(fallback)
+      })
+  })
+}
+
+async function getCachedResearch(url: string): Promise<AgencyResearch | null> {
+  if (!hasServerSupabaseClient()) return null
+  try {
+    const supabase = getServerSupabaseClient()
+    const { data, error } = await supabase
+      .from('research_cache')
+      .select('research_data, expires_at')
+      .eq('url', url)
+      .maybeSingle()
+
+    if (error || !data) return null
+    const expiresAt = new Date(data.expires_at as string).getTime()
+    if (Number.isNaN(expiresAt) || expiresAt < Date.now()) return null
+    return data.research_data as AgencyResearch
+  } catch {
+    return null
+  }
+}
+
+async function setCachedResearch(url: string, research: AgencyResearch): Promise<void> {
+  if (!hasServerSupabaseClient()) return
+  // Never cache a completely-failed fetch — we want to retry next time.
+  if (research.errors.length > 0 && !research.homepage.headline) return
+  try {
+    const supabase = getServerSupabaseClient()
+    const expiresAt = new Date(Date.now() + RESEARCH_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    await supabase
+      .from('research_cache')
+      .upsert(
+        { url, research_data: research, fetched_at: new Date().toISOString(), expires_at: expiresAt },
+        { onConflict: 'url' },
+      )
+  } catch (err) {
+    console.warn('[generate-audit] failed to cache research:', err instanceof Error ? err.message : err)
+  }
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -143,14 +203,24 @@ export async function POST(request: Request) {
     const normalizedWebsiteUrl = normalizeWebsiteUrlInput(websiteUrl ?? '')
     let websiteSignals = null
     let websiteVisualSignals = null
-    let agencyResearch = null
+    let agencyResearch: AgencyResearch | null = null
+    let linkedInJobSignals: string[] = []
 
     if (normalizedWebsiteUrl) {
-      const [websiteSignalsResult, websiteVisualSignalsResult, agencyResearchResult] = await Promise.allSettled([
-        fetchWebsiteSignals(normalizedWebsiteUrl),
-        analyzeWebsiteVisualSignals(normalizedWebsiteUrl),
-        researchAgency(normalizedWebsiteUrl),
-      ])
+      // Check cache first for the deep research agent.
+      const cached = await getCachedResearch(normalizedWebsiteUrl)
+
+      const researchPromise: Promise<AgencyResearch | null> = cached
+        ? Promise.resolve(cached)
+        : withTimeout(researchAgency(normalizedWebsiteUrl), RESEARCH_TIMEOUT_MS, null)
+
+      const [websiteSignalsResult, websiteVisualSignalsResult, agencyResearchResult, linkedInResult] =
+        await Promise.allSettled([
+          fetchWebsiteSignals(normalizedWebsiteUrl),
+          analyzeWebsiteVisualSignals(normalizedWebsiteUrl),
+          researchPromise,
+          withTimeout(findLinkedInJobSignals(company), RESEARCH_TIMEOUT_MS, [] as string[]),
+        ])
 
       websiteSignals = websiteSignalsResult.status === 'fulfilled'
         ? websiteSignalsResult.value
@@ -161,6 +231,14 @@ export async function POST(request: Request) {
       agencyResearch = agencyResearchResult.status === 'fulfilled'
         ? agencyResearchResult.value
         : null
+      linkedInJobSignals = linkedInResult.status === 'fulfilled' && Array.isArray(linkedInResult.value)
+        ? linkedInResult.value
+        : []
+
+      // Populate cache on miss (fire-and-forget — don't block the audit).
+      if (!cached && agencyResearch) {
+        void setCachedResearch(normalizedWebsiteUrl, agencyResearch)
+      }
     }
 
     const auditInput = {
@@ -178,7 +256,9 @@ export async function POST(request: Request) {
       websiteStackEvidence: serializeWebsiteStackSignals(websiteSignals?.detectedStack ?? []),
       websiteVisualContext: websiteVisualSignals?.summary ?? '',
       websiteVisualEvidence: serializeWebsiteVisualEvidence(websiteVisualSignals?.evidence ?? []),
-      agencyResearchIntel: agencyResearch ? serializeAgencyResearch(agencyResearch) : '',
+      agencyResearchIntel: agencyResearch
+        ? serializeAgencyResearch(agencyResearch, linkedInJobSignals)
+        : '',
       crmTool,
       timeHeavy,
       leadEntry,

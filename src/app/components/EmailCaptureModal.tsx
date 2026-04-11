@@ -25,15 +25,18 @@ export type LeadInfo = {
 interface EmailCaptureModalProps {
   onSubmit: (lead: LeadInfo) => void
   onClose: () => void
+  initialWebsiteUrl?: string
 }
 
-export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureModalProps) {
+export default function EmailCaptureModal({ onSubmit, onClose, initialWebsiteUrl = '' }: EmailCaptureModalProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
-  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState(initialWebsiteUrl)
   const [companyWebsite, setCompanyWebsite] = useState('')
   const [startedAt] = useState(() => Date.now())
+
+  const hasPrefilledWebsite = initialWebsiteUrl.trim().length > 0
 
   const isValid =
     name.trim().length > 0 &&
@@ -124,19 +127,21 @@ export default function EmailCaptureModal({ onSubmit, onClose }: EmailCaptureMod
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
-                Website
-                <span className="text-on-surface-variant/40"> (optional, improves accuracy)</span>
-              </label>
-              <Input
-                type="url"
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="https://youragency.com"
-                className={inputClass}
-              />
-            </div>
+            {!hasPrefilledWebsite && (
+              <div>
+                <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
+                  Website
+                  <span className="text-on-surface-variant/40"> (optional, improves accuracy)</span>
+                </label>
+                <Input
+                  type="url"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="https://youragency.com"
+                  className={inputClass}
+                />
+              </div>
+            )}
 
             <Button
               type="submit"
