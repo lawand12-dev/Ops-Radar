@@ -323,6 +323,7 @@ export interface BeamsCanvasProps {
   noiseIntensity?: number
   scale?: number
   rotation?: number
+  frameloop?: "always" | "demand" | "never"
   onReady?: () => void
 }
 
@@ -335,6 +336,7 @@ export default function BeamsCanvas({
   noiseIntensity = 1.75,
   scale = 0.2,
   rotation = 0,
+  frameloop = "always",
   onReady,
 }: BeamsCanvasProps) {
   const meshRef = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>>(null!)
@@ -399,7 +401,16 @@ export default function BeamsCanvas({
   )
 
   return (
-    <Canvas dpr={[1, 2]} frameloop="always" className="w-full h-full relative" onCreated={() => onReady?.()}>
+    <Canvas
+      dpr={[1, 2]}
+      frameloop={frameloop}
+      className="w-full h-full relative"
+      onCreated={() => {
+        // Fire after first frame has been rendered so the fade-in
+        // happens only once the beams are actually visible.
+        setTimeout(() => onReady?.(), 100)
+      }}
+    >
       <group rotation={[0, 0, degToRad(rotation)]}>
         <PlaneNoise ref={meshRef} material={beamMaterial} count={beamNumber} width={beamWidth} height={beamHeight} />
         <DirLight color={lightColor} position={[0, 3, 10]} />

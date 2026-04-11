@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background'
+import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import OpsRadarPricing from '<npm>/components/ui/pricing-component'
 
 export const metadata: Metadata = {

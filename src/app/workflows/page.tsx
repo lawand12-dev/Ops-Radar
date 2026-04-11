@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background'
+import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
 
 export const metadata: Metadata = {
