@@ -61,8 +61,6 @@ export interface AgencyResearch {
     github: string | null
     tiktok: string | null
   }
-  weaknessSignals: string[]
-  strengthSignals: string[]
   positioning: PositioningAnalysis | null
   errors: string[]
 }
@@ -293,8 +291,6 @@ function emptyResearch(url: string): AgencyResearch {
       github: null,
       tiktok: null,
     },
-    weaknessSignals: [],
-    strengthSignals: [],
     positioning: null,
     errors: [],
   }
@@ -1031,112 +1027,16 @@ function discoverPageLinks($: cheerio.CheerioAPI, baseUrl: string): Partial<Reco
   return found
 }
 
+// computeSignals is intentionally a no-op — weakness and strength signals have
+// been removed. Website intelligence is silent enrichment only (tools, services,
+// niche) and is never surfaced as a diagnosis of the site itself.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function computeSignals(
-  research: AgencyResearch,
-  homepageHtml: string,
-  fetchedPagesHtml: Record<string, string>,
+  _research: AgencyResearch,
+  _homepageHtml: string,
+  _fetchedPagesHtml: Record<string, string>,
 ): void {
-  const weakness: string[] = []
-  const strength: string[] = []
-
-  const bodyTextLower = homepageHtml.toLowerCase()
-
-  // Weakness — no pricing
-  if (!research.pages.pricingFound) {
-    weakness.push('No pricing page found — consultative sales = manual quote process that costs hours per prospect.')
-  } else {
-    strength.push('Pricing page present — shows productized, scalable thinking.')
-  }
-
-  // Weakness — no case studies
-  if (!research.pages.caseStudiesFound) {
-    weakness.push('No case studies or portfolio page found — trust gap, prospects have no proof of results.')
-  } else {
-    strength.push('Case studies / portfolio page found — established credibility signal.')
-  }
-
-  // Weakness — generic positioning
-  const genericPhrases = [
-    'we help businesses grow',
-    'trusted partner',
-    'take your business to the next level',
-    'one-stop shop',
-    'full-service agency',
-    'we do it all',
-    'results-driven',
-  ]
-  const foundGeneric = genericPhrases.find((p) => bodyTextLower.includes(p))
-  if (foundGeneric) {
-    weakness.push(`Generic positioning detected ("${foundGeneric}") — weak differentiation.`)
-  }
-
-  // Weakness — no team page
-  if (!research.pages.teamPageFound) {
-    weakness.push('No team page found — founder may be solo or hiding team size, which kills enterprise trust.')
-  }
-
-  // Weakness — social proof absent
-  if (research.homepage.socialProofMentioned.length === 0) {
-    weakness.push('No visible client logos or testimonials on homepage.')
-  } else if (research.homepage.socialProofMentioned.length >= 4) {
-    strength.push('Multiple client logos / testimonials surfaced on homepage.')
-  }
-
-  // Weakness — stale blog (check dates in any fetched blog/about/homepage HTML)
-  const allFetchedHtml = homepageHtml + (fetchedPagesHtml.blog ?? '') + (fetchedPagesHtml.about ?? '')
-  const yearMatches = allFetchedHtml.match(/\b(20\d{2})\b/g)
-  if (yearMatches && yearMatches.length > 0) {
-    const years = yearMatches.map((y) => parseInt(y, 10)).filter((y) => y >= 2018 && y <= 2100)
-    if (years.length > 0) {
-      const latest = Math.max(...years)
-      const currentYear = new Date().getFullYear()
-      if (latest < currentYear - 1 && research.pages.blogFound) {
-        weakness.push(`Blog appears stale — most recent dated content is from ${latest}. Marketing engine is neglected.`)
-      } else if (latest >= currentYear && research.pages.blogFound) {
-        strength.push('Blog shows recent activity — marketing engine running.')
-      }
-    }
-  }
-
-  // Weakness — "Contact us for quote" only CTAs
-  if (
-    research.homepage.primaryCTA &&
-    /contact|quote|talk/i.test(research.homepage.primaryCTA) &&
-    !research.pages.pricingFound
-  ) {
-    weakness.push(`Only CTA detected is "${research.homepage.primaryCTA}" — no productized offers.`)
-  }
-
-  // Weakness — WordPress without cache plugin (heuristic — no WP Rocket / W3 Total Cache fingerprint)
-  if (research.techStack.cms === 'WordPress') {
-    const hasCache = /wp-rocket|w3-total-cache|wp-super-cache|litespeed-cache/i.test(homepageHtml)
-    if (!hasCache) {
-      weakness.push('WordPress detected with no visible caching plugin — technical debt / performance risk.')
-    }
-  }
-
-  // Weakness — no analytics
-  if (research.techStack.analytics.length === 0) {
-    weakness.push('No analytics tools detected — operating blind on traffic, conversions, and funnel leakage.')
-  } else if (research.techStack.analytics.length >= 2) {
-    strength.push(`Multiple analytics tools detected (${research.techStack.analytics.join(', ')}) — data-driven culture.`)
-  }
-
-  // Weakness — Zapier / Make present
-  if (research.techStack.automation.includes('Zapier')) {
-    weakness.push('Zapier detected — already paying per-task fees, strong n8n migration opportunity.')
-  }
-  if (research.techStack.automation.includes('Make.com')) {
-    weakness.push('Make.com detected — operations consume per-operation billing, migration path to n8n.')
-  }
-
-  // Strength — serious CRM
-  if (research.techStack.crm === 'HubSpot' || research.techStack.crm === 'Salesforce') {
-    strength.push(`${research.techStack.crm} detected — serious about ops, ready for advanced automation layer.`)
-  }
-
-  research.weaknessSignals = weakness.slice(0, 12)
-  research.strengthSignals = strength.slice(0, 12)
+  // intentionally empty — see comment above
 }
 
 // ─── LLM positioning pass ───────────────────────────────────────────────────
@@ -1497,7 +1397,7 @@ export async function researchAgency(url: string): Promise<AgencyResearch> {
     research.errors.push(`Tech stack detection error: ${err instanceof Error ? err.message : 'unknown'}`)
   }
 
-  // 6. Compute weakness / strength signals
+  // 6. computeSignals (no-op — retained for structural compatibility)
   try {
     const htmlByKey: Record<string, string> = {}
     for (const [k, v] of Object.entries(fetchedInnerPages)) {
@@ -1666,15 +1566,11 @@ function buildPreviewSignals(research: AgencyResearch): WebsitePreview['signals'
   // Pricing
   if (research.pages.pricingFound) {
     signals.push({ type: 'positive', text: 'Pricing page present — productized thinking, shorter sales cycle' })
-  } else {
-    signals.push({ type: 'negative', text: 'No pricing page — prospects have to ask, quote process is manual' })
   }
 
   // Case studies / proof
   if (research.pages.caseStudiesFound) {
-    signals.push({ type: 'positive', text: 'Case studies / customer proof visible — trust gap closed' })
-  } else {
-    signals.push({ type: 'negative', text: 'No case studies found — trust gap, real opportunity to add proof' })
+    signals.push({ type: 'positive', text: 'Case studies / customer proof visible — credibility established' })
   }
 
   // Blog / content
@@ -1693,8 +1589,6 @@ function buildPreviewSignals(research: AgencyResearch): WebsitePreview['signals'
   if (socialHandles.tiktok) socialList.push('TikTok')
   if (socialList.length >= 3) {
     signals.push({ type: 'positive', text: `Strong social footprint (${socialList.slice(0, 4).join(', ')})` })
-  } else if (socialList.length === 0) {
-    signals.push({ type: 'negative', text: 'No social links detected in nav or footer — distribution gap' })
   }
 
   // Scheduling
@@ -1710,14 +1604,14 @@ function buildPreviewSignals(research: AgencyResearch): WebsitePreview['signals'
     })
   }
 
-  // Analytics / visibility
-  if (research.techStack.analytics.length === 0) {
-    signals.push({ type: 'negative', text: 'No analytics detected — operating blind on funnel and conversions' })
-  } else if (research.techStack.analytics.length >= 2) {
+  // Analytics
+  if (research.techStack.analytics.length >= 2) {
     signals.push({
       type: 'positive',
       text: `Multiple analytics tools (${research.techStack.analytics.slice(0, 2).join(', ')}) — data-driven`,
     })
+  } else if (research.techStack.analytics.length === 1) {
+    signals.push({ type: 'neutral', text: `${research.techStack.analytics[0]} detected — analytics in place` })
   }
 
   // Hosting / infra
@@ -1728,11 +1622,6 @@ function buildPreviewSignals(research: AgencyResearch): WebsitePreview['signals'
   // Framework
   if (research.framework) {
     signals.push({ type: 'neutral', text: `Built on ${research.framework}` })
-  }
-
-  // Ops drag — missing meta / logo
-  if (!research.homepage.metaDescription) {
-    signals.push({ type: 'negative', text: 'Missing homepage meta description — hurts search/share previews' })
   }
 
   // Dedupe by text
@@ -1766,12 +1655,10 @@ function buildPreviewSummary(research: AgencyResearch, signals: WebsitePreview['
     bits.push(`Running ${stackSummary.slice(0, 3).join(' + ')}.`)
   }
 
-  if (positives > negatives && positives >= 2) {
-    bits.push('Mature ops — friction is unlikely to be in marketing; leverage points are internal.')
-  } else if (negatives > positives) {
-    bits.push('Visible gaps in proof and conversion — quick wins available without a rebuild.')
+  if (positives >= 2) {
+    bits.push('Mature stack — leverage points are in the operational layer, not the marketing layer.')
   } else {
-    bits.push('Balanced picture — a few real levers to pull once we know the inside of the funnel.')
+    bits.push('Stack detected — the audit will reference your actual tools throughout the report.')
   }
 
   return bits.join(' ')
@@ -1939,16 +1826,6 @@ export function serializeAgencyResearch(
   const socials = Object.entries(research.social).filter(([, v]) => v)
   if (socials.length > 0) {
     parts.push(`Social: ${socials.map(([k, v]) => `${k}=${v}`).join(' | ')}`)
-  }
-
-  if (research.weaknessSignals.length > 0) {
-    parts.push('WEAKNESS SIGNALS:')
-    for (const w of research.weaknessSignals) parts.push(`  - ${w}`)
-  }
-
-  if (research.strengthSignals.length > 0) {
-    parts.push('STRENGTH SIGNALS:')
-    for (const s of research.strengthSignals) parts.push(`  - ${s}`)
   }
 
   if (linkedInJobs.length > 0) {
