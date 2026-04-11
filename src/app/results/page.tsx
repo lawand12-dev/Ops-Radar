@@ -88,9 +88,18 @@ type Benchmarks = {
   }
 }
 
+type AuditVerdict = {
+  headline?: string
+  subline?: string
+  stakes?: string
+  identity?: 'Manual Chaos' | 'Reactive Ops' | 'Standardized' | 'Compounding' | string
+  identity_line?: string
+}
+
 type AuditResult = {
   report_stage?: 'preview' | 'full'
   preview_notice?: string
+  verdict?: AuditVerdict
   executive_summary?: string
   polished_pain_statement?: string
   polished_business_consequence?: string
@@ -536,6 +545,162 @@ function collectSignalTools(opportunities: Opportunity[]): string[] {
   }
 
   return collected
+}
+
+// ─── Verdict Hero ─────────────────────────────────────────────────────────────
+
+const IDENTITY_TONE: Record<string, {
+  label: string
+  accent: string
+  accentSoft: string
+  border: string
+  bg: string
+  dot: string
+}> = {
+  'manual chaos': {
+    label: 'Manual Chaos',
+    accent: '#fb923c',
+    accentSoft: 'rgba(251,146,60,0.16)',
+    border: 'rgba(251,146,60,0.35)',
+    bg: 'rgba(251,146,60,0.08)',
+    dot: '#fb923c',
+  },
+  'reactive ops': {
+    label: 'Reactive Ops',
+    accent: '#fbbf24',
+    accentSoft: 'rgba(251,191,36,0.16)',
+    border: 'rgba(251,191,36,0.32)',
+    bg: 'rgba(251,191,36,0.08)',
+    dot: '#fbbf24',
+  },
+  'standardized': {
+    label: 'Standardized',
+    accent: '#7dd3fc',
+    accentSoft: 'rgba(125,211,252,0.16)',
+    border: 'rgba(125,211,252,0.32)',
+    bg: 'rgba(125,211,252,0.08)',
+    dot: '#7dd3fc',
+  },
+  'compounding': {
+    label: 'Compounding',
+    accent: '#34d399',
+    accentSoft: 'rgba(52,211,153,0.16)',
+    border: 'rgba(52,211,153,0.32)',
+    bg: 'rgba(52,211,153,0.08)',
+    dot: '#34d399',
+  },
+}
+
+function deriveIdentityFromScore(score: number): string {
+  if (score <= 25) return 'Manual Chaos'
+  if (score <= 50) return 'Reactive Ops'
+  if (score <= 75) return 'Standardized'
+  return 'Compounding'
+}
+
+function getIdentityTone(identity: string | undefined, readiness: number) {
+  const resolved = (identity && identity.trim()) || deriveIdentityFromScore(readiness)
+  const key = resolved.toLowerCase()
+  return IDENTITY_TONE[key] ?? IDENTITY_TONE['standardized']
+}
+
+function VerdictHero({
+  verdict,
+  readiness,
+}: {
+  verdict: AuditVerdict
+  readiness: number
+}) {
+  const headline = verdict.headline?.trim() ?? ''
+  const subline = verdict.subline?.trim() ?? ''
+  const stakes = verdict.stakes?.trim() ?? ''
+  const identityLine = verdict.identity_line?.trim() ?? ''
+
+  if (!headline && !subline && !stakes && !identityLine) return null
+
+  const tone = getIdentityTone(verdict.identity, readiness)
+
+  return (
+    <section className="relative mt-10 mb-12">
+      {/* Ethereal beams / ambient glow matching the rest of the header */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 60% 80% at 15% 20%, ${tone.accentSoft}, transparent 55%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(125,211,252,0.08), transparent 60%)`,
+        }}
+      />
+      <div className="relative z-[1] py-16 sm:py-20">
+        {/* Identity tag */}
+        <div
+          className="inline-flex items-center gap-2.5 rounded-full border px-3.5 py-1.5"
+          style={{
+            borderColor: tone.border,
+            background: tone.bg,
+          }}
+        >
+          <span className="relative flex h-1.5 w-1.5">
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+              style={{ background: tone.dot }}
+            />
+            <span
+              className="relative inline-flex h-1.5 w-1.5 rounded-full"
+              style={{ background: tone.dot }}
+            />
+          </span>
+          <span
+            className="font-mono text-[10px] font-bold uppercase tracking-[0.22em]"
+            style={{ color: tone.accent }}
+          >
+            Diagnosis · {tone.label}
+          </span>
+        </div>
+
+        {/* Headline */}
+        {headline && (
+          <h1
+            className="font-headline mt-6 max-w-[900px] text-[clamp(34px,6vw,64px)] font-black leading-[1.02] tracking-[-0.035em] text-on-surface"
+            style={{ fontWeight: 900 }}
+          >
+            {headline}
+          </h1>
+        )}
+
+        {/* Subline — quotes user's own words */}
+        {subline && (
+          <p className="mt-6 max-w-[760px] text-[clamp(18px,2.3vw,26px)] font-medium leading-[1.45] text-on-surface/70">
+            {subline}
+          </p>
+        )}
+
+        {/* Stakes — amber warning tone */}
+        {stakes && (
+          <div className="mt-8 flex items-start gap-3 max-w-[760px]">
+            <span
+              className="mt-[10px] inline-block h-[2px] w-8 shrink-0"
+              style={{ background: '#fbbf24' }}
+            />
+            <p
+              className="text-[clamp(15px,1.6vw,18px)] font-semibold leading-[1.55]"
+              style={{ color: '#fcd34d' }}
+            >
+              {stakes}
+            </p>
+          </div>
+        )}
+
+        {/* Identity line — muted italic */}
+        {identityLine && (
+          <p className="mt-6 max-w-[680px] text-[clamp(13px,1.4vw,16px)] italic leading-[1.6] text-on-surface/50">
+            {identityLine}
+          </p>
+        )}
+      </div>
+
+      {/* Thin divider under the verdict */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-outline-variant/25 to-transparent" />
+    </section>
+  )
 }
 
 function derivePrimaryRisk(audit: AuditResult, opportunities: Opportunity[]): string {
@@ -2485,6 +2650,10 @@ function ResultsContent() {
           </div>
 
           <div className="mt-10"><Divider /></div>
+
+          {a.verdict && (
+            <VerdictHero verdict={a.verdict} readiness={readiness} />
+          )}
 
           <h1 className="font-headline font-extrabold text-[clamp(24px,3.8vw,44px)] leading-[1.1] tracking-[-0.03em] mt-8 max-w-[680px] text-on-surface">
             <TypewriterText text={headline} speed={28} delay={400} />
