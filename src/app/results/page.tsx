@@ -16,6 +16,7 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
+import Footer from '<npm>/components/Footer'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -2817,15 +2818,7 @@ function ResultsContent() {
         />
       )}
 
-      <footer className="py-8 px-6 text-center border-t border-outline-variant/10 bg-slate-950">
-        <div className="max-w-[900px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[12px] text-on-surface-variant/40">© 2026 OpsRadar</p>
-          <p className="text-[12px] text-on-surface-variant/30">Generated {dateStr} · Powered by OpsRadar AI</p>
-          <Link href="/audit" className="text-[12px] text-on-surface-variant/40 hover:text-on-surface-variant transition-colors">
-            Run Another Audit →
-          </Link>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

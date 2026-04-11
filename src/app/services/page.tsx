@@ -5,6 +5,7 @@ import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
+import Footer from '<npm>/components/Footer'
 
 export const metadata: Metadata = {
   title: "Services",
@@ -259,18 +260,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
-      <footer className="border-t py-8 px-6" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/20">&copy; 2026 OpsRadar</p>
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-xs text-white/20 hover:text-white/50 transition-colors">Home</Link>
-            <Link href="/services" className="text-xs text-white/50 transition-colors font-semibold">Services</Link>
-            <Link href="/pricing" className="text-xs text-white/20 hover:text-white/50 transition-colors">Pricing</Link>
-            <Link href="/about" className="text-xs text-white/20 hover:text-white/50 transition-colors">About</Link>
-            <Link href="/audit" className="text-xs text-white/20 hover:text-white/50 transition-colors">Free Audit &rarr;</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
