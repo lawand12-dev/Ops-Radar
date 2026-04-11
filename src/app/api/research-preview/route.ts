@@ -6,7 +6,9 @@ import {
 } from '../../../lib/supabase-server'
 import {
   researchAgency,
+  buildWebsitePreview,
   type AgencyResearch,
+  type WebsitePreview,
 } from '../../../lib/website-research-agent'
 import { normalizeWebsiteUrlInput } from '../../../lib/website-intel'
 
@@ -64,43 +66,50 @@ async function setCached(url: string, research: AgencyResearch): Promise<void> {
   }
 }
 
-function buildPreviewBullets(research: AgencyResearch): string[] {
-  const bullets: string[] = []
-
-  // Headline observation
-  if (research.homepage.headline) {
-    bullets.push(`Homepage headline: "${research.homepage.headline}"`)
+function fallbackPreview(url: string): WebsitePreview {
+  return {
+    url,
+    ok: false,
+    headline: null,
+    subheadline: null,
+    metaDescription: null,
+    techStack: {
+      framework: null,
+      hosting: null,
+      cms: null,
+      crm: null,
+      analytics: [],
+      scheduling: null,
+      payment: null,
+      chat: null,
+      auth: null,
+    },
+    pages: {
+      pricing: false,
+      caseStudies: false,
+      blog: false,
+      about: false,
+      contact: false,
+      team: false,
+    },
+    social: {
+      linkedin: null,
+      twitter: null,
+      instagram: null,
+      youtube: null,
+      facebook: null,
+      github: null,
+      tiktok: null,
+    },
+    signals: [
+      {
+        type: 'neutral',
+        text: "We couldn't fetch your site in time — your audit will still run on the form inputs.",
+      },
+    ],
+    positioning: null,
+    summary: "We couldn't fetch your site in time — your audit will still run on the form inputs.",
   }
-
-  // Tech stack highlights
-  const stackHighlights: string[] = []
-  if (research.techStack.cms) stackHighlights.push(research.techStack.cms)
-  if (research.techStack.crm) stackHighlights.push(research.techStack.crm)
-  if (research.techStack.booking) stackHighlights.push(research.techStack.booking)
-  if (research.techStack.chat) stackHighlights.push(research.techStack.chat)
-  if (research.techStack.payment) stackHighlights.push(research.techStack.payment)
-  stackHighlights.push(...research.techStack.analytics.slice(0, 2))
-  stackHighlights.push(...research.techStack.automation.slice(0, 2))
-  if (stackHighlights.length > 0) {
-    bullets.push(`Detected stack: ${[...new Set(stackHighlights)].slice(0, 6).join(', ')}`)
-  }
-
-  // Top weakness
-  if (research.weaknessSignals.length > 0) {
-    bullets.push(research.weaknessSignals[0])
-  }
-
-  // Top strength (only if we don't already have 4 bullets)
-  if (bullets.length < 4 && research.strengthSignals.length > 0) {
-    bullets.push(research.strengthSignals[0])
-  }
-
-  // Fallback if bullets thin
-  if (bullets.length === 0) {
-    bullets.push('Site fetched — no distinctive signals extracted yet. The full audit will still use what we have.')
-  }
-
-  return bullets.slice(0, 4)
 }
 
 export async function POST(request: Request) {
@@ -124,25 +133,17 @@ export async function POST(request: Request) {
       (await withTimeout(researchAgency(normalized), RESEARCH_TIMEOUT_MS, null))
 
     if (!research) {
-      return Response.json({
-        url: normalized,
-        ok: false,
-        bullets: ['We couldn\'t fetch your site in time — your audit will still run on the form inputs.'],
-      })
+      return Response.json(fallbackPreview(normalized))
     }
 
     if (!cached) {
       void setCached(normalized, research)
     }
 
-    const bullets = buildPreviewBullets(research)
-    const fetchFailed = research.errors.length > 0 && !research.homepage.headline
-
-    return Response.json({
-      url: normalized,
-      ok: !fetchFailed,
-      bullets,
-    })
+    const preview = buildWebsitePreview(research)
+    // Ensure the URL on the response matches the normalized input.
+    preview.url = normalized
+    return Response.json(preview)
   } catch (err) {
     console.error('research-preview error:', err)
     return serverErrorResponse()

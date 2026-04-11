@@ -186,12 +186,23 @@ const LOADING_MESSAGES = [
   'Generating your diagnosis…',
 ]
 
-const RESEARCH_MESSAGES = [
-  'Fetching your homepage…',
-  'Detecting your tech stack…',
-  'Scanning for buy signals…',
-  'Analyzing positioning…',
-]
+// Analyzer stages — shown sequentially with a check mark as each completes.
+// Timing is deliberate: we want the multi-stage reveal to feel like a real
+// consultant audit, not a 2-second parlour trick. The API often finishes
+// before all stages complete; we hold the UI until MIN_ANALYZER_TIME_MS
+// elapses AND the fetch returns.
+const RESEARCH_STAGES = [
+  'Fetching homepage',
+  'Parsing sitemap',
+  'Detecting tech stack',
+  'Crawling site structure',
+  'Scanning social presence',
+  'Analyzing positioning',
+  'Compiling report',
+] as const
+
+const STAGE_DURATION_MS = 1500 // per-stage visible time before auto-advance
+const MIN_ANALYZER_TIME_MS = STAGE_DURATION_MS * RESEARCH_STAGES.length // ~10.5s
 
 const TOTAL_STEPS = 13
 const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
@@ -274,13 +285,286 @@ type Answers = {
   twoWeekChange: string
 }
 
+type WebsitePreview = {
+  url: string
+  ok: boolean
+  headline: string | null
+  subheadline: string | null
+  metaDescription: string | null
+  techStack: {
+    framework: string | null
+    hosting: string | null
+    cms: string | null
+    crm: string | null
+    analytics: string[]
+    scheduling: string | null
+    payment: string | null
+    chat: string | null
+    auth: string | null
+  }
+  pages: {
+    pricing: boolean
+    caseStudies: boolean
+    blog: boolean
+    about: boolean
+    contact: boolean
+    team: boolean
+  }
+  social: {
+    linkedin: string | null
+    twitter: string | null
+    instagram: string | null
+    youtube: string | null
+    facebook: string | null
+    github: string | null
+    tiktok: string | null
+  }
+  signals: Array<{ type: 'positive' | 'negative' | 'neutral'; text: string }>
+  positioning: {
+    icp: string | null
+    positioning: string | null
+    proofStrength: 'weak' | 'medium' | 'strong' | null
+    positioningGaps: string[]
+    wedgeAngle: string | null
+  } | null
+  summary: string
+}
+
 type ResearchState =
   | { status: 'idle' }
-  | { status: 'analyzing'; messageIndex: number }
-  | { status: 'done'; url: string; bullets: string[]; ok: boolean }
+  | { status: 'analyzing'; completedStages: number }
+  | { status: 'done'; preview: WebsitePreview }
   | { status: 'skipped' }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
+
+function buildFallbackPreview(url: string): WebsitePreview {
+  return {
+    url,
+    ok: false,
+    headline: null,
+    subheadline: null,
+    metaDescription: null,
+    techStack: {
+      framework: null,
+      hosting: null,
+      cms: null,
+      crm: null,
+      analytics: [],
+      scheduling: null,
+      payment: null,
+      chat: null,
+      auth: null,
+    },
+    pages: {
+      pricing: false,
+      caseStudies: false,
+      blog: false,
+      about: false,
+      contact: false,
+      team: false,
+    },
+    social: {
+      linkedin: null,
+      twitter: null,
+      instagram: null,
+      youtube: null,
+      facebook: null,
+      github: null,
+      tiktok: null,
+    },
+    signals: [
+      { type: 'neutral', text: "We couldn't analyze your site, but your audit will still run." },
+    ],
+    positioning: null,
+    summary: "We couldn't analyze your site, but your audit will still run.",
+  }
+}
+
+function AnalyzerProgress({ completedStages }: { completedStages: number }) {
+  return (
+    <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-3">
+        Running deep analysis
+      </p>
+      <ul className="space-y-2">
+        {RESEARCH_STAGES.map((stage, i) => {
+          const done = i < completedStages
+          const active = i === completedStages
+          return (
+            <li key={stage} className="flex items-center gap-3 text-sm">
+              {done ? (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+                  <circle cx="8" cy="8" r="7" stroke="#4cd7f6" strokeWidth="1.5" />
+                  <path
+                    d="M4.5 8.2l2.4 2.4L11.5 6"
+                    stroke="#4cd7f6"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : active ? (
+                <div className="w-4 h-4 rounded-full border-2 border-primary/40 border-t-primary animate-spin flex-shrink-0" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border border-on-surface-variant/20 flex-shrink-0" />
+              )}
+              <span
+                className={
+                  done
+                    ? 'text-on-surface-variant'
+                    : active
+                      ? 'text-on-surface font-medium'
+                      : 'text-on-surface-variant/50'
+                }
+              >
+                {stage}
+                {active && '…'}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+type SocialKey = 'linkedin' | 'twitter' | 'github' | 'youtube' | 'instagram' | 'facebook' | 'tiktok'
+
+const SOCIAL_LABELS: Record<SocialKey, string> = {
+  linkedin: 'LinkedIn',
+  twitter: 'X',
+  github: 'GitHub',
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  tiktok: 'TikTok',
+}
+
+function AnalyzerCompleteCard({ preview }: { preview: WebsitePreview }) {
+  const stackBits: string[] = []
+  if (preview.techStack.framework) stackBits.push(preview.techStack.framework)
+  if (preview.techStack.hosting) stackBits.push(preview.techStack.hosting)
+  if (preview.techStack.cms && preview.techStack.cms !== preview.techStack.framework) {
+    stackBits.push(preview.techStack.cms)
+  }
+  if (preview.techStack.crm) stackBits.push(preview.techStack.crm)
+  if (preview.techStack.analytics[0]) stackBits.push(preview.techStack.analytics[0])
+  const stackLine = stackBits.slice(0, 4).join(' · ')
+
+  const socialEntries = (Object.entries(preview.social) as [SocialKey, string | null][])
+    .filter(([, handle]) => Boolean(handle))
+
+  const topSignals = preview.signals.slice(0, 5)
+
+  return (
+    <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/8 p-5">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+        Analysis complete
+      </p>
+
+      {preview.headline ? (
+        <h3 className="text-[15px] font-semibold text-on-surface leading-snug mb-1">
+          {preview.headline}
+        </h3>
+      ) : (
+        <p className="text-sm text-on-surface-variant mb-2">
+          Partial read — we couldn&apos;t pull a headline from your homepage.
+        </p>
+      )}
+      {preview.subheadline && (
+        <p className="text-[13px] text-on-surface-variant/80 leading-snug mb-3">
+          {preview.subheadline}
+        </p>
+      )}
+
+      {stackLine && (
+        <div className="mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-1">
+            Stack
+          </p>
+          <p className="text-[13px] text-on-surface">{stackLine}</p>
+        </div>
+      )}
+
+      {topSignals.length > 0 && (
+        <div className="mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-2">
+            Signals
+          </p>
+          <ul className="space-y-1.5">
+            {topSignals.map((signal, i) => {
+              const color =
+                signal.type === 'positive'
+                  ? '#4cd7f6'
+                  : signal.type === 'negative'
+                    ? '#ff8a8a'
+                    : '#c5b8ff'
+              const glyph = signal.type === 'positive' ? '+' : signal.type === 'negative' ? '−' : '•'
+              return (
+                <li key={i} className="flex items-start gap-2 text-[13px] text-on-surface-variant leading-relaxed">
+                  <span
+                    className="mt-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[11px] font-bold flex-shrink-0"
+                    style={{ color, border: `1px solid ${color}55` }}
+                  >
+                    {glyph}
+                  </span>
+                  <span>{signal.text}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
+      {socialEntries.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-1.5">
+            Social
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {socialEntries.map(([key, handle]) => (
+              <span
+                key={key}
+                className="inline-flex items-center gap-1 rounded-full bg-on-surface/5 border border-on-surface-variant/15 px-2 py-0.5 text-[11px] text-on-surface-variant"
+              >
+                <span className="font-semibold">{SOCIAL_LABELS[key]}</span>
+                <span className="opacity-70">@{handle}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {preview.positioning?.wedgeAngle && (
+        <div className="mt-4 pt-4 border-t border-primary/20">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary mb-1.5">
+            Your wedge
+          </p>
+          <p className="text-[13px] text-on-surface leading-snug italic">
+            &ldquo;{preview.positioning.wedgeAngle}&rdquo;
+          </p>
+          {(preview.positioning.icp || preview.positioning.positioning) && (
+            <div className="mt-2 space-y-0.5">
+              {preview.positioning.icp && (
+                <p className="text-[11px] text-on-surface-variant/70">
+                  <span className="font-semibold uppercase tracking-wide opacity-60">ICP:</span>{' '}
+                  {preview.positioning.icp}
+                </p>
+              )}
+              {preview.positioning.positioning && (
+                <p className="text-[11px] text-on-surface-variant/70">
+                  <span className="font-semibold uppercase tracking-wide opacity-60">Positioning:</span>{' '}
+                  {preview.positioning.positioning}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function StepHeader({ question, hint }: { question: string; hint?: string }) {
   return (
@@ -864,33 +1148,11 @@ export default function AuditPage() {
               </div>
 
               {researchState.status === 'analyzing' && (
-                <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
-                    <p className="text-sm font-medium text-on-surface">
-                      {RESEARCH_MESSAGES[researchState.messageIndex]}
-                    </p>
-                  </div>
-                </div>
+                <AnalyzerProgress completedStages={researchState.completedStages} />
               )}
 
               {researchState.status === 'done' && (
-                <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/8 p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
-                    Analysis complete
-                  </p>
-                  <p className="text-sm text-on-surface mb-3">
-                    Here&apos;s what I found:
-                  </p>
-                  <ul className="space-y-2">
-                    {researchState.bullets.map((bullet, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[13px] text-on-surface-variant leading-relaxed">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-secondary flex-shrink-0" />
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <AnalyzerCompleteCard preview={researchState.preview} />
               )}
 
               <p className="mb-5 text-xs text-on-surface-variant/50">
@@ -908,52 +1170,57 @@ export default function AuditPage() {
                     const url = answers.websiteUrl.trim()
                     if (!url) return
 
-                    setResearchState({ status: 'analyzing', messageIndex: 0 })
+                    setResearchState({ status: 'analyzing', completedStages: 0 })
 
-                    const tick = setInterval(() => {
-                      setResearchState((prev) => {
-                        if (prev.status !== 'analyzing') return prev
-                        return {
-                          status: 'analyzing',
-                          messageIndex: Math.min(prev.messageIndex + 1, RESEARCH_MESSAGES.length - 1),
-                        }
-                      })
-                    }, 2200)
-
-                    try {
-                      const res = await fetch('/api/research-preview', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url }),
-                      })
-                      const data = await res.json().catch(() => null)
-                      clearInterval(tick)
-
-                      if (!res.ok || !data) {
-                        setResearchState({
-                          status: 'done',
-                          url,
-                          ok: false,
-                          bullets: ['We couldn\'t analyze your site, but your audit will still run.'],
-                        })
-                        return
-                      }
-
-                      setResearchState({
-                        status: 'done',
-                        url: typeof data.url === 'string' ? data.url : url,
-                        ok: Boolean(data.ok),
-                        bullets: Array.isArray(data.bullets) ? data.bullets.slice(0, 4) : [],
-                      })
-                    } catch {
-                      clearInterval(tick)
-                      setResearchState({
-                        status: 'done',
-                        url,
-                        ok: false,
-                        bullets: ['We couldn\'t analyze your site, but your audit will still run.'],
-                      })
+                    // Stage advancer — completes one stage every STAGE_DURATION_MS.
+                    // Guarantees the user sees each of the 6 stages tick off, even
+                    // if the API finishes early.
+                    const stageTimers: ReturnType<typeof setTimeout>[] = []
+                    for (let i = 1; i <= RESEARCH_STAGES.length; i += 1) {
+                      const t = setTimeout(() => {
+                        setResearchState((prev) =>
+                          prev.status === 'analyzing'
+                            ? { status: 'analyzing', completedStages: Math.max(prev.completedStages, i) }
+                            : prev,
+                        )
+                      }, STAGE_DURATION_MS * i)
+                      stageTimers.push(t)
                     }
+
+                    // Minimum hold — we don't flip to 'done' until at least this
+                    // has elapsed, so the reveal never feels fake.
+                    const minHold = new Promise<void>((resolve) => {
+                      setTimeout(resolve, MIN_ANALYZER_TIME_MS)
+                    })
+
+                    // API fetch — always resolves to a preview or null, never throws.
+                    const fetchPromise: Promise<WebsitePreview | null> = (async () => {
+                      try {
+                        const res = await fetch('/api/research-preview', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ url }),
+                        })
+                        const data = await res.json().catch(() => null)
+                        if (!res.ok || !data || typeof data !== 'object') return null
+                        return data as WebsitePreview
+                      } catch {
+                        return null
+                      }
+                    })()
+
+                    const [apiResult] = await Promise.all([fetchPromise, minHold])
+                    stageTimers.forEach((t) => clearTimeout(t))
+
+                    if (!apiResult) {
+                      setResearchState({
+                        status: 'done',
+                        preview: buildFallbackPreview(url),
+                      })
+                      return
+                    }
+
+                    setResearchState({ status: 'done', preview: apiResult })
                   }}
                   className="px-5 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
                 >
