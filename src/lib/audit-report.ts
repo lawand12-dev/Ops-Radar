@@ -94,13 +94,20 @@ async function requestAuditDraft(
   input: AuditInput,
   stage: AuditReportStage,
   userPrompt: string,
+  knowledgeContext?: string,
 ): Promise<Record<string, unknown>> {
+  const baseSystemPrompt = getSystemPrompt(stage)
+  const trimmedKnowledge = knowledgeContext?.trim() ?? ''
+  const systemPrompt = trimmedKnowledge
+    ? `${baseSystemPrompt}\n\n${trimmedKnowledge}`
+    : baseSystemPrompt
+
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
         role: 'system',
-        content: getSystemPrompt(stage),
+        content: systemPrompt,
       },
       {
         role: 'user',
@@ -140,8 +147,9 @@ function rankAuditConfidence(confidence: ReturnType<typeof assessAuditConfidence
 export async function generateAuditReport(
   input: AuditInput,
   stage: AuditReportStage,
+  knowledgeContext?: string,
 ): Promise<Record<string, unknown>> {
-  const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input))
+  const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input), knowledgeContext)
   const initialGrounded = groundAuditResult(initialDraft, input, stage)
   const initialConfidence = assessAuditConfidence(initialGrounded, input, stage)
 
@@ -154,6 +162,7 @@ export async function generateAuditReport(
         input,
         stage,
         buildAuditRepairPrompt(input, stage, initialGrounded, initialConfidence),
+        knowledgeContext,
       )
       const repairedGrounded = groundAuditResult(repairedDraft, input, stage)
       const repairedConfidence = assessAuditConfidence(repairedGrounded, input, stage)

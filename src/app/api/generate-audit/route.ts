@@ -21,6 +21,10 @@ import {
   serializeAgencyResearch,
   type AgencyResearch,
 } from '../../../lib/website-research-agent'
+import {
+  retrieveRelevantKnowledge,
+  formatKnowledgeContext,
+} from '../../../lib/knowledge-retrieval'
 import type { NotifyPayload } from '../notify/route'
 
 const RESEARCH_TIMEOUT_MS = 15_000
@@ -276,9 +280,43 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Service configuration error. Please try again later.' }, { status: 503 })
     }
 
+    // Pull the most semantically-rich fields from the questionnaire to use as
+    // the retrieval query. We want the research library to match on *what the
+    // agency is doing and struggling with*, not their email or revenue band.
+    const knowledgeQuery = [
+      `Agency type: ${agencyType}`,
+      `Tools: ${tools}`,
+      `CRM / operations: ${crmTool}`,
+      `Time-heavy work: ${timeHeavy}`,
+      `Biggest failing process: ${automationWish}`,
+      processFrequency ? `Frequency: ${processFrequency}` : '',
+      failureImpact ? `Cost of staying manual: ${failureImpact}` : '',
+      futureVision ? `Vision: ${futureVision}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    let knowledgeContext = ''
+    try {
+      const chunks = await retrieveRelevantKnowledge(knowledgeQuery, 5)
+      knowledgeContext = formatKnowledgeContext(chunks)
+      if (chunks.length > 0) {
+        console.log(
+          `[generate-audit] injected ${chunks.length} knowledge chunk(s) from`,
+          Array.from(new Set(chunks.map((c) => c.sourceFile))),
+        )
+      }
+    } catch (ragError) {
+      // RAG is best-effort — never block the audit on retrieval failure.
+      console.warn(
+        '[generate-audit] knowledge retrieval failed:',
+        ragError instanceof Error ? ragError.message : ragError,
+      )
+    }
+
     let audit: Record<string, unknown>
     try {
-      audit = await generateAuditReport(auditInput, 'full')
+      audit = await generateAuditReport(auditInput, 'full', knowledgeContext)
     } catch (aiError) {
       console.error('[generate-audit] AI generation failed:', aiError instanceof Error ? aiError.message : aiError)
       return Response.json({ error: 'Audit generation failed. Please try again.' }, { status: 502 })

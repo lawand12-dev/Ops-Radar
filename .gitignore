@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# RAG research library — ingested into Supabase, not tracked in git
+knowledge-base/*.json
