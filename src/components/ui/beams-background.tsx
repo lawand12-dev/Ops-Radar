@@ -24,11 +24,21 @@ const SUBTLE_CONFIG = {
   beamHeight: 15,
   beamNumber: 6,
   lightColor: "#ffffff",
-  speed: 1.5,
+  speed: 0.6,
   noiseIntensity: 1,
   scale: 0.2,
   rotation: 43,
 } as const
+
+// Gradient fallback — uses the same visual language as the beams
+// (dark base with subtle blue / violet streaks) so the fade between
+// fallback and canvas is invisible. Kept in sync with the copy in
+// beams-background-lazy.tsx so that wrapper doesn't need a static
+// import back into this module (which would defeat the code split).
+const BEAMS_FALLBACK_BACKGROUND =
+  "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 60%)," +
+  "radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,0.10) 0%, transparent 60%)," +
+  "linear-gradient(180deg, #000000 0%, #050810 50%, #000000 100%)"
 
 interface BeamsBackgroundProps {
   intensity: "full" | "subtle"
@@ -56,11 +66,15 @@ export default function BeamsBackground({ intensity }: BeamsBackgroundProps) {
 
   const config = intensity === "full" ? FULL_CONFIG : SUBTLE_CONFIG
   const isSubtle = intensity === "subtle"
+  // Home hero animates continuously; secondary pages render on
+  // demand so the canvas doesn't burn CPU when the beams are purely
+  // decorative.
+  const frameloop: "always" | "demand" = isSubtle ? "demand" : "always"
 
   return (
     <div
       ref={containerRef}
-      className="absolute inset-x-0 top-0 z-0"
+      className="absolute inset-x-0 top-0 z-0 overflow-hidden"
       style={
         isSubtle
           ? {
@@ -79,44 +93,27 @@ export default function BeamsBackground({ intensity }: BeamsBackgroundProps) {
         className="absolute inset-0"
         style={{
           opacity: canvasReady ? 0 : 1,
-          transition: "opacity 400ms ease-out",
-          background: "linear-gradient(43deg, #000000 0%, #000000 100%)",
+          transition: "opacity 700ms ease-out",
+          background: BEAMS_FALLBACK_BACKGROUND,
+        }}
+      />
+
+      {/* Three.js canvas — fades in once the first frame has rendered */}
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: canvasReady ? 1 : 0,
+          transition: "opacity 700ms ease-out",
         }}
       >
-        {/* Animated faint beam streaks via pure CSS */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "repeating-linear-gradient(" +
-              "43deg, " +
-              "transparent, " +
-              "transparent 8%, " +
-              "rgba(255,255,255,0.015) 8.5%, " +
-              "transparent 9%, " +
-              "transparent 14%, " +
-              "rgba(255,255,255,0.025) 14.5%, " +
-              "transparent 15%, " +
-              "transparent 22%, " +
-              "rgba(255,255,255,0.01) 22.5%, " +
-              "transparent 23%, " +
-              "transparent 35%, " +
-              "rgba(255,255,255,0.02) 35.5%, " +
-              "transparent 36%" +
-              ")",
-            animation: "beamsFallbackShift 8s linear infinite",
-          }}
-        />
-        {/* Soft glow spot */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 40% at 50% 40%, rgba(255,255,255,0.04), transparent 70%)",
-          }}
-        />
+        {isVisible && (
+          <BeamsCanvas
+            {...config}
+            frameloop={frameloop}
+            onReady={handleCanvasReady}
+          />
+        )}
       </div>
-      {isVisible && <BeamsCanvas {...config} onReady={handleCanvasReady} />}
     </div>
   )
 }

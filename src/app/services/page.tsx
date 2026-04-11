@@ -4,7 +4,7 @@ import FaqAccordion from '../components/FaqAccordion'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background'
+import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 
 export const metadata: Metadata = {
   title: "Services",
