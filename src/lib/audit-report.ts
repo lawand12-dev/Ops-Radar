@@ -144,13 +144,31 @@ function rankAuditConfidence(confidence: ReturnType<typeof assessAuditConfidence
   return (confidence.overall * 10) - (confidence.issues.length * 6) - (weakOpportunities * 8)
 }
 
+/**
+ * Extract the set of source filenames the LLM is actually allowed to cite,
+ * by parsing `[Source: filename.json]` markers out of the knowledge context
+ * block. Returns null when no RAG context was injected, which is the signal
+ * the grounding layer uses to force every pattern_match to null.
+ */
+function extractAllowedSources(knowledgeContext: string | undefined): Set<string> | null {
+  if (!knowledgeContext) return null
+  const matches = knowledgeContext.matchAll(/\[Source:\s*([^\]\n]+?)\s*\]/g)
+  const sources = new Set<string>()
+  for (const match of matches) {
+    if (match[1]) sources.add(match[1].trim())
+  }
+  return sources.size > 0 ? sources : null
+}
+
 export async function generateAuditReport(
   input: AuditInput,
   stage: AuditReportStage,
   knowledgeContext?: string,
 ): Promise<Record<string, unknown>> {
+  const allowedSources = extractAllowedSources(knowledgeContext)
+
   const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input), knowledgeContext)
-  const initialGrounded = groundAuditResult(initialDraft, input, stage)
+  const initialGrounded = groundAuditResult(initialDraft, input, stage, allowedSources)
   const initialConfidence = assessAuditConfidence(initialGrounded, input, stage)
 
   let bestAudit = initialGrounded
@@ -164,7 +182,7 @@ export async function generateAuditReport(
         buildAuditRepairPrompt(input, stage, initialGrounded, initialConfidence),
         knowledgeContext,
       )
-      const repairedGrounded = groundAuditResult(repairedDraft, input, stage)
+      const repairedGrounded = groundAuditResult(repairedDraft, input, stage, allowedSources)
       const repairedConfidence = assessAuditConfidence(repairedGrounded, input, stage)
 
       if (rankAuditConfidence(repairedConfidence) >= rankAuditConfidence(initialConfidence)) {
