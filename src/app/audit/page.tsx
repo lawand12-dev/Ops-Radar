@@ -9,6 +9,7 @@ import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
+import { track } from '@vercel/analytics'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -186,25 +187,7 @@ const LOADING_MESSAGES = [
   'Generating your diagnosis…',
 ]
 
-// Analyzer stages — shown sequentially with a check mark as each completes.
-// Timing is deliberate: we want the multi-stage reveal to feel like a real
-// consultant audit, not a 2-second parlour trick. The API often finishes
-// before all stages complete; we hold the UI until MIN_ANALYZER_TIME_MS
-// elapses AND the fetch returns.
-const RESEARCH_STAGES = [
-  'Fetching homepage',
-  'Parsing sitemap',
-  'Detecting tech stack',
-  'Crawling site structure',
-  'Scanning social presence',
-  'Analyzing positioning',
-  'Compiling report',
-] as const
-
-const STAGE_DURATION_MS = 1500 // per-stage visible time before auto-advance
-const MIN_ANALYZER_TIME_MS = STAGE_DURATION_MS * RESEARCH_STAGES.length // ~10.5s
-
-const TOTAL_STEPS = 13
+const TOTAL_STEPS = 12
 const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
 const OPERATIONS_STATE_OPTIONS = [
   'Pure chaos — everything is manual and we\'re constantly dropping balls',
@@ -285,286 +268,7 @@ type Answers = {
   twoWeekChange: string
 }
 
-type WebsitePreview = {
-  url: string
-  ok: boolean
-  headline: string | null
-  subheadline: string | null
-  metaDescription: string | null
-  techStack: {
-    framework: string | null
-    hosting: string | null
-    cms: string | null
-    crm: string | null
-    analytics: string[]
-    scheduling: string | null
-    payment: string | null
-    chat: string | null
-    auth: string | null
-  }
-  pages: {
-    pricing: boolean
-    caseStudies: boolean
-    blog: boolean
-    about: boolean
-    contact: boolean
-    team: boolean
-  }
-  social: {
-    linkedin: string | null
-    twitter: string | null
-    instagram: string | null
-    youtube: string | null
-    facebook: string | null
-    github: string | null
-    tiktok: string | null
-  }
-  signals: Array<{ type: 'positive' | 'negative' | 'neutral'; text: string }>
-  positioning: {
-    icp: string | null
-    positioning: string | null
-    proofStrength: 'weak' | 'medium' | 'strong' | null
-    positioningGaps: string[]
-    wedgeAngle: string | null
-  } | null
-  summary: string
-}
-
-type ResearchState =
-  | { status: 'idle' }
-  | { status: 'analyzing'; completedStages: number }
-  | { status: 'done'; preview: WebsitePreview }
-  | { status: 'skipped' }
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
-
-function buildFallbackPreview(url: string): WebsitePreview {
-  return {
-    url,
-    ok: false,
-    headline: null,
-    subheadline: null,
-    metaDescription: null,
-    techStack: {
-      framework: null,
-      hosting: null,
-      cms: null,
-      crm: null,
-      analytics: [],
-      scheduling: null,
-      payment: null,
-      chat: null,
-      auth: null,
-    },
-    pages: {
-      pricing: false,
-      caseStudies: false,
-      blog: false,
-      about: false,
-      contact: false,
-      team: false,
-    },
-    social: {
-      linkedin: null,
-      twitter: null,
-      instagram: null,
-      youtube: null,
-      facebook: null,
-      github: null,
-      tiktok: null,
-    },
-    signals: [
-      { type: 'neutral', text: "We couldn't analyze your site, but your audit will still run." },
-    ],
-    positioning: null,
-    summary: "We couldn't analyze your site, but your audit will still run.",
-  }
-}
-
-function AnalyzerProgress({ completedStages }: { completedStages: number }) {
-  return (
-    <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-3">
-        Running deep analysis
-      </p>
-      <ul className="space-y-2">
-        {RESEARCH_STAGES.map((stage, i) => {
-          const done = i < completedStages
-          const active = i === completedStages
-          return (
-            <li key={stage} className="flex items-center gap-3 text-sm">
-              {done ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
-                  <circle cx="8" cy="8" r="7" stroke="#4cd7f6" strokeWidth="1.5" />
-                  <path
-                    d="M4.5 8.2l2.4 2.4L11.5 6"
-                    stroke="#4cd7f6"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : active ? (
-                <div className="w-4 h-4 rounded-full border-2 border-primary/40 border-t-primary animate-spin flex-shrink-0" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border border-on-surface-variant/20 flex-shrink-0" />
-              )}
-              <span
-                className={
-                  done
-                    ? 'text-on-surface-variant'
-                    : active
-                      ? 'text-on-surface font-medium'
-                      : 'text-on-surface-variant/50'
-                }
-              >
-                {stage}
-                {active && '…'}
-              </span>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
-type SocialKey = 'linkedin' | 'twitter' | 'github' | 'youtube' | 'instagram' | 'facebook' | 'tiktok'
-
-const SOCIAL_LABELS: Record<SocialKey, string> = {
-  linkedin: 'LinkedIn',
-  twitter: 'X',
-  github: 'GitHub',
-  youtube: 'YouTube',
-  instagram: 'Instagram',
-  facebook: 'Facebook',
-  tiktok: 'TikTok',
-}
-
-function AnalyzerCompleteCard({ preview }: { preview: WebsitePreview }) {
-  const stackBits: string[] = []
-  if (preview.techStack.framework) stackBits.push(preview.techStack.framework)
-  if (preview.techStack.hosting) stackBits.push(preview.techStack.hosting)
-  if (preview.techStack.cms && preview.techStack.cms !== preview.techStack.framework) {
-    stackBits.push(preview.techStack.cms)
-  }
-  if (preview.techStack.crm) stackBits.push(preview.techStack.crm)
-  if (preview.techStack.analytics[0]) stackBits.push(preview.techStack.analytics[0])
-  const stackLine = stackBits.slice(0, 4).join(' · ')
-
-  const socialEntries = (Object.entries(preview.social) as [SocialKey, string | null][])
-    .filter(([, handle]) => Boolean(handle))
-
-  const topSignals = preview.signals.slice(0, 5)
-
-  return (
-    <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/8 p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
-        Analysis complete
-      </p>
-
-      {preview.headline ? (
-        <h3 className="text-[15px] font-semibold text-on-surface leading-snug mb-1">
-          {preview.headline}
-        </h3>
-      ) : (
-        <p className="text-sm text-on-surface-variant mb-2">
-          Partial read — we couldn&apos;t pull a headline from your homepage.
-        </p>
-      )}
-      {preview.subheadline && (
-        <p className="text-[13px] text-on-surface-variant/80 leading-snug mb-3">
-          {preview.subheadline}
-        </p>
-      )}
-
-      {stackLine && (
-        <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-1">
-            Stack
-          </p>
-          <p className="text-[13px] text-on-surface">{stackLine}</p>
-        </div>
-      )}
-
-      {topSignals.length > 0 && (
-        <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-2">
-            Signals
-          </p>
-          <ul className="space-y-1.5">
-            {topSignals.map((signal, i) => {
-              const color =
-                signal.type === 'positive'
-                  ? '#4cd7f6'
-                  : signal.type === 'negative'
-                    ? '#ff8a8a'
-                    : '#c5b8ff'
-              const glyph = signal.type === 'positive' ? '+' : signal.type === 'negative' ? '−' : '•'
-              return (
-                <li key={i} className="flex items-start gap-2 text-[13px] text-on-surface-variant leading-relaxed">
-                  <span
-                    className="mt-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[11px] font-bold flex-shrink-0"
-                    style={{ color, border: `1px solid ${color}55` }}
-                  >
-                    {glyph}
-                  </span>
-                  <span>{signal.text}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      )}
-
-      {socialEntries.length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60 mb-1.5">
-            Social
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {socialEntries.map(([key, handle]) => (
-              <span
-                key={key}
-                className="inline-flex items-center gap-1 rounded-full bg-on-surface/5 border border-on-surface-variant/15 px-2 py-0.5 text-[11px] text-on-surface-variant"
-              >
-                <span className="font-semibold">{SOCIAL_LABELS[key]}</span>
-                <span className="opacity-70">@{handle}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {preview.positioning?.wedgeAngle && (
-        <div className="mt-4 pt-4 border-t border-primary/20">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary mb-1.5">
-            Your wedge
-          </p>
-          <p className="text-[13px] text-on-surface leading-snug italic">
-            &ldquo;{preview.positioning.wedgeAngle}&rdquo;
-          </p>
-          {(preview.positioning.icp || preview.positioning.positioning) && (
-            <div className="mt-2 space-y-0.5">
-              {preview.positioning.icp && (
-                <p className="text-[11px] text-on-surface-variant/70">
-                  <span className="font-semibold uppercase tracking-wide opacity-60">ICP:</span>{' '}
-                  {preview.positioning.icp}
-                </p>
-              )}
-              {preview.positioning.positioning && (
-                <p className="text-[11px] text-on-surface-variant/70">
-                  <span className="font-semibold uppercase tracking-wide opacity-60">Positioning:</span>{' '}
-                  {preview.positioning.positioning}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function StepHeader({ question, hint }: { question: string; hint?: string }) {
   return (
@@ -738,8 +442,6 @@ export default function AuditPage() {
     sixMonthCost: '',
     twoWeekChange: '',
   })
-  const [researchState, setResearchState] = useState<ResearchState>({ status: 'idle' })
-
   const agencyCat = (): keyof typeof AGENCY_COPY => (
     answers.agencyType in AGENCY_COPY
       ? (answers.agencyType as keyof typeof AGENCY_COPY)
@@ -791,26 +493,23 @@ export default function AuditPage() {
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
-        // Website step is optional — user must either finish analyzing, skip, or have nothing to do.
-        return researchState.status === 'done' || researchState.status === 'skipped' || answers.websiteUrl.trim() === ''
-      case 1:
         return !!answers.agencyType && (!needsAgencyTypeDetail || answers.agencyTypeOther.trim().length >= 3)
-      case 2:  return !!answers.teamSize
-      case 3:  return !!answers.revenue
-      case 4:  return !!answers.activeClients
-      case 5:
+      case 1:  return !!answers.teamSize
+      case 2:  return !!answers.revenue
+      case 3:  return !!answers.activeClients
+      case 4:
         return (
           answers.tools.length > 0 &&
           (!needsToolDetail || answers.toolsOther.trim().length >= 3) &&
           (!needsToolSignalFollowup || answers.toolSignals.length > 0 || answers.toolSignalsDetail.trim().length >= 10)
         )
-      case 6:  return !!answers.operationsState
-      case 7:  return !!answers.hoursLost
-      case 8:  return !!answers.breakageResponse
-      case 9:  return answers.topPainProcess.trim().length >= 20
-      case 10: return !!answers.processFrequency
-      case 11: return answers.sixMonthCost.trim().length >= 20
-      case 12: return answers.twoWeekChange.trim().length >= 20
+      case 5:  return !!answers.operationsState
+      case 6:  return !!answers.hoursLost
+      case 7:  return !!answers.breakageResponse
+      case 8:  return answers.topPainProcess.trim().length >= 20
+      case 9:  return !!answers.processFrequency
+      case 10: return answers.sixMonthCost.trim().length >= 20
+      case 11: return answers.twoWeekChange.trim().length >= 20
       default: return false
     }
   }
@@ -930,6 +629,7 @@ export default function AuditPage() {
           toolCount: uniqueHandoffTools.length,
         },
       })
+      track('audit_form_submitted')
 
       sessionStorage.setItem(REPORT_HANDOFF_KEY, JSON.stringify({
         auditId: secureAuditId,
@@ -1111,139 +811,8 @@ export default function AuditPage() {
           className={direction === 'forward' ? 'step-forward' : 'step-backward'}
           style={{ willChange: 'transform, opacity' }}
         >
-          {/* Step 1 — Website research */}
+          {/* Step 1 — Agency type */}
           {currentStep === 0 && (
-            <>
-              <StepHeader
-                question="Got a website? Let's analyze it."
-                hint="Drop your URL and we'll inspect your site in real-time to deliver a 10x deeper audit. This is what makes OpsRadar's reports impossible to replicate with ChatGPT."
-              />
-
-              <div className="mb-6 space-y-2.5">
-                {[
-                  'Real tech stack detection (we name your actual tools)',
-                  'Positioning analysis (we read your homepage like a consultant)',
-                  'Buy-signal detection (we find what\'s already broken)',
-                ].map((benefit) => (
-                  <div key={benefit} className="flex items-start gap-2.5 text-sm text-on-surface-variant">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 flex-shrink-0">
-                      <path d="M3 8l3.5 3.5L13 5" stroke="#4cd7f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span>{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mb-4">
-                <TextInput
-                  value={answers.websiteUrl}
-                  onChange={(v) => {
-                    setAnswers((p) => ({ ...p, websiteUrl: v }))
-                    if (researchState.status !== 'idle') {
-                      setResearchState({ status: 'idle' })
-                    }
-                  }}
-                  placeholder="https://youragency.com"
-                />
-              </div>
-
-              {researchState.status === 'analyzing' && (
-                <AnalyzerProgress completedStages={researchState.completedStages} />
-              )}
-
-              {researchState.status === 'done' && (
-                <AnalyzerCompleteCard preview={researchState.preview} />
-              )}
-
-              <p className="mb-5 text-xs text-on-surface-variant/50">
-                No URL? Skip this step — your audit will still be great, just less specific.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  type="button"
-                  disabled={
-                    researchState.status === 'analyzing' ||
-                    answers.websiteUrl.trim().length < 4
-                  }
-                  onClick={async () => {
-                    const url = answers.websiteUrl.trim()
-                    if (!url) return
-
-                    setResearchState({ status: 'analyzing', completedStages: 0 })
-
-                    // Stage advancer — completes one stage every STAGE_DURATION_MS.
-                    // Guarantees the user sees each of the 6 stages tick off, even
-                    // if the API finishes early.
-                    const stageTimers: ReturnType<typeof setTimeout>[] = []
-                    for (let i = 1; i <= RESEARCH_STAGES.length; i += 1) {
-                      const t = setTimeout(() => {
-                        setResearchState((prev) =>
-                          prev.status === 'analyzing'
-                            ? { status: 'analyzing', completedStages: Math.max(prev.completedStages, i) }
-                            : prev,
-                        )
-                      }, STAGE_DURATION_MS * i)
-                      stageTimers.push(t)
-                    }
-
-                    // Minimum hold — we don't flip to 'done' until at least this
-                    // has elapsed, so the reveal never feels fake.
-                    const minHold = new Promise<void>((resolve) => {
-                      setTimeout(resolve, MIN_ANALYZER_TIME_MS)
-                    })
-
-                    // API fetch — always resolves to a preview or null, never throws.
-                    const fetchPromise: Promise<WebsitePreview | null> = (async () => {
-                      try {
-                        const res = await fetch('/api/research-preview', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ url }),
-                        })
-                        const data = await res.json().catch(() => null)
-                        if (!res.ok || !data || typeof data !== 'object') return null
-                        return data as WebsitePreview
-                      } catch {
-                        return null
-                      }
-                    })()
-
-                    const [apiResult] = await Promise.all([fetchPromise, minHold])
-                    stageTimers.forEach((t) => clearTimeout(t))
-
-                    if (!apiResult) {
-                      setResearchState({
-                        status: 'done',
-                        preview: buildFallbackPreview(url),
-                      })
-                      return
-                    }
-
-                    setResearchState({ status: 'done', preview: apiResult })
-                  }}
-                  className="px-5 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
-                >
-                  {researchState.status === 'analyzing' ? 'Analyzing…' : 'Analyze My Site →'}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setAnswers((p) => ({ ...p, websiteUrl: '' }))
-                    setResearchState({ status: 'skipped' })
-                  }}
-                  className="text-xs text-on-surface-variant/60 hover:text-on-surface hover:bg-transparent px-3 py-2 h-auto"
-                >
-                  Skip — I&apos;ll go without
-                </Button>
-              </div>
-            </>
-          )}
-
-          {/* Step 2 — Agency type */}
-          {currentStep === 1 && (
             <>
               <StepHeader
                 question="What kind of business are we looking at?"
@@ -1270,8 +839,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 3 — Team size */}
-          {currentStep === 2 && (
+          {/* Step 2 — Team size */}
+          {currentStep === 1 && (
             <>
               <StepHeader question="How large is your team?" />
               <SingleSelect
@@ -1282,8 +851,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 4 — Revenue */}
-          {currentStep === 3 && (
+          {/* Step 3 — Revenue */}
+          {currentStep === 2 && (
             <>
               <StepHeader question="What's your approximate monthly revenue?" />
               <SingleSelect
@@ -1294,8 +863,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 5 — Active clients */}
-          {currentStep === 4 && (
+          {/* Step 4 — Active clients */}
+          {currentStep === 3 && (
             <>
               <StepHeader question="How many active clients do you manage at a time?" />
               <SingleSelect
@@ -1306,8 +875,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 6 — Tools (adaptive by agency type) */}
-          {currentStep === 5 && (
+          {/* Step 5 — Tools (adaptive by agency type) */}
+          {currentStep === 4 && (
             <>
               <StepHeader
                 question="What tools does your team use daily?"
@@ -1365,8 +934,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 7 — Operations state */}
-          {currentStep === 6 && (
+          {/* Step 6 — Operations state */}
+          {currentStep === 5 && (
             <>
               <StepHeader
                 question="Which of these best describes your current operations?"
@@ -1380,8 +949,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 8 — Hours lost */}
-          {currentStep === 7 && (
+          {/* Step 7 — Hours lost */}
+          {currentStep === 6 && (
             <>
               <StepHeader
                 question="How many hours per week does your team lose to work that feels 'beneath' their pay grade?"
@@ -1395,8 +964,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 9 — Breakage response */}
-          {currentStep === 8 && (
+          {/* Step 8 — Breakage response */}
+          {currentStep === 7 && (
             <>
               <StepHeader
                 question="When something breaks in your operations, what happens?"
@@ -1410,8 +979,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 10 — Top pain process */}
-          {currentStep === 9 && (
+          {/* Step 9 — Top pain process */}
+          {currentStep === 8 && (
             <>
               <StepHeader
                 question="What's the #1 process that, when it fails, hurts your business the most?"
@@ -1428,8 +997,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 11 — Frequency */}
-          {currentStep === 10 && (
+          {/* Step 10 — Frequency */}
+          {currentStep === 9 && (
             <>
               <StepHeader
                 question="How often does this process happen?"
@@ -1443,8 +1012,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 12 — Six-month cost */}
-          {currentStep === 11 && (
+          {/* Step 11 — Six-month cost */}
+          {currentStep === 10 && (
             <>
               <StepHeader
                 question="What's the real cost if this process keeps running manually for another 6 months?"
@@ -1461,8 +1030,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 13 — Desired change */}
-          {currentStep === 12 && (
+          {/* Step 12 — Desired change */}
+          {currentStep === 11 && (
             <>
               <StepHeader
                 question="If we could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
@@ -1476,6 +1045,20 @@ export default function AuditPage() {
               {answers.twoWeekChange.trim().length > 0 && answers.twoWeekChange.trim().length < 20 && (
                 <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
               )}
+
+              <div className="mt-8 pt-6 border-t border-white/6">
+                <label className="block text-sm font-medium text-on-surface mb-1">
+                  Got a website? <span className="text-on-surface-variant/60 font-normal">(optional)</span>
+                </label>
+                <p className="text-xs text-on-surface-variant/55 mb-3">
+                  Share your URL and I&apos;ll tailor the report to your specific stack and services. Your website isn&apos;t graded — it just helps me be more accurate about your operations.
+                </p>
+                <TextInput
+                  value={answers.websiteUrl}
+                  onChange={(v) => setAnswers((p) => ({ ...p, websiteUrl: v }))}
+                  placeholder="https://youragency.com"
+                />
+              </div>
             </>
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
+import { track } from "@vercel/analytics"
 import {
   ArrowRight,
   Bot,
@@ -134,7 +135,7 @@ export default function ResponsiveHeroBanner({
                 asChild
                 className="btn-spring btn-main-sheen h-auto rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.16)] hover:bg-white/92"
               >
-                <Link href={primaryButtonHref}>
+                <Link href={primaryButtonHref} onClick={() => track('audit_started')}>
                   {primaryButtonText}
                   {showPrimaryArrowIcon ? <ArrowRight className="h-4 w-4" /> : null}
                 </Link>
@@ -143,6 +144,7 @@ export default function ResponsiveHeroBanner({
               <Link
                 href={secondaryButtonHref}
                 className="hero-secondary-button inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
+                onClick={() => track('call_booking_clicked')}
               >
                 {showSecondaryIcon ? <CirclePlay className="h-4 w-4" /> : null}
                 {secondaryButtonText}

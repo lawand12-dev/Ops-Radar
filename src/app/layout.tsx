@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
 import ChatNotification from "./components/ChatNotification";
@@ -113,6 +114,7 @@ export default function RootLayout({
         <ChatNotification />
         <FloatingAiAssistant />
         <MobileDock />
+        <Analytics />
       </body>
     </html>
   );
