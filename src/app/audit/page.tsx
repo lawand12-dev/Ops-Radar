@@ -186,7 +186,14 @@ const LOADING_MESSAGES = [
   'Generating your diagnosis…',
 ]
 
-const TOTAL_STEPS = 12
+const RESEARCH_MESSAGES = [
+  'Fetching your homepage…',
+  'Detecting your tech stack…',
+  'Scanning for buy signals…',
+  'Analyzing positioning…',
+]
+
+const TOTAL_STEPS = 13
 const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
 const OPERATIONS_STATE_OPTIONS = [
   'Pure chaos — everything is manual and we\'re constantly dropping balls',
@@ -248,6 +255,7 @@ function getToolSignalOptions(selectedTools: string[]): string[] {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Answers = {
+  websiteUrl: string
   agencyType: string
   agencyTypeOther: string
   teamSize: string
@@ -264,7 +272,13 @@ type Answers = {
   processFrequency: string
   sixMonthCost: string
   twoWeekChange: string
-} 
+}
+
+type ResearchState =
+  | { status: 'idle' }
+  | { status: 'analyzing'; messageIndex: number }
+  | { status: 'done'; url: string; bullets: string[]; ok: boolean }
+  | { status: 'skipped' }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -422,6 +436,7 @@ export default function AuditPage() {
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0)
   const [loadingError, setLoadingError] = useState('')
   const [answers, setAnswers] = useState<Answers>({
+    websiteUrl: '',
     agencyType: '',
     agencyTypeOther: '',
     teamSize: '',
@@ -439,6 +454,7 @@ export default function AuditPage() {
     sixMonthCost: '',
     twoWeekChange: '',
   })
+  const [researchState, setResearchState] = useState<ResearchState>({ status: 'idle' })
 
   const agencyCat = (): keyof typeof AGENCY_COPY => (
     answers.agencyType in AGENCY_COPY
@@ -491,23 +507,26 @@ export default function AuditPage() {
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
+        // Website step is optional — user must either finish analyzing, skip, or have nothing to do.
+        return researchState.status === 'done' || researchState.status === 'skipped' || answers.websiteUrl.trim() === ''
+      case 1:
         return !!answers.agencyType && (!needsAgencyTypeDetail || answers.agencyTypeOther.trim().length >= 3)
-      case 1:  return !!answers.teamSize
-      case 2:  return !!answers.revenue
-      case 3:  return !!answers.activeClients
-      case 4:
+      case 2:  return !!answers.teamSize
+      case 3:  return !!answers.revenue
+      case 4:  return !!answers.activeClients
+      case 5:
         return (
           answers.tools.length > 0 &&
           (!needsToolDetail || answers.toolsOther.trim().length >= 3) &&
           (!needsToolSignalFollowup || answers.toolSignals.length > 0 || answers.toolSignalsDetail.trim().length >= 10)
         )
-      case 5:  return !!answers.operationsState
-      case 6:  return !!answers.hoursLost
-      case 7:  return !!answers.breakageResponse
-      case 8:  return answers.topPainProcess.trim().length >= 20
-      case 9:  return !!answers.processFrequency
-      case 10: return answers.sixMonthCost.trim().length >= 20
-      case 11: return answers.twoWeekChange.trim().length >= 20
+      case 6:  return !!answers.operationsState
+      case 7:  return !!answers.hoursLost
+      case 8:  return !!answers.breakageResponse
+      case 9:  return answers.topPainProcess.trim().length >= 20
+      case 10: return !!answers.processFrequency
+      case 11: return answers.sixMonthCost.trim().length >= 20
+      case 12: return answers.twoWeekChange.trim().length >= 20
       default: return false
     }
   }
@@ -578,6 +597,8 @@ export default function AuditPage() {
         !tool.startsWith('Mostly systematized')
       ))
 
+      const effectiveWebsiteUrl = answers.websiteUrl.trim() || lead.websiteUrl
+
       const res = await fetch('/api/generate-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -585,7 +606,7 @@ export default function AuditPage() {
           name: lead.name,
           email: lead.email,
           company: lead.company,
-          websiteUrl: lead.websiteUrl,
+          websiteUrl: effectiveWebsiteUrl,
           companyWebsite: lead.companyWebsite,
           startedAt: lead.startedAt,
           agencyType: answers.agencyType === 'Other' && answers.agencyTypeOther
@@ -621,7 +642,7 @@ export default function AuditPage() {
         step: TOTAL_STEPS,
         reportStage: data.audit?.report_stage === 'full' ? 'full' : 'preview',
         metadata: {
-          websiteProvided: Boolean(lead.websiteUrl?.trim()),
+          websiteProvided: Boolean(effectiveWebsiteUrl?.trim()),
           toolCount: uniqueHandoffTools.length,
         },
       })
@@ -641,7 +662,7 @@ export default function AuditPage() {
           ...answers.toolSignals,
           ...(answers.toolSignalsDetail.trim() ? [answers.toolSignalsDetail.trim()] : []),
         ].slice(0, 4),
-        websiteUrl: lead.websiteUrl,
+        websiteUrl: effectiveWebsiteUrl,
         tools: uniqueHandoffTools.slice(0, 6),
         createdAt: Date.now(),
       }))
@@ -806,8 +827,156 @@ export default function AuditPage() {
           className={direction === 'forward' ? 'step-forward' : 'step-backward'}
           style={{ willChange: 'transform, opacity' }}
         >
-          {/* Step 1 — Agency type */}
+          {/* Step 1 — Website research */}
           {currentStep === 0 && (
+            <>
+              <StepHeader
+                question="Got a website? Let's analyze it."
+                hint="Drop your URL and we'll inspect your site in real-time to deliver a 10x deeper audit. This is what makes OpsRadar's reports impossible to replicate with ChatGPT."
+              />
+
+              <div className="mb-6 space-y-2.5">
+                {[
+                  'Real tech stack detection (we name your actual tools)',
+                  'Positioning analysis (we read your homepage like a consultant)',
+                  'Buy-signal detection (we find what\'s already broken)',
+                ].map((benefit) => (
+                  <div key={benefit} className="flex items-start gap-2.5 text-sm text-on-surface-variant">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 flex-shrink-0">
+                      <path d="M3 8l3.5 3.5L13 5" stroke="#4cd7f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-4">
+                <TextInput
+                  value={answers.websiteUrl}
+                  onChange={(v) => {
+                    setAnswers((p) => ({ ...p, websiteUrl: v }))
+                    if (researchState.status !== 'idle') {
+                      setResearchState({ status: 'idle' })
+                    }
+                  }}
+                  placeholder="https://youragency.com"
+                />
+              </div>
+
+              {researchState.status === 'analyzing' && (
+                <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+                    <p className="text-sm font-medium text-on-surface">
+                      {RESEARCH_MESSAGES[researchState.messageIndex]}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {researchState.status === 'done' && (
+                <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/8 p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+                    Analysis complete
+                  </p>
+                  <p className="text-sm text-on-surface mb-3">
+                    Here&apos;s what I found:
+                  </p>
+                  <ul className="space-y-2">
+                    {researchState.bullets.map((bullet, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[13px] text-on-surface-variant leading-relaxed">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-secondary flex-shrink-0" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <p className="mb-5 text-xs text-on-surface-variant/50">
+                No URL? Skip this step — your audit will still be great, just less specific.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  disabled={
+                    researchState.status === 'analyzing' ||
+                    answers.websiteUrl.trim().length < 4
+                  }
+                  onClick={async () => {
+                    const url = answers.websiteUrl.trim()
+                    if (!url) return
+
+                    setResearchState({ status: 'analyzing', messageIndex: 0 })
+
+                    const tick = setInterval(() => {
+                      setResearchState((prev) => {
+                        if (prev.status !== 'analyzing') return prev
+                        return {
+                          status: 'analyzing',
+                          messageIndex: Math.min(prev.messageIndex + 1, RESEARCH_MESSAGES.length - 1),
+                        }
+                      })
+                    }, 2200)
+
+                    try {
+                      const res = await fetch('/api/research-preview', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url }),
+                      })
+                      const data = await res.json().catch(() => null)
+                      clearInterval(tick)
+
+                      if (!res.ok || !data) {
+                        setResearchState({
+                          status: 'done',
+                          url,
+                          ok: false,
+                          bullets: ['We couldn\'t analyze your site, but your audit will still run.'],
+                        })
+                        return
+                      }
+
+                      setResearchState({
+                        status: 'done',
+                        url: typeof data.url === 'string' ? data.url : url,
+                        ok: Boolean(data.ok),
+                        bullets: Array.isArray(data.bullets) ? data.bullets.slice(0, 4) : [],
+                      })
+                    } catch {
+                      clearInterval(tick)
+                      setResearchState({
+                        status: 'done',
+                        url,
+                        ok: false,
+                        bullets: ['We couldn\'t analyze your site, but your audit will still run.'],
+                      })
+                    }
+                  }}
+                  className="px-5 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
+                >
+                  {researchState.status === 'analyzing' ? 'Analyzing…' : 'Analyze My Site →'}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setAnswers((p) => ({ ...p, websiteUrl: '' }))
+                    setResearchState({ status: 'skipped' })
+                  }}
+                  className="text-xs text-on-surface-variant/60 hover:text-on-surface hover:bg-transparent px-3 py-2 h-auto"
+                >
+                  Skip — I&apos;ll go without
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Step 2 — Agency type */}
+          {currentStep === 1 && (
             <>
               <StepHeader
                 question="What kind of business are we looking at?"
@@ -834,8 +1003,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 2 — Team size */}
-          {currentStep === 1 && (
+          {/* Step 3 — Team size */}
+          {currentStep === 2 && (
             <>
               <StepHeader question="How large is your team?" />
               <SingleSelect
@@ -846,8 +1015,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 3 — Revenue */}
-          {currentStep === 2 && (
+          {/* Step 4 — Revenue */}
+          {currentStep === 3 && (
             <>
               <StepHeader question="What's your approximate monthly revenue?" />
               <SingleSelect
@@ -858,8 +1027,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 4 — Active clients */}
-          {currentStep === 3 && (
+          {/* Step 5 — Active clients */}
+          {currentStep === 4 && (
             <>
               <StepHeader question="How many active clients do you manage at a time?" />
               <SingleSelect
@@ -870,8 +1039,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 5 — Tools (adaptive by agency type) */}
-          {currentStep === 4 && (
+          {/* Step 6 — Tools (adaptive by agency type) */}
+          {currentStep === 5 && (
             <>
               <StepHeader
                 question="What tools does your team use daily?"
@@ -929,8 +1098,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 6 — Operations state */}
-          {currentStep === 5 && (
+          {/* Step 7 — Operations state */}
+          {currentStep === 6 && (
             <>
               <StepHeader
                 question="Which of these best describes your current operations?"
@@ -944,8 +1113,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 7 — Hours lost */}
-          {currentStep === 6 && (
+          {/* Step 8 — Hours lost */}
+          {currentStep === 7 && (
             <>
               <StepHeader
                 question="How many hours per week does your team lose to work that feels 'beneath' their pay grade?"
@@ -959,8 +1128,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 8 — Breakage response */}
-          {currentStep === 7 && (
+          {/* Step 9 — Breakage response */}
+          {currentStep === 8 && (
             <>
               <StepHeader
                 question="When something breaks in your operations, what happens?"
@@ -974,8 +1143,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 9 — Top pain process */}
-          {currentStep === 8 && (
+          {/* Step 10 — Top pain process */}
+          {currentStep === 9 && (
             <>
               <StepHeader
                 question="What's the #1 process that, when it fails, hurts your business the most?"
@@ -992,8 +1161,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 10 — Frequency */}
-          {currentStep === 9 && (
+          {/* Step 11 — Frequency */}
+          {currentStep === 10 && (
             <>
               <StepHeader
                 question="How often does this process happen?"
@@ -1007,8 +1176,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 11 — Six-month cost */}
-          {currentStep === 10 && (
+          {/* Step 12 — Six-month cost */}
+          {currentStep === 11 && (
             <>
               <StepHeader
                 question="What's the real cost if this process keeps running manually for another 6 months?"
@@ -1025,8 +1194,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 12 — Desired change */}
-          {currentStep === 11 && (
+          {/* Step 13 — Desired change */}
+          {currentStep === 12 && (
             <>
               <StepHeader
                 question="If we could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
@@ -1104,6 +1273,7 @@ export default function AuditPage() {
         <EmailCaptureModal
           onSubmit={handleSubmit}
           onClose={() => setShowModal(false)}
+          initialWebsiteUrl={answers.websiteUrl}
         />
       )}
     </div>
