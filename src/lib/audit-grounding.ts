@@ -549,10 +549,53 @@ function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingCon
   ]
 }
 
+/**
+ * Validate and sanitize the `pattern_match` field the LLM may emit per
+ * opportunity. This is the code-level anti-fabrication guardrail:
+ * - If the LLM hallucinates a source_file that wasn't actually retrieved,
+ *   we drop the whole pattern_match (not just the filename) so users never
+ *   see a citation detached from a real chunk.
+ * - If no RAG context was injected at all, we drop pattern_match entirely.
+ * - Empty/blank sub-fields collapse to null.
+ */
+function normalizePatternMatch(
+  raw: unknown,
+  allowedSources: Set<string> | null,
+): Record<string, unknown> | null {
+  // If RAG wasn't used for this audit, there's nothing to cite.
+  if (!allowedSources || allowedSources.size === 0) return null
+
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const record = raw as Record<string, unknown>
+
+  const sourceFile = asString(record.source_file)
+  const observedIn = asString(record.observed_in)
+  const similarityNote = asString(record.similarity_note)
+
+  // Fabrication check: if the LLM put a filename here, it MUST be one we
+  // actually retrieved. Anything else gets dropped on the floor.
+  if (sourceFile && !allowedSources.has(sourceFile)) {
+    console.warn(
+      `[audit-grounding] dropped fabricated pattern_match source_file: ${sourceFile}`,
+    )
+    return null
+  }
+
+  // Need a similarity_note for the UI to have anything meaningful to show.
+  if (!similarityNote) return null
+
+  return {
+    observed_in: observedIn ?? null,
+    source_file: sourceFile ?? null,
+    similarity_note: similarityNote,
+  }
+}
+
 function normalizeOpportunity(
   rawOpportunity: unknown,
   index: number,
   context: GroundingContext,
+  allowedSources: Set<string> | null,
 ): Record<string, unknown> {
   const opportunity = (rawOpportunity && typeof rawOpportunity === 'object' && !Array.isArray(rawOpportunity))
     ? rawOpportunity as OpportunityLike
@@ -575,6 +618,7 @@ function normalizeOpportunity(
     difficulty,
     quick_win: difficulty === 'easy',
     urgency_reason: asString(opportunity.urgency_reason) ?? null,
+    pattern_match: normalizePatternMatch(opportunity.pattern_match, allowedSources),
   }
 }
 
@@ -583,6 +627,7 @@ function normalizeTopLevelFields(
   input: AuditLikeInput,
   stage: AuditStage,
   context: GroundingContext,
+  allowedSources: Set<string> | null,
 ): Record<string, unknown> {
   const opportunities = Array.isArray(raw.opportunities) ? raw.opportunities : []
   const minimumCount = stage === 'preview' ? 2 : 4
@@ -595,7 +640,7 @@ function normalizeTopLevelFields(
 
   const normalizedOpportunities = supplemented
     .slice(0, stage === 'preview' ? 2 : 6)
-    .map((opportunity, index) => normalizeOpportunity(opportunity, index, context))
+    .map((opportunity, index) => normalizeOpportunity(opportunity, index, context, allowedSources))
 
   const totalHoursSavedWeekly = normalizedOpportunities.reduce((sum, opportunity) => {
     const value = typeof opportunity.hours_saved_weekly === 'number' ? opportunity.hours_saved_weekly : 0
@@ -776,9 +821,10 @@ export function groundAuditResult(
   raw: Record<string, unknown>,
   input: AuditLikeInput,
   stage: AuditStage,
+  allowedSources: Set<string> | null = null,
 ): Record<string, unknown> {
   const context = buildGroundingContext(input)
-  const normalized = normalizeTopLevelFields(raw, input, stage, context)
+  const normalized = normalizeTopLevelFields(raw, input, stage, context, allowedSources)
   return normalized
 }
 
