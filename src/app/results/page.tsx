@@ -18,6 +18,7 @@ import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import Footer from '<npm>/components/Footer'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
+import { track } from '@vercel/analytics'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1056,12 +1057,6 @@ function ForensicMatchPanel({
   ])
     .filter((tool) => !['None', 'Spreadsheet/Manual', 'Project management tool'].includes(tool))
     .slice(0, 5)
-  const detectedStack = splitCommaList(context?.websiteDetectedStack).slice(0, 4)
-  const websiteEvidence = [
-    ...parseWebsiteEvidence(context?.websiteVisualEvidence),
-    ...parseWebsiteEvidence(context?.websiteStackEvidence),
-    ...parseWebsiteEvidence(context?.websiteEvidence),
-  ].slice(0, 4)
   const toolSignals = splitSignalList(context?.toolSignals).slice(0, 3)
   const stackTools = uniqueStrings([
     ...declaredTools,
@@ -1110,13 +1105,6 @@ function ForensicMatchPanel({
     : stackTools.length > 1
       ? `The combination of ${stackTools.slice(0, 3).join(', ')} suggests your biggest drag lives between systems, not inside one tool.`
       : 'The strongest signal was not just the task itself, but the manual bridges around it.'
-  const websiteLine = websiteEvidence[0]
-    ? `Your public site backed that up too. The strongest cue was ${websiteEvidence[0].label.toLowerCase()}: "${websiteEvidence[0].detail}".`
-    : ''
-  const detectedHighlights = uniqueStrings([
-    ...detectedStack.map((tool) => `Public stack signal: ${tool}`),
-    ...websiteEvidence.slice(0, 2).map((item) => `${item.label}: ${item.detail}`),
-  ]).slice(0, 4)
   const inferredHighlights = uniqueStrings([
     leadOpportunity?.title ? `Highest-leverage build: ${leadOpportunity.title}` : '',
     stackTools.length > 1 ? `Likely break point: ${stackTools.slice(0, 2).join(' -> ')}` : '',
@@ -1138,7 +1126,7 @@ function ForensicMatchPanel({
               Why This Came First
             </p>
             <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              The report separated what you told us, what the site exposed, and what OpsRadar inferred.
+              The report separated what you told us and what OpsRadar inferred from your stack.
             </h2>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-secondary/16 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-secondary">
@@ -1197,47 +1185,23 @@ function ForensicMatchPanel({
               </div>
             )}
 
-            {(detectedHighlights.length > 0 || inferredHighlights.length > 0) && (
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {detectedHighlights.length > 0 && (
-                  <div className="rounded-[18px] border border-emerald-400/14 bg-emerald-400/7 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300/80 mb-2">
-                      Detected Publicly
-                    </p>
-                    <div className="space-y-2.5">
-                      {detectedHighlights.map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
-                        >
-                          <p className="text-[13px] leading-[1.6] text-on-surface">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
+            {inferredHighlights.length > 0 && (
+              <div className="mt-4 rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
+                  Inferred By OpsRadar
+                </p>
+                <div className="space-y-2.5">
+                  {inferredHighlights.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                    >
+                      <p className="text-[13px] leading-[1.6] text-on-surface">
+                        {item}
+                      </p>
                     </div>
-                  </div>
-                )}
-
-                {inferredHighlights.length > 0 && (
-                  <div className="rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
-                      Inferred By OpsRadar
-                    </p>
-                    <div className="space-y-2.5">
-                      {inferredHighlights.map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
-                        >
-                          <p className="text-[13px] leading-[1.6] text-on-surface">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1274,11 +1238,6 @@ function ForensicMatchPanel({
           <p className="mt-3 text-[14px] leading-[1.75] text-on-surface-variant">
             {toolSignalLine}
           </p>
-          {websiteLine && (
-            <p className="mt-2 text-[14px] leading-[1.75] text-on-surface-variant">
-              {websiteLine}
-            </p>
-          )}
         </div>
       </div>
     </div>
@@ -2163,6 +2122,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
             href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => track('call_booking_clicked')}
             className="block w-full text-center py-4 px-6 rounded-[10px] text-[14px] font-bold text-white transition-all duration-200"
             style={{
               background: `linear-gradient(135deg, ${color}cc 0%, ${color}99 100%)`,
@@ -2474,6 +2434,7 @@ function ResultsContent() {
       source,
       reportStage: audit?.report_stage === 'full' ? 'full' : 'preview',
     })
+    track('call_booking_clicked')
   }, [audit?.report_stage, auditId])
 
   const openBuildRequest = useCallback((title: string, source: string) => {
@@ -2550,6 +2511,7 @@ function ResultsContent() {
         opportunities: opportunities.length,
       },
     })
+    track('audit_completed')
   }, [auditId, currentAudit, opportunities.length])
 
   useEffect(() => {
@@ -2704,11 +2666,6 @@ function ResultsContent() {
             audit={a}
             leadOpportunity={leadOpportunity}
             topRisk={topRisk}
-          />
-
-          <WebsiteEvidencePanel
-            company={company}
-            context={auditContext}
           />
 
           <div className="flex flex-wrap gap-6 mt-6">
