@@ -263,6 +263,20 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
+function getTeamCapacity(teamSize?: string): number {
+  const ranges: Record<string, number> = {
+    'solo': 40,
+    '1': 40,
+    '2-5': 160,
+    '6-15': 400,
+    '16-30': 920,
+    '31-50': 1640,
+    '51-100': 3000,
+    '100+': 4000,
+  }
+  return ranges[teamSize ?? ''] ?? 160
+}
+
 function coerceAuditContext(value: unknown): AuditContext | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
 
@@ -2453,9 +2467,36 @@ function ResultsContent() {
   const readiness     = currentAudit?.automation_readiness_score ?? currentAudit?.summary?.automation_readiness_score ?? 50
   const headline      = currentAudit?.summary?.headline ?? currentAudit?.executive_summary ?? 'Your Automation Audit'
   const opportunities = Array.isArray(currentAudit?.opportunities) ? currentAudit.opportunities : []
-  const hoursWeekly   = currentAudit?.summary?.total_hours_saved_weekly ??
+
+  // ── Cap hours at realistic team capacity ──────────────────────────────────
+  const teamCapacity       = getTeamCapacity(auditContext?.teamSize)
+  const maxPerOpportunity  = Math.floor(teamCapacity * 0.3)
+  const maxBelievableSaved = Math.floor(teamCapacity * 0.4)
+
+  // Cap individual opportunity hours (mutates the already-copied array items)
+  for (const opp of opportunities) {
+    if (opp.hours_saved_weekly != null && opp.hours_saved_weekly > maxPerOpportunity) {
+      opp.hours_saved_weekly = maxPerOpportunity
+    }
+  }
+
+  const rawHoursSum = currentAudit?.summary?.total_hours_saved_weekly ??
     opportunities.reduce((sum, opportunity) => sum + (opportunity.hours_saved_weekly ?? 0), 0)
-  const annualSavings = currentAudit?.summary?.total_annual_cost_savings ?? currentAudit?.estimated_annual_waste ?? 0
+  const hoursWeekly = Math.min(rawHoursSum, maxBelievableSaved)
+  const hoursCapped = rawHoursSum > maxBelievableSaved
+
+  // Cap annual savings: no team wastes more than 50% of total annual capacity
+  const rawAnnualSavings   = currentAudit?.summary?.total_annual_cost_savings ?? currentAudit?.estimated_annual_waste ?? 0
+  const estimatedHourlyRate = currentAudit?.labor_arbitrage_breakdown?.estimated_hourly_rate ?? 75
+  const maxAnnualWaste     = Math.floor(teamCapacity * estimatedHourlyRate * 52 * 0.5)
+  const annualSavings      = maxAnnualWaste > 0 ? Math.min(rawAnnualSavings, maxAnnualWaste) : rawAnnualSavings
+
+  if (rawHoursSum > maxBelievableSaved) {
+    console.log(`[results] hours capped from ${rawHoursSum} to ${maxBelievableSaved} for team size ${auditContext?.teamSize ?? 'unknown'}`)
+  }
+  if (rawAnnualSavings > maxAnnualWaste && maxAnnualWaste > 0) {
+    console.log(`[results] annual savings capped from ${rawAnnualSavings} to ${maxAnnualWaste} for team size ${auditContext?.teamSize ?? 'unknown'}`)
+  }
   const toolsAnalysis = currentAudit?.tools_analysis ?? { current_stack_rating: 0 }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
   const removedTools  = toolsAnalysis.redundant_tools ?? []
@@ -2571,6 +2612,12 @@ function ResultsContent() {
   }
 
   const a = currentAudit!
+
+  // Cap the displayed annual/monthly waste figures on the audit object
+  const cappedAnnualWaste  = a.estimated_annual_waste != null && maxAnnualWaste > 0
+    ? Math.min(a.estimated_annual_waste, maxAnnualWaste)
+    : a.estimated_annual_waste
+  const cappedMonthlyWaste = cappedAnnualWaste != null ? Math.round(cappedAnnualWaste / 12) : a.estimated_monthly_waste
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
@@ -2690,6 +2737,11 @@ function ResultsContent() {
               </p>
             </div>
           </div>
+          {hoursCapped && (
+            <p className="text-[11px] text-on-surface-variant/60 mt-2">
+              Showing realistic maximum savings based on your team&apos;s weekly capacity.
+            </p>
+          )}
         </div>
       </header>
 
@@ -2716,22 +2768,22 @@ function ResultsContent() {
                     <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
                       {a.executive_summary}
                     </p>
-                    {(!!a.estimated_monthly_waste || !!a.estimated_annual_waste) && (
+                    {(!!cappedMonthlyWaste || !!cappedAnnualWaste) && (
                       <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
-                        {!!a.estimated_monthly_waste && (
+                        {!!cappedMonthlyWaste && (
                           <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
                             <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
                             <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
-                              <AnimatedNumber target={a.estimated_monthly_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
+                              <AnimatedNumber target={cappedMonthlyWaste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
                             </p>
                             <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
                           </div>
                         )}
-                        {!!a.estimated_annual_waste && (
+                        {!!cappedAnnualWaste && (
                           <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
                             <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
                             <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
-                              <AnimatedNumber target={a.estimated_annual_waste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
+                              <AnimatedNumber target={cappedAnnualWaste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
                             </p>
                             <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
                           </div>
