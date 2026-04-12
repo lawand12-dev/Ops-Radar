@@ -4,6 +4,7 @@ import type { CanvasHTMLAttributes } from "react";
 import { useEffect, useRef } from "react";
 
 import { cn } from "<npm>/lib/utils";
+import { devWarn } from "<npm>/lib/dev-log";
 
 type ShaderBackgroundProps = Omit<CanvasHTMLAttributes<HTMLCanvasElement>, "ref">;
 
@@ -195,7 +196,7 @@ export default function ShaderBackground({
     const gl = canvas.getContext("webgl", { alpha: true, antialias: true });
 
     if (!gl) {
-      console.warn("WebGL not supported.");
+      devWarn("WebGL not supported.");
       return;
     }
 

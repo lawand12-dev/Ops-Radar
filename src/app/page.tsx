@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { Button } from '<npm>/components/ui/button'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import BeamsBackground from '<npm>/components/ui/beams-background'
@@ -90,7 +91,7 @@ export default function Home() {
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
           secondaryButtonText="Book a 20-min call"
-          secondaryButtonHref="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+          secondaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
           showSecondaryIcon={false}
           partnersTitle=""
           partners={[]}

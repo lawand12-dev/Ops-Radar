@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { CONTACT_EMAIL } from "<npm>/lib/constants"
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — OpsRadar',
@@ -101,7 +102,7 @@ export default function PrivacyPolicy() {
               <li>Opt out of follow-up emails (every email has an unsubscribe link)</li>
             </ul>
             <p className="mt-3">
-              To exercise any of these rights, email me at opsradar.ai@gmail.com.
+              To exercise any of these rights, email me at {CONTACT_EMAIL}.
               No form to fill out. I'll reply personally within 3 business days.
             </p>
           </section>
@@ -127,7 +128,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Contact</h2>
             <p>
-              Questions, concerns, or data requests: <a href="mailto:opsradar.ai@gmail.com" className="text-white underline hover:text-white/80">opsradar.ai@gmail.com</a>
+              Questions, concerns, or data requests: <a href={`mailto:${CONTACT_EMAIL}`} className="text-white underline hover:text-white/80">{CONTACT_EMAIL}</a>
             </p>
             <p className="mt-3">
               — Lawand Soran, Founder, OpsRadar

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { CONTACT_EMAIL } from "<npm>/lib/constants"
 
 export const metadata: Metadata = {
   title: 'Terms of Service — OpsRadar',
@@ -120,7 +121,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Contact</h2>
             <p>
-              Questions about these terms: <a href="mailto:opsradar.ai@gmail.com" className="text-white underline hover:text-white/80">opsradar.ai@gmail.com</a>
+              Questions about these terms: <a href={`mailto:${CONTACT_EMAIL}`} className="text-white underline hover:text-white/80">{CONTACT_EMAIL}</a>
             </p>
             <p className="mt-3">
               — Lawand Soran, Founder, OpsRadar

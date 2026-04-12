@@ -1,3 +1,4 @@
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { openai } from '../../../lib/openai'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import {
@@ -94,7 +95,7 @@ automation opportunities. Free audit, results sent to your email.
 STRATEGY CALL:
 Free 20-minute call with Lawand. No pitch. No commitment. Scope the \
 exact work, get a fixed price and timeline. Book at \
-https://calendly.com/opsradar-ai/ops-radar-strategy-call
+${CALENDLY_STRATEGY_CALL_URL}
 
 ═══════════════════════════════════════════
 STRICT SCOPE RULES:

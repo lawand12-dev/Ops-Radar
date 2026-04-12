@@ -19,11 +19,12 @@
  */
 
 import { Resend } from 'resend'
+import { CALENDLY_STRATEGY_CALL_URL, SITE_URL } from '<npm>/lib/constants'
 import { serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../../lib/supabase-server'
 
 const resend   = new Resend(process.env.RESEND_API_KEY)
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.opsradar.co'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL
 const CRON_SECRET = process.env.CRON_SECRET
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -116,7 +117,7 @@ function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: strin
           </div>` : ''}
           <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">The report explains why this is the most urgent operational leak to fix next and what it is costing you to leave it manual.</p>
           <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:12px;">See the Diagnosis →</a>
-          <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" style="display:block;text-align:center;background:rgba(173,198,255,0.07);border:1px solid rgba(173,198,255,0.18);color:#adc6ff;font-size:14px;font-weight:600;text-decoration:none;padding:14px;border-radius:12px;">Book a Free Strategy Call →</a>
+          <a href="${CALENDLY_STRATEGY_CALL_URL}" style="display:block;text-align:center;background:rgba(173,198,255,0.07);border:1px solid rgba(173,198,255,0.18);color:#adc6ff;font-size:14px;font-weight:600;text-decoration:none;padding:14px;border-radius:12px;">Book a Free Strategy Call →</a>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
@@ -143,7 +144,7 @@ function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | 
           <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-left:3px solid #ef4444;border-radius:0 10px 10px 0;padding:16px;margin-bottom:24px;">
             <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">The automations in your blueprint don't get built on their own. We can scope and start building your top workflow this week — with a guaranteed delivery date.</p>
           </div>
-          <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:12px;box-shadow:0 0 24px rgba(59,130,246,0.3);">Book a Free Strategy Call →</a>
+          <a href="${CALENDLY_STRATEGY_CALL_URL}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:12px;box-shadow:0 0 24px rgba(59,130,246,0.3);">Book a Free Strategy Call →</a>
           <a href="${resultsUrl}" style="display:block;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;padding:12px;border-radius:10px;">Review My Blueprint First →</a>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
