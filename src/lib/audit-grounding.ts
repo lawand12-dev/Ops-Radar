@@ -238,9 +238,14 @@ function estimateHourlyRate(input: AuditLikeInput): { rate: number; label: strin
   const teamMidpoint = midpointForTeamSize(input.teamSize)
   const perHeadMonthlyRevenue = revenueMidpoint / Math.max(teamMidpoint, 1)
   const hourlyRate = Math.round((perHeadMonthlyRevenue / 160) * 1.05)
-  const rate = Math.max(30, Math.min(hourlyRate, 180))
+  const MAX_HOURLY_RATE = 100
+  const MIN_HOURLY_RATE = 30
+  const clampedRate = Math.min(Math.max(hourlyRate, MIN_HOURLY_RATE), MAX_HOURLY_RATE)
+  if (hourlyRate > MAX_HOURLY_RATE) {
+    console.log(`[audit-grounding] clamped hourly rate from $${hourlyRate} to $${MAX_HOURLY_RATE}`)
+  }
   return {
-    rate,
+    rate: clampedRate,
     label: `Based on industry benchmarks for ${input.teamSize} team at ${input.revenue}/mo revenue`,
   }
 }
@@ -597,6 +602,9 @@ function normalizeOpportunity(
     monthly_savings: monthlySavings,
     difficulty,
     quick_win: difficulty === 'easy',
+    confidence_level: (['high', 'medium', 'low'].includes(String(opportunity.confidence_level))
+      ? String(opportunity.confidence_level) as 'high' | 'medium' | 'low'
+      : null),
     urgency_reason: asString(opportunity.urgency_reason) ?? null,
     pattern_match: normalizePatternMatch(opportunity.pattern_match, allowedSources),
     calculation_sources: {
@@ -640,7 +648,23 @@ function normalizeTopLevelFields(
   }, 0)
 
   const aiProvidedReadiness = asNumber(raw.automation_readiness_score)
-  const readinessScore = clampNumber(raw.automation_readiness_score, 52, { min: 1, max: 100 })
+  // Fix E: calculate readiness from inputs instead of hardcoded 52
+  const readinessToolsCount = unique([
+    ...splitList(input.tools),
+    ...splitList(input.websiteDetectedStack ?? ''),
+  ]).filter(Boolean).length
+  const manualProcessMentions = [
+    input.automationWish,
+    input.timeHeavy,
+    input.failureImpact,
+  ].filter((field) => field && field.trim().length > 0).length
+  const canCalculateReadiness = readinessToolsCount > 0 || manualProcessMentions > 0
+  const calculatedReadiness = canCalculateReadiness
+    ? clampNumber(100 - (readinessToolsCount * 5) - (manualProcessMentions * 10), 30, { min: 1, max: 100 })
+    : null
+  const readinessScore = aiProvidedReadiness != null
+    ? clampNumber(aiProvidedReadiness, 50, { min: 1, max: 100 })
+    : (calculatedReadiness ?? null)
   const readinessIsBenchmark = aiProvidedReadiness == null
   const summarySource = asRecord(raw.summary)
   const toolsAnalysisSource = asRecord(raw.tools_analysis)
@@ -648,6 +672,33 @@ function normalizeTopLevelFields(
 
   const aiProvidedMonthlyWaste = asNumber(raw.estimated_monthly_waste)
   const aiProvidedAnnualWaste = asNumber(raw.estimated_annual_waste)
+
+  // ── Fix B: single source of truth for annual waste ────────────────────────
+  // The reconciled annual waste is always sum(monthly_savings) × 12.
+  // If the AI's original value diverges by more than 15%, we override and log.
+  const reconciledAnnualWaste = Math.round(totalMonthlySavings * 12)
+  const reconciledMonthlyWaste = Math.round(totalMonthlySavings)
+  let annualWasteOverridden = false
+  if (aiProvidedAnnualWaste != null && reconciledAnnualWaste > 0) {
+    const divergence = Math.abs(aiProvidedAnnualWaste - reconciledAnnualWaste) / reconciledAnnualWaste
+    if (divergence > 0.15) {
+      console.log(
+        `[audit-grounding] annual waste reconciliation: AI said $${aiProvidedAnnualWaste}, ` +
+        `reconciled sum is $${reconciledAnnualWaste} (${Math.round(divergence * 100)}% divergence) — overriding`,
+      )
+      annualWasteOverridden = true
+    }
+  }
+  const finalAnnualWaste = clampNumber(
+    annualWasteOverridden ? reconciledAnnualWaste : (aiProvidedAnnualWaste ?? reconciledAnnualWaste),
+    reconciledAnnualWaste,
+    { min: 6_000, max: 6_000_000 },
+  )
+  const finalMonthlyWaste = clampNumber(
+    annualWasteOverridden ? reconciledMonthlyWaste : (aiProvidedMonthlyWaste ?? reconciledMonthlyWaste),
+    reconciledMonthlyWaste,
+    { min: 500, max: 500_000 },
+  )
 
   const calculationSources: CalculationSources = {
     estimated_hourly_rate: {
@@ -657,31 +708,31 @@ function normalizeTopLevelFields(
       label: context.hourlyRateLabel,
     },
     automation_readiness_score: {
-      value: readinessScore,
-      source: readinessIsBenchmark ? 'benchmark_estimate' : 'ai_generated',
-      confidence: readinessIsBenchmark ? 'low' : 'medium',
-      ...(readinessIsBenchmark ? { label: 'Estimated from team size and tool signals' } : {}),
+      value: readinessScore ?? null,
+      source: readinessIsBenchmark ? (canCalculateReadiness ? 'benchmark_estimate' : 'unavailable') : 'ai_generated',
+      confidence: readinessIsBenchmark ? (canCalculateReadiness ? 'low' : 'low') : 'medium',
+      ...(readinessIsBenchmark ? { label: canCalculateReadiness ? 'Calculated from tool count and manual process signals' : 'Insufficient data to calculate readiness' } : {}),
     },
     estimated_monthly_waste: {
-      value: aiProvidedMonthlyWaste != null ? aiProvidedMonthlyWaste : Math.round(totalMonthlySavings),
-      source: aiProvidedMonthlyWaste != null ? 'ai_generated' : 'benchmark_estimate',
-      confidence: aiProvidedMonthlyWaste != null ? 'medium' : 'low',
-      ...(aiProvidedMonthlyWaste == null ? { label: 'Derived from opportunity estimates' } : {}),
+      value: finalMonthlyWaste,
+      source: annualWasteOverridden || aiProvidedMonthlyWaste == null ? 'benchmark_estimate' : 'ai_generated',
+      confidence: annualWasteOverridden || aiProvidedMonthlyWaste == null ? 'low' : 'medium',
+      ...(annualWasteOverridden || aiProvidedMonthlyWaste == null ? { label: 'Derived from opportunity estimates' } : {}),
     },
     estimated_annual_waste: {
-      value: aiProvidedAnnualWaste != null ? aiProvidedAnnualWaste : Math.round(totalMonthlySavings * 12),
-      source: aiProvidedAnnualWaste != null ? 'ai_generated' : 'benchmark_estimate',
-      confidence: aiProvidedAnnualWaste != null ? 'medium' : 'low',
-      ...(aiProvidedAnnualWaste == null ? { label: 'Projected from monthly estimate × 12' } : {}),
+      value: finalAnnualWaste,
+      source: annualWasteOverridden || aiProvidedAnnualWaste == null ? 'benchmark_estimate' : 'ai_generated',
+      confidence: annualWasteOverridden || aiProvidedAnnualWaste == null ? 'low' : 'medium',
+      ...(annualWasteOverridden || aiProvidedAnnualWaste == null ? { label: 'Reconciled from opportunity monthly_savings × 12' } : {}),
     },
   }
 
   const normalized: Record<string, unknown> = {
     ...raw,
     executive_summary: asString(raw.executive_summary) ?? 'Your audit was generated with limited information. For a more complete analysis, please retry with additional details about your team, tools, and specific pain points.',
-    estimated_monthly_waste: clampNumber(raw.estimated_monthly_waste, Math.round(totalMonthlySavings), { min: 500, max: 500_000 }),
-    estimated_annual_waste: clampNumber(raw.estimated_annual_waste, Math.round(totalMonthlySavings * 12), { min: 6_000, max: 6_000_000 }),
-    automation_readiness_score: readinessScore,
+    estimated_monthly_waste: finalMonthlyWaste,
+    estimated_annual_waste: finalAnnualWaste,
+    automation_readiness_score: readinessScore ?? undefined,
     opportunities: normalizedOpportunities,
     audit_incomplete: normalizedOpportunities.length === 0,
     calculation_sources: calculationSources,
@@ -692,16 +743,10 @@ function normalizeTopLevelFields(
         totalHoursSavedWeekly,
         { min: 0, max: 200 },
       ),
-      total_annual_cost_savings: clampNumber(
-        summarySource.total_annual_cost_savings,
-        Math.round(totalMonthlySavings * 12),
-        { min: 0, max: 6_000_000 },
-      ),
-      automation_readiness_score: clampNumber(
-        summarySource.automation_readiness_score,
-        readinessScore,
-        { min: 1, max: 100 },
-      ),
+      total_annual_cost_savings: finalAnnualWaste,
+      automation_readiness_score: readinessScore != null
+        ? clampNumber(summarySource.automation_readiness_score, readinessScore, { min: 1, max: 100 })
+        : undefined,
       headline: asString(summarySource.headline) ?? 'Highest-leverage automations for this agency',
     },
     tools_analysis: {
@@ -740,7 +785,7 @@ function normalizeTopLevelFields(
   const fallbackLabor = buildFallbackLaborArbitrage(context, totalHoursSavedWeekly)
   const fallbackContextSwitching = buildFallbackContextSwitching(input, context)
   const fallbackOnboarding = buildFallbackOnboardingAssessment(input)
-  const fallbackBenchmarks = buildFallbackBenchmarks(input, totalHoursSavedWeekly, totalMonthlySavings, readinessScore)
+  const fallbackBenchmarks = buildFallbackBenchmarks(input, totalHoursSavedWeekly, totalMonthlySavings, readinessScore ?? 50)
   const fallbackHoursBenchmark = asRecord(fallbackBenchmarks.hours_wasted_vs_average)
   const fallbackOpsRatio = asRecord(fallbackBenchmarks.ops_cost_ratio)
   const fallbackAutomationMaturity = asRecord(fallbackBenchmarks.automation_maturity)
@@ -769,7 +814,7 @@ function normalizeTopLevelFields(
     estimated_hourly_rate: clampNumber(
       laborSource.estimated_hourly_rate,
       asNumber(fallbackLabor.estimated_hourly_rate) ?? context.hourlyRate,
-      { min: 30, max: 180 },
+      { min: 30, max: 100 },
     ),
     hours_wasted_on_low_value_weekly: clampNumber(
       laborSource.hours_wasted_on_low_value_weekly,
@@ -866,7 +911,7 @@ function normalizeTopLevelFields(
     },
     automation_maturity: {
       ...automationMaturitySource,
-      their_score: clampNumber(automationMaturitySource.their_score, asNumber(fallbackAutomationMaturity.their_score) ?? readinessScore, { min: 1, max: 100 }),
+      their_score: clampNumber(automationMaturitySource.their_score, asNumber(fallbackAutomationMaturity.their_score) ?? (readinessScore ?? 50), { min: 1, max: 100 }),
       category: asString(automationMaturitySource.category) ?? asString(fallbackAutomationMaturity.category),
       percentile: asString(automationMaturitySource.percentile) ?? asString(fallbackAutomationMaturity.percentile),
     },

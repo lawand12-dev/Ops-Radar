@@ -41,6 +41,18 @@ LOW confidence: DROP THE CLAIM ENTIRELY. Do not fabricate to fill space. If you 
 
 NEVER use LOW-confidence claims dressed up in HIGH-confidence language. That is the single most trust-destroying failure mode.
 
+HARD RULE on dollar amounts in executive_summary and hard_truth:
+
+If the user's inputs DO NOT contain specific numbers (hours, team size ranges with specificity, revenue range stated, tools named), you MUST use hedged language for dollar estimates:
+- 'approximately'
+- 'based on typical benchmarks for your size'
+- 'estimated'
+- 'agencies like yours typically'
+
+If the user IS specific (exact hours stated, tools named, pain described with detail), you MAY state numbers as facts.
+
+Test: Before writing any dollar amount, ask yourself: 'Did the user give me enough specifics to support this number?' If no, hedge. If yes, state it.
+
 WHICH FIELDS REQUIRE HIGH CONFIDENCE:
 - Dollar amounts stated as their waste (estimated_annual_waste, monthly_savings): MEDIUM confidence acceptable with hedging language
 - Hours saved per opportunity (hours_saved_weekly): HIGH confidence required — if unsure, estimate conservatively, never inflate

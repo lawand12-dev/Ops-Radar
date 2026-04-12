@@ -636,7 +636,7 @@ function deriveIdentityFromScore(score: number): string {
 }
 
 function getIdentityTone(identity: string | undefined, readiness: number | null) {
-  const resolved = (identity && identity.trim()) || deriveIdentityFromScore(readiness ?? 50)
+  const resolved = (identity && identity.trim()) || (readiness != null ? deriveIdentityFromScore(readiness) : 'Standardized')
   const key = resolved.toLowerCase()
   return IDENTITY_TONE[key] ?? IDENTITY_TONE['standardized']
 }
@@ -2448,45 +2448,58 @@ function ResultsContent() {
       return
     }
 
-    for (const retryDelay of [0, 350, 900]) {
-      if (retryDelay > 0) {
-        await wait(retryDelay)
+    try {
+      for (const retryDelay of [0, 350, 900]) {
+        if (retryDelay > 0) {
+          await wait(retryDelay)
+        }
+
+        const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`, {
+          cache: 'no-store',
+        })
+
+        if (!response.ok) {
+          continue
+        }
+
+        const data = await response.json()
+        if (!data?.audit) {
+          continue
+        }
+
+        const nextAudit = data.audit as AuditResult
+        sessionStorage.removeItem(REPORT_HANDOFF_KEY)
+        setHandoff(null)
+        setFromCache(false)
+        applyLoadedAudit(nextAudit, data.meta)
+
+        // Refresh the cache with fresh data
+        try {
+          sessionStorage.setItem('opsradar_audit_cache', JSON.stringify({
+            auditId: id,
+            audit: data.audit,
+            token: token,
+            timestamp: Date.now(),
+          }))
+        } catch { /* quota exceeded — non-critical */ }
+
+        return
       }
-
-      const response = await fetch(`/api/audit-result?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`, {
-        cache: 'no-store',
-      })
-
-      if (!response.ok) {
-        continue
+    } catch (fetchError) {
+      // Fix F: network failure → fall back to session cache before showing error
+      console.warn('[results] network fetch failed, trying cache:', fetchError)
+      const cached = readSessionAudit(id, token)
+      if (cached) {
+        setFromCache(true)
+        applyLoadedAudit(cached)
+        return
       }
-
-      const data = await response.json()
-      if (!data?.audit) {
-        continue
-      }
-
-      const nextAudit = data.audit as AuditResult
-      sessionStorage.removeItem(REPORT_HANDOFF_KEY)
-      setHandoff(null)
-      setFromCache(false)
-      applyLoadedAudit(nextAudit, data.meta)
-
-      // Refresh the cache with fresh data
-      try {
-        sessionStorage.setItem('opsradar_audit_cache', JSON.stringify({
-          auditId: id,
-          audit: data.audit,
-          token: token,
-          timestamp: Date.now(),
-        }))
-      } catch { /* quota exceeded — non-critical */ }
-
+      setError(true)
       return
     }
 
     loadFromSession()
-  }, [applyLoadedAudit, loadFromSession])
+  }, [applyLoadedAudit, loadFromSession, readSessionAudit])
 
   useEffect(() => {
     try {
@@ -2578,7 +2591,8 @@ function ResultsContent() {
   const hoursCapped = rawHoursSum > maxBelievableSaved
 
   // Cap annual savings: no team wastes more than 50% of total annual capacity
-  const rawAnnualSavings   = currentAudit?.summary?.total_annual_cost_savings ?? currentAudit?.estimated_annual_waste ?? 0
+  // Fix B: use estimated_annual_waste as single source of truth (grounding layer reconciles both)
+  const rawAnnualSavings   = currentAudit?.estimated_annual_waste ?? currentAudit?.summary?.total_annual_cost_savings ?? 0
   const estimatedHourlyRate = currentAudit?.labor_arbitrage_breakdown?.estimated_hourly_rate ?? null
   const maxAnnualWaste     = estimatedHourlyRate != null ? Math.floor(teamCapacity * estimatedHourlyRate * 52 * 0.5) : 0
   const annualSavings      = maxAnnualWaste > 0 ? Math.min(rawAnnualSavings, maxAnnualWaste) : rawAnnualSavings
@@ -2646,6 +2660,11 @@ function ResultsContent() {
       },
     })
     track('audit_completed')
+
+    // Fix C: log confidence_level for each opportunity (internal verification)
+    for (const opp of opportunities) {
+      console.log(`[results] opportunity "${opp.title}" confidence_level: ${opp.confidence_level ?? 'not set'}`)
+    }
   }, [auditId, currentAudit, opportunities.length])
 
   useEffect(() => {

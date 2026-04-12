@@ -15,9 +15,10 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url)
     const auditId = sanitizeString(url.searchParams.get('id') ?? '', 200)
+    const token = sanitizeString(url.searchParams.get('token') ?? '', 200)
 
-    if (!auditId) {
-      return Response.json({ error: 'Missing audit id' }, { status: 400, headers: NO_STORE_HEADERS })
+    if (!auditId || !token) {
+      return Response.json({ error: 'Not found' }, { status: 404, headers: NO_STORE_HEADERS })
     }
 
     const supabase = getServerSupabaseClient()
@@ -25,10 +26,11 @@ export async function GET(request: Request) {
       .from('audits')
       .select('result, company, name, email, answers')
       .eq('id', auditId)
+      .eq('access_token', token)
       .single()
 
     if (error || !data?.result) {
-      return Response.json({ error: 'Audit not found' }, { status: 404, headers: NO_STORE_HEADERS })
+      return Response.json({ error: 'Not found' }, { status: 404, headers: NO_STORE_HEADERS })
     }
 
     return Response.json(
