@@ -2591,8 +2591,8 @@ function ResultsContent() {
   const hoursCapped = rawHoursSum > maxBelievableSaved
 
   // Cap annual savings: no team wastes more than 50% of total annual capacity
-  // Fix B: use estimated_annual_waste as single source of truth (grounding layer reconciles both)
-  const rawAnnualSavings   = currentAudit?.estimated_annual_waste ?? currentAudit?.summary?.total_annual_cost_savings ?? 0
+  // Single source of truth: labor arbitrage (hourly_rate × weekly_hours × 52) is the most defensible
+  const rawAnnualSavings   = currentAudit?.labor_arbitrage_breakdown?.annual_labor_waste ?? currentAudit?.estimated_annual_waste ?? 0
   const estimatedHourlyRate = currentAudit?.labor_arbitrage_breakdown?.estimated_hourly_rate ?? null
   const maxAnnualWaste     = estimatedHourlyRate != null ? Math.floor(teamCapacity * estimatedHourlyRate * 52 * 0.5) : 0
   const annualSavings      = maxAnnualWaste > 0 ? Math.min(rawAnnualSavings, maxAnnualWaste) : rawAnnualSavings
@@ -2777,10 +2777,8 @@ function ResultsContent() {
 
   const a = currentAudit
 
-  // Cap the displayed annual/monthly waste figures on the audit object
-  const cappedAnnualWaste  = a.estimated_annual_waste != null && maxAnnualWaste > 0
-    ? Math.min(a.estimated_annual_waste, maxAnnualWaste)
-    : a.estimated_annual_waste
+  // Cap the displayed annual/monthly waste figures — use same source as annualSavings
+  const cappedAnnualWaste  = annualSavings > 0 ? annualSavings : null
   const cappedMonthlyWaste = cappedAnnualWaste != null ? Math.round(cappedAnnualWaste / 12) : a.estimated_monthly_waste
 
   return (
