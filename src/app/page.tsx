@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
       "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Done-For-You Automation for Agencies" }],
   },
   twitter: {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
       "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 }
 
