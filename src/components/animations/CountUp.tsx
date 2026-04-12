@@ -57,6 +57,7 @@ export default function CountUp({
   }, [isInView, target, duration, prefix, suffix, decimals, formatter, reduced])
 
   const initial = formatter ? formatter(0) : (0).toFixed(decimals)
+  const final = formatter ? formatter(target) : target.toFixed(decimals)
 
-  return <span ref={ref}>{prefix}{initial}{suffix}</span>
+  return <span ref={ref} data-animated-number data-target-value={`${prefix}${final}${suffix}`}>{prefix}{initial}{suffix}</span>
 }
