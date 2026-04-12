@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -221,6 +221,31 @@ function fmtMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1000)      return `$${(n / 1000).toFixed(0)}K`
   return `$${n.toLocaleString()}`
+}
+
+function fmtMoneyExact(n: number): string {
+  return `$${Math.round(n).toLocaleString()}`
+}
+
+function getAnnualWasteValue(audit?: AuditResult | null): number | null {
+  const value = audit?.labor_arbitrage_breakdown?.annual_labor_waste ?? audit?.estimated_annual_waste ?? null
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function syncAnnualWasteCopy(text: string | undefined, annualWaste: number | null): string {
+  if (!text || annualWaste == null) return text ?? ''
+
+  const amount = fmtMoneyExact(annualWaste)
+
+  return text
+    .replace(
+      /(\$\s?\d[\d,]*(?:\.\d+)?\s*(?:[KkMm])?)(\s*(?:annually|a year|per year|\/year|yearly))/gi,
+      `${amount}$2`,
+    )
+    .replace(
+      /((?:annual|annually|yearly|per year|a year|\/year)[^$]{0,18})(\$\s?\d[\d,]*(?:\.\d+)?\s*(?:[KkMm])?)/gi,
+      `$1${amount}`,
+    )
 }
 
 function splitCommaList(value?: string): string[] {
@@ -755,7 +780,7 @@ function MagicMomentPanel({
   headline,
   readiness,
   hoursWeekly,
-  annualSavings,
+  annualWaste,
   opportunities,
   topRisk,
 }: {
@@ -763,14 +788,14 @@ function MagicMomentPanel({
   headline: string
   readiness: number | null
   hoursWeekly: number
-  annualSavings: number
+  annualWaste: number
   opportunities: Opportunity[]
   topRisk: string
 }) {
   const [step, setStep] = useState(0)
   const tools = collectSignalTools(opportunities)
   const topOpportunity = opportunities[0]?.title ?? 'Highest-leverage automation path'
-  const savingsDisplay = annualSavings >= 1000 ? `$${Math.round(annualSavings / 1000)}K` : `$${Math.round(annualSavings)}`
+  const annualWasteDisplay = fmtMoneyExact(annualWaste)
   const riskSummary = topRisk.length > 140 ? `${topRisk.slice(0, 137)}...` : topRisk
   const statusItems = [
     `Parsing ${company || 'company'} operating signals`,
@@ -820,7 +845,7 @@ function MagicMomentPanel({
               <h2 className="font-headline text-[clamp(23px,3.2vw,40px)] font-extrabold leading-[1.08] tracking-[-0.035em] text-on-surface">
                 {company || 'Your agency'} is leaking{' '}
                 <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
-                  {savingsDisplay}
+                  {annualWasteDisplay}
                 </span>{' '}
                 a year through manual drag that now has a build path.
               </h2>
@@ -938,16 +963,16 @@ function TransformationStrip({
   leadOpportunity,
   topRisk,
   hoursWeekly,
-  annualSavings,
+  annualWaste,
 }: {
   company: string
   leadOpportunity: Opportunity | null
   topRisk: string
   hoursWeekly: number
-  annualSavings: number
+  annualWaste: number
 }) {
   const tools = collectSignalTools(leadOpportunity ? [leadOpportunity] : []).slice(0, 4)
-  const yearlyDisplay = annualSavings >= 1000 ? `$${Math.round(annualSavings / 1000)}K` : `$${Math.round(annualSavings)}`
+  const yearlyDisplay = fmtMoneyExact(annualWaste)
   const riskLine = topRisk.length > 105 ? `${topRisk.slice(0, 102)}...` : topRisk
   const currentBullets = [
     riskLine,
@@ -1390,7 +1415,7 @@ function WebsiteEvidencePanel({
                           {item.label}
                         </p>
                         <p className="font-headline text-[18px] font-bold leading-[1.45] tracking-[-0.02em] text-on-surface">
-                          "{item.detail}"
+                          &ldquo;{item.detail}&rdquo;
                         </p>
                       </div>
                     ))}
@@ -1671,7 +1696,7 @@ function LaborArbitrageSection({ data }: { data: LaborArbitrageBreakdown }) {
   const stats = [
     { label: 'Estimated Hourly Rate', value: data.estimated_hourly_rate ? `$${data.estimated_hourly_rate}/hr` : '—', color: '#f59e0b', isBenchmark: cs?.estimated_hourly_rate?.source === 'benchmark_estimate', benchmarkLabel: cs?.estimated_hourly_rate?.label },
     { label: 'Hours Wasted / Week', value: data.hours_wasted_on_low_value_weekly ? `${data.hours_wasted_on_low_value_weekly}h` : '—', color: '#f87171', isBenchmark: cs?.hours_wasted_on_low_value_weekly?.source === 'benchmark_estimate', benchmarkLabel: cs?.hours_wasted_on_low_value_weekly?.label },
-    { label: 'Annual Labor Waste', value: data.annual_labor_waste ? fmtMoney(data.annual_labor_waste) : '—', color: '#f87171', isBenchmark: cs?.annual_labor_waste?.source === 'benchmark_estimate', benchmarkLabel: cs?.annual_labor_waste?.label },
+    { label: 'Annual Labor Waste', value: data.annual_labor_waste ? fmtMoneyExact(data.annual_labor_waste) : '—', color: '#f87171', isBenchmark: cs?.annual_labor_waste?.source === 'benchmark_estimate', benchmarkLabel: cs?.annual_labor_waste?.label },
   ]
 
   return (
@@ -2570,38 +2595,33 @@ function ResultsContent() {
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit
   const readiness     = currentAudit?.automation_readiness_score ?? currentAudit?.summary?.automation_readiness_score ?? null
-  const headline      = currentAudit?.summary?.headline ?? currentAudit?.executive_summary ?? 'Your Automation Audit'
-  const opportunities = Array.isArray(currentAudit?.opportunities) ? currentAudit.opportunities : []
+  const annualWasteValue = getAnnualWasteValue(currentAudit)
+  const headline      = syncAnnualWasteCopy(
+    currentAudit?.summary?.headline ?? currentAudit?.executive_summary ?? 'Your Automation Audit',
+    annualWasteValue,
+  )
+  const rawOpportunities = Array.isArray(currentAudit?.opportunities) ? currentAudit.opportunities : []
 
   // ── Cap hours at realistic team capacity ──────────────────────────────────
   const teamCapacity       = getTeamCapacity(auditContext?.teamSize)
   const maxPerOpportunity  = Math.floor(teamCapacity * 0.3)
   const maxBelievableSaved = Math.floor(teamCapacity * 0.4)
 
-  // Cap individual opportunity hours (mutates the already-copied array items)
-  for (const opp of opportunities) {
-    if (opp.hours_saved_weekly != null && opp.hours_saved_weekly > maxPerOpportunity) {
-      opp.hours_saved_weekly = maxPerOpportunity
-    }
-  }
+  const opportunities = rawOpportunities.map((opportunity) => (
+    opportunity.hours_saved_weekly != null && opportunity.hours_saved_weekly > maxPerOpportunity
+      ? { ...opportunity, hours_saved_weekly: maxPerOpportunity }
+      : opportunity
+  ))
 
   const rawHoursSum = currentAudit?.summary?.total_hours_saved_weekly ??
     opportunities.reduce((sum, opportunity) => sum + (opportunity.hours_saved_weekly ?? 0), 0)
   const hoursWeekly = Math.min(rawHoursSum, maxBelievableSaved)
   const hoursCapped = rawHoursSum > maxBelievableSaved
 
-  // Cap annual savings: no team wastes more than 50% of total annual capacity
-  // Single source of truth: labor arbitrage (hourly_rate × weekly_hours × 52) is the most defensible
-  const rawAnnualSavings   = currentAudit?.labor_arbitrage_breakdown?.annual_labor_waste ?? currentAudit?.estimated_annual_waste ?? 0
-  const estimatedHourlyRate = currentAudit?.labor_arbitrage_breakdown?.estimated_hourly_rate ?? null
-  const maxAnnualWaste     = estimatedHourlyRate != null ? Math.floor(teamCapacity * estimatedHourlyRate * 52 * 0.5) : 0
-  const annualSavings      = maxAnnualWaste > 0 ? Math.min(rawAnnualSavings, maxAnnualWaste) : rawAnnualSavings
+  const annualWaste = annualWasteValue ?? 0
 
   if (rawHoursSum > maxBelievableSaved) {
     console.log(`[results] hours capped from ${rawHoursSum} to ${maxBelievableSaved} for team size ${auditContext?.teamSize ?? 'unknown'}`)
-  }
-  if (rawAnnualSavings > maxAnnualWaste && maxAnnualWaste > 0) {
-    console.log(`[results] annual savings capped from ${rawAnnualSavings} to ${maxAnnualWaste} for team size ${auditContext?.teamSize ?? 'unknown'}`)
   }
   const toolsAnalysis = currentAudit?.tools_analysis ?? { current_stack_rating: 0 }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
@@ -2614,7 +2634,7 @@ function ResultsContent() {
   const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasStackDetails
   const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
   const leadOpportunity = opportunities[0] ?? null
-  const reportSections = useMemo(() => (
+  const reportSections = (
     [
       currentAudit?.executive_summary ? { id: 'executive-summary', label: 'Signal' } : null,
       readiness != null ? { id: 'readiness-score', label: 'Readiness' } : null,
@@ -2627,17 +2647,7 @@ function ResultsContent() {
       hasStack ? { id: 'stack-recommendations', label: 'Stack' } : null,
       { id: 'done-for-you-build', label: 'Build' },
     ].filter((section): section is ReportSectionItem => Boolean(section))
-  ), [
-    currentAudit?.executive_summary,
-    readiness,
-    hasBenchmarks,
-    hasLaborBreakdown,
-    hasContextSwitching,
-    hasOnboardingAssessment,
-    hasStackDetails,
-    hasStack,
-    opportunities.length,
-  ])
+  )
   const reportSectionIds = reportSections.map((section) => section.id).join('|')
   const resolvedActiveSection = reportSections.some((section) => section.id === activeSection)
     ? activeSection
@@ -2665,7 +2675,7 @@ function ResultsContent() {
     for (const opp of opportunities) {
       console.log(`[results] opportunity "${opp.title}" confidence_level: ${opp.confidence_level ?? 'not set'}`)
     }
-  }, [auditId, currentAudit, opportunities.length])
+  }, [auditId, currentAudit, opportunities])
 
   useEffect(() => {
     if (typeof document === 'undefined' || reportSections.length === 0) return
@@ -2776,10 +2786,11 @@ function ResultsContent() {
   }
 
   const a = currentAudit
-
-  // Cap the displayed annual/monthly waste figures — use same source as annualSavings
-  const cappedAnnualWaste  = annualSavings > 0 ? annualSavings : null
-  const cappedMonthlyWaste = cappedAnnualWaste != null ? Math.round(cappedAnnualWaste / 12) : a.estimated_monthly_waste
+  const executiveSummary = syncAnnualWasteCopy(a.executive_summary, annualWasteValue)
+  const displayedAnnualWaste = annualWasteValue
+  const displayedMonthlyWaste = displayedAnnualWaste != null
+    ? Math.round(displayedAnnualWaste / 12)
+    : (a.estimated_monthly_waste ?? null)
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
@@ -2865,7 +2876,7 @@ function ResultsContent() {
             headline={headline}
             readiness={readiness}
             hoursWeekly={hoursWeekly}
-            annualSavings={annualSavings}
+            annualWaste={annualWaste}
             opportunities={opportunities}
             topRisk={topRisk}
           />
@@ -2875,7 +2886,7 @@ function ResultsContent() {
             leadOpportunity={leadOpportunity}
             topRisk={topRisk}
             hoursWeekly={hoursWeekly}
-            annualSavings={annualSavings}
+            annualWaste={annualWaste}
           />
 
           <ForensicMatchPanel
@@ -2895,9 +2906,9 @@ function ResultsContent() {
             </div>
             <div className="w-px self-stretch bg-outline-variant/20" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Savings Potential</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Waste</p>
               <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
-                <AnimatedNumber target={annualSavings} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1600} />
+                <AnimatedNumber target={annualWaste} prefix="$" duration={1600} />
               </p>
             </div>
             <div className="w-px self-stretch bg-outline-variant/20" />
@@ -2937,24 +2948,24 @@ function ResultsContent() {
                   <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
                   <div className="p-7">
                     <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
-                      {a.executive_summary}
+                      {executiveSummary}
                     </p>
-                    {(!!cappedMonthlyWaste || !!cappedAnnualWaste) && (
+                    {(!!displayedMonthlyWaste || !!displayedAnnualWaste) && (
                       <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
-                        {!!cappedMonthlyWaste && (
+                        {!!displayedMonthlyWaste && (
                           <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
                             <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
                             <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
-                              <AnimatedNumber target={cappedMonthlyWaste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={1800} />
+                              <AnimatedNumber target={displayedMonthlyWaste} prefix="$" duration={1800} />
                             </p>
                             <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
                           </div>
                         )}
-                        {!!cappedAnnualWaste && (
+                        {!!displayedAnnualWaste && (
                           <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
                             <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
                             <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
-                              <AnimatedNumber target={cappedAnnualWaste} prefix="$" formatter={n => n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(Math.round(n))} duration={2000} />
+                              <AnimatedNumber target={displayedAnnualWaste} prefix="$" duration={2000} />
                             </p>
                             <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
                           </div>

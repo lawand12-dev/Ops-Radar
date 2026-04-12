@@ -23,7 +23,7 @@ import { serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../../lib/supabase-server'
 
 const resend   = new Resend(process.env.RESEND_API_KEY)
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.ai'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.opsradar.co'
 const CRON_SECRET = process.env.CRON_SECRET
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ function buildDay1Email(name: string, company: string, resultsUrl: string, score
           <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;">If you want help fixing it, book a call from the report.</p>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
-          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.ai</a></p>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
       </div>`,
   }
@@ -110,7 +110,7 @@ function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: strin
           <a href="https://calendly.com/opsradar-ai/ops-radar-strategy-call" style="display:block;text-align:center;background:rgba(173,198,255,0.07);border:1px solid rgba(173,198,255,0.18);color:#adc6ff;font-size:14px;font-weight:600;text-decoration:none;padding:14px;border-radius:12px;">Book a Free Strategy Call →</a>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
-          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.ai</a></p>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
       </div>`,
   }
@@ -137,7 +137,7 @@ function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | 
           <a href="${resultsUrl}" style="display:block;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;padding:12px;border-radius:10px;">Review My Blueprint First →</a>
         </div>
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
-          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · This is the last follow-up we'll send. · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.ai</a></p>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · This is the last follow-up we'll send. · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
       </div>`,
   }

@@ -114,7 +114,7 @@ export default async function Image({
         </div>
 
         {/* Bottom */}
-        <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, marginTop: 32 }}>opsradar.ai · Done-For-You Agency Automation</div>
+        <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, marginTop: 32 }}>opsradar.co · Done-For-You Agency Automation</div>
       </div>
     ),
     { ...size },
