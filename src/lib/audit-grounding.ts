@@ -460,6 +460,11 @@ function buildFallbackLaborArbitrage(
   }
 }
 
+function teamCapacityHoursPerWeek(teamSize: string): number {
+  const teamMidpoint = midpointForTeamSize(teamSize)
+  return teamMidpoint * 40
+}
+
 function buildFallbackContextSwitching(
   input: AuditLikeInput,
   context: GroundingContext,
@@ -470,13 +475,25 @@ function buildFallbackContextSwitching(
   ]).filter(Boolean).length)
   const switchingHeadcount = Math.max(1, Math.min(Math.round(midpointForTeamSize(input.teamSize) * 0.35), 6))
   const estimatedDailySwitches = Math.max(10, Math.min(70, Math.round(toolsCount * (switchingHeadcount + 2))))
-  const timeLostDailyMinutes = estimatedDailySwitches * 17
-  const annualCost = Math.round((timeLostDailyMinutes / 60) * context.hourlyRate * 260 * switchingHeadcount)
+  const rawTimeLostDailyMinutes = estimatedDailySwitches * 17
+
+  // Cap context switching time at 15% of team's total weekly capacity
+  const weeklyCapacityMinutes = teamCapacityHoursPerWeek(input.teamSize) * 60
+  const maxSwitchingMinutesPerWeek = weeklyCapacityMinutes * 0.15
+  const rawWeeklyMinutes = rawTimeLostDailyMinutes * 5
+  const cappedWeeklyMinutes = Math.min(rawWeeklyMinutes, maxSwitchingMinutesPerWeek)
+  const cappedDailyMinutes = Math.round(cappedWeeklyMinutes / 5)
+
+  if (rawWeeklyMinutes > maxSwitchingMinutesPerWeek) {
+    console.log(`[audit-grounding] context switching capped from ${rawWeeklyMinutes}min/week to ${cappedWeeklyMinutes}min/week (15% of ${weeklyCapacityMinutes}min capacity)`)
+  }
+
+  const annualCost = Math.round((cappedDailyMinutes / 60) * context.hourlyRate * 260 * switchingHeadcount)
 
   return {
     tools_count: toolsCount,
     estimated_daily_switches: estimatedDailySwitches,
-    time_lost_daily_minutes: timeLostDailyMinutes,
+    time_lost_daily_minutes: cappedDailyMinutes,
     annual_cost: annualCost,
   }
 }
@@ -692,12 +709,12 @@ function normalizeTopLevelFields(
   const finalAnnualWaste = clampNumber(
     annualWasteOverridden ? reconciledAnnualWaste : (aiProvidedAnnualWaste ?? reconciledAnnualWaste),
     reconciledAnnualWaste,
-    { min: 6_000, max: 6_000_000 },
+    { min: 0, max: 6_000_000 },
   )
   const finalMonthlyWaste = clampNumber(
     annualWasteOverridden ? reconciledMonthlyWaste : (aiProvidedMonthlyWaste ?? reconciledMonthlyWaste),
     reconciledMonthlyWaste,
-    { min: 500, max: 500_000 },
+    { min: 0, max: 500_000 },
   )
 
   const calculationSources: CalculationSources = {
@@ -891,6 +908,22 @@ function normalizeTopLevelFields(
   const knownTeamSize = Boolean(input.teamSize.trim())
   if (knownToolsCount && knownTeamSize) {
     const aiProvidedSwitching = asNumber(contextSwitchingSource.annual_cost)
+
+    // Cap context switching at 15% of team's weekly capacity
+    const csWeeklyCapacityMinutes = teamCapacityHoursPerWeek(input.teamSize) * 60
+    const csMaxDailyMinutes = Math.round((csWeeklyCapacityMinutes * 0.15) / 5)
+
+    const rawDailyMinutes = clampNumber(
+      contextSwitchingSource.time_lost_daily_minutes,
+      asNumber(fallbackContextSwitching.time_lost_daily_minutes) ?? 90,
+      { min: 10, max: 1200 },
+    )
+    const cappedDailyMinutes = Math.min(rawDailyMinutes, csMaxDailyMinutes)
+
+    if (rawDailyMinutes > csMaxDailyMinutes) {
+      console.log(`[audit-grounding] context switching daily minutes capped from ${rawDailyMinutes} to ${csMaxDailyMinutes} (15% of team capacity)`)
+    }
+
     normalized.context_switching_analysis = {
       ...contextSwitchingSource,
       tools_count: clampNumber(
@@ -903,11 +936,7 @@ function normalizeTopLevelFields(
         asNumber(fallbackContextSwitching.estimated_daily_switches) ?? 12,
         { min: 1, max: 100 },
       ),
-      time_lost_daily_minutes: clampNumber(
-        contextSwitchingSource.time_lost_daily_minutes,
-        asNumber(fallbackContextSwitching.time_lost_daily_minutes) ?? 90,
-        { min: 10, max: 1200 },
-      ),
+      time_lost_daily_minutes: cappedDailyMinutes,
       annual_cost: clampNumber(
         contextSwitchingSource.annual_cost,
         asNumber(fallbackContextSwitching.annual_cost) ?? 10_000,
@@ -931,14 +960,39 @@ function normalizeTopLevelFields(
     revenue_impact: asString(onboardingSource.revenue_impact) ?? asString(fallbackOnboarding.revenue_impact),
   }
 
+  const benchmarkHoursData = {
+    their_hours: clampNumber(hoursBenchmarkSource.their_hours, asNumber(fallbackHoursBenchmark.their_hours) ?? 20, { min: 1, max: 300 }),
+    industry_average: clampNumber(hoursBenchmarkSource.industry_average, asNumber(fallbackHoursBenchmark.industry_average) ?? 38, { min: 1, max: 300 }),
+    percent_difference: clampNumber(hoursBenchmarkSource.percent_difference, asNumber(fallbackHoursBenchmark.percent_difference) ?? 0, { min: -100, max: 400 }),
+    verdict: asString(hoursBenchmarkSource.verdict) ?? asString(fallbackHoursBenchmark.verdict),
+  }
+
+  let maturityScore = clampNumber(automationMaturitySource.their_score, asNumber(fallbackAutomationMaturity.their_score) ?? (readinessScore ?? 50), { min: 1, max: 100 })
+
+  // ── Reconcile benchmarks: hours verdict and maturity must not contradict ──
+  const isBelowAverage = benchmarkHoursData.their_hours < benchmarkHoursData.industry_average
+  const isBottomTier = maturityScore < 50
+  const isTopTier = maturityScore >= 70
+  const isContradiction =
+    (isBelowAverage && isBottomTier) ||  // below avg waste but bottom tier maturity?
+    (!isBelowAverage && isTopTier)       // above avg waste but top tier maturity?
+
+  if (isContradiction) {
+    if (isBelowAverage) {
+      maturityScore = Math.max(65, maturityScore)
+    } else {
+      maturityScore = Math.min(45, maturityScore)
+    }
+    console.log(`[audit-grounding] benchmark contradiction resolved: maturity adjusted to ${maturityScore}`)
+  }
+
+  const reconciledMaturity = maturityCategoryForScore(maturityScore)
+
   normalized.benchmarks = {
     ...benchmarksSource,
     hours_wasted_vs_average: {
       ...hoursBenchmarkSource,
-      their_hours: clampNumber(hoursBenchmarkSource.their_hours, asNumber(fallbackHoursBenchmark.their_hours) ?? 20, { min: 1, max: 300 }),
-      industry_average: clampNumber(hoursBenchmarkSource.industry_average, asNumber(fallbackHoursBenchmark.industry_average) ?? 38, { min: 1, max: 300 }),
-      percent_difference: clampNumber(hoursBenchmarkSource.percent_difference, asNumber(fallbackHoursBenchmark.percent_difference) ?? 0, { min: -100, max: 400 }),
-      verdict: asString(hoursBenchmarkSource.verdict) ?? asString(fallbackHoursBenchmark.verdict),
+      ...benchmarkHoursData,
     },
     ops_cost_ratio: {
       ...opsRatioSource,
@@ -948,10 +1002,27 @@ function normalizeTopLevelFields(
     },
     automation_maturity: {
       ...automationMaturitySource,
-      their_score: clampNumber(automationMaturitySource.their_score, asNumber(fallbackAutomationMaturity.their_score) ?? (readinessScore ?? 50), { min: 1, max: 100 }),
-      category: asString(automationMaturitySource.category) ?? asString(fallbackAutomationMaturity.category),
-      percentile: asString(automationMaturitySource.percentile) ?? asString(fallbackAutomationMaturity.percentile),
+      their_score: maturityScore,
+      category: isContradiction ? reconciledMaturity.category : (asString(automationMaturitySource.category) ?? asString(fallbackAutomationMaturity.category)),
+      percentile: isContradiction ? reconciledMaturity.percentile : (asString(automationMaturitySource.percentile) ?? asString(fallbackAutomationMaturity.percentile)),
     },
+  }
+
+  // ── Detect insufficient information ──────────────────────────────────────
+  const INSUFFICIENT_DATA_THRESHOLD = 3_000
+  const finalWasteForCheck = asNumber(normalized.estimated_annual_waste) ?? 0
+  const finalOpportunities = normalized.opportunities as unknown[]
+  const isInsufficientData =
+    finalWasteForCheck < INSUFFICIENT_DATA_THRESHOLD ||
+    !Array.isArray(finalOpportunities) ||
+    finalOpportunities.length === 0
+
+  if (isInsufficientData) {
+    normalized.estimated_annual_waste = null
+    normalized.estimated_monthly_waste = null
+    normalized.insufficient_information = true
+    const summaryObj = normalized.summary as Record<string, unknown> | undefined
+    if (summaryObj) summaryObj.total_annual_cost_savings = null
   }
 
   return normalized
