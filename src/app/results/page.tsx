@@ -2359,6 +2359,7 @@ function ResultsContent() {
   const [activeSection, setActiveSection] = useState('executive-summary')
   const [handoff,      setHandoff]      = useState<ReportHandoff | null>(null)
   const [error,        setError]        = useState(false)
+  const [fromCache,    setFromCache]    = useState(false)
   const [dateStr] = useState(() =>
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
@@ -2392,25 +2393,54 @@ function ResultsContent() {
     if (nextContext) setAuditContext(nextContext)
   }, [])
 
-  const readSessionAudit = useCallback((): AuditResult | null => {
+  const readSessionAudit = useCallback((requestedAuditId: string | null, requestedToken: string | null): AuditResult | null => {
     try {
-      const raw = sessionStorage.getItem('opsradar_audit')
-      if (!raw) return null
-      return JSON.parse(raw) as AuditResult
-    } catch {
+      const cached = sessionStorage.getItem('opsradar_audit_cache')
+      if (!cached) return null
+
+      const entry = JSON.parse(cached)
+
+      if (!entry.auditId || !entry.audit || !entry.timestamp) {
+        sessionStorage.removeItem('opsradar_audit_cache')
+        return null
+      }
+
+      const THIRTY_MINUTES = 30 * 60 * 1000
+      if (Date.now() - entry.timestamp > THIRTY_MINUTES) {
+        console.log('[results] cached audit expired, clearing')
+        sessionStorage.removeItem('opsradar_audit_cache')
+        return null
+      }
+
+      if (requestedAuditId && entry.auditId !== requestedAuditId) {
+        console.log('[results] cached audit ID does not match URL, ignoring cache')
+        return null
+      }
+
+      if (requestedToken && entry.token && entry.token !== requestedToken) {
+        console.log('[results] cached token does not match URL, ignoring cache')
+        return null
+      }
+
+      console.log('[results] using valid cached audit as fallback')
+      return entry.audit as AuditResult
+    } catch (err) {
+      console.warn('[results] error reading audit cache:', err)
+      sessionStorage.removeItem('opsradar_audit_cache')
       return null
     }
   }, [])
 
   const loadFromSession = useCallback(() => {
-    const sessionAudit = readSessionAudit()
+    const sessionAudit = readSessionAudit(auditId, accessToken)
     if (!sessionAudit) {
       setError(true)
       return
     }
 
+    setFromCache(true)
     applyLoadedAudit(sessionAudit)
-  }, [applyLoadedAudit, readSessionAudit])
+  }, [applyLoadedAudit, readSessionAudit, auditId, accessToken])
 
   const loadAuditById = useCallback(async (id: string, token?: string | null) => {
     if (!token) {
@@ -2439,7 +2469,19 @@ function ResultsContent() {
       const nextAudit = data.audit as AuditResult
       sessionStorage.removeItem(REPORT_HANDOFF_KEY)
       setHandoff(null)
+      setFromCache(false)
       applyLoadedAudit(nextAudit, data.meta)
+
+      // Refresh the cache with fresh data
+      try {
+        sessionStorage.setItem('opsradar_audit_cache', JSON.stringify({
+          auditId: id,
+          audit: data.audit,
+          token: token,
+          timestamp: Date.now(),
+        }))
+      } catch { /* quota exceeded — non-critical */ }
+
       return
     }
 
@@ -2473,9 +2515,12 @@ function ResultsContent() {
       sessionStorage.removeItem(REPORT_HANDOFF_KEY)
     }
 
-    const sessionAudit = readSessionAudit()
+    const sessionAudit = readSessionAudit(auditId, accessToken)
     if (sessionAudit) {
-      queueMicrotask(() => applyLoadedAudit(sessionAudit))
+      queueMicrotask(() => {
+        setFromCache(true)
+        applyLoadedAudit(sessionAudit)
+      })
     }
 
     queueMicrotask(() => {
@@ -2679,7 +2724,39 @@ function ResultsContent() {
     )
   }
 
-  const a = currentAudit!
+  if (!currentAudit) {
+    console.error('[results] reached render block with null currentAudit — guards missed an edge case')
+    return (
+      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h1 className="font-headline text-2xl font-bold text-on-surface">Audit not found</h1>
+        <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
+          We couldn&apos;t load your audit. Please try refreshing or contact support.
+        </p>
+        <div className="flex flex-col items-center gap-3">
+          <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
+            <Link href="/audit">Start a new audit →</Link>
+          </Button>
+          <a
+            href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
+          >
+            Or book a call
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  const a = currentAudit
 
   // Cap the displayed annual/monthly waste figures on the audit object
   const cappedAnnualWaste  = a.estimated_annual_waste != null && maxAnnualWaste > 0
@@ -2689,6 +2766,15 @@ function ResultsContent() {
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
+
+      {fromCache && (
+        <div className="fixed top-0 inset-x-0 z-[200] flex items-center justify-center gap-2 bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-[12px] text-amber-300 backdrop-blur-sm">
+          <span>Showing your recent audit from cache.</span>
+          <button onClick={() => window.location.reload()} className="underline underline-offset-2 hover:text-amber-200 transition-colors">
+            Refresh to load latest
+          </button>
+        </div>
+      )}
 
       {/* ── Fixed nav ──────────────────────────────────────────────────────── */}
       <div className="fixed inset-x-0 top-0 z-[100] px-6 pt-4">
