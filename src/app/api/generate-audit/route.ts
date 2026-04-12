@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { type AuditInput } from '../../../lib/prompts'
 import { generateAuditReport } from '../../../lib/audit-report'
 import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
@@ -322,13 +323,15 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Audit generation failed. Please try again.' }, { status: 502 })
     }
 
+    const accessToken = randomBytes(32).toString('base64url')
+
     const insertPayload = {
       name,
       email,
       company,
       answers: auditInput,
       result: audit,
-      steps_completed: 12, // all 12 steps completed — used for funnel analysis
+      access_token: accessToken,
     }
 
     let storedAuditId: string | null = null
@@ -378,7 +381,7 @@ export async function POST(request: Request) {
       body: JSON.stringify(notifyPayload),
     }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
-    return Response.json(storedAuditId ? { id: storedAuditId, audit } : { audit })
+    return Response.json(storedAuditId ? { id: storedAuditId, audit, accessToken } : { audit })
   } catch (err) {
     console.error('generate-audit error:', err)
     return serverErrorResponse()

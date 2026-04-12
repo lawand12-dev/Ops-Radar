@@ -38,15 +38,15 @@ function fmtMoney(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`
 }
 
-function buildResultsUrl(auditId: string, email: string | null | undefined) {
-  void email
-  return `${BASE_URL}/results?id=${encodeURIComponent(auditId)}`
+function buildResultsUrl(auditId: string, accessToken: string | null | undefined) {
+  if (!accessToken) return `${BASE_URL}/results?id=${encodeURIComponent(auditId)}`
+  return `${BASE_URL}/results?id=${encodeURIComponent(auditId)}&token=${encodeURIComponent(accessToken)}`
 }
 
 // ─── Email builders ───────────────────────────────────────────────────────────
 
-function buildDay1Email(name: string, company: string, resultsUrl: string, score: number, annualWaste: number | null) {
-  const scoreColor = score >= 60 ? '#10b981' : score >= 30 ? '#f59e0b' : '#ef4444'
+function buildDay1Email(name: string, company: string, resultsUrl: string, score: number | null, annualWaste: number | null) {
+  const scoreColor = score != null ? (score >= 60 ? '#10b981' : score >= 30 ? '#f59e0b' : '#ef4444') : '#3b82f6'
   return {
     subject: `${name ? name.split(' ')[0] + ', your' : 'Your'} OpsRadar report is ready`,
     html: `
@@ -60,10 +60,10 @@ function buildDay1Email(name: string, company: string, resultsUrl: string, score
             Hey${name ? ' ' + name.split(' ')[0] : ''}, your OpsRadar report identified exactly where your team is losing time — and what to build first.
           </p>
           <div style="display:flex;gap:12px;margin-bottom:24px;">
-            <div style="flex:1;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;text-align:center;">
+            ${score != null ? `<div style="flex:1;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;text-align:center;">
               <p style="margin:0 0 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);">Readiness Score</p>
               <p style="margin:0;font-size:32px;font-weight:800;color:${scoreColor};">${score}<span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.25);">/100</span></p>
-            </div>
+            </div>` : ''}
             ${annualWaste ? `<div style="flex:1;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:16px;text-align:center;">
               <p style="margin:0 0 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);">Annual Savings Potential</p>
               <p style="margin:0;font-size:32px;font-weight:800;color:#fbbf24;">${fmtMoney(annualWaste)}</p>
@@ -169,7 +169,7 @@ export async function GET(request: Request) {
     // ── Day 1: audits created ~24h ago, follow_up_1_sent = false ──────────────
     const { data: day1Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result')
+      .select('id, name, email, company, result, access_token')
       .eq('follow_up_1_sent', false)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(2))
@@ -178,9 +178,9 @@ export async function GET(request: Request) {
     for (const audit of day1Audits ?? []) {
       if (!audit.email) continue
       const result = audit.result as Record<string, unknown> | null
-      const score  = (result?.automation_readiness_score as number) ?? 50
+      const score  = (result?.automation_readiness_score as number | undefined) ?? null
       const waste  = (result?.estimated_annual_waste as number) ?? null
-      const resultsUrl = buildResultsUrl(audit.id, audit.email)
+      const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
       const { subject, html } = buildDay1Email(audit.name ?? '', audit.company ?? '', resultsUrl, score, waste)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
@@ -193,7 +193,7 @@ export async function GET(request: Request) {
     // ── Day 3: audits created ~72h ago, follow_up_2_sent = false ─────────────
     const { data: day3Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result')
+      .select('id, name, email, company, result, access_token')
       .eq('follow_up_2_sent', false)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(4))
@@ -204,7 +204,7 @@ export async function GET(request: Request) {
       const result  = audit.result as Record<string, unknown> | null
       const opps    = (result?.opportunities as Array<{ title: string; hours_saved_weekly: number; difficulty: string }>) ?? []
       const topOpp  = opps[0] ?? null
-      const resultsUrl = buildResultsUrl(audit.id, audit.email)
+      const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
       const { subject, html } = buildDay3Email(audit.name ?? '', resultsUrl, topOpp)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
@@ -217,7 +217,7 @@ export async function GET(request: Request) {
     // ── Day 7: audits created ~7 days ago, follow_up_3_sent = false ──────────
     const { data: day7Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result')
+      .select('id, name, email, company, result, access_token')
       .eq('follow_up_3_sent', false)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(8))
@@ -227,7 +227,7 @@ export async function GET(request: Request) {
       if (!audit.email) continue
       const result     = audit.result as Record<string, unknown> | null
       const waste      = (result?.estimated_annual_waste as number) ?? null
-      const resultsUrl = buildResultsUrl(audit.id, audit.email)
+      const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
       const { subject, html } = buildDay7Email(audit.name ?? '', resultsUrl, waste)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })

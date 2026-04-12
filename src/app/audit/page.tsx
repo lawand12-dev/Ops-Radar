@@ -617,6 +617,7 @@ export default function AuditPage() {
       if (!res.ok || (!data.id && !data.audit)) throw new Error(data.error ?? 'Something went wrong')
 
       const secureAuditId = typeof data.id === 'string' ? data.id : null
+      const secureAccessToken = typeof data.accessToken === 'string' ? data.accessToken : null
 
       sendFunnelEvent({
         event: 'audit_submitted',
@@ -652,13 +653,18 @@ export default function AuditPage() {
       }))
 
       if (data.audit) {
-        sessionStorage.setItem('opsradar_audit', JSON.stringify(data.audit))
+        sessionStorage.setItem('opsradar_audit_cache', JSON.stringify({
+          auditId: secureAuditId,
+          audit: data.audit,
+          token: secureAccessToken,
+          timestamp: Date.now(),
+        }))
       } else {
-        sessionStorage.removeItem('opsradar_audit')
+        sessionStorage.removeItem('opsradar_audit_cache')
       }
 
-      const dest = secureAuditId
-        ? `/results?id=${encodeURIComponent(secureAuditId)}`
+      const dest = secureAuditId && secureAccessToken
+        ? `/results?id=${encodeURIComponent(secureAuditId)}&token=${encodeURIComponent(secureAccessToken)}`
         : '/results'
       router.push(dest)
     } catch (err) {
