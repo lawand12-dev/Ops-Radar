@@ -6,7 +6,7 @@ import OpsRadarPricing from '<npm>/components/ui/pricing-component'
 import Footer from '<npm>/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Pricing — OpsRadar',
+  title: 'Pricing',
   description: 'One-time builds from $1,500. Managed plans from $400/mo. Fixed price, fixed scope. No hourly billing.',
 }
 

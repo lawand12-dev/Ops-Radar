@@ -74,7 +74,7 @@ const MONTHLY_PLANS: Plan[] = [
     description: 'Built, hosted, and monitored — you focus on the business',
     features: [
       '1 custom workflow built and deployed',
-      'Hosted on our infrastructure',
+      'Hosted on my infrastructure',
       '24/7 monitoring',
       'Issues fixed within 48 hours',
       'Monthly health report',
@@ -88,7 +88,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Priority',
     price: '$900',
     period: '/month',
-    description: 'Full operations partner — we handle everything',
+    description: 'Full operations partner — I handle everything',
     features: [
       'Everything in Standard',
       '1 new workflow build per month included',
@@ -107,7 +107,7 @@ const MONTHLY_PLANS: Plan[] = [
 const FAQ_ITEMS = [
   {
     q: 'Do I need my own n8n instance?',
-    a: 'No. For Build + Host + Maintain plans, we host everything. For one-time builds, we can deliver to your n8n instance or help you set one up.',
+    a: 'No. For Build + Host + Maintain plans, I host everything. For one-time builds, I can deliver to your n8n instance or help you set one up.',
   },
   {
     q: 'What if my automation breaks after the bug-fix window?',
@@ -200,7 +200,7 @@ export default function OpsRadarPricing() {
               Pay once. Own the workflow.
             </h2>
             <p className="text-lg text-white/40">
-              We deliver, you keep it.
+              I build it, you keep it.
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export default function OpsRadarPricing() {
               Build + Host + Maintain
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-              We build it, host it, and fix it when it breaks.
+              I build it, host it, and fix it when it breaks.
             </h2>
             <p className="text-lg text-white/40">
               You never touch a workflow.
