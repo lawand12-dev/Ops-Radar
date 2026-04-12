@@ -73,7 +73,7 @@ function getAuthenticatedEmail(request: NextRequest): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'chat-history')
+    const rateLimitResponse = await applyRateLimit(request, 'chat-history')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

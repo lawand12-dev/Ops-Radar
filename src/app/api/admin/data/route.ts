@@ -3,6 +3,7 @@ import {
   getAdminSessionTokenFromCookieHeader,
   isValidAdminSessionToken,
 } from '../../../../lib/admin-session'
+import { applyRateLimit } from '../../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient } from '../../../../lib/supabase-server'
 
@@ -41,6 +42,11 @@ function normalizeMutableTable(value: unknown): MutableTableName | null {
 
 export async function GET(request: NextRequest) {
   try {
+    const rateLimitResponse = await applyRateLimit(request, 'admin-data')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const authResponse = requireAdminSession(request)
     if (authResponse) {
       return authResponse
@@ -96,6 +102,11 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: Request) {
   try {
+    const rateLimitResponse = await applyRateLimit(request, 'admin-data')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const authResponse = requireAdminSession(request)
     if (authResponse) {
       return authResponse
@@ -124,6 +135,11 @@ export async function DELETE(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = await applyRateLimit(request, 'admin-data')
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const authResponse = requireAdminSession(request)
     if (authResponse) {
       return authResponse

@@ -8,7 +8,7 @@ const NO_STORE_HEADERS = {
 
 export async function GET(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'audit-result')
+    const rateLimitResponse = await applyRateLimit(request, 'audit-result')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

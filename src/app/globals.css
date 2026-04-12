@@ -1081,3 +1081,25 @@ body::after {
     @apply font-sans;
   }
 }
+
+@media print {
+  .no-print,
+  nav,
+  footer {
+    display: none !important;
+  }
+
+  body, #audit-pdf-root {
+    background-color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  section {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 0.5in;
+  }
+}

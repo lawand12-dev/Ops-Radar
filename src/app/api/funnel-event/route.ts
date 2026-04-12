@@ -61,7 +61,7 @@ function sanitizeMetadata(value: unknown): Record<string, string | number | bool
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'funnel-event')
+    const rateLimitResponse = await applyRateLimit(request, 'funnel-event')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

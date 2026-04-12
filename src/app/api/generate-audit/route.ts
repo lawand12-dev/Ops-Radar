@@ -179,7 +179,7 @@ function validateRequestBody(body: unknown): RequestBody | null {
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'generate-audit')
+    const rateLimitResponse = await applyRateLimit(request, 'generate-audit')
     if (rateLimitResponse) {
       return rateLimitResponse
     }
@@ -324,6 +324,7 @@ export async function POST(request: Request) {
     }
 
     const accessToken = randomBytes(32).toString('base64url')
+    const unsubscribeToken = randomBytes(32).toString('base64url')
 
     const insertPayload = {
       name,
@@ -332,6 +333,7 @@ export async function POST(request: Request) {
       answers: auditInput,
       result: audit,
       access_token: accessToken,
+      unsubscribe_token: unsubscribeToken,
     }
 
     let storedAuditId: string | null = null

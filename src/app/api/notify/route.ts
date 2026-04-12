@@ -19,7 +19,7 @@ export type NotifyPayload = {
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'notify')
+    const rateLimitResponse = await applyRateLimit(request, 'notify')
     if (rateLimitResponse) {
       return rateLimitResponse
     }
