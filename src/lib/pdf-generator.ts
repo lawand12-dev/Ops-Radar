@@ -14,6 +14,19 @@ export async function generateAuditPdf(
     throw new Error(`Element #${elementId} not found`)
   }
 
+  // Force all AnimatedNumber / CountUp instances to their final values
+  // so the PDF capture doesn't snapshot mid-animation zeros.
+  const animatedEls = element.querySelectorAll<HTMLElement>('[data-animated-number]')
+  animatedEls.forEach((el) => {
+    const target = el.getAttribute('data-target-value')
+    if (target) {
+      el.textContent = target
+    }
+  })
+
+  // Let the DOM update settle before capture
+  await new Promise((resolve) => requestAnimationFrame(resolve))
+
   const opt = {
     margin: [0.5, 0.5, 0.5, 0.5] as [number, number, number, number],
     filename,

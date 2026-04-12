@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,11 +13,13 @@ import { motion } from 'framer-motion'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
 import GlowCard from '<npm>/components/animations/GlowCard'
+import { devLog, devWarn } from '<npm>/lib/dev-log'
 import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import Footer from '<npm>/components/Footer'
+import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 import { generateAuditPdf } from '../../lib/pdf-generator'
 import { track } from '@vercel/analytics'
@@ -2253,7 +2256,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
         {/* Book a call CTA */}
         <div className="pt-3 mt-1 border-t border-[rgba(255,255,255,0.05)]">
           <a
-            href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+            href={CALENDLY_STRATEGY_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track('call_booking_clicked')}
@@ -2322,8 +2325,7 @@ function BuildRequestModal({
           audit_id: auditId,
           automation_title: oppTitle,
           ...form,
-          company_website: companyWebsite,
-          time_on_page_seconds: Math.round((Date.now() - startedAt) / 1000),
+          ...getAbuseProtectionPayload(startedAt, companyWebsite),
         }),
       })
       if (res.ok) {
@@ -2460,7 +2462,7 @@ function InsufficientDataState() {
           <Link href="/audit">Retake the Audit &rarr;</Link>
         </Button>
         <a
-          href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+          href={CALENDLY_STRATEGY_CALL_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
@@ -2532,25 +2534,25 @@ function ResultsContent() {
 
       const THIRTY_MINUTES = 30 * 60 * 1000
       if (Date.now() - entry.timestamp > THIRTY_MINUTES) {
-        console.log('[results] cached audit expired, clearing')
+        devLog('[results] cached audit expired, clearing')
         sessionStorage.removeItem('opsradar_audit_cache')
         return null
       }
 
       if (requestedAuditId && entry.auditId !== requestedAuditId) {
-        console.log('[results] cached audit ID does not match URL, ignoring cache')
+        devLog('[results] cached audit ID does not match URL, ignoring cache')
         return null
       }
 
       if (requestedToken && entry.token && entry.token !== requestedToken) {
-        console.log('[results] cached token does not match URL, ignoring cache')
+        devLog('[results] cached token does not match URL, ignoring cache')
         return null
       }
 
-      console.log('[results] using valid cached audit as fallback')
+      devLog('[results] using valid cached audit as fallback')
       return entry.audit as AuditResult
     } catch (err) {
-      console.warn('[results] error reading audit cache:', err)
+      devWarn('[results] error reading audit cache:', err)
       sessionStorage.removeItem('opsradar_audit_cache')
       return null
     }
@@ -2612,7 +2614,7 @@ function ResultsContent() {
       }
     } catch (fetchError) {
       // Fix F: network failure → fall back to session cache before showing error
-      console.warn('[results] network fetch failed, trying cache:', fetchError)
+      devWarn('[results] network fetch failed, trying cache:', fetchError)
       const cached = readSessionAudit(id, token)
       if (cached) {
         setFromCache(true)
@@ -2721,7 +2723,7 @@ function ResultsContent() {
   const annualWaste = annualWasteValue ?? 0
 
   if (rawHoursSum > maxBelievableSaved) {
-    console.log(`[results] hours capped from ${rawHoursSum} to ${maxBelievableSaved} for team size ${auditContext?.teamSize ?? 'unknown'}`)
+    devLog(`[results] hours capped from ${rawHoursSum} to ${maxBelievableSaved} for team size ${auditContext?.teamSize ?? 'unknown'}`)
   }
   const toolsAnalysis = currentAudit?.tools_analysis ?? { current_stack_rating: 0 }
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
@@ -2773,7 +2775,7 @@ function ResultsContent() {
 
     // Fix C: log confidence_level for each opportunity (internal verification)
     for (const opp of opportunities) {
-      console.log(`[results] opportunity "${opp.title}" confidence_level: ${opp.confidence_level ?? 'not set'}`)
+      devLog(`[results] opportunity "${opp.title}" confidence_level: ${opp.confidence_level ?? 'not set'}`)
     }
   }, [auditId, currentAudit, opportunities])
 
@@ -2877,7 +2879,7 @@ function ResultsContent() {
             <Link href="/audit">Start a new audit →</Link>
           </Button>
           <a
-            href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+            href={CALENDLY_STRATEGY_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
@@ -3195,7 +3197,7 @@ function ResultsContent() {
                     Your 90-day path is specific to your stack and business. We&apos;ll walk you through it on your strategy call.
                   </p>
                   <a
-                    href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+                    href={CALENDLY_STRATEGY_CALL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackStrategyCallClick('roadmap-cta')}
@@ -3286,7 +3288,7 @@ function ResultsContent() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
                     <a
-                      href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+                      href={CALENDLY_STRATEGY_CALL_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackStrategyCallClick('final-cta-strategy-call')}

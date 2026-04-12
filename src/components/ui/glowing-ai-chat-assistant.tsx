@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Mic, Send, Bot, X } from 'lucide-react'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
+import { devLog, devError } from '<npm>/lib/dev-log'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -248,7 +249,10 @@ const FloatingAiAssistant = () => {
           visitorEmail: email,
         }),
       })
-      if (!res.ok) return null
+      if (!res.ok) {
+        devError('[chat] conversation persistence failed:', res.status, await res.text().catch(() => ''))
+        return null
+      }
 
       const data = await res.json() as { visitorId?: string; conversationId?: string | null }
 
@@ -471,7 +475,7 @@ const FloatingAiAssistant = () => {
     recognition.maxAlternatives = 1
 
     recognition.onstart = () => {
-      console.log('Voice recognition started')
+      devLog('Voice recognition started')
       setIsListening(true)
     }
 
@@ -480,7 +484,7 @@ const FloatingAiAssistant = () => {
         .map((result: any) => result[0].transcript)
         .join('')
 
-      console.log('Transcript:', transcript)
+      devLog('Transcript:', transcript)
       setMessage(prev => {
         return prev + ' ' + transcript
       })
@@ -501,7 +505,7 @@ const FloatingAiAssistant = () => {
     }
 
     recognition.onend = () => {
-      console.log('Voice recognition ended')
+      devLog('Voice recognition ended')
       setIsListening(false)
     }
 

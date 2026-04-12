@@ -59,8 +59,12 @@ export default function AnimatedNumber({
     ? formatter(value)
     : Math.round(value).toLocaleString()
 
+  const finalDisplay = formatter
+    ? formatter(target)
+    : Math.round(target).toLocaleString()
+
   return (
-    <span ref={ref}>
+    <span ref={ref} data-animated-number data-target-value={`${prefix}${finalDisplay}${suffix}`}>
       {prefix}{display}{suffix}
     </span>
   )
