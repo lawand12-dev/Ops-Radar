@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "types:supabase": "npx supabase gen types typescript --project-id nbdcrmepvwbfbcjqfubr --schema public > src/lib/database.types.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

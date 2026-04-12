@@ -7,6 +7,7 @@ import {
   getServerSupabaseClient,
   hasServerSupabaseClient,
 } from '../../../lib/supabase-server'
+import type { Json } from '../../../lib/database.types'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 import {
   fetchWebsiteSignals,
@@ -59,7 +60,7 @@ async function getCachedResearch(url: string): Promise<AgencyResearch | null> {
     if (error || !data) return null
     const expiresAt = new Date(data.expires_at as string).getTime()
     if (Number.isNaN(expiresAt) || expiresAt < Date.now()) return null
-    return data.research_data as AgencyResearch
+    return data.research_data as unknown as AgencyResearch
   } catch {
     return null
   }
@@ -75,7 +76,7 @@ async function setCachedResearch(url: string, research: AgencyResearch): Promise
     await supabase
       .from('research_cache')
       .upsert(
-        { url, research_data: research, fetched_at: new Date().toISOString(), expires_at: expiresAt },
+        { url, research_data: research as unknown as Json, fetched_at: new Date().toISOString(), expires_at: expiresAt },
         { onConflict: 'url' },
       )
   } catch (err) {
@@ -330,8 +331,8 @@ export async function POST(request: Request) {
       name,
       email,
       company,
-      answers: auditInput,
-      result: audit,
+      answers: auditInput as unknown as Json,
+      result: audit as unknown as Json,
       access_token: accessToken,
       unsubscribe_token: unsubscribeToken,
     }
