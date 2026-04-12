@@ -849,6 +849,22 @@ function normalizeTopLevelFields(
     },
   }
 
+  // ── Override estimated_annual_waste to match annual_labor_waste ──────────
+  // Labor arbitrage (hourly_rate × weekly_hours × 52) is the most defensible
+  // source of truth because it's grounded in actual user inputs.
+  const laborBreakdown = normalized.labor_arbitrage_breakdown as Record<string, unknown> | undefined
+  const reconciledLaborWaste = asNumber(laborBreakdown?.annual_labor_waste)
+  if (reconciledLaborWaste != null && reconciledLaborWaste !== normalized.estimated_annual_waste) {
+    console.log(
+      `[audit-grounding] annual waste reconciliation: overriding estimated_annual_waste ` +
+      `($${normalized.estimated_annual_waste}) to match annual_labor_waste ($${reconciledLaborWaste})`,
+    )
+    normalized.estimated_annual_waste = reconciledLaborWaste
+    normalized.estimated_monthly_waste = Math.round(reconciledLaborWaste / 12)
+    const summaryObj = normalized.summary as Record<string, unknown> | undefined
+    if (summaryObj) summaryObj.total_annual_cost_savings = reconciledLaborWaste
+  }
+
   // Only include context switching analysis if we have real tool/team data
   const knownToolsCount = context.allowedToolNames.length > 0 || splitList(input.tools).length > 0
   const knownTeamSize = Boolean(input.teamSize.trim())
