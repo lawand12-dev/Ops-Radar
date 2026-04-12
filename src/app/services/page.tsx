@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     title: "Services — OpsRadar",
     description:
       "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Services — OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
       "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 }
 

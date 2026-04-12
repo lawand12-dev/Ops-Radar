@@ -8,13 +8,13 @@ export const metadata: Metadata = {
     title: "Your Audit Results — OpsRadar",
     description:
       "Your personalized automation roadmap is ready. See your readiness score, top opportunities, and estimated time and cost savings.",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Your Audit Results — OpsRadar" }],
   },
   twitter: {
     title: "Your Audit Results — OpsRadar",
     description:
       "Your personalized automation roadmap is ready. See your readiness score, top opportunities, and estimated time and cost savings.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 }
 

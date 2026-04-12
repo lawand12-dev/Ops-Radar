@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     title: "About — OpsRadar",
     description:
       "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "About — OpsRadar" }],
   },
   twitter: {
     title: "About — OpsRadar",
     description:
       "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 }
 
