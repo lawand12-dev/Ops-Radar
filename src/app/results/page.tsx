@@ -18,6 +18,7 @@ import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import Footer from '<npm>/components/Footer'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
+import { generateAuditPdf } from '../../lib/pdf-generator'
 import { track } from '@vercel/analytics'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -124,8 +125,9 @@ type AuditResult = {
   executive_summary?: string
   polished_pain_statement?: string
   polished_business_consequence?: string
-  estimated_monthly_waste?: number
-  estimated_annual_waste?: number
+  estimated_monthly_waste?: number | null
+  estimated_annual_waste?: number | null
+  insufficient_information?: boolean
   automation_readiness_score?: number
   labor_arbitrage_breakdown?: LaborArbitrageBreakdown
   context_switching_analysis?: ContextSwitchingAnalysis
@@ -315,6 +317,58 @@ function getTeamCapacity(teamSize?: string): number {
     '100+': 4000,
   }
   return ranges[teamSize ?? ''] ?? 160
+}
+
+function sectionShouldRender(
+  sectionName: string,
+  audit: AuditResult | null,
+  answers: AuditContext | null,
+): boolean {
+  if (!audit || !answers) return false
+
+  const toolsCount = splitCommaList(answers.tools).length
+  const hasTeamSize = Boolean(answers.teamSize && answers.teamSize !== 'unknown')
+
+  switch (sectionName) {
+    case 'labor-arbitrage': {
+      const breakdown = audit.labor_arbitrage_breakdown
+      if (!breakdown) return false
+      const hasRate = (breakdown.estimated_hourly_rate ?? 0) > 0
+      const hasHours = (breakdown.hours_wasted_on_low_value_weekly ?? 0) >= 2
+      return hasRate && hasHours
+    }
+
+    case 'context-switching':
+      return toolsCount >= 4 && hasTeamSize
+
+    case 'benchmarks': {
+      const hasRevenue = Boolean(answers.revenue && answers.revenue !== 'unknown')
+      const hasClients = Boolean(answers.activeClients && answers.activeClients !== 'unknown')
+      return hasTeamSize && (hasRevenue || hasClients)
+    }
+
+    case 'onboarding': {
+      const painText = (answers.automationWish ?? '').toLowerCase()
+      const timeText = (answers.timeHeavy ?? '').toLowerCase()
+      const failText = (answers.failureImpact ?? '').toLowerCase()
+      const onboardText = (answers.onboarding ?? '').toLowerCase()
+      const onboardingKeywords = [
+        'onboard', 'intake', 'new client', 'new-client',
+        'kickoff', 'kick-off', 'first client', 'setup clients',
+        'client setup', 'welcome', 'provisioning',
+      ]
+      return onboardingKeywords.some(kw =>
+        painText.includes(kw) || timeText.includes(kw) ||
+        failText.includes(kw) || onboardText.includes(kw)
+      )
+    }
+
+    case 'stack-analysis':
+      return toolsCount >= 3
+
+    default:
+      return true
+  }
 }
 
 function coerceAuditContext(value: unknown): AuditContext | null {
@@ -2373,6 +2427,51 @@ function BuildRequestModal({
   )
 }
 
+// ─── Insufficient data state ─────────────────────────────────────────────────
+
+function InsufficientDataState() {
+  return (
+    <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6 text-center">
+      <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+        </svg>
+      </div>
+      <h1 className="font-headline text-2xl font-bold text-on-surface max-w-lg">
+        We need more information to calculate your waste accurately
+      </h1>
+      <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
+        Your audit inputs were too sparse for our system to calculate meaningful waste numbers or opportunities.
+        This is not a failure &mdash; it means you operate with more structure than most agencies,
+        or we need more specific answers to give you an accurate report.
+      </p>
+      <div className="text-left max-w-md w-full">
+        <p className="text-on-surface text-[14px] font-semibold mb-3">To get a meaningful audit:</p>
+        <ul className="text-on-surface-variant text-[14px] leading-relaxed space-y-2 list-disc list-inside">
+          <li>Retake the audit with specific hours, tools, and pain points</li>
+          <li>Include your website URL so we can analyze your actual stack</li>
+          <li>Describe concrete processes that consume your team&apos;s time</li>
+        </ul>
+      </div>
+      <div className="flex flex-col items-center gap-3 mt-2">
+        <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
+          <Link href="/audit">Retake the Audit &rarr;</Link>
+        </Button>
+        <a
+          href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
+        >
+          Or book a call to discuss manually
+        </a>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function ResultsContent() {
@@ -2389,6 +2488,7 @@ function ResultsContent() {
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
   const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
   const resultsViewRef = useRef<string | null>(null)
@@ -2627,11 +2727,11 @@ function ResultsContent() {
   const addedTools    = toolsAnalysis.recommended_additions ?? toolsAnalysis.missing_integrations ?? []
   const removedTools  = toolsAnalysis.redundant_tools ?? []
   const hasStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
-  const hasBenchmarks = Boolean(currentAudit?.benchmarks)
+  const hasBenchmarks = Boolean(currentAudit?.benchmarks) && sectionShouldRender('benchmarks', currentAudit, auditContext)
   const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
-  const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis)
-  const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment)
-  const hasStack      = toolsAnalysis.current_stack_rating > 0 || hasStackDetails
+  const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis) && sectionShouldRender('context-switching', currentAudit, auditContext)
+  const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment) && sectionShouldRender('onboarding', currentAudit, auditContext)
+  const hasStack      = (toolsAnalysis.current_stack_rating > 0 || hasStackDetails) && sectionShouldRender('stack-analysis', currentAudit, auditContext)
   const topRisk       = currentAudit ? derivePrimaryRisk(currentAudit, opportunities) : 'manual operational drag'
   const leadOpportunity = opportunities[0] ?? null
   const reportSections = (
@@ -2753,6 +2853,10 @@ function ResultsContent() {
     )
   }
 
+  if (currentAudit?.insufficient_information) {
+    return <InsufficientDataState />
+  }
+
   if (!currentAudit) {
     console.error('[results] reached render block with null currentAudit — guards missed an edge case')
     return (
@@ -2793,7 +2897,7 @@ function ResultsContent() {
     : (a.estimated_monthly_waste ?? null)
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
+    <div id="audit-pdf-root" className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
 
       {fromCache && (
         <div className="fixed top-0 inset-x-0 z-[200] flex items-center justify-center gap-2 bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-[12px] text-amber-300 backdrop-blur-sm">
@@ -2805,7 +2909,7 @@ function ResultsContent() {
       )}
 
       {/* ── Fixed nav ──────────────────────────────────────────────────────── */}
-      <div className="fixed inset-x-0 top-0 z-[100] px-6 pt-4">
+      <div className="fixed inset-x-0 top-0 z-[100] px-6 pt-4 no-print">
         <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-4 px-3 py-1">
             <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
@@ -2822,14 +2926,29 @@ function ResultsContent() {
                 <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
               </div>
               <Button
-                onClick={() => window.print()}
+                onClick={async () => {
+                  if (isGeneratingPdf) return
+                  setIsGeneratingPdf(true)
+                  try {
+                    const name = company || 'report'
+                    const date = new Date().toISOString().slice(0, 10)
+                    const filename = `opsradar-audit-${name.toLowerCase().replace(/\s+/g, '-')}-${date}.pdf`
+                    await generateAuditPdf('audit-pdf-root', filename)
+                  } catch (err) {
+                    console.error('[results] PDF generation failed:', err)
+                    alert('PDF generation failed. Please try again or use browser print instead.')
+                  } finally {
+                    setIsGeneratingPdf(false)
+                  }
+                }}
+                disabled={isGeneratingPdf}
                 variant="outline"
-                className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5"
+                className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5 no-print"
               >
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                   <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Download PDF
+                {isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}
               </Button>
             </div>
           </div>
@@ -3003,21 +3122,21 @@ function ResultsContent() {
         )}
 
         {/* 03 · Industry Benchmarks */}
-        {a.benchmarks && (
+        {a.benchmarks && hasBenchmarks && (
           <div id="industry-benchmarks" data-report-section>
             <BenchmarkSection data={a.benchmarks} />
           </div>
         )}
 
         {/* 04 · Labor Arbitrage */}
-        {a.labor_arbitrage_breakdown && (
+        {a.labor_arbitrage_breakdown && hasLaborBreakdown && (
           <div id="labor-arbitrage" data-report-section>
             <LaborArbitrageSection data={a.labor_arbitrage_breakdown} />
           </div>
         )}
 
         {/* 05 · Context Switching Tax */}
-        {a.context_switching_analysis && (
+        {a.context_switching_analysis && hasContextSwitching && (
           <div id="context-switching" data-report-section>
             <ContextSwitchingSection data={a.context_switching_analysis} />
           </div>
@@ -3053,7 +3172,7 @@ function ResultsContent() {
         </section>
 
         {/* 06 · Onboarding Assessment */}
-        {a.onboarding_assessment && (
+        {a.onboarding_assessment && hasOnboardingAssessment && (
           <div id="client-onboarding" data-report-section>
             <OnboardingAssessmentSection
               data={a.onboarding_assessment}
