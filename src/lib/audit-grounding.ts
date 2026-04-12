@@ -40,7 +40,17 @@ type GroundingContext = {
   allowedToolNames: string[]
   primaryCrm: string | null
   hourlyRate: number
+  hourlyRateLabel: string
 }
+
+type CalculationSource = {
+  value: number | null
+  source: 'user_input' | 'knowledge_base' | 'ai_generated' | 'benchmark_estimate' | 'unavailable'
+  confidence: 'high' | 'medium' | 'low'
+  label?: string
+}
+
+type CalculationSources = Record<string, CalculationSource>
 
 type OpportunityLike = Record<string, unknown>
 type ConfidenceReport = {
@@ -223,12 +233,16 @@ function midpointForRevenue(revenue: string): number {
   return 50_000
 }
 
-function estimateHourlyRate(input: AuditLikeInput): number {
+function estimateHourlyRate(input: AuditLikeInput): { rate: number; label: string } {
   const revenueMidpoint = midpointForRevenue(input.revenue)
   const teamMidpoint = midpointForTeamSize(input.teamSize)
   const perHeadMonthlyRevenue = revenueMidpoint / Math.max(teamMidpoint, 1)
   const hourlyRate = Math.round((perHeadMonthlyRevenue / 160) * 1.05)
-  return Math.max(30, Math.min(hourlyRate, 180))
+  const rate = Math.max(30, Math.min(hourlyRate, 180))
+  return {
+    rate,
+    label: `Based on industry benchmarks for ${input.teamSize} team at ${input.revenue}/mo revenue`,
+  }
 }
 
 function midpointForClientLoad(activeClients: string): number {
@@ -272,12 +286,15 @@ function buildGroundingContext(input: AuditLikeInput): GroundingContext {
     'OpenAI',
   ]).sort()
 
+  const hourlyEstimate = estimateHourlyRate(input)
+
   return {
     detectedTools,
     allowedNodes,
     allowedToolNames: detectedTools.map((tool) => tool.canonicalName),
     primaryCrm: null,
-    hourlyRate: estimateHourlyRate(input),
+    hourlyRate: hourlyEstimate.rate,
+    hourlyRateLabel: hourlyEstimate.label,
   }
 }
 
@@ -293,7 +310,7 @@ GROUNDING CONTEXT — use this as the source of truth for tool references and sa
 - Detected client tools: ${quoteList(context.allowedToolNames)}
 - Public website stack hints: ${quoteList(splitList(input.websiteDetectedStack ?? ''))}
 - Stated operations state: "${input.crmTool}"
-- Estimated loaded labor rate for savings math: $${context.hourlyRate}/hour
+- Estimated loaded labor rate for savings math: $${context.hourlyRate}/hour (${context.hourlyRateLabel})
 
 GROUNDING RULES:
 - Only reference tools from the client's confirmed stack in opportunity titles and hard_truth.
@@ -509,45 +526,6 @@ function buildFallbackBenchmarks(
   }
 }
 
-function buildFallbackOpportunities(input: AuditLikeInput, context: GroundingContext): OpportunityLike[] {
-  const primaryTool = context.allowedToolNames[0] ?? 'Slack'
-  const secondaryTool = context.allowedToolNames[1] ?? primaryTool
-  const process = input.automationWish
-  const breakage = input.leadEntry
-  const cost = input.failureImpact || 'the team keeps paying in wasted hours, slower delivery, and avoidable stress'
-  const frequency = input.processFrequency ? input.processFrequency.toLowerCase() : 'every week'
-
-  return [
-    {
-      title: `${primaryTool} bottleneck containment`,
-      hard_truth: `"${process}" is still manual enough that ${cost}.`,
-      urgency_reason: `This happens ${frequency}, and when it breaks ${breakage.toLowerCase()}.`,
-      difficulty: 'medium',
-      hours_saved_weekly: 8,
-    },
-    {
-      title: `${primaryTool} to ${secondaryTool} handoff stabilization`,
-      hard_truth: `Manual bridges between ${primaryTool} and ${secondaryTool} are making the highest-cost process harder to trust under pressure.`,
-      urgency_reason: `Every delay compounds because the team keeps re-checking status instead of moving work forward.`,
-      difficulty: 'medium',
-      hours_saved_weekly: 6,
-    },
-    {
-      title: `${primaryTool} repetitive-work compression`,
-      hard_truth: `The team is still losing ${input.timeHeavy.toLowerCase()} to work that should not require expensive humans.`,
-      urgency_reason: `This is the kind of drag that quietly burns margin and morale at the same time.`,
-      difficulty: 'medium',
-      hours_saved_weekly: 7,
-    },
-    {
-      title: `${secondaryTool} exception detection and alerts`,
-      hard_truth: `The current breakage pattern — "${breakage}" — means failures stay expensive for too long before anyone can respond cleanly.`,
-      urgency_reason: `Slow detection turns small mistakes into client-facing problems, which is why this carries outsized urgency.`,
-      difficulty: 'complex',
-      hours_saved_weekly: 10,
-    },
-  ]
-}
 
 /**
  * Validate and sanitize the `pattern_match` field the LLM may emit per
@@ -602,6 +580,8 @@ function normalizeOpportunity(
     : {}
 
   const difficulty = normalizeDifficulty(opportunity.difficulty)
+  const aiProvidedHours = asNumber(opportunity.hours_saved_weekly)
+  const aiProvidedSavings = asNumber(opportunity.monthly_savings)
   const hoursSavedWeekly = clampNumber(opportunity.hours_saved_weekly, 4 + index * 2, { min: 1, max: 80 })
   const monthlySavings = clampNumber(
     opportunity.monthly_savings,
@@ -619,6 +599,20 @@ function normalizeOpportunity(
     quick_win: difficulty === 'easy',
     urgency_reason: asString(opportunity.urgency_reason) ?? null,
     pattern_match: normalizePatternMatch(opportunity.pattern_match, allowedSources),
+    calculation_sources: {
+      hours_saved_weekly: {
+        value: hoursSavedWeekly,
+        source: aiProvidedHours != null ? 'ai_generated' : 'benchmark_estimate',
+        confidence: aiProvidedHours != null ? 'medium' as const : 'low' as const,
+        ...(aiProvidedHours == null ? { label: 'Estimated based on similar automations' } : {}),
+      },
+      monthly_savings: {
+        value: monthlySavings,
+        source: aiProvidedSavings != null ? 'ai_generated' : 'benchmark_estimate',
+        confidence: aiProvidedSavings != null ? 'medium' as const : 'low' as const,
+        ...(aiProvidedSavings == null ? { label: `Derived from hours × $${context.hourlyRate}/hr benchmark rate` } : {}),
+      },
+    },
   }
 }
 
@@ -630,15 +624,8 @@ function normalizeTopLevelFields(
   allowedSources: Set<string> | null,
 ): Record<string, unknown> {
   const opportunities = Array.isArray(raw.opportunities) ? raw.opportunities : []
-  const minimumCount = stage === 'preview' ? 2 : 4
-  const supplemented = opportunities.slice()
 
-  for (const fallback of buildFallbackOpportunities(input, context)) {
-    if (supplemented.length >= minimumCount) break
-    supplemented.push(fallback)
-  }
-
-  const normalizedOpportunities = supplemented
+  const normalizedOpportunities = opportunities
     .slice(0, stage === 'preview' ? 2 : 6)
     .map((opportunity, index) => normalizeOpportunity(opportunity, index, context, allowedSources))
 
@@ -652,29 +639,63 @@ function normalizeTopLevelFields(
     return sum + value
   }, 0)
 
+  const aiProvidedReadiness = asNumber(raw.automation_readiness_score)
   const readinessScore = clampNumber(raw.automation_readiness_score, 52, { min: 1, max: 100 })
+  const readinessIsBenchmark = aiProvidedReadiness == null
   const summarySource = asRecord(raw.summary)
   const toolsAnalysisSource = asRecord(raw.tools_analysis)
   const fallbackToolsAnalysis = buildFallbackToolsAnalysis(input, context, normalizedOpportunities)
 
+  const aiProvidedMonthlyWaste = asNumber(raw.estimated_monthly_waste)
+  const aiProvidedAnnualWaste = asNumber(raw.estimated_annual_waste)
+
+  const calculationSources: CalculationSources = {
+    estimated_hourly_rate: {
+      value: context.hourlyRate,
+      source: 'benchmark_estimate',
+      confidence: 'medium',
+      label: context.hourlyRateLabel,
+    },
+    automation_readiness_score: {
+      value: readinessScore,
+      source: readinessIsBenchmark ? 'benchmark_estimate' : 'ai_generated',
+      confidence: readinessIsBenchmark ? 'low' : 'medium',
+      ...(readinessIsBenchmark ? { label: 'Estimated from team size and tool signals' } : {}),
+    },
+    estimated_monthly_waste: {
+      value: aiProvidedMonthlyWaste != null ? aiProvidedMonthlyWaste : Math.round(totalMonthlySavings),
+      source: aiProvidedMonthlyWaste != null ? 'ai_generated' : 'benchmark_estimate',
+      confidence: aiProvidedMonthlyWaste != null ? 'medium' : 'low',
+      ...(aiProvidedMonthlyWaste == null ? { label: 'Derived from opportunity estimates' } : {}),
+    },
+    estimated_annual_waste: {
+      value: aiProvidedAnnualWaste != null ? aiProvidedAnnualWaste : Math.round(totalMonthlySavings * 12),
+      source: aiProvidedAnnualWaste != null ? 'ai_generated' : 'benchmark_estimate',
+      confidence: aiProvidedAnnualWaste != null ? 'medium' : 'low',
+      ...(aiProvidedAnnualWaste == null ? { label: 'Projected from monthly estimate × 12' } : {}),
+    },
+  }
+
   const normalized: Record<string, unknown> = {
     ...raw,
-    executive_summary: asString(raw.executive_summary) ?? `This ${input.agencyType} team is losing time to manual operational work that can be systemized with n8n and their current stack.`,
+    executive_summary: asString(raw.executive_summary) ?? 'Your audit was generated with limited information. For a more complete analysis, please retry with additional details about your team, tools, and specific pain points.',
     estimated_monthly_waste: clampNumber(raw.estimated_monthly_waste, Math.round(totalMonthlySavings), { min: 500, max: 500_000 }),
     estimated_annual_waste: clampNumber(raw.estimated_annual_waste, Math.round(totalMonthlySavings * 12), { min: 6_000, max: 6_000_000 }),
     automation_readiness_score: readinessScore,
     opportunities: normalizedOpportunities,
+    audit_incomplete: normalizedOpportunities.length === 0,
+    calculation_sources: calculationSources,
     summary: {
       ...summarySource,
       total_hours_saved_weekly: clampNumber(
         summarySource.total_hours_saved_weekly,
         totalHoursSavedWeekly,
-        { min: 1, max: 200 },
+        { min: 0, max: 200 },
       ),
       total_annual_cost_savings: clampNumber(
         summarySource.total_annual_cost_savings,
         Math.round(totalMonthlySavings * 12),
-        { min: 6_000, max: 6_000_000 },
+        { min: 0, max: 6_000_000 },
       ),
       automation_readiness_score: clampNumber(
         summarySource.automation_readiness_score,
@@ -739,6 +760,10 @@ function normalizeTopLevelFields(
     month_3: asString(priorityRoadmapSource.month_3) ?? asString(fallbackPriorityRoadmap.month_3),
   }
 
+  const aiProvidedHourlyRate = asNumber(laborSource.estimated_hourly_rate)
+  const aiProvidedHoursWasted = asNumber(laborSource.hours_wasted_on_low_value_weekly)
+  const aiProvidedAnnualLaborWaste = asNumber(laborSource.annual_labor_waste)
+
   normalized.labor_arbitrage_breakdown = {
     ...laborSource,
     estimated_hourly_rate: clampNumber(
@@ -757,30 +782,63 @@ function normalizeTopLevelFields(
       { min: 1_000, max: 6_000_000 },
     ),
     explanation: asString(laborSource.explanation) ?? asString(fallbackLabor.explanation),
+    calculation_sources: {
+      estimated_hourly_rate: {
+        value: aiProvidedHourlyRate ?? context.hourlyRate,
+        source: aiProvidedHourlyRate != null ? 'ai_generated' : 'benchmark_estimate' as const,
+        confidence: aiProvidedHourlyRate != null ? 'medium' as const : 'low' as const,
+        ...(aiProvidedHourlyRate == null ? { label: context.hourlyRateLabel } : {}),
+      },
+      annual_labor_waste: {
+        value: aiProvidedAnnualLaborWaste ?? (asNumber(fallbackLabor.annual_labor_waste) ?? 10_000),
+        source: aiProvidedAnnualLaborWaste != null ? 'ai_generated' : 'benchmark_estimate' as const,
+        confidence: aiProvidedAnnualLaborWaste != null ? 'medium' as const : 'low' as const,
+        ...(aiProvidedAnnualLaborWaste == null ? { label: 'Derived from benchmark hourly rate × estimated hours × 52 weeks' } : {}),
+      },
+      hours_wasted_on_low_value_weekly: {
+        value: aiProvidedHoursWasted ?? (asNumber(fallbackLabor.hours_wasted_on_low_value_weekly) ?? 8),
+        source: aiProvidedHoursWasted != null ? 'ai_generated' : 'benchmark_estimate' as const,
+        confidence: aiProvidedHoursWasted != null ? 'medium' as const : 'low' as const,
+        ...(aiProvidedHoursWasted == null ? { label: 'Estimated from opportunity hours' } : {}),
+      },
+    },
   }
 
-  normalized.context_switching_analysis = {
-    ...contextSwitchingSource,
-    tools_count: clampNumber(
-      contextSwitchingSource.tools_count,
-      asNumber(fallbackContextSwitching.tools_count) ?? 3,
-      { min: 1, max: 20 },
-    ),
-    estimated_daily_switches: clampNumber(
-      contextSwitchingSource.estimated_daily_switches,
-      asNumber(fallbackContextSwitching.estimated_daily_switches) ?? 12,
-      { min: 1, max: 100 },
-    ),
-    time_lost_daily_minutes: clampNumber(
-      contextSwitchingSource.time_lost_daily_minutes,
-      asNumber(fallbackContextSwitching.time_lost_daily_minutes) ?? 90,
-      { min: 10, max: 1200 },
-    ),
-    annual_cost: clampNumber(
-      contextSwitchingSource.annual_cost,
-      asNumber(fallbackContextSwitching.annual_cost) ?? 10_000,
-      { min: 1_000, max: 6_000_000 },
-    ),
+  // Only include context switching analysis if we have real tool/team data
+  const knownToolsCount = context.allowedToolNames.length > 0 || splitList(input.tools).length > 0
+  const knownTeamSize = Boolean(input.teamSize.trim())
+  if (knownToolsCount && knownTeamSize) {
+    const aiProvidedSwitching = asNumber(contextSwitchingSource.annual_cost)
+    normalized.context_switching_analysis = {
+      ...contextSwitchingSource,
+      tools_count: clampNumber(
+        contextSwitchingSource.tools_count,
+        asNumber(fallbackContextSwitching.tools_count) ?? 3,
+        { min: 1, max: 20 },
+      ),
+      estimated_daily_switches: clampNumber(
+        contextSwitchingSource.estimated_daily_switches,
+        asNumber(fallbackContextSwitching.estimated_daily_switches) ?? 12,
+        { min: 1, max: 100 },
+      ),
+      time_lost_daily_minutes: clampNumber(
+        contextSwitchingSource.time_lost_daily_minutes,
+        asNumber(fallbackContextSwitching.time_lost_daily_minutes) ?? 90,
+        { min: 10, max: 1200 },
+      ),
+      annual_cost: clampNumber(
+        contextSwitchingSource.annual_cost,
+        asNumber(fallbackContextSwitching.annual_cost) ?? 10_000,
+        { min: 1_000, max: 6_000_000 },
+      ),
+      is_benchmark_estimate: aiProvidedSwitching == null,
+    }
+    calculationSources.context_switching_annual_cost = {
+      value: aiProvidedSwitching ?? (asNumber(fallbackContextSwitching.annual_cost) ?? 10_000),
+      source: aiProvidedSwitching != null ? 'ai_generated' : 'benchmark_estimate',
+      confidence: aiProvidedSwitching != null ? 'medium' : 'low',
+      ...(aiProvidedSwitching == null ? { label: 'Based on typical context-switching costs for your tool count and team size' } : {}),
+    }
   }
 
   normalized.onboarding_assessment = {
