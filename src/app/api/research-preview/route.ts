@@ -4,6 +4,7 @@ import {
   getServerSupabaseClient,
   hasServerSupabaseClient,
 } from '../../../lib/supabase-server'
+import type { Json } from '../../../lib/database.types'
 import {
   researchAgency,
   buildWebsitePreview,
@@ -43,7 +44,7 @@ async function getCached(url: string): Promise<AgencyResearch | null> {
     if (error || !data) return null
     const expiresAt = new Date(data.expires_at as string).getTime()
     if (Number.isNaN(expiresAt) || expiresAt < Date.now()) return null
-    return data.research_data as AgencyResearch
+    return data.research_data as unknown as AgencyResearch
   } catch {
     return null
   }
@@ -58,7 +59,7 @@ async function setCached(url: string, research: AgencyResearch): Promise<void> {
     await supabase
       .from('research_cache')
       .upsert(
-        { url, research_data: research, fetched_at: new Date().toISOString(), expires_at: expiresAt },
+        { url, research_data: research as unknown as Json, fetched_at: new Date().toISOString(), expires_at: expiresAt },
         { onConflict: 'url' },
       )
   } catch {

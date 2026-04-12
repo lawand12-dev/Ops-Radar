@@ -61,7 +61,7 @@ export async function retrieveRelevantKnowledge(
   try {
     const supabase = getServerSupabaseClient()
     const { data, error } = await supabase.rpc('match_knowledge_base', {
-      query_embedding: queryEmbedding,
+      query_embedding: queryEmbedding as unknown as string,
       match_count: topK,
       match_threshold: 0.0,
     })
