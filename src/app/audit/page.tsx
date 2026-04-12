@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import EmailCaptureModal, { type LeadInfo } from '../components/EmailCaptureModal'
+import type { LeadInfo } from '../components/EmailCaptureModal'
+import HoneypotField from '../components/HoneypotField'
+import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
@@ -187,7 +189,7 @@ const LOADING_MESSAGES = [
   'Generating your diagnosis…',
 ]
 
-const TOTAL_STEPS = 12
+const TOTAL_STEPS = 13
 const REPORT_HANDOFF_KEY = 'opsradar_report_handoff'
 const OPERATIONS_STATE_OPTIONS = [
   'Pure chaos — everything is manual and we\'re constantly dropping balls',
@@ -420,9 +422,14 @@ export default function AuditPage() {
   }, [])
   const [animKey, setAnimKey] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [showModal, setShowModal] = useState(false)
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0)
   const [loadingError, setLoadingError] = useState('')
+  // Lead capture fields (collected upfront in Step 1)
+  const [leadName, setLeadName] = useState('')
+  const [leadEmail, setLeadEmail] = useState('')
+  const [leadCompany, setLeadCompany] = useState('')
+  const [companyWebsite, setCompanyWebsite] = useState('')
+  const [startedAt] = useState(() => Date.now())
   const [answers, setAnswers] = useState<Answers>({
     websiteUrl: '',
     agencyType: '',
@@ -490,26 +497,30 @@ export default function AuditPage() {
     })
   }, [agencyCategory, toolOptions, toolSignalOptions])
 
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadEmail)
+
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
+        return leadName.trim().length > 0 && isValidEmail && leadCompany.trim().length > 0
+      case 1:
         return !!answers.agencyType && (!needsAgencyTypeDetail || answers.agencyTypeOther.trim().length >= 3)
-      case 1:  return !!answers.teamSize
-      case 2:  return !!answers.revenue
-      case 3:  return !!answers.activeClients
-      case 4:
+      case 2:  return !!answers.teamSize
+      case 3:  return !!answers.revenue
+      case 4:  return !!answers.activeClients
+      case 5:
         return (
           answers.tools.length > 0 &&
           (!needsToolDetail || answers.toolsOther.trim().length >= 3) &&
           (!needsToolSignalFollowup || answers.toolSignals.length > 0 || answers.toolSignalsDetail.trim().length >= 10)
         )
-      case 5:  return !!answers.operationsState
-      case 6:  return !!answers.hoursLost
-      case 7:  return !!answers.breakageResponse
-      case 8:  return answers.topPainProcess.trim().length >= 20
-      case 9:  return !!answers.processFrequency
-      case 10: return answers.sixMonthCost.trim().length >= 20
-      case 11: return answers.twoWeekChange.trim().length >= 20
+      case 6:  return !!answers.operationsState
+      case 7:  return !!answers.hoursLost
+      case 8:  return !!answers.breakageResponse
+      case 9:  return answers.topPainProcess.trim().length >= 20
+      case 10: return !!answers.processFrequency
+      case 11: return answers.sixMonthCost.trim().length >= 20
+      case 12: return answers.twoWeekChange.trim().length >= 20
       default: return false
     }
   }
@@ -539,18 +550,15 @@ export default function AuditPage() {
     setCurrentStep((s) => s - 1)
   }
 
-  const openModal = () => {
+  const handleSubmit = async () => {
     if (!canProceed()) return
-    sendFunnelEvent({
-      event: 'lead_modal_opened',
-      sessionId: sessionIdRef.current,
-      step: currentStep + 1,
-    })
-    setShowModal(true)
-  }
-
-  const handleSubmit = async (lead: LeadInfo) => {
-    setShowModal(false)
+    const lead: LeadInfo = {
+      name: leadName.trim(),
+      email: leadEmail.trim(),
+      company: leadCompany.trim(),
+      websiteUrl: answers.websiteUrl.trim(),
+      ...getAbuseProtectionPayload(startedAt, companyWebsite),
+    }
     setLoading(true)
     setLoadingError('')
     setLoadingMsgIndex(0)
@@ -817,8 +825,62 @@ export default function AuditPage() {
           className={direction === 'forward' ? 'step-forward' : 'step-backward'}
           style={{ willChange: 'transform, opacity' }}
         >
-          {/* Step 1 — Agency type */}
+          {/* Step 1 — Lead capture */}
           {currentStep === 0 && (
+            <>
+              <StepHeader
+                question="Let's start with the basics"
+                hint="I'll send your full audit report to your inbox and we'll walk through it on a call if you want — no spam, no list."
+              />
+              <div className="space-y-4">
+                <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
+                    Your name
+                  </label>
+                  <Input
+                    type="text"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    placeholder="Alex Johnson"
+                    autoFocus
+                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
+                    Work email
+                    <span className="ml-1.5 text-on-surface-variant/40 font-normal">I use this to send your report and nothing else</span>
+                  </label>
+                  <Input
+                    type="email"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    placeholder="alex@youragency.com"
+                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
+                  />
+                  {leadEmail.length > 0 && !isValidEmail && (
+                    <p className="mt-1.5 text-xs text-on-surface-variant/50">Enter a valid email address</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
+                    Your agency's name
+                  </label>
+                  <Input
+                    type="text"
+                    value={leadCompany}
+                    onChange={(e) => setLeadCompany(e.target.value)}
+                    placeholder="Acme Agency"
+                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Step 2 — Agency type */}
+          {currentStep === 1 && (
             <>
               <StepHeader
                 question="What kind of business are we looking at?"
@@ -845,8 +907,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 2 — Team size */}
-          {currentStep === 1 && (
+          {/* Step 3 — Team size */}
+          {currentStep === 2 && (
             <>
               <StepHeader question="How large is your team?" />
               <SingleSelect
@@ -857,8 +919,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 3 — Revenue */}
-          {currentStep === 2 && (
+          {/* Step 4 — Revenue */}
+          {currentStep === 3 && (
             <>
               <StepHeader question="What's your approximate monthly revenue?" />
               <SingleSelect
@@ -869,8 +931,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 4 — Active clients */}
-          {currentStep === 3 && (
+          {/* Step 5 — Active clients */}
+          {currentStep === 4 && (
             <>
               <StepHeader question="How many active clients do you manage at a time?" />
               <SingleSelect
@@ -881,8 +943,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 5 — Tools (adaptive by agency type) */}
-          {currentStep === 4 && (
+          {/* Step 6 — Tools (adaptive by agency type) */}
+          {currentStep === 5 && (
             <>
               <StepHeader
                 question="What tools does your team use daily?"
@@ -940,8 +1002,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 6 — Operations state */}
-          {currentStep === 5 && (
+          {/* Step 7 — Operations state */}
+          {currentStep === 6 && (
             <>
               <StepHeader
                 question="Which of these best describes your current operations?"
@@ -955,8 +1017,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 7 — Hours lost */}
-          {currentStep === 6 && (
+          {/* Step 8 — Hours lost */}
+          {currentStep === 7 && (
             <>
               <StepHeader
                 question="How many hours per week does your team lose to work that feels 'beneath' their pay grade?"
@@ -970,8 +1032,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 8 — Breakage response */}
-          {currentStep === 7 && (
+          {/* Step 9 — Breakage response */}
+          {currentStep === 8 && (
             <>
               <StepHeader
                 question="When something breaks in your operations, what happens?"
@@ -985,8 +1047,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 9 — Top pain process */}
-          {currentStep === 8 && (
+          {/* Step 10 — Top pain process */}
+          {currentStep === 9 && (
             <>
               <StepHeader
                 question="What's the #1 process that, when it fails, hurts your business the most?"
@@ -1003,8 +1065,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 10 — Frequency */}
-          {currentStep === 9 && (
+          {/* Step 11 — Frequency */}
+          {currentStep === 10 && (
             <>
               <StepHeader
                 question="How often does this process happen?"
@@ -1018,8 +1080,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 11 — Six-month cost */}
-          {currentStep === 10 && (
+          {/* Step 12 — Six-month cost */}
+          {currentStep === 11 && (
             <>
               <StepHeader
                 question="What's the real cost if this process keeps running manually for another 6 months?"
@@ -1036,8 +1098,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 12 — Desired change */}
-          {currentStep === 11 && (
+          {/* Step 13 — Desired change */}
+          {currentStep === 12 && (
             <>
               <StepHeader
                 question="If we could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
@@ -1083,7 +1145,19 @@ export default function AuditPage() {
             {currentStep === 0 ? 'Back to home' : 'Back'}
           </Button>
 
-          {currentStep < TOTAL_STEPS - 1 ? (
+          {currentStep === 0 ? (
+            <Button
+              type="button"
+              onClick={goNext}
+              disabled={!canProceed()}
+              className="px-7 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
+            >
+              Start my audit
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Button>
+          ) : currentStep < TOTAL_STEPS - 1 ? (
             <Button
               type="button"
               onClick={goNext}
@@ -1098,7 +1172,7 @@ export default function AuditPage() {
           ) : (
             <Button
               type="button"
-              onClick={openModal}
+              onClick={handleSubmit}
               disabled={!canProceed()}
               className="px-7 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring cta-pulse shadow-[0_0_30px_rgba(173,198,255,0.3)]"
             >
@@ -1121,17 +1195,9 @@ export default function AuditPage() {
       {/* Bottom hint */}
       <div className="relative z-10 text-center pb-10">
         <p className="text-xs text-on-surface-variant/30">
-          Free · No credit card · Results in under 60 seconds
+          Free · Results sent to your inbox
         </p>
       </div>
-
-      {showModal && (
-        <EmailCaptureModal
-          onSubmit={handleSubmit}
-          onClose={() => setShowModal(false)}
-          initialWebsiteUrl={answers.websiteUrl}
-        />
-      )}
     </div>
   )
 }
