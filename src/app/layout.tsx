@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
+import { SITE_URL } from "<npm>/lib/constants";
 import "./globals.css";
 import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
 import ChatNotification from "./components/ChatNotification";
@@ -59,7 +60,7 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.opsradar.co'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? SITE_URL),
   title: {
     default: "OpsRadar — Done-For-You Automation for Agencies",
     template: "%s — OpsRadar",
@@ -72,7 +73,7 @@ export const metadata: Metadata = {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
       "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
-    url: "https://www.opsradar.co",
+    url: SITE_URL,
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Done-For-You Automation for Agencies" }],
     locale: "en_US",
   },

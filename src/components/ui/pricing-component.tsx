@@ -3,7 +3,7 @@
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 
-const CALENDLY_URL = 'https://calendly.com/opsradar-ai/ops-radar-strategy-call'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 type Plan = {
   name: string
@@ -171,7 +171,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       </div>
 
       <a
-        href={CALENDLY_URL}
+        href={CALENDLY_STRATEGY_CALL_URL}
         target="_blank"
         rel="noopener noreferrer"
         className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-colors text-center block ${

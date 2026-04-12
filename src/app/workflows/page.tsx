@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
@@ -207,7 +208,7 @@ export default function WorkflowsPage() {
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <Link
-              href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+              href={CALENDLY_STRATEGY_CALL_URL}
               className="text-sm text-white/40 hover:text-white/60 transition-colors"
             >
               Or book a 20-min call
