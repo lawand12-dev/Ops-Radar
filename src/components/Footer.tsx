@@ -12,6 +12,18 @@ export default function Footer() {
         </p>
         <div className="flex items-center gap-5">
           <Link
+            href="/privacy"
+            className="text-xs text-white/30 hover:text-white/60 transition-colors"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/terms"
+            className="text-xs text-white/30 hover:text-white/60 transition-colors"
+          >
+            Terms
+          </Link>
+          <Link
             href="https://www.linkedin.com/in/lawand-soran-opsradar"
             target="_blank"
             rel="noopener noreferrer"
