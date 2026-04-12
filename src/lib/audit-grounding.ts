@@ -849,20 +849,41 @@ function normalizeTopLevelFields(
     },
   }
 
-  // ── Override estimated_annual_waste to match annual_labor_waste ──────────
-  // Labor arbitrage (hourly_rate × weekly_hours × 52) is the most defensible
-  // source of truth because it's grounded in actual user inputs.
+  // ── Force estimated_annual_waste to match annual_labor_waste ─────────────
+  // Labor arbitrage (hourly_rate × weekly_hours × 52) is the canonical
+  // display value everywhere in the report.
   const laborBreakdown = normalized.labor_arbitrage_breakdown as Record<string, unknown> | undefined
   const reconciledLaborWaste = asNumber(laborBreakdown?.annual_labor_waste)
-  if (reconciledLaborWaste != null && reconciledLaborWaste !== normalized.estimated_annual_waste) {
-    console.log(
-      `[audit-grounding] annual waste reconciliation: overriding estimated_annual_waste ` +
-      `($${normalized.estimated_annual_waste}) to match annual_labor_waste ($${reconciledLaborWaste})`,
-    )
+  if (reconciledLaborWaste != null) {
+    const priorAnnualWaste = asNumber(normalized.estimated_annual_waste)
+    if (priorAnnualWaste !== reconciledLaborWaste) {
+      console.log(
+        `[audit-grounding] annual waste reconciliation: overriding estimated_annual_waste ` +
+        `($${priorAnnualWaste ?? 'null'}) to match annual_labor_waste ($${reconciledLaborWaste})`,
+      )
+    }
+
     normalized.estimated_annual_waste = reconciledLaborWaste
     normalized.estimated_monthly_waste = Math.round(reconciledLaborWaste / 12)
+
     const summaryObj = normalized.summary as Record<string, unknown> | undefined
     if (summaryObj) summaryObj.total_annual_cost_savings = reconciledLaborWaste
+
+    const calculationSourcesObj = normalized.calculation_sources as CalculationSources | undefined
+    if (calculationSourcesObj) {
+      calculationSourcesObj.estimated_annual_waste = {
+        value: reconciledLaborWaste,
+        source: 'benchmark_estimate',
+        confidence: 'medium',
+        label: 'Forced to match labor_arbitrage_breakdown.annual_labor_waste',
+      }
+      calculationSourcesObj.estimated_monthly_waste = {
+        value: Math.round(reconciledLaborWaste / 12),
+        source: 'benchmark_estimate',
+        confidence: 'medium',
+        label: 'Derived from annual_labor_waste / 12',
+      }
+    }
   }
 
   // Only include context switching analysis if we have real tool/team data

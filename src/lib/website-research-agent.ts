@@ -83,7 +83,7 @@ const FETCH_TIMEOUT_MS = 5000
 // Needs to accommodate WordPress/Elementor sites that inline critical CSS before the first h1.
 const MAX_HTML_CHARS = 800_000
 const USER_AGENT =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OpsRadarBot/1.0 (+https://opsradar.ai)'
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OpsRadarBot/1.0 (+https://www.opsradar.co)'
 const HEADLINE_MAX_CHARS = 120
 
 type PageKey =

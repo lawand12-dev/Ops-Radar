@@ -59,7 +59,7 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opsradar.ai'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.opsradar.co'),
   title: {
     default: "OpsRadar — Done-For-You Automation for Agencies",
     template: "%s — OpsRadar",
@@ -72,14 +72,14 @@ export const metadata: Metadata = {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
       "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
+    images: [{ url: "https://www.opsradar.co/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
       "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
-    images: ["/logo.png"],
+    images: ["https://www.opsradar.co/logo.png"],
   },
   icons: {
     icon: [

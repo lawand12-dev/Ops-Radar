@@ -496,7 +496,7 @@ async function fetchWebsitePage(rawUrl: string, label: string): Promise<FetchedW
         signal: controller.signal,
         headers: {
           Accept: 'text/html,application/xhtml+xml',
-          'User-Agent': 'OpsRadarBot/1.0 (+https://opsradar.ai)',
+          'User-Agent': 'OpsRadarBot/1.0 (+https://www.opsradar.co)',
         },
         cache: 'no-store',
       })
