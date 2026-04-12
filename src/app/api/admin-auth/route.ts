@@ -10,7 +10,7 @@ import {
 } from '../../../lib/admin-session'
 
 export async function POST(request: Request) {
-  const rateLimitResponse = applyRateLimit(request, 'admin-auth')
+  const rateLimitResponse = await applyRateLimit(request, 'admin-auth')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

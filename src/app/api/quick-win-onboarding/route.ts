@@ -35,7 +35,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'quick-win-onboarding')
+    const rateLimitResponse = await applyRateLimit(request, 'quick-win-onboarding')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

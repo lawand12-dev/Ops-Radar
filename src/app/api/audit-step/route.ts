@@ -19,7 +19,7 @@ import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/s
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'audit-step')
+    const rateLimitResponse = await applyRateLimit(request, 'audit-step')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

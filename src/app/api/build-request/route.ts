@@ -31,7 +31,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'build-request')
+    const rateLimitResponse = await applyRateLimit(request, 'build-request')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

@@ -114,7 +114,7 @@ function fallbackPreview(url: string): WebsitePreview {
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'research-preview')
+    const rateLimitResponse = await applyRateLimit(request, 'research-preview')
     if (rateLimitResponse) return rateLimitResponse
 
     const body = (await request.json().catch(() => null)) as { url?: unknown } | null

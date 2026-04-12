@@ -8,7 +8,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'notify-chat-lead')
+    const rateLimitResponse = await applyRateLimit(request, 'notify-chat-lead')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

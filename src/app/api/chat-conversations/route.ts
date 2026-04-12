@@ -128,7 +128,7 @@ function requireConversationStorage() {
 
 export async function GET(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'chat-conversations')
+    const rateLimitResponse = await applyRateLimit(request, 'chat-conversations')
     if (rateLimitResponse) {
       return rateLimitResponse
     }
@@ -211,7 +211,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'chat-conversations')
+    const rateLimitResponse = await applyRateLimit(request, 'chat-conversations')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

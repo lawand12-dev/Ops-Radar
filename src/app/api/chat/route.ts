@@ -177,7 +177,7 @@ function isValidMessage(value: unknown): value is Message {
 
 export async function POST(request: Request) {
   try {
-    const rateLimitResponse = applyRateLimit(request, 'chat')
+    const rateLimitResponse = await applyRateLimit(request, 'chat')
     if (rateLimitResponse) {
       return rateLimitResponse
     }

@@ -43,9 +43,17 @@ function buildResultsUrl(auditId: string, accessToken: string | null | undefined
   return `${BASE_URL}/results?id=${encodeURIComponent(auditId)}&token=${encodeURIComponent(accessToken)}`
 }
 
+function buildUnsubscribeFooter(unsubscribeUrl: string) {
+  return `
+      <div style="margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05);font-size:12px;color:#9ca3af;text-align:center;">
+        <p style="margin:0 0 8px 0;">You received this email because you completed an audit at opsradar.co.</p>
+        <p style="margin:0;"><a href="${unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline;">Unsubscribe from follow-ups</a></p>
+      </div>`
+}
+
 // ─── Email builders ───────────────────────────────────────────────────────────
 
-function buildDay1Email(name: string, company: string, resultsUrl: string, score: number | null, annualWaste: number | null) {
+function buildDay1Email(name: string, company: string, resultsUrl: string, score: number | null, annualWaste: number | null, unsubscribeUrl: string) {
   const scoreColor = score != null ? (score >= 60 ? '#10b981' : score >= 30 ? '#f59e0b' : '#ef4444') : '#3b82f6'
   return {
     subject: `${name ? name.split(' ')[0] + ', your' : 'Your'} OpsRadar report is ready`,
@@ -76,11 +84,12 @@ function buildDay1Email(name: string, company: string, resultsUrl: string, score
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
+        ${buildUnsubscribeFooter(unsubscribeUrl)}
       </div>`,
   }
 }
 
-function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: string; hours_saved_weekly: number; difficulty: string } | null) {
+function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: string; hours_saved_weekly: number; difficulty: string } | null, unsubscribeUrl: string) {
   const buildTime = topOpp?.difficulty === 'easy' ? '5–7 days' : topOpp?.difficulty === 'medium' ? '7–14 days' : '14–21 days'
   const buildCost = topOpp?.difficulty === 'easy' ? '$1,500–$2,500' : topOpp?.difficulty === 'medium' ? '$2,500–$4,000' : '$4,000–$7,000'
   return {
@@ -112,11 +121,12 @@ function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: strin
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
+        ${buildUnsubscribeFooter(unsubscribeUrl)}
       </div>`,
   }
 }
 
-function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | null) {
+function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | null, unsubscribeUrl: string) {
   return {
     subject: `${name ? name.split(' ')[0] + ', ' : ''}this automation is still sitting idle`,
     html: `
@@ -139,6 +149,7 @@ function buildDay7Email(name: string, resultsUrl: string, annualWaste: number | 
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
           <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · This is the last follow-up we'll send. · <a href="${BASE_URL}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
         </div>
+        ${buildUnsubscribeFooter(unsubscribeUrl)}
       </div>`,
   }
 }
@@ -169,8 +180,9 @@ export async function GET(request: Request) {
     // ── Day 1: audits created ~24h ago, follow_up_1_sent = false ──────────────
     const { data: day1Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result, access_token')
+      .select('id, name, email, company, result, access_token, unsubscribe_token')
       .eq('follow_up_1_sent', false)
+      .is('unsubscribed_at', null)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(2))
       .lte('created_at', daysAgo(1))
@@ -182,7 +194,8 @@ export async function GET(request: Request) {
       const waste  = (result?.estimated_annual_waste as number) ?? null
       const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
-      const { subject, html } = buildDay1Email(audit.name ?? '', audit.company ?? '', resultsUrl, score, waste)
+      const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
+      const { subject, html } = buildDay1Email(audit.name ?? '', audit.company ?? '', resultsUrl, score, waste, unsubscribeUrl)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
       if (error) { console.error('[followup day1]', error); sent.errors++; continue }
 
@@ -193,8 +206,9 @@ export async function GET(request: Request) {
     // ── Day 3: audits created ~72h ago, follow_up_2_sent = false ─────────────
     const { data: day3Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result, access_token')
+      .select('id, name, email, company, result, access_token, unsubscribe_token')
       .eq('follow_up_2_sent', false)
+      .is('unsubscribed_at', null)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(4))
       .lte('created_at', daysAgo(3))
@@ -206,7 +220,8 @@ export async function GET(request: Request) {
       const topOpp  = opps[0] ?? null
       const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
-      const { subject, html } = buildDay3Email(audit.name ?? '', resultsUrl, topOpp)
+      const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
+      const { subject, html } = buildDay3Email(audit.name ?? '', resultsUrl, topOpp, unsubscribeUrl)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
       if (error) { console.error('[followup day3]', error); sent.errors++; continue }
 
@@ -217,8 +232,9 @@ export async function GET(request: Request) {
     // ── Day 7: audits created ~7 days ago, follow_up_3_sent = false ──────────
     const { data: day7Audits } = await supabase
       .from('audits')
-      .select('id, name, email, company, result, access_token')
+      .select('id, name, email, company, result, access_token, unsubscribe_token')
       .eq('follow_up_3_sent', false)
+      .is('unsubscribed_at', null)
       .not('email', 'is', null)
       .gte('created_at', daysAgo(8))
       .lte('created_at', daysAgo(7))
@@ -229,7 +245,8 @@ export async function GET(request: Request) {
       const waste      = (result?.estimated_annual_waste as number) ?? null
       const resultsUrl = buildResultsUrl(audit.id, audit.access_token)
 
-      const { subject, html } = buildDay7Email(audit.name ?? '', resultsUrl, waste)
+      const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
+      const { subject, html } = buildDay7Email(audit.name ?? '', resultsUrl, waste, unsubscribeUrl)
       const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
       if (error) { console.error('[followup day7]', error); sent.errors++; continue }
 
