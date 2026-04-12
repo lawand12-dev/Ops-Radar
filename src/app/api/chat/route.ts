@@ -89,7 +89,7 @@ FREE AUDIT:
 The free AI audit is a 3-minute questionnaire that diagnoses exactly \
 where an agency is losing time and money to manual work. It gives \
 them specific dollar figures, benchmark comparisons, and top \
-automation opportunities. No signup, no credit card, instant results.
+automation opportunities. Free audit, results sent to your email.
 
 STRATEGY CALL:
 Free 20-minute call with Lawand. No pitch. No commitment. Scope the \

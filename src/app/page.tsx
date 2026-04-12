@@ -40,7 +40,7 @@ const NAV_LINKS = [
 const WHAT_I_DO = [
   {
     title: 'I diagnose.',
-    desc: 'A 3-minute AI audit identifies exactly where your agency is losing time and money. Free, no signup.',
+    desc: 'A 3-minute AI audit identifies exactly where your agency is losing time and money. Free audit. Results sent to your email.',
   },
   {
     title: 'I build.',
@@ -112,7 +112,7 @@ export default function Home() {
                 <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
                 <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              No signup. No credit card.
+              3 minutes. Results to your inbox.
             </span>
             <span className="text-white/20">&middot;</span>
             <span className="flex items-center gap-1.5">
@@ -315,7 +315,7 @@ export default function Home() {
             See exactly what to automate, in 3 minutes.
           </h2>
           <p className="text-white/40 mb-10 text-lg">
-            Free audit. No signup. No credit card.
+            Free audit. Results sent to your email.
           </p>
           <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
             <Link href="/audit">Start Free Audit &rarr;</Link>
@@ -335,7 +335,7 @@ export default function Home() {
                 <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
                 <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              No signup. No credit card.
+              3 minutes. Results to your inbox.
             </span>
             <span className="text-white/20">&middot;</span>
             <span className="flex items-center gap-1.5">
