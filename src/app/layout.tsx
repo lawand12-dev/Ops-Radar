@@ -65,20 +65,20 @@ export const metadata: Metadata = {
     template: "%s — OpsRadar",
   },
   description:
-    "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+    "I build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
   openGraph: {
     type: "website",
     siteName: "OpsRadar",
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+      "I build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
     images: [{ url: "https://www.opsradar.co/logo.png", width: 1024, height: 1024, alt: "OpsRadar" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "We build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
+      "I build, host, and maintain custom automation systems for agencies. Stop wasting hours on manual work — start your free operations audit today.",
     images: ["https://www.opsradar.co/logo.png"],
   },
   icons: {
