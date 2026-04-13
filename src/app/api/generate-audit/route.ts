@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import { type AuditInput } from '../../../lib/prompts'
 import { generateAuditReport } from '../../../lib/audit-report'
-import { applyRateLimit, getClientIp } from '../../../lib/rate-limit'
+import { applyRateLimit } from '../../../lib/rate-limit'
 import { sanitizeString, sanitizeStringArray, serverErrorResponse } from '../../../lib/security'
 import {
   getServerSupabaseClient,
@@ -27,7 +27,9 @@ import {
   retrieveRelevantKnowledge,
   formatKnowledgeContext,
 } from '../../../lib/knowledge-retrieval'
-import type { NotifyPayload } from '../notify/route'
+import { Resend } from 'resend'
+import { buildNewAuditNotification } from '../../../lib/emails/new-audit-notification'
+import { CONTACT_EMAIL } from '../../../lib/constants'
 
 const RESEARCH_TIMEOUT_MS = 15_000
 const RESEARCH_CACHE_TTL_DAYS = 7
@@ -357,32 +359,55 @@ export async function POST(request: Request) {
       console.error('[generate-audit] missing server Supabase configuration')
     }
 
-    // ── Fire-and-forget notification ────────────────────────────────────────
-    const automationReadinessScore = typeof audit.automation_readiness_score === 'number'
-      ? audit.automation_readiness_score
-      : 0
-    const estimatedAnnualWaste = typeof audit.estimated_annual_waste === 'number'
-      ? audit.estimated_annual_waste
-      : null
+    // ── Pre-call briefing email ──────────────────────────────────────────
+    if (storedAuditId && accessToken) {
+      try {
+        const laborWaste = (audit.labor_arbitrage_breakdown as Record<string, unknown> | undefined)
+          ?.annual_labor_waste
+        const annualWaste = typeof laborWaste === 'number'
+          ? laborWaste
+          : typeof audit.estimated_annual_waste === 'number'
+            ? audit.estimated_annual_waste
+            : null
 
-    const notifyPayload: NotifyPayload = {
-      company,
-      name,
-      email,
-      teamSize,
-      agencyType,
-      timeWasters: automationWish,
-      automationReadinessScore,
-      estimatedAnnualWaste,
+        const topOpp = Array.isArray(audit.opportunities) && audit.opportunities.length > 0
+          ? String((audit.opportunities[0] as Record<string, unknown>).title ?? '')
+          : null
+
+        const { subject, html, text } = buildNewAuditNotification({
+          auditId: storedAuditId,
+          accessToken,
+          name,
+          email,
+          company,
+          biggestPain: automationWish || undefined,
+          tools,
+          annualWaste,
+          topOpportunity: topOpp || undefined,
+          readinessScore: typeof audit.automation_readiness_score === 'number'
+            ? audit.automation_readiness_score
+            : undefined,
+          agencyType,
+          teamSize,
+          revenueRange: revenue,
+        })
+
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        await resend.emails.send({
+          from: 'OpsRadar <onboarding@resend.dev>',
+          to: CONTACT_EMAIL,
+          subject,
+          html,
+          text,
+          replyTo: email,
+        })
+
+        console.log('[generate-audit] briefing notification sent for audit', storedAuditId)
+      } catch (notifErr) {
+        // Never block the audit on notification failure
+        console.error('[generate-audit] briefing notification failed:', notifErr)
+      }
     }
-    fetch(new URL('/api/notify', request.url).toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-forwarded-for': getClientIp(request),
-      },
-      body: JSON.stringify(notifyPayload),
-    }).catch((err) => console.error('[notify] Failed to send notification:', err))
 
     return Response.json(storedAuditId ? { id: storedAuditId, audit, accessToken } : { audit })
   } catch (err) {
