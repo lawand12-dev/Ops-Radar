@@ -1,23 +1,39 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Free Operations Audit",
+  title: 'Free Automation Audit — OpsRadar',
   description:
-    "Answer 12 questions about your agency. Get a custom AI audit showing what to automate, estimated time savings, and exact implementation blueprints. Free in under 60 seconds.",
+    'Get a 3-minute AI audit that shows exactly where your agency is losing time and money on manual operations. Free, no signup before results.',
   openGraph: {
-    title: "Free Operations Audit — OpsRadar",
+    title: 'Free Automation Audit — OpsRadar',
     description:
-      "Answer 12 questions about your agency. Get a custom AI audit showing what to automate, estimated time savings, and exact implementation blueprints. Free in under 60 seconds.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Free Operations Audit — OpsRadar" }],
+      'Get a 3-minute AI audit that shows exactly where your agency is losing time and money on manual operations.',
+    url: 'https://www.opsradar.co/audit',
+    siteName: 'OpsRadar',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'OpsRadar — Free Automation Audit',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
-    title: "Free Operations Audit — OpsRadar",
+    card: 'summary_large_image',
+    title: 'Free Automation Audit — OpsRadar',
     description:
-      "Answer 12 questions about your agency. Get a custom AI audit showing what to automate, estimated time savings, and exact implementation blueprints. Free in under 60 seconds.",
-    images: ["/og-image.png"],
+      'Get a 3-minute AI audit that shows exactly where your agency is losing time and money.',
+    images: ['/og-image.png'],
   },
 }
 
-export default function AuditLayout({ children }: { children: React.ReactNode }) {
+export default function AuditLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return <>{children}</>
 }
