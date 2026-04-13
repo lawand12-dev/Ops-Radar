@@ -15,44 +15,49 @@ export async function generateAuditPdf(
     throw new Error(`Element #${elementId} not found`)
   }
 
+  // Force all AnimatedNumber / CountUp instances to their final values
+  // so the PDF capture doesn't snapshot mid-animation zeros.
+  const animatedEls = element.querySelectorAll<HTMLElement>('[data-animated-number]')
+  animatedEls.forEach((el) => {
+    const target = el.getAttribute('data-target-value')
+    if (target) {
+      el.textContent = target
+    }
+  })
+
+  // Let the DOM update settle before capture
+  await new Promise((resolve) => requestAnimationFrame(resolve))
+
   // Convert oklch/oklab/color-mix values to RGB so html2canvas can parse them
   const restoreColors = sanitizeColorsForPdf(element)
 
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5] as [number, number, number, number],
+    filename,
+    image: { type: 'jpeg' as const, quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#000000',
+    },
+    jsPDF: {
+      unit: 'in',
+      format: 'letter',
+      orientation: 'portrait' as const,
+      compress: true,
+    },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+  }
+
   try {
-    // Force all AnimatedNumber / CountUp instances to their final values
-    // so the PDF capture doesn't snapshot mid-animation zeros.
-    const animatedEls = element.querySelectorAll<HTMLElement>('[data-animated-number]')
-    animatedEls.forEach((el) => {
-      const target = el.getAttribute('data-target-value')
-      if (target) {
-        el.textContent = target
-      }
-    })
-
-    // Let the DOM update settle before capture
-    await new Promise((resolve) => requestAnimationFrame(resolve))
-
-    const opt = {
-      margin: [0.5, 0.5, 0.5, 0.5] as [number, number, number, number],
-      filename,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#000000',
-      },
-      jsPDF: {
-        unit: 'in',
-        format: 'letter',
-        orientation: 'portrait' as const,
-        compress: true,
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-    }
-
     await html2pdf().set(opt).from(element).save()
   } finally {
     restoreColors()
+
+    // Remove any overlay/container divs html2pdf left behind.
+    // html2pdf does not clean up on error, leaving a full-viewport
+    // overlay that blocks all pointer events on the page.
+    document.querySelectorAll('.html2pdf__overlay, .html2pdf__container').forEach((el) => el.remove())
   }
 }
