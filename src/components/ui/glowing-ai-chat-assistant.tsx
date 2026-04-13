@@ -66,7 +66,7 @@ const QUICK_ACTIONS = [
   { label: 'What does OpsRadar do?', message: 'What does OpsRadar do?' },
   { label: 'How much does it cost?', message: 'How much does it cost?' },
   { label: 'How does the free audit work?', message: 'How does the free audit work?' },
-  { label: 'Book a call with Lawand', message: 'How do I book a call with Lawand?' },
+  { label: 'Start the free audit', message: 'How does the free audit work?' },
 ]
 
 // ── Extend Window for SpeechRecognition ───────────────────────────────────────
