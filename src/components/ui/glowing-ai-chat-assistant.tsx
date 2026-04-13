@@ -525,7 +525,7 @@ const FloatingAiAssistant = () => {
   const hasHistory = convList.length > 0
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 right-4 z-[60] md:bottom-6 md:right-6">
       {/* Floating 3D Glowing AI Logo */}
       <button
         className={`floating-ai-button relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 transform ${
@@ -598,18 +598,6 @@ const FloatingAiAssistant = () => {
                     </svg>
                   </button>
                 )}
-
-                {/* View all history */}
-                <Link
-                  href="/chat-history"
-                  target="_blank"
-                  title="View all chats by email"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700/50 transition-colors duration-150"
-                >
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <path d="M2 2h9v9H2V2M2 5h9M4 8h1M8 8h1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </Link>
 
                 {/* Close */}
                 <button
