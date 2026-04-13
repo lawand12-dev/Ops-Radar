@@ -515,7 +515,7 @@ function ReportLoadingExperience({
             </h1>
 
             <p className="mt-5 max-w-[640px] text-[16px] leading-[1.8] text-on-surface-variant">
-              We’re not loading a template. We’re synthesizing a custom operations diagnosis for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
+              I’m not loading a template. I’m synthesizing a custom operations diagnosis for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
             </p>
 
             <div className="mt-7 rounded-[22px] border border-white/7 bg-surface-container-low/80 p-5 backdrop-blur-xl">
@@ -2266,7 +2266,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
               boxShadow: `0 0 24px ${color}55, 0 4px 12px rgba(0,0,0,0.3)`,
             }}
           >
-            Book a call to see how we fix this →
+            Book a call to see how I fix this →
           </a>
         </div>
       </div>
@@ -2353,7 +2353,7 @@ function BuildRequestModal({
           <div className="flex items-start justify-between mb-6">
             <div>
               <h2 className="font-headline font-bold text-[19px] text-on-surface tracking-[-0.02em]">Get This Built</h2>
-              <p className="text-[12px] text-on-surface-variant mt-0.5">We&apos;ll scope it and get back to you within 24 hours.</p>
+              <p className="text-[12px] text-on-surface-variant mt-0.5">I&apos;ll scope it and get back to you within 24 hours.</p>
             </div>
             <Button onClick={onClose} variant="outline" className="h-8 w-8 p-0 rounded-full border-outline-variant/20 text-on-surface-variant hover:text-on-surface">✕</Button>
           </div>
@@ -2361,7 +2361,7 @@ function BuildRequestModal({
           {status === 'success' ? (
             <div className="py-8 text-center">
               <p className="font-headline text-[22px] font-bold text-emerald-400 mb-2">Request Received!</p>
-              <p className="text-[14px] text-on-surface-variant">We&apos;ll review your audit and reach out within 24 hours with a scoped quote.</p>
+              <p className="text-[14px] text-on-surface-variant">I&apos;ll review your audit and reach out within 24 hours with a scoped quote.</p>
               <Button onClick={onClose} className="mt-6">Close</Button>
             </div>
           ) : (
@@ -2442,18 +2442,18 @@ function InsufficientDataState() {
         </svg>
       </div>
       <h1 className="font-headline text-2xl font-bold text-on-surface max-w-lg">
-        We need more information to calculate your waste accurately
+        I need more information to calculate your waste accurately
       </h1>
       <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
         Your audit inputs were too sparse for our system to calculate meaningful waste numbers or opportunities.
         This is not a failure &mdash; it means you operate with more structure than most agencies,
-        or we need more specific answers to give you an accurate report.
+        or I need more specific answers to give you an accurate report.
       </p>
       <div className="text-left max-w-md w-full">
         <p className="text-on-surface text-[14px] font-semibold mb-3">To get a meaningful audit:</p>
         <ul className="text-on-surface-variant text-[14px] leading-relaxed space-y-2 list-disc list-inside">
           <li>Retake the audit with specific hours, tools, and pain points</li>
-          <li>Include your website URL so we can analyze your actual stack</li>
+          <li>Include your website URL so I can analyze your actual stack</li>
           <li>Describe concrete processes that consume your team&apos;s time</li>
         </ul>
       </div>
@@ -2843,7 +2843,7 @@ function ResultsContent() {
         </div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Audit Incomplete</h1>
         <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
-          We weren&apos;t able to generate enough automation opportunities from the information provided. This usually happens when the input is too sparse for a meaningful analysis.
+          I wasn&apos;t able to generate enough automation opportunities from the information provided. This usually happens when the input is too sparse for a meaningful analysis.
         </p>
         <p className="text-on-surface-variant/60 text-[13px] max-w-md">
           Try again with more detail about your team size, tools you use daily, and the specific process you want to automate.
@@ -2872,7 +2872,7 @@ function ResultsContent() {
         </div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Audit not found</h1>
         <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
-          We couldn&apos;t load your audit. Please try refreshing or contact support.
+          I couldn&apos;t load your audit. Please try refreshing or contact support.
         </p>
         <div className="flex flex-col items-center gap-3">
           <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
@@ -3194,7 +3194,7 @@ function ResultsContent() {
                 <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, #4cd7f6)' }} />
                 <div className="p-7 text-center">
                   <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-6">
-                    Your 90-day path is specific to your stack and business. We&apos;ll walk you through it on your strategy call.
+                    Your 90-day path is specific to your stack and business. I&apos;ll walk you through it on your strategy call.
                   </p>
                   <a
                     href={CALENDLY_STRATEGY_CALL_URL}
@@ -3279,10 +3279,10 @@ function ResultsContent() {
                   DONE-FOR-YOU AUTOMATION
                 </Badge>
                 <h2 className="font-headline font-extrabold text-[clamp(24px,3.5vw,40px)] tracking-[-0.03em] mb-4 text-on-surface">
-                  Want Us to Build This For You?
+                  Want Me to Build This For You?
                 </h2>
                 <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-10">
-                  We take your audit results, design the exact workflows, and build them fully custom to your stack.
+                  I take your audit results, design the exact workflows, and build them fully custom to your stack.
                   You get running automations — not a to-do list.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -3305,7 +3305,7 @@ function ResultsContent() {
                   </Button>
                 </div>
                 <p className="mt-6 text-[12px] text-on-surface-variant/30">
-                  No pitch. No commitment. We&apos;ll scope the build and give you an exact price.
+                  No pitch. No commitment. I&apos;ll scope the build and give you an exact price.
                 </p>
               </div>
             </section>

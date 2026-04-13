@@ -44,7 +44,7 @@ const WORKFLOWS = [
     categoryColor: 'text-pink-400/80',
     title: 'AI Inbound Lead Intelligence System',
     description:
-      "The most advanced lead system I build. Every inbound lead triggers parallel enrichment — we pull their company website, firmographic data, and LinkedIn profile simultaneously. An AI research agent synthesizes everything into a full lead brief, then a scoring engine grades them. Hot leads automatically get a personalized AI-written icebreaker ready for sales to send, while warm and cold leads flow into nurture sequences. Sales stops researching. Sales starts closing.",
+      "The most advanced lead system I build. Every inbound lead triggers parallel enrichment — I pull their company website, firmographic data, and LinkedIn profile simultaneously. An AI research agent synthesizes everything into a full lead brief, then a scoring engine grades them. Hot leads automatically get a personalized AI-written icebreaker ready for sales to send, while warm and cold leads flow into nurture sequences. Sales stops researching. Sales starts closing.",
     image: '/workflows/workflow-5.png',
     stats: 'Saves ~15 hours per week · 8 tool integrations · Full research in under 30 seconds',
     flow: 'Webhook → Normalize → Parallel Enrichment → Merge → AI Research → AI Scoring → Hot/Cold Router → Personalized Icebreaker or Nurture',
