@@ -29,7 +29,7 @@ type ConversationBootstrapResponse = {
 function makeWelcome(): Message {
   return {
     role: 'assistant',
-    content: "Hi! I'm the OpsRadar assistant. I can answer questions about what we build, how much it costs, and how our done-for-you automation service works.\n\nOr just ask me anything about agency automation.",
+    content: "Hi! I'm the OpsRadar assistant. I can answer questions about what I build, how much it costs, and how my done-for-you automation service works.\n\nOr just ask me anything about agency automation.",
     timestamp: new Date().toISOString(),
   }
 }
@@ -405,7 +405,7 @@ const FloatingAiAssistant = () => {
         ...prev.slice(0, -1),
         {
           role: 'assistant',
-          content: "Sorry, I couldn't connect right now. You can email us or start the free audit to get in touch.",
+          content: "Sorry, I couldn't connect right now. You can email me or start the free audit to get in touch.",
           timestamp: new Date().toISOString(),
         },
       ])
