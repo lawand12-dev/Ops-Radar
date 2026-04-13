@@ -839,6 +839,8 @@ function MagicMomentPanel({
   annualWaste,
   opportunities,
   topRisk,
+  hasRealWasteValue = true,
+  topOpportunityTitle = null,
 }: {
   company: string
   headline: string
@@ -847,6 +849,8 @@ function MagicMomentPanel({
   annualWaste: number
   opportunities: Opportunity[]
   topRisk: string
+  hasRealWasteValue?: boolean
+  topOpportunityTitle?: string | null
 }) {
   const [step, setStep] = useState(0)
   const tools = collectSignalTools(opportunities)
@@ -899,11 +903,24 @@ function MagicMomentPanel({
                 What the system sees instantly
               </p>
               <h2 className="font-headline text-[clamp(23px,3.2vw,40px)] font-extrabold leading-[1.08] tracking-[-0.035em] text-on-surface">
-                {company || 'Your agency'} is leaking{' '}
-                <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
-                  {annualWasteDisplay}
-                </span>{' '}
-                a year through manual drag that now has a build path.
+                {hasRealWasteValue ? (
+                  <>
+                    {company || 'Your agency'} is leaking{' '}
+                    <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                      {annualWasteDisplay}
+                    </span>{' '}
+                    a year through manual drag that now has a build path.
+                  </>
+                ) : (
+                  <>
+                    I analyzed {company || 'your'} operations.{' '}
+                    <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                      {topOpportunityTitle
+                        ? `Your highest-leverage build is "${topOpportunityTitle}".`
+                        : 'Your highest-leverage build is below.'}
+                    </span>
+                  </>
+                )}
               </h2>
             </div>
 
@@ -1020,12 +1037,14 @@ function TransformationStrip({
   topRisk,
   hoursWeekly,
   annualWaste,
+  hasRealWasteValue = true,
 }: {
   company: string
   leadOpportunity: Opportunity | null
   topRisk: string
   hoursWeekly: number
   annualWaste: number
+  hasRealWasteValue?: boolean
 }) {
   const tools = collectSignalTools(leadOpportunity ? [leadOpportunity] : []).slice(0, 4)
   const yearlyDisplay = fmtMoneyExact(annualWaste)
@@ -1037,7 +1056,9 @@ function TransformationStrip({
   ]
   const futureBullets = [
     leadOpportunity?.automated_process || `${leadOpportunity?.title ?? 'The first high-leverage workflow'} runs through one connected system instead of memory, tabs, and manual follow-up.`,
-    `${hoursWeekly} hours/week come back to the team, with up to ${yearlyDisplay} in annual capacity unlocked.`,
+    hasRealWasteValue
+      ? `${hoursWeekly} hours/week come back to the team, with up to ${yearlyDisplay} in annual capacity unlocked.`
+      : `${hoursWeekly} hours/week come back to the team — freeing capacity for higher-leverage work.`,
     `The highest-pressure updates move automatically across ${tools.length > 0 ? tools.join(', ') : 'the core tools'} with traceability and fewer misses.`,
   ]
 
@@ -2720,6 +2741,8 @@ function ResultsContent() {
   const hoursCapped = rawHoursSum > maxBelievableSaved
 
   const annualWaste = annualWasteValue ?? 0
+  const hasRealWasteValue = typeof annualWasteValue === 'number' && annualWasteValue > 0
+  const topOpportunityTitle = currentAudit?.opportunities?.[0]?.title ?? null
 
   if (rawHoursSum > maxBelievableSaved) {
     devLog(`[results] hours capped from ${rawHoursSum} to ${maxBelievableSaved} for team size ${auditContext?.teamSize ?? 'unknown'}`)
@@ -2729,7 +2752,7 @@ function ResultsContent() {
   const removedTools  = toolsAnalysis.redundant_tools ?? []
   const hasStackDetails = addedTools.length > 0 || removedTools.length > 0 || Boolean(toolsAnalysis.biggest_friction_point)
   const hasBenchmarks = Boolean(currentAudit?.benchmarks) && sectionShouldRender('benchmarks', currentAudit, auditContext)
-  const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown)
+  const hasLaborBreakdown = Boolean(currentAudit?.labor_arbitrage_breakdown) && sectionShouldRender('labor-arbitrage', currentAudit, auditContext)
   const hasContextSwitching = Boolean(currentAudit?.context_switching_analysis) && sectionShouldRender('context-switching', currentAudit, auditContext)
   const hasOnboardingAssessment = Boolean(currentAudit?.onboarding_assessment) && sectionShouldRender('onboarding', currentAudit, auditContext)
   const hasStack      = (toolsAnalysis.current_stack_rating > 0 || hasStackDetails) && sectionShouldRender('stack-analysis', currentAudit, auditContext)
@@ -2998,6 +3021,8 @@ function ResultsContent() {
             annualWaste={annualWaste}
             opportunities={opportunities}
             topRisk={topRisk}
+            hasRealWasteValue={hasRealWasteValue}
+            topOpportunityTitle={topOpportunityTitle}
           />
 
           <TransformationStrip
@@ -3006,6 +3031,7 @@ function ResultsContent() {
             topRisk={topRisk}
             hoursWeekly={hoursWeekly}
             annualWaste={annualWaste}
+            hasRealWasteValue={hasRealWasteValue}
           />
 
           <ForensicMatchPanel
@@ -3024,12 +3050,28 @@ function ResultsContent() {
               </p>
             </div>
             <div className="w-px self-stretch bg-outline-variant/20" />
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Waste</p>
-              <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
-                <AnimatedNumber target={annualWaste} prefix="$" duration={1600} />
-              </p>
-            </div>
+            {hasRealWasteValue ? (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Waste</p>
+                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                  <AnimatedNumber target={annualWaste} prefix="$" duration={1600} />
+                </p>
+              </div>
+            ) : hoursWeekly > 0 ? (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Hours Recovered/Week</p>
+                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                  <AnimatedNumber target={hoursWeekly} suffix="h" duration={1600} />
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Opportunities Found</p>
+                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                  {opportunities.length}
+                </p>
+              </div>
+            )}
             <div className="w-px self-stretch bg-outline-variant/20" />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Opportunities Found</p>
