@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
@@ -207,12 +206,6 @@ export default function WorkflowsPage() {
             <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
-            <Link
-              href={CALENDLY_STRATEGY_CALL_URL}
-              className="text-sm text-white/40 hover:text-white/60 transition-colors"
-            >
-              Or book a 20-min call
-            </Link>
           </div>
         </div>
       </section>

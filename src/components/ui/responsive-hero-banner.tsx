@@ -141,14 +141,16 @@ export default function ResponsiveHeroBanner({
                 </Link>
               </Button>
 
-              <Link
-                href={secondaryButtonHref}
-                className="hero-secondary-button inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
-                onClick={() => track('call_booking_clicked')}
-              >
-                {showSecondaryIcon ? <CirclePlay className="h-4 w-4" /> : null}
-                {secondaryButtonText}
-              </Link>
+              {secondaryButtonText ? (
+                <Link
+                  href={secondaryButtonHref}
+                  className="hero-secondary-button inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
+                  onClick={() => track('call_booking_clicked')}
+                >
+                  {showSecondaryIcon ? <CirclePlay className="h-4 w-4" /> : null}
+                  {secondaryButtonText}
+                </Link>
+              ) : null}
             </div>
 
             <div className="mt-16">

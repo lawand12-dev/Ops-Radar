@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import FaqAccordion from '../components/FaqAccordion'
 import { Button } from '<npm>/components/ui/button'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
@@ -148,11 +147,6 @@ export default function ServicesPage() {
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
-            <Button asChild variant="outline" className="px-8 py-4 h-auto rounded-lg font-semibold text-white/70 border-white/10 hover:bg-white/5 hover:border-white/20 bg-transparent">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a 20-min Call
-              </a>
-            </Button>
           </div>
         </div>
       </section>
@@ -250,11 +244,6 @@ export default function ServicesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
               <Link href="/audit">Start Free Audit &rarr;</Link>
-            </Button>
-            <Button asChild variant="outline" className="px-8 py-4 h-auto rounded-lg font-semibold text-white/70 border-white/10 hover:bg-white/5 hover:border-white/20 bg-transparent">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a 20-min Call
-              </a>
             </Button>
           </div>
         </div>

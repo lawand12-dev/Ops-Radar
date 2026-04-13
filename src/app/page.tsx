@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { Button } from '<npm>/components/ui/button'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import BeamsBackground from '<npm>/components/ui/beams-background'
@@ -90,8 +89,8 @@ export default function Home() {
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
-          secondaryButtonText="Book a 20-min call"
-          secondaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
+          secondaryButtonText=""
+          secondaryButtonHref=""
           showSecondaryIcon={false}
           partnersTitle=""
           partners={[]}
@@ -99,6 +98,9 @@ export default function Home() {
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 -mt-8">
+          <p className="text-[13px] italic text-white/30 mb-4">
+            &ldquo;I only take calls with agencies who&apos;ve completed the audit. It saves us both time.&rdquo;
+          </p>
           <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-[11px] text-white/40">
             <span className="flex items-center gap-1.5">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
