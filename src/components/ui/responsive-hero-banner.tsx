@@ -67,7 +67,7 @@ export default function ResponsiveHeroBanner({
   badgeText = "Done-for-you automation systems for busy agency teams",
   title = "Automation for Agencies",
   titleLine2 = "Without Another Tool to Manage",
-  description = "We design, host, and maintain the workflows behind lead routing, onboarding, reporting, and AI handoffs so your team can operate faster without hiring internal ops engineers.",
+  description = "I design, host, and maintain the workflows behind lead routing, onboarding, reporting, and AI handoffs so your team can operate faster without hiring internal ops engineers.",
   primaryButtonText = "Start Your Free Audit",
   primaryButtonHref = "/audit",
   showPrimaryArrowIcon = true,
