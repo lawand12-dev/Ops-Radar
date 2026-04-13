@@ -3,7 +3,6 @@
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 
-import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 type Plan = {
   name: string
@@ -28,7 +27,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '14-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a call to scope it',
+    cta: 'Start Free Audit',
     highlighted: false,
   },
   {
@@ -44,7 +43,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '30-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a call to scope it',
+    cta: 'Start Free Audit',
     highlighted: true,
   },
   {
@@ -61,7 +60,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '60-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a call to scope it',
+    cta: 'Start Free Audit',
     highlighted: false,
   },
 ]
@@ -81,7 +80,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Email support',
       'Cancel anytime',
     ],
-    cta: 'Book a call to start',
+    cta: 'Start Free Audit',
     highlighted: false,
   },
   {
@@ -99,7 +98,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Direct founder access',
       'Cancel anytime',
     ],
-    cta: 'Book a call to start',
+    cta: 'Start Free Audit',
     highlighted: true,
   },
 ]
@@ -170,10 +169,8 @@ function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </div>
 
-      <a
-        href={CALENDLY_STRATEGY_CALL_URL}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href="/audit"
         className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-colors text-center block ${
           plan.highlighted
             ? 'bg-white text-black hover:bg-white/90'
@@ -181,7 +178,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         }`}
       >
         {plan.cta}
-      </a>
+      </Link>
     </div>
   )
 }
@@ -211,7 +208,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            All builds include a free strategy call to scope the exact work. No commitment.
+            Take the free audit first — it tells you exactly what to build and which tier fits.
           </p>
         </section>
 
@@ -236,7 +233,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            All builds include a free strategy call to scope the exact work. No commitment.
+            Take the free audit first — it tells you exactly what to build and which tier fits.
           </p>
         </section>
 
