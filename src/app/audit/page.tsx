@@ -394,7 +394,7 @@ function InsightNote({ text }: { text: string }) {
       style={{ background: 'rgba(173,198,255,0.05)', borderColor: 'rgba(173,198,255,0.12)' }}
     >
       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
-        Why We Ask
+        Why I Ask
       </p>
       <p className="text-[13px] leading-[1.65] text-on-surface-variant">
         {text}
@@ -830,7 +830,7 @@ export default function AuditPage() {
             <>
               <StepHeader
                 question="Let's start with the basics"
-                hint="I'll send your full audit report to your inbox and we'll walk through it on a call if you want — no spam, no list."
+                hint="I'll send your full audit report to your inbox and I'll walk through it on a call if you want — no spam, no list."
               />
               <div className="space-y-4">
                 <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
@@ -883,10 +883,10 @@ export default function AuditPage() {
           {currentStep === 1 && (
             <>
               <StepHeader
-                question="What kind of business are we looking at?"
-                hint="We tailor benchmarks, workflow assumptions, and stack recommendations around your operating model."
+                question="What kind of business are you running?"
+                hint="I tailor benchmarks, workflow assumptions, and stack recommendations around your operating model."
               />
-              <InsightNote text="A recruiting shop, a creative studio, and an e-commerce team break in totally different places. This is where we stop the audit from feeling generic." />
+              <InsightNote text="A recruiting shop, a creative studio, and an e-commerce team break in totally different places. This is where I stop the audit from feeling generic." />
               <SingleSelect
                 options={AGENCY_TYPES}
                 value={answers.agencyType}
@@ -902,7 +902,7 @@ export default function AuditPage() {
                 </div>
               )}
               {needsAgencyTypeDetail && answers.agencyTypeOther.trim().length > 0 && answers.agencyTypeOther.trim().length < 3 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so we can tailor the audit.</p>
+                <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so I can tailor the audit.</p>
               )}
             </>
           )}
@@ -966,7 +966,7 @@ export default function AuditPage() {
                 </div>
               )}
               {needsToolDetail && answers.toolsOther.trim().length > 0 && answers.toolsOther.trim().length < 3 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Name the extra tool so we can factor it into the diagnosis.</p>
+                <p className="mt-2 text-xs text-on-surface-variant/50">Name the extra tool so I can factor it into the diagnosis.</p>
               )}
               {needsToolSignalFollowup && (
                 <div className="mt-6 rounded-[20px] border border-primary/12 bg-primary/5 p-5">
@@ -1102,9 +1102,9 @@ export default function AuditPage() {
           {currentStep === 12 && (
             <>
               <StepHeader
-                question="If we could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
+                question="If I could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
               />
-              <InsightNote text="This gives the diagnosis emotional contrast. We want to know what relief, speed, or growth would actually look like on the other side." />
+              <InsightNote text="This gives the diagnosis emotional contrast. I want to know what relief, speed, or growth would actually look like on the other side." />
               <TextArea
                 value={answers.twoWeekChange}
                 onChange={(v) => setAnswers((p) => ({ ...p, twoWeekChange: v }))}
