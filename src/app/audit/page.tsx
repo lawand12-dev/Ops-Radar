@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import type { LeadInfo } from '../components/EmailCaptureModal'
 import HoneypotField from '../components/HoneypotField'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
-import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
@@ -785,7 +784,6 @@ export default function AuditPage() {
               </span>
             </Link>
             <div className="flex items-center gap-2">
-              <ThemeToggle />
               <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
                 {currentStep + 1} / {TOTAL_STEPS}
               </div>

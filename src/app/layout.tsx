@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "<npm>/lib/constants";
 import "./globals.css";
 import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
-import ChatNotification from "./components/ChatNotification";
 import MobileDock from "<npm>/components/ui/mobile-dock";
 
 const sansFont = localFont({
@@ -41,23 +39,6 @@ const serifFont = localFont({
   variable: "--font-serif-loaded",
   display: "swap",
 });
-
-const themeInitScript = `
-  (() => {
-    try {
-      const storageKey = 'opsradar-theme';
-      const storedTheme = window.localStorage.getItem(storageKey);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = storedTheme === 'light' || storedTheme === 'dark'
-        ? storedTheme
-        : (prefersDark ? 'dark' : 'light');
-
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-    } catch (_) {
-      document.documentElement.classList.remove('dark');
-    }
-  })();
-`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? SITE_URL),
@@ -105,17 +86,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={`h-full antialiased ${sansFont.variable} ${serifFont.variable}`}
+      className={`dark h-full antialiased ${sansFont.variable} ${serifFont.variable}`}
     >
-      <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeInitScript}
-        </Script>
-      </head>
       <body className="min-h-full flex flex-col">
         {children}
-        <ChatNotification />
         <FloatingAiAssistant />
         <MobileDock />
         <Analytics />

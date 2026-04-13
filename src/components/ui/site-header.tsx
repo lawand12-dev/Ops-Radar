@@ -6,7 +6,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ArrowUpRight, Menu, X } from "lucide-react"
 
-import ThemeToggle from "<npm>/components/theme/ThemeToggle"
 import { cn } from "<npm>/lib/utils"
 
 export interface SiteNavLink {
@@ -113,8 +112,6 @@ export default function SiteHeader({
                   )
                 })}
 
-                <ThemeToggle className="ml-1" showLabel />
-
                 <Link
                   href={ctaHref}
                   className="header-cta ml-1 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
@@ -126,7 +123,6 @@ export default function SiteHeader({
             </nav>
 
             <div className="flex items-center gap-2 lg:hidden">
-              <ThemeToggle />
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((open) => !open)}

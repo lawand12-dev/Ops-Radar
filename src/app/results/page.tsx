@@ -17,7 +17,6 @@ import { devLog, devWarn } from '<npm>/lib/dev-log'
 import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
-import ThemeToggle from '<npm>/components/theme/ThemeToggle'
 import Footer from '<npm>/components/Footer'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
@@ -2922,7 +2921,6 @@ function ResultsContent() {
             </Link>
 
             <div className="flex items-center gap-2.5">
-              <ThemeToggle />
               <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
