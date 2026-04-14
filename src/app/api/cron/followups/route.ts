@@ -197,7 +197,7 @@ export async function GET(request: Request) {
 
       const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
       const { subject, html } = buildDay1Email(audit.name ?? '', audit.company ?? '', resultsUrl, score, waste, unsubscribeUrl)
-      const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
+      const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html })
       if (error) { console.error('[followup day1]', error); sent.errors++; continue }
 
       await supabase.from('audits').update({ follow_up_1_sent: true }).eq('id', audit.id)
@@ -223,7 +223,7 @@ export async function GET(request: Request) {
 
       const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
       const { subject, html } = buildDay3Email(audit.name ?? '', resultsUrl, topOpp, unsubscribeUrl)
-      const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
+      const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html })
       if (error) { console.error('[followup day3]', error); sent.errors++; continue }
 
       await supabase.from('audits').update({ follow_up_2_sent: true }).eq('id', audit.id)
@@ -248,7 +248,7 @@ export async function GET(request: Request) {
 
       const unsubscribeUrl = `${BASE_URL}/unsubscribe?token=${encodeURIComponent(audit.unsubscribe_token ?? '')}`
       const { subject, html } = buildDay7Email(audit.name ?? '', resultsUrl, waste, unsubscribeUrl)
-      const { error } = await resend.emails.send({ from: 'OpsRadar <onboarding@resend.dev>', to: audit.email, subject, html })
+      const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html })
       if (error) { console.error('[followup day7]', error); sent.errors++; continue }
 
       await supabase.from('audits').update({ follow_up_3_sent: true }).eq('id', audit.id)
