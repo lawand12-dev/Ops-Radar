@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     const { error: emailError } = await resend.emails.send({
-      from: 'OpsRadar <onboarding@resend.dev>',
+      from: 'OpsRadar <notifications@opsradar.co>',
       to,
       subject: `Build Request — ${automation_title}`,
       html: `

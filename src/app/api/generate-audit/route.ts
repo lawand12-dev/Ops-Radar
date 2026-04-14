@@ -394,7 +394,7 @@ export async function POST(request: Request) {
 
         const resend = new Resend(process.env.RESEND_API_KEY)
         await resend.emails.send({
-          from: 'OpsRadar <onboarding@resend.dev>',
+          from: 'OpsRadar <notifications@opsradar.co>',
           to: CONTACT_EMAIL,
           subject,
           html,

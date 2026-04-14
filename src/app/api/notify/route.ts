@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       : 'N/A'
 
     const { error } = await resend.emails.send({
-      from: 'OpsRadar <onboarding@resend.dev>',
+      from: 'OpsRadar <notifications@opsradar.co>',
       to,
       subject: `New OpsRadar Audit — ${payload.company}`,
       html: `

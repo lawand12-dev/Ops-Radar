@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     const { error } = await resend.emails.send({
-      from: 'OpsRadar <onboarding@resend.dev>',
+      from: 'OpsRadar <notifications@opsradar.co>',
       to,
       subject: `🔥 Chat lead — ${visitorName ?? visitorEmail}`,
       html: `
