@@ -393,7 +393,9 @@ export async function POST(request: Request) {
         })
 
         const resend = new Resend(process.env.RESEND_API_KEY)
-        await resend.emails.send({
+
+        // Internal briefing email to sales/ops
+        const { error: briefingError } = await resend.emails.send({
           from: 'OpsRadar <notifications@opsradar.co>',
           to: CONTACT_EMAIL,
           subject,
@@ -402,10 +404,61 @@ export async function POST(request: Request) {
           replyTo: email,
         })
 
-        console.log('[generate-audit] briefing notification sent for audit', storedAuditId)
+        if (briefingError) {
+          console.error('[generate-audit] briefing email failed:', JSON.stringify(briefingError))
+        } else {
+          console.log('[generate-audit] briefing notification sent for audit', storedAuditId)
+        }
+
+        // Immediate results email to the lead
+        const resultsUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.opsradar.co'}/results?id=${encodeURIComponent(storedAuditId)}&token=${encodeURIComponent(accessToken)}`
+        const scoreColor = typeof audit.automation_readiness_score === 'number'
+          ? (audit.automation_readiness_score >= 60 ? '#10b981' : audit.automation_readiness_score >= 30 ? '#f59e0b' : '#ef4444')
+          : '#3b82f6'
+
+        const { error: leadEmailError } = await resend.emails.send({
+          from: 'OpsRadar <notifications@opsradar.co>',
+          to: email,
+          subject: `${name ? name.split(' ')[0] + ', your' : 'Your'} OpsRadar audit is ready`,
+          html: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#060c1e;color:#eef2ff;border-radius:14px;overflow:hidden;">
+              <div style="background:linear-gradient(135deg,#0f1e45,#060c1e);padding:32px 32px 24px;border-bottom:1px solid rgba(255,255,255,0.07);">
+                <p style="margin:0 0 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.3);">OpsRadar</p>
+                <h1 style="margin:0;font-size:22px;font-weight:700;color:#eef2ff;">Your automation audit is ready${company ? `, ${company}` : ''}</h1>
+              </div>
+              <div style="padding:28px 32px;">
+                <p style="margin:0 0 20px;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.65;">
+                  Hey${name ? ' ' + name.split(' ')[0] : ''}, your OpsRadar report identified exactly where your team is losing time — and what to fix first.
+                </p>
+                <div style="display:flex;gap:12px;margin-bottom:24px;">
+                  ${typeof audit.automation_readiness_score === 'number' ? `<div style="flex:1;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;text-align:center;">
+                    <p style="margin:0 0 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);">Readiness Score</p>
+                    <p style="margin:0;font-size:32px;font-weight:800;color:${scoreColor};">${audit.automation_readiness_score}<span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.25);">/100</span></p>
+                  </div>` : ''}
+                  ${annualWaste ? `<div style="flex:1;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:16px;text-align:center;">
+                    <p style="margin:0 0 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);">Annual Savings Potential</p>
+                    <p style="margin:0;font-size:32px;font-weight:800;color:#fbbf24;">$${annualWaste >= 1000 ? (annualWaste / 1000).toFixed(0) + 'K' : annualWaste}</p>
+                  </div>` : ''}
+                </div>
+                <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">Your report shows where time, money, and team energy are leaking — plus the highest-urgency fixes to prioritize.</p>
+                <a href="${resultsUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 0 24px rgba(59,130,246,0.3);">View My Full Report →</a>
+                <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;">Questions? Reply to this email — it goes straight to a human.</p>
+              </div>
+              <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.15);">OpsRadar · <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.opsradar.co'}" style="color:rgba(255,255,255,0.2);">opsradar.co</a></p>
+              </div>
+            </div>`,
+          replyTo: CONTACT_EMAIL,
+        })
+
+        if (leadEmailError) {
+          console.error('[generate-audit] lead results email failed:', JSON.stringify(leadEmailError))
+        } else {
+          console.log('[generate-audit] results email sent to lead', email)
+        }
       } catch (notifErr) {
         // Never block the audit on notification failure
-        console.error('[generate-audit] briefing notification failed:', notifErr)
+        console.error('[generate-audit] email sending failed:', notifErr)
       }
     }
 
