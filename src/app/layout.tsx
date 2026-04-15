@@ -47,13 +47,13 @@ export const metadata: Metadata = {
     template: "%s — OpsRadar",
   },
   description:
-    "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+    "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
   openGraph: {
     type: "website",
     siteName: "OpsRadar",
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
     url: SITE_URL,
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Done-For-You Automation for Agencies" }],
     locale: "en_US",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
     images: ["/og-image.png"],
     creator: "@ops_radar",
   },

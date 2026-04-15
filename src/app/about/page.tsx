@@ -40,7 +40,7 @@ const NAV_LINKS = [
 const WHY_TRUST = [
   {
     title: 'One person, full accountability.',
-    desc: 'I scope it, build it, host it, and maintain it. There\u2019s no handoff between departments. If something breaks, I\u2019m the one who fixes it \u2014 and I know the system because I built it.',
+    desc: 'I scope it, build it, and maintain it inside your n8n account. There\u2019s no handoff between departments. If something breaks, I\u2019m the one who fixes it \u2014 and I know the system because I built it.',
   },
   {
     title: 'Agency experience, not just technical skill.',
@@ -48,7 +48,7 @@ const WHY_TRUST = [
   },
   {
     title: 'No per-task fees. No vendor lock-in.',
-    desc: 'Everything runs on n8n \u2014 open-source, self-hosted on my infrastructure. You own your workflows. If you ever want to leave, I export everything and document it. You never lose access.',
+    desc: 'Everything runs on n8n \u2014 in your own account, not mine. You own your workflows from day one. If you ever want to leave, you keep the workflows and the documentation. I just stop maintaining them.',
   },
   {
     title: 'AI-assisted, human-verified.',
@@ -99,7 +99,7 @@ export default function AboutPage() {
               </p>
               <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
                 OpsRadar is not a SaaS tool. It&apos;s not an agency. It&apos;s one
-                operator who builds, hosts, and maintains your automation
+                operator who builds and maintains your automation
                 layer so you can focus on clients.
               </p>
             </div>

@@ -8,7 +8,7 @@ import Footer from '<npm>/components/Footer'
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
   description:
-    'Transparent pricing for done-for-you n8n automation builds. Starting at $1,500. Custom workflows, hosted and maintained.',
+    'Transparent pricing for done-for-you n8n automation builds. Starting at $1,500. Custom workflows, built in your n8n account and maintained by me.',
   openGraph: {
     title: 'Pricing — OpsRadar',
     description:
