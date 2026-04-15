@@ -88,7 +88,7 @@ const PROCESS_STEPS = [
   {
     n: '05',
     title: 'It runs 24/7.',
-    desc: 'I deploy to my hosted infrastructure, set up monitoring, and maintain the workflow long-term. If something breaks at 3am — I fix it, not you.',
+    desc: 'I deploy inside your n8n account, set up monitoring, and maintain the workflow long-term. If something breaks at 3am — I fix it, not you.',
   },
 ]
 
@@ -115,7 +115,7 @@ const FAQS = [
   },
   {
     q: 'What happens if I cancel?',
-    a: 'Cancel anytime with 30 days notice. I export your workflows and document them fully so you can self-host or hand them to your team. You never lose access.',
+    a: 'Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. I just stop maintaining them.',
   },
 ]
 
@@ -140,7 +140,7 @@ export default function ServicesPage() {
             What specifically do I build?
           </h1>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            Six types of automation. All on n8n. All hosted, monitored, and
+            Six types of automation. All on n8n. All built, monitored, and
             maintained by me. You describe the problem \u2014 I handle everything else.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
