@@ -10,17 +10,17 @@ import Footer from '<npm>/components/Footer'
 export const metadata: Metadata = {
   title: "OpsRadar — Done-For-You Automation for Agencies",
   description:
-    "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+    "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and maintenance.",
   openGraph: {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and maintenance.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Done-For-You Automation for Agencies" }],
   },
   twitter: {
     title: "OpsRadar — Done-For-You Automation for Agencies",
     description:
-      "I build, host, and maintain custom n8n automations for agencies. You tell me what's broken. I fix it. You never touch a workflow.",
+      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and maintenance.",
     images: ["/og-image.png"],
   },
 }
@@ -44,11 +44,11 @@ const WHAT_I_DO = [
   },
   {
     title: 'I build.',
-    desc: 'Custom n8n workflows built on my infrastructure, tested, documented, delivered in days.',
+    desc: 'Custom n8n workflows built in your n8n account, tested, documented, delivered in days. You own it from day one.',
   },
   {
     title: 'I maintain.',
-    desc: 'I host, monitor, and fix broken workflows. You never touch the automation layer.',
+    desc: 'I monitor and fix broken workflows. You never touch the automation layer.',
   },
 ]
 
@@ -59,7 +59,7 @@ const WHY_US = [
   },
   {
     title: 'Zapier charges per task. n8n doesn\u2019t.',
-    desc: 'Your workflows run on my infrastructure with zero per-task fees. Run 100 or 100,000 tasks. Same cost.',
+    desc: 'Your workflows run on your own n8n — a single predictable monthly cost from n8n, whether you run 100 tasks or 100,000.',
   },
   {
     title: 'AI builds fast. I verify every line.',
@@ -85,7 +85,7 @@ export default function Home() {
           badgeText="Done-for-you agency automation"
           title="Your agency's operations,"
           titleLine2="running on autopilot."
-          description="I'm Lawand. I build, host, and maintain custom automations for agencies using n8n. You tell me what's broken. I fix it. You never touch a workflow."
+          description="I'm Lawand. I build and maintain custom automations for agencies using n8n. You own the workflow in your n8n account. I handle the building and the maintenance. You never touch the automation layer."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
