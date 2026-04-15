@@ -10,6 +10,8 @@ export type FunnelEventName =
   | 'build_request_success'
   | 'unlock_email_requested'
   | 'unlock_email_sent'
+  | 'email_gate_shown'
+  | 'email_gate_passed'
 
 export type FunnelEventPayload = {
   event: FunnelEventName
