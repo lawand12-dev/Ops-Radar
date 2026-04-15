@@ -70,7 +70,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Care',
     price: '$400',
     period: '/month',
-    description: 'I monitor it. I fix it if it breaks.',
+    description: 'After your build is delivered, I monitor your workflow and fix it if it breaks.',
     features: [
       'Monitoring of all your workflows',
       'Bug fixes within 48 hours',
@@ -85,7 +85,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Active',
     price: '$800',
     period: '/month',
-    description: 'Everything in Care, plus small tweaks as you need them.',
+    description: 'Everything in Care, plus small tweaks and improvements as you ask. Up to 5 hours of my time per month.',
     features: [
       'Everything in Care',
       'Up to 5 hours/month of tweaks and improvements',
@@ -100,7 +100,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Partner',
     price: '$1,500',
     period: '/month',
-    description: 'Full operations partner. I become your automation team.',
+    description: 'Everything in Active, plus 1 new workflow per quarter is included in the price. Anything beyond that is a separate build.',
     features: [
       'Everything in Active',
       '1 new workflow per quarter included',
@@ -233,8 +233,8 @@ export default function OpsRadarPricing() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
               I maintain it. You never touch a workflow.
             </h2>
-            <p className="text-lg text-white/40">
-              You never touch a workflow.
+            <p className="text-lg text-white/40 max-w-2xl mx-auto">
+              Monthly retainers are for ongoing care of a workflow I&apos;ve already built for you. They begin after delivery and don&apos;t include new builds — except where noted. New builds are scoped and priced separately using the build tiers above.
             </p>
           </div>
 
