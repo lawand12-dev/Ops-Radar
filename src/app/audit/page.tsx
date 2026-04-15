@@ -419,11 +419,22 @@ export default function AuditPage() {
       sessionId: id,
     })
   }, [])
+  useEffect(() => {
+    if (currentStep === 6 && !emailGateShownRef.current) {
+      emailGateShownRef.current = true
+      sendFunnelEvent({
+        event: 'email_gate_shown',
+        sessionId: sessionIdRef.current,
+        step: 6,
+      })
+    }
+  }, [currentStep])
   const [animKey, setAnimKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0)
   const [loadingError, setLoadingError] = useState('')
-  // Lead capture fields (collected upfront in Step 1)
+  const emailGateShownRef = useRef(false)
+  // Lead capture fields (collected at Step 6)
   const [leadName, setLeadName] = useState('')
   const [leadEmail, setLeadEmail] = useState('')
   const [leadCompany, setLeadCompany] = useState('')
@@ -501,19 +512,19 @@ export default function AuditPage() {
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
-        return leadName.trim().length > 0 && isValidEmail && leadCompany.trim().length > 0
-      case 1:
         return !!answers.agencyType && (!needsAgencyTypeDetail || answers.agencyTypeOther.trim().length >= 3)
-      case 2:  return !!answers.teamSize
-      case 3:  return !!answers.revenue
-      case 4:  return !!answers.activeClients
-      case 5:
+      case 1:  return !!answers.teamSize
+      case 2:  return !!answers.revenue
+      case 3:  return !!answers.activeClients
+      case 4:
         return (
           answers.tools.length > 0 &&
           (!needsToolDetail || answers.toolsOther.trim().length >= 3) &&
           (!needsToolSignalFollowup || answers.toolSignals.length > 0 || answers.toolSignalsDetail.trim().length >= 10)
         )
-      case 6:  return !!answers.operationsState
+      case 5:  return !!answers.operationsState
+      case 6:
+        return leadName.trim().length > 0 && isValidEmail && leadCompany.trim().length > 0 && companyWebsite.trim().length === 0
       case 7:  return !!answers.hoursLost
       case 8:  return !!answers.breakageResponse
       case 9:  return answers.topPainProcess.trim().length >= 20
@@ -538,6 +549,14 @@ export default function AuditPage() {
         '/api/audit-step',
         JSON.stringify({ sessionId: sessionIdRef.current, step: nextStep }),
       )
+    }
+    // Fire email gate passed when advancing from Step 6 (lead capture)
+    if (currentStep === 6 && sessionIdRef.current) {
+      sendFunnelEvent({
+        event: 'email_gate_passed',
+        sessionId: sessionIdRef.current,
+        step: 6,
+      })
     }
     navigate('forward')
     setCurrentStep(nextStep)
@@ -823,12 +842,12 @@ export default function AuditPage() {
           className={direction === 'forward' ? 'step-forward' : 'step-backward'}
           style={{ willChange: 'transform, opacity' }}
         >
-          {/* Step 1 — Lead capture */}
-          {currentStep === 0 && (
+          {/* Step 6 — Lead capture */}
+          {currentStep === 6 && (
             <>
               <StepHeader
-                question="Let's start with the basics"
-                hint="I'll send your full audit report to your inbox and I'll walk through it on a call if you want — no spam, no list."
+                question="Your audit is being prepared — where should I send it?"
+                hint="I'll deliver your full report to your inbox in about 3 minutes. No spam, no list."
               />
               <div className="space-y-4">
                 <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
@@ -877,8 +896,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 2 — Agency type */}
-          {currentStep === 1 && (
+          {/* Step 0 — Agency type */}
+          {currentStep === 0 && (
             <>
               <StepHeader
                 question="What kind of business are you running?"
@@ -905,8 +924,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 3 — Team size */}
-          {currentStep === 2 && (
+          {/* Step 1 — Team size */}
+          {currentStep === 1 && (
             <>
               <StepHeader question="How large is your team?" />
               <SingleSelect
@@ -917,8 +936,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 4 — Revenue */}
-          {currentStep === 3 && (
+          {/* Step 2 — Revenue */}
+          {currentStep === 2 && (
             <>
               <StepHeader question="What's your approximate monthly revenue?" />
               <SingleSelect
@@ -929,8 +948,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 5 — Active clients */}
-          {currentStep === 4 && (
+          {/* Step 3 — Active clients */}
+          {currentStep === 3 && (
             <>
               <StepHeader question="How many active clients do you manage at a time?" />
               <SingleSelect
@@ -941,8 +960,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 6 — Tools (adaptive by agency type) */}
-          {currentStep === 5 && (
+          {/* Step 4 — Tools (adaptive by agency type) */}
+          {currentStep === 4 && (
             <>
               <StepHeader
                 question="What tools does your team use daily?"
@@ -1000,8 +1019,8 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 7 — Operations state */}
-          {currentStep === 6 && (
+          {/* Step 5 — Operations state */}
+          {currentStep === 5 && (
             <>
               <StepHeader
                 question="Which of these best describes your current operations?"
