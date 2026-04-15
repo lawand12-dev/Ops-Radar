@@ -67,46 +67,58 @@ const ONE_TIME_PLANS: Plan[] = [
 
 const MONTHLY_PLANS: Plan[] = [
   {
-    name: 'Standard',
+    name: 'Care',
     price: '$400',
     period: '/month',
-    description: 'Built, hosted, and monitored — you focus on the business',
+    description: 'I monitor it. I fix it if it breaks.',
     features: [
-      '1 custom workflow built and deployed',
-      'Hosted on my infrastructure',
-      '24/7 monitoring',
-      'Issues fixed within 48 hours',
+      'Monitoring of all your workflows',
+      'Bug fixes within 48 hours',
       'Monthly health report',
       'Email support',
-      'Cancel anytime',
+      'Cancel anytime — workflows stay in your account',
     ],
     cta: 'Start Free Audit',
     highlighted: false,
   },
   {
-    name: 'Priority',
-    price: '$900',
+    name: 'Active',
+    price: '$800',
     period: '/month',
-    description: 'Full operations partner — I handle everything',
+    description: 'Everything in Care, plus small tweaks as you need them.',
     features: [
-      'Everything in Standard',
-      '1 new workflow build per month included',
-      'Issues fixed same-day',
-      'Priority Slack/WhatsApp support',
-      'Weekly health reports',
-      'Monthly strategy call',
-      'Direct founder access',
-      'Cancel anytime',
+      'Everything in Care',
+      'Up to 5 hours/month of tweaks and improvements',
+      'Bug fixes within 24 hours',
+      'Priority email support',
+      'Cancel anytime — workflows stay in your account',
     ],
     cta: 'Start Free Audit',
     highlighted: true,
+  },
+  {
+    name: 'Partner',
+    price: '$1,500',
+    period: '/month',
+    description: 'Full operations partner. I become your automation team.',
+    features: [
+      'Everything in Active',
+      '1 new workflow per quarter included',
+      'Monthly strategy call',
+      'Same-day bug fixes',
+      'Priority Slack/WhatsApp support',
+      'Direct founder access',
+      'Cancel anytime — workflows stay in your account',
+    ],
+    cta: 'Start Free Audit',
+    highlighted: false,
   },
 ]
 
 const FAQ_ITEMS = [
   {
     q: 'Do I need my own n8n instance?',
-    a: 'No. For Build + Host + Maintain plans, I host everything. For one-time builds, I can deliver to your n8n instance or help you set one up.',
+    a: 'Yes — and that\u2019s a good thing. You create an n8n Cloud account (about $20/month) or self-host. I build inside your account so you own the workflow forever. If we ever stop working together, the workflow keeps running. You never get locked in.',
   },
   {
     q: 'What if my automation breaks after the bug-fix window?',
@@ -212,21 +224,21 @@ export default function OpsRadarPricing() {
           </p>
         </section>
 
-        {/* Section 2: Build + Host + Maintain */}
+        {/* Section 2: Monthly Retainers */}
         <section className="mb-32">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-              Build + Host + Maintain
+              Monthly Retainers
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-              I build it, host it, and fix it when it breaks.
+              I maintain it. You never touch a workflow.
             </h2>
             <p className="text-lg text-white/40">
               You never touch a workflow.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {MONTHLY_PLANS.map((plan) => (
               <PlanCard key={plan.name} plan={plan} />
             ))}

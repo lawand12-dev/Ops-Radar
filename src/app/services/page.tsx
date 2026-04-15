@@ -140,7 +140,7 @@ export default function ServicesPage() {
             What specifically do I build?
           </h1>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            Six types of automation. All on n8n. All built, monitored, and
+            Six types of automation. All on n8n. All built inside your account, monitored, and
             maintained by me. You describe the problem \u2014 I handle everything else.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
