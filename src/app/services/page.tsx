@@ -39,16 +39,16 @@ const NAV_LINKS = [
 
 const WHAT_I_BUILD = [
   {
+    title: 'Automated Reporting',
+    desc: 'I pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
+  },
+  {
     title: 'Lead Qualification & Routing',
     desc: 'New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds — automatically.',
   },
   {
     title: 'Client Onboarding',
     desc: 'A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup — all without anyone on your team lifting a finger.',
-  },
-  {
-    title: 'Automated Reporting',
-    desc: 'I pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
   },
   {
     title: 'Email & Follow-up Sequences',
@@ -151,15 +151,54 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* ── Flagship: Automated Reporting ─────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="relative max-w-5xl mx-auto px-6 pb-20">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-4">
+              The #1 automation agencies ask me to build
+            </p>
+            <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
+              Automated Client Reporting
+            </h2>
+            <p className="text-[15px] md:text-base leading-relaxed text-white/[0.75] mb-6 max-w-3xl">
+              I pull data from Google Ads, Meta, GA4, and your CRM on schedule.
+              Merge it, format it, and deliver branded client reports automatically
+              — every week, zero manual work.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Typical impact</p>
+                <p className="text-white/90 text-sm leading-relaxed">Saves 20–40 hours/week at mid-size agencies</p>
+              </div>
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Payback</p>
+                <p className="text-white/90 text-sm leading-relaxed">Most agencies break even in about 6 weeks</p>
+              </div>
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Delivery</p>
+                <p className="text-white/90 text-sm leading-relaxed">Built in your n8n account in 7–14 days</p>
+              </div>
+            </div>
+            <Button asChild className="px-6 py-3 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+              <Link href="/audit">See if this fits your agency &rarr;</Link>
+            </Button>
+          </div>
+        </section>
+      </FadeInOnScroll>
+
       {/* ── What I Build ──────────────────────────────────────────────── */}
       <FadeInOnScroll>
         <section className="max-w-5xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            The Work
+            The Full Menu
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Six systems agencies need most.
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
+            Other things I build.
           </h2>
+          <p className="text-white/40 max-w-lg mb-16 leading-relaxed">
+            Reporting is the most common, but not the only one. Here are the other five.
+          </p>
 
           <div className="space-y-0">
             {WHAT_I_BUILD.map(({ title, desc }, i) => (
