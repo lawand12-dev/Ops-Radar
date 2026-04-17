@@ -11,7 +11,6 @@ type RateLimitName =
   | 'build-request'
   | 'chat'
   | 'chat-conversations'
-  | 'chat-history'
   | 'funnel-event'
   | 'generate-audit'
   | 'notify'
@@ -28,7 +27,6 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'build-request': { limit: 10, window: '1 h' },
   chat: { limit: 20, window: '1 h' },
   'chat-conversations': { limit: 120, window: '1 h' },
-  'chat-history': { limit: 10, window: '1 h' },
   'funnel-event': { limit: 240, window: '1 h' },
   'generate-audit': { limit: 3, window: '1 h' },
   notify: { limit: 5, window: '1 h' },
