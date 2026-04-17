@@ -82,10 +82,10 @@ export default function Home() {
         <ResponsiveHeroBanner
           navLinks={NAV_LINKS}
           badgeLabel=""
-          badgeText="Done-for-you agency automation"
-          title="Your agency's operations,"
-          titleLine2="running on autopilot."
-          description="I'm Lawand. I build and maintain custom automations for agencies using n8n. You own the workflow in your n8n account. I handle the building and the maintenance — you never touch a workflow."
+          badgeText="n8n automation for agencies"
+          title="Your agency loses 20 hours a week"
+          titleLine2="on reporting, lead routing, and onboarding."
+          description="I'm Lawand. I build the n8n workflows that do it for you — inside your n8n account, so you own the system. I just build it and maintain it."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
