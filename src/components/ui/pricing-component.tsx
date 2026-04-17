@@ -18,7 +18,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Starter Build',
     price: '$1,500',
-    description: 'One workflow, one pain point, fast fix',
+    description: 'Replaces about 5 hours/week of manual work. Pays back in ~8 weeks.',
     features: [
       'Single automation workflow',
       'Up to 3 tool integrations',
@@ -33,7 +33,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Core Build',
     price: '$2,800',
-    description: 'Multi-step system for serious operations',
+    description: 'Replaces a $2,000/month ops hire\u2019s routine work. Pays back in ~6 weeks.',
     features: [
       'Multi-step workflow with branching logic',
       'Up to 6 tool integrations',
@@ -49,7 +49,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Advanced Build',
     price: '$4,500',
-    description: 'Full system with AI layer and complex logic',
+    description: 'Replace 3\u20135 manual processes at once. A full ops transformation.',
     features: [
       'Complex multi-workflow system',
       'Unlimited tool integrations',
@@ -121,20 +121,24 @@ const FAQ_ITEMS = [
     a: 'Yes — and that\u2019s a good thing. You create an n8n Cloud account (about $20/month) or self-host. I build inside your account so you own the workflow forever. If we ever stop working together, the workflow keeps running. You never get locked in.',
   },
   {
+    q: 'Can\u2019t we just build this ourselves?',
+    a: 'You can. Most agencies that try spend 200+ developer hours a year on automation projects that should take 20 \u2014 that\u2019s roughly $50K of diverted billable work per year. I\u2019ve built 30+ workflows. You\u2019re paying for experience that avoids the expensive mistakes. If you want to try it yourself first, take the free audit and build from my recommendations. No hard feelings.',
+  },
+  {
+    q: 'What happens if you disappear?',
+    a: 'The workflow lives in your n8n account, not mine. If I vanished tomorrow, your automation keeps running. Your team can edit it. Another automation consultant can take it over. That\u2019s the whole reason I build in n8n instead of a proprietary SaaS — there\u2019s no lock-in to me or to anyone.',
+  },
+  {
     q: 'What if my automation breaks after the bug-fix window?',
-    a: 'One-time builds include a bug-fix window (14-60 days). After that, you can switch to a monthly plan for ongoing support or request paid fixes.',
+    a: 'One-time builds include a bug-fix window (14\u201360 days). After that, you can switch to a monthly plan for ongoing support or request paid fixes.',
   },
   {
     q: 'Can I start with a one-time build and move to monthly later?',
     a: 'Yes. Most clients start with a Core Build, then move to a monthly plan once they see the value.',
   },
   {
-    q: 'Why is this cheaper than agencies charging $10k+?',
-    a: 'No middlemen, no sales team, no project managers. You work directly with me (Lawand). Lower overhead = lower prices, same quality.',
-  },
-  {
     q: 'Is there a contract?',
-    a: 'Monthly plans have no contracts. Cancel anytime. One-time builds are paid upfront after scoping.',
+    a: 'Monthly plans have no contracts. Cancel anytime. One-time builds are paid 50% upfront after scoping, 50% on delivery.',
   },
 ]
 
@@ -233,8 +237,11 @@ export default function OpsRadarPricing() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
               I maintain it. You never touch a workflow.
             </h2>
-            <p className="text-lg text-white/40 max-w-2xl mx-auto">
+            <p className="text-lg text-white/40 max-w-2xl mx-auto mb-6">
               Monthly retainers are for ongoing care of a workflow I&apos;ve already built for you. They begin after delivery and don&apos;t include new builds — except where noted. New builds are scoped and priced separately using the build tiers above.
+            </p>
+            <p className="text-[13px] text-white/30 max-w-2xl mx-auto leading-relaxed">
+              For context: hiring an ops coordinator costs $5,500–$9,500/month fully loaded. A Zapier/Make retainer typically runs $2,500–$8,000/month.
             </p>
           </div>
 
