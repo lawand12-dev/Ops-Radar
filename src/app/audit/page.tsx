@@ -15,8 +15,15 @@ import { track } from '@vercel/analytics'
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const AGENCY_TYPES = [
-  'Marketing', 'Recruiting/Staffing', 'Design/Creative',
-  'Development', 'PR/Communications', 'E-commerce', 'Other',
+  'Marketing — Paid Media',
+  'Marketing — SEO',
+  'Marketing — Full-Service Digital',
+  'Recruiting/Staffing',
+  'Design/Creative',
+  'Development',
+  'PR/Communications',
+  'E-commerce',
+  'Other',
 ]
 
 const TEAM_SIZES = ['Just me', '2–5', '6–15', '16–30', '31–50', '50+']
@@ -33,9 +40,20 @@ const TOOLS_COMMON = [
 ]
 
 const TOOLS_BY_AGENCY: Record<string, string[]> = {
-  'Marketing': [
-    'HubSpot', 'GoHighLevel', 'Mailchimp', 'ActiveCampaign',
-    'SEMrush', 'Google Ads', 'Meta Ads Manager', 'Google Analytics', 'Hootsuite',
+  'Marketing — Paid Media': [
+    'Meta Ads Manager', 'Google Ads', 'TikTok Ads',
+    'Google Analytics', 'Triple Whale', 'Northbeam',
+    'Motion', 'Supermetrics', 'Klaviyo', 'Shopify', 'AgencyAnalytics',
+  ],
+  'Marketing — SEO': [
+    'Ahrefs', 'SEMrush', 'Screaming Frog', 'Sitebulb',
+    'Google Search Console', 'Google Analytics',
+    'SurferSEO', 'Clearscope', 'Frase', 'Profound', 'AgencyAnalytics',
+  ],
+  'Marketing — Full-Service Digital': [
+    'HubSpot', 'Google Ads', 'Meta Ads Manager',
+    'Google Analytics', 'Mailchimp', 'Figma',
+    'Asana', 'ClickUp', 'Harvest', 'AgencyAnalytics',
   ],
   'Recruiting/Staffing': [
     'Bullhorn', 'Greenhouse', 'Lever', 'LinkedIn Recruiter',
@@ -61,9 +79,19 @@ const AGENCY_COPY = {
     automationPlaceholder: 'e.g. Client reporting — when we miss a report, clients question whether we are doing the work',
     futureVisionPlaceholder: 'Describe what would actually be different',
   },
-  'Marketing': {
-    toolsHint: 'Think ads, CRM, reporting, content, scheduling, and client communication tools.',
-    automationPlaceholder: 'e.g. Client reporting — when we miss a report, clients question whether we are doing the work',
+  'Marketing — Paid Media': {
+    toolsHint: 'Think ad platforms, attribution, creative analytics, and client reporting tools.',
+    automationPlaceholder: 'e.g. Monthly client reports — 8 hours every Sunday stitching Meta + Google + Klaviyo',
+    futureVisionPlaceholder: 'Describe what would actually be different',
+  },
+  'Marketing — SEO': {
+    toolsHint: 'Think rank tracking, technical SEO, content briefs, and AI Overview monitoring tools.',
+    automationPlaceholder: 'e.g. Weekly rank rollups — I paste from Ahrefs into Google Docs every Monday',
+    futureVisionPlaceholder: 'Describe what would actually be different',
+  },
+  'Marketing — Full-Service Digital': {
+    toolsHint: 'Think CRM, project management, time tracking, and multi-channel reporting tools.',
+    automationPlaceholder: 'e.g. Status updates — PMs rewrite the same info across 3 tools for every client',
     futureVisionPlaceholder: 'Describe what would actually be different',
   },
   'Recruiting/Staffing': {
@@ -106,6 +134,24 @@ const TOOL_SIGNAL_RULES: ToolSignalRule[] = [
       'Performance anomalies need a human to notice first',
       'Campaign or client recap updates still depend on copy-paste',
       'Lead attribution or source matching still needs cleanup',
+    ],
+  },
+  {
+    matchAny: ['Triple Whale', 'Northbeam', 'Motion', 'Klaviyo', 'Shopify', 'TikTok Ads'],
+    suggestions: [
+      'Cross-platform creative rollups still rebuilt by hand per week',
+      'MER vs last-click attribution debates still happen in Slack threads',
+      'Client reports still stitched together late Sunday night',
+      'Pacing alerts still depend on a human watching the dashboard',
+    ],
+  },
+  {
+    matchAny: ['Ahrefs', 'Screaming Frog', 'Sitebulb', 'Google Search Console', 'SurferSEO', 'Clearscope', 'Frase', 'Profound'],
+    suggestions: [
+      'Weekly rank rollups still copied from Ahrefs into Google Docs',
+      'Technical audit diffs still caught manually instead of alerted',
+      'AI Overview and LLM mention tracking still depends on manual SERP checks',
+      'Content briefs still assembled by hand before handing off to writers',
     ],
   },
   {
