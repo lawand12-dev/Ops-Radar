@@ -486,6 +486,8 @@ Who Currently Owns That Process: ${sanitizeString(data.processOwner || 'Not prov
 The Real Cost of Leaving It Manual for 6 Months: ${sanitizeString(data.failureImpact || data.onboarding || 'Not provided')}
 What Changes If Their Top 3 Pains Disappear: ${sanitizeString(data.futureVision || data.progressTracking)}
 
+${buildSegmentBriefing(data.agencyType)}
+
 ${buildAuditGroundingPrompt(data)}
 
 Generate the audit JSON. Labor arbitrage math (hourly rate × hours × 52) must come from user inputs. Benchmarks, pattern observations, and analogous case studies may reference the research library when it genuinely applies. Never invent a citation — only reference chunks that actually exist in the retrieved context above. Reference their exact tools by name. Use their revenue and team size to calculate realistic dollar estimates. Prioritize the bottlenecks with the strongest urgency × impact signal, then tie the diagnosis back to what changes for the business if those pains disappear.
@@ -540,4 +542,105 @@ ${opportunityLines}
 
 CURRENT DRAFT JSON:
 ${JSON.stringify(draft)}`
+}
+
+/**
+ * Returns a segment-specific briefing for the three marketing sub-segments.
+ * For non-marketing agency types, returns an empty string (no change to current behavior).
+ * The briefing is injected into buildUserPrompt to steer the AI toward
+ * segment-specific vocabulary, 2026 context, and typical pain patterns
+ * without modifying the system prompt.
+ */
+export function buildSegmentBriefing(agencyType: string): string {
+  const trimmed = agencyType.trim()
+
+  if (trimmed === 'Marketing — Paid Media') {
+    return `
+
+SEGMENT BRIEFING — PAID-MEDIA AGENCY (2026 CONTEXT):
+
+This is a paid-media shop (Meta/Google/TikTok ads, Triple Whale or Northbeam for attribution, Klaviyo or Shopify on the commerce side). Frame the audit in their vocabulary.
+
+Their reality in 2026:
+- Meta Advantage+ and Google PMax have turned campaign management into a black box. Clients ask "where's my money going?" and media buyers can't always answer in real time.
+- AI creative tools (Motion, CTR) generate variants faster than humans can analyze them, shifting the work to cross-platform creative rollups done manually every week.
+- MER vs last-click attribution debates happen weekly. Clients want incrementality; media buyers have spreadsheets.
+- Sunday night is reporting night — 6 to 10 hours stitching Meta + Google + Klaviyo + Shopify data into client-facing reports.
+- Onboarding a new client (BM access, pixel/GA4 verification, Klaviyo integration) takes 2-3 weeks instead of 5 days because of manual back-and-forth.
+
+Vocabulary to use naturally: MER (Media Efficiency Ratio), delivery margin, pacing, incrementality, creative fatigue, BM access, pixel setup, Advantage+, PMax, attribution windows.
+
+Typical burning pains to diagnose (weight heavily when user inputs align):
+1. Client reporting — manual weekly/monthly report assembly eating Sundays
+2. Pacing alerts — nobody notices a budget overrun until the client emails
+3. Creative performance rollups — per-platform, manual, late
+4. Onboarding latency — BM-access-to-first-report measured in weeks not days
+5. Attribution defense — prepping for "where's the money going" calls
+
+Tools to reference by name when they appear in their stack: Triple Whale, Northbeam, Motion, Supermetrics, AgencyAnalytics, Klaviyo.
+
+Hard truths should land specifically — not "you have reporting debt" but "you're losing 8 hours every Sunday night to manual rollups across Triple Whale and Meta, and the $150/month Supermetrics budget would pay for itself in week one."
+`
+  }
+
+  if (trimmed === 'Marketing — SEO') {
+    return `
+
+SEGMENT BRIEFING — SEO AGENCY (2026 CONTEXT):
+
+This is an SEO-focused agency (Ahrefs/Semrush for research, Screaming Frog or Sitebulb for technical, SurferSEO/Clearscope/Frase for content briefs). Frame the audit in their vocabulary.
+
+Their reality in 2026:
+- Google AI Overviews (AIO) rolled out mid-2024 and eliminated 15-40% of organic clicks on informational queries at most shops. Clients panicked; agencies scrambled.
+- LLM mention tracking (Profound, Peec AI, others) is the new frontier — agencies need to show "how often does ChatGPT/Claude recommend your client?" but most still do it via manual SERP checks.
+- Price compression is severe: SE Ranking's 2024 survey found 64% of SEO agencies charge under $1,000/month. Margins are eroded; efficiency is survival.
+- Weekly rank rollups are still copied from Ahrefs into Google Docs by hand at most shops.
+- Technical audit alerting — catching a crawl error, a broken redirect, a sudden loss of indexation — usually happens too late (client calls angry).
+
+Vocabulary to use naturally: AIO (AI Overviews), LLM mentions, SERP features, rank deltas, technical audit, content briefs, E-E-A-T, indexation, crawl budget.
+
+Typical burning pains to diagnose (weight heavily when user inputs align):
+1. Weekly rank rollups — manual copy-paste from Ahrefs/GSC
+2. AI Overview tracking — either nonexistent or manual SERP spot-checks
+3. Technical audit alerting — caught by humans, too late
+4. Content brief assembly — hand-built per client, per keyword
+5. Client reporting with LLM-era metrics (clicks down, brand mentions up, etc.)
+
+Tools to reference by name when they appear in their stack: Ahrefs, Semrush, Screaming Frog, Sitebulb, Google Search Console, SurferSEO, Clearscope, Frase, Profound, Peec AI.
+
+Hard truths should land specifically — not "your reporting is manual" but "you're pasting Ahrefs data into Google Docs every Monday while Profound could auto-flag every LLM mention of your client's brand for $X/month. The opportunity cost is your Monday morning."
+`
+  }
+
+  if (trimmed === 'Marketing — Full-Service Digital') {
+    return `
+
+SEGMENT BRIEFING — FULL-SERVICE DIGITAL AGENCY (2026 CONTEXT):
+
+This is a multi-service digital agency — they do some combination of paid, SEO, content, design, dev, and strategy for the same client. HubSpot, Asana/ClickUp, Harvest, AgencyAnalytics in the stack. Frame the audit in their vocabulary.
+
+Their reality in 2026:
+- Parakeeto's 2024 benchmark report found full-service agency net margin has dropped from 17% to 14% in two years. Scope creep is the #1 named killer.
+- Utilization rate (billable hours ÷ capacity) is the core health metric, but most shops only see it at quarter-end in Harvest or a spreadsheet, not in real time.
+- Delivery margin erosion happens silently: a retainer priced for 40 hours/month consumes 60 because nobody flags scope creep until invoicing.
+- HubSpot Operations Hub competes here directly — prospects will ask "why not just use HubSpot workflows?" They're a real competitor for workflow-level automation.
+- PMs rewrite the same status update into 3+ tools every week (Asana task comment, Slack channel, client-facing report, internal weekly).
+
+Vocabulary to use naturally: delivery margin, utilization rate, AGI (Agency Gross Income), billable hours, realization rate, scope creep, retainer, T&M (Time & Materials), capacity planning.
+
+Typical burning pains to diagnose (weight heavily when user inputs align):
+1. Delivery margin erosion — scope creep invisible until invoicing
+2. Utilization visibility — discovered quarterly, not weekly
+3. Status update overhead — PMs manually rewriting the same info across tools
+4. Client reporting — multi-channel data (paid + SEO + content) stitched by hand
+5. Onboarding — long kickoff checklists, manual tool provisioning
+
+Tools to reference by name when they appear in their stack: HubSpot, Asana, ClickUp, Monday, Harvest, AgencyAnalytics, Klaviyo, Figma.
+
+Hard truths should land specifically — not "your margin is compressed" but "your PMs are rewriting the same status update into Asana, Slack, and a client doc every Friday. At 10 clients × 30 min × 52 weeks × $65/hr PM cost, that's ~$17K/year in pure administrative drag that could run itself."
+`
+  }
+
+  // Non-marketing agency types (Recruiting, Design, Dev, PR, E-commerce, Other) get no briefing
+  return ''
 }
