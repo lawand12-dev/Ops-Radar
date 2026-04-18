@@ -4,7 +4,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "<npm>/lib/constants";
 import "./globals.css";
 import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
-import MobileDock from "<npm>/components/ui/mobile-dock";
 
 const sansFont = localFont({
   src: [
@@ -94,7 +93,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <FloatingAiAssistant />
-        <MobileDock />
         <Analytics />
       </body>
     </html>
