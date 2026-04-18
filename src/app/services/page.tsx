@@ -10,17 +10,17 @@ import Footer from '<npm>/components/Footer'
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+    "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
   openGraph: {
     title: "Services — OpsRadar",
     description:
-      "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+      "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Services — OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
-      "I build six types of automation for agencies: lead routing, onboarding, reporting, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+      "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
     images: ["/og-image.png"],
   },
 }
@@ -137,11 +137,13 @@ export default function ServicesPage() {
             Services
           </p>
           <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.08] mb-6">
-            What specifically do I build?
+            What specifically do I build for marketing agencies?
           </h1>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            Six types of automation. All on n8n. All built inside your account, monitored, and
-            maintained by me. You describe the problem \u2014 I handle everything else.
+            Six types of automation that fix the manual work burning your team: client reporting,
+            ad platform handoffs, HubSpot/CRM routing, onboarding, invoicing, and data sync. Built
+            for paid-media, SEO, and full-service agencies under 25 people. All on n8n. All
+            maintained by me.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
@@ -169,7 +171,7 @@ export default function ServicesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="border-t border-white/10 pt-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Typical impact</p>
-                <p className="text-white/90 text-sm leading-relaxed">Saves 20–40 hours/week at mid-size agencies</p>
+                <p className="text-white/90 text-sm leading-relaxed">Saves 20\u201340 hours/week at 10\u201320 person marketing agencies</p>
               </div>
               <div className="border-t border-white/10 pt-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Payback</p>
