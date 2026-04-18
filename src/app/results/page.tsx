@@ -244,11 +244,11 @@ function syncAnnualWasteCopy(text: string | undefined, annualWaste: number | nul
   return text
     .replace(
       /(\$\s?\d[\d,]*(?:\.\d+)?\s*(?:[KkMm])?)(\s*(?:annually|a year|per year|\/year|yearly))/gi,
-      `${amount}$2`,
+      (_match, _dollarMatch, trailing) => `${amount}${trailing}`,
     )
     .replace(
       /((?:annual|annually|yearly|per year|a year|\/year)[^$]{0,18})(\$\s?\d[\d,]*(?:\.\d+)?\s*(?:[KkMm])?)/gi,
-      `$1${amount}`,
+      (_match, leading) => `${leading}${amount}`,
     )
 }
 
