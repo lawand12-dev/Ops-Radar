@@ -78,8 +78,7 @@ export default function Home() {
       {/* ── 1. Hero ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
         <BeamsBackground intensity="full" />
-        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
 
         <ResponsiveHeroBanner
           navLinks={NAV_LINKS}
