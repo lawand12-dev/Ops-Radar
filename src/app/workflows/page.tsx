@@ -29,8 +29,10 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
+  { label: 'Paid-Media', href: '/for/paid-media' },
+  { label: 'SEO', href: '/for/seo' },
+  { label: 'Full-Service', href: '/for/full-service' },
   { label: 'Services', href: '/services' },
-  { label: 'Workflows', href: '/workflows', isActive: true },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
