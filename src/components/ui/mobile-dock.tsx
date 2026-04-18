@@ -48,13 +48,18 @@ export default function MobileDock() {
   ]
 
   // Determine active index based on current pathname
+  // Segment landing pages under the "for" prefix (paid-media, seo, full-service) highlight the Services tab
+  // since they are specialized service-type pages.
   const activeIndex = items.findIndex((item) => {
     if (item.id === "home") return pathname === "/"
+    if (item.id === "services") {
+      return pathname.startsWith("/services") || pathname.startsWith("/for/")
+    }
     return pathname.startsWith(`/${item.id}`)
   })
 
   return (
-    <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
       <LimelightNav
         items={items}
         defaultActiveIndex={activeIndex >= 0 ? activeIndex : 0}
