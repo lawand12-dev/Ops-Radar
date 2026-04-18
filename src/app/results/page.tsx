@@ -20,7 +20,6 @@ import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import Footer from '<npm>/components/Footer'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
-import { generateAuditPdf } from '../../lib/pdf-generator'
 import { track } from '@vercel/analytics'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -2510,7 +2509,6 @@ function ResultsContent() {
     new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   )
   const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
@@ -2984,31 +2982,6 @@ function ResultsContent() {
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
               </div>
-              <Button
-                onClick={async () => {
-                  if (isGeneratingPdf) return
-                  setIsGeneratingPdf(true)
-                  try {
-                    const name = company || 'report'
-                    const date = new Date().toISOString().slice(0, 10)
-                    const filename = `opsradar-audit-${name.toLowerCase().replace(/\s+/g, '-')}-${date}.pdf`
-                    await generateAuditPdf('audit-pdf-root', filename)
-                  } catch (err) {
-                    console.error('[results] PDF generation failed:', err)
-                    alert('PDF generation failed. Please try again or use browser print instead.')
-                  } finally {
-                    setIsGeneratingPdf(false)
-                  }
-                }}
-                disabled={isGeneratingPdf}
-                variant="outline"
-                className="h-auto rounded-full border-outline-variant/20 bg-transparent px-4 py-2 text-[12px] font-semibold text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface gap-1.5 no-print"
-              >
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 10H2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2M5 8l3 3 3-3M8 1v10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                {isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}
-              </Button>
             </div>
           </div>
         </div>
