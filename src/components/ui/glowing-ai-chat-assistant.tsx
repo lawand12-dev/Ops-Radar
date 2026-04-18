@@ -525,7 +525,7 @@ const FloatingAiAssistant = () => {
   const hasHistory = convList.length > 0
 
   return (
-    <div className="fixed bottom-20 right-4 z-[60] md:bottom-6 md:right-6">
+    <div className="fixed bottom-6 right-6 z-[60]">
       {/* Floating 3D Glowing AI Logo */}
       <button
         className={`floating-ai-button relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 transform ${
