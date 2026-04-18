@@ -47,7 +47,10 @@ export async function generateAuditPdf(
       orientation: 'portrait' as const,
       compress: true,
     },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    pagebreak: {
+      mode: ['css', 'legacy'],
+      avoid: ['img', 'tr', 'blockquote', '[data-pdf-avoid-break]'],
+    },
   }
 
   try {
