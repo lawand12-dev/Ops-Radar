@@ -62,6 +62,14 @@ type AuditRow = {
   result: AuditResult;
 }
 
+type FunnelData = {
+  funnel: Array<{ step: number; label: string; reached: number; percent: number }>
+  totalSessions: number
+  biggestDropStep: number
+  biggestDropPct: number
+  completionRate: number
+}
+
 // Helpers
 function readinessScore(r: AuditResult): number {
   return r.automation_readiness_score ?? r.summary?.automation_readiness_score ?? 0
@@ -192,6 +200,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [funnelData, setFunnelData] = useState<FunnelData | null>(null)
 
   useEffect(() => {
     fetchAdminApi<{ audits: AuditRow[] }>('/api/admin/data?view=audits')
@@ -203,6 +212,12 @@ export default function AdminPage() {
         setError(err instanceof Error ? err.message : 'Failed to load audits')
         setLoading(false)
       })
+  }, [])
+
+  useEffect(() => {
+    fetchAdminApi<FunnelData>('/api/admin/funnel')
+      .then(setFunnelData)
+      .catch((err) => console.warn('[admin] funnel fetch failed:', err))
   }, [])
 
   const filtered = useMemo(() => {
@@ -294,6 +309,51 @@ export default function AdminPage() {
       </div>
 
       <main className="max-w-[1100px] mx-auto px-6 py-8">
+        {funnelData && funnelData.totalSessions > 0 && (
+          <section className="mb-10 p-6 rounded-[16px] bg-surface-container-low border border-outline-variant/15">
+            <div className="flex items-baseline justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-on-surface">Audit Funnel</h2>
+                <p className="text-[12px] text-on-surface-variant/60 mt-0.5">
+                  Last 30 days · {funnelData.totalSessions} sessions · {funnelData.completionRate}% completion rate
+                </p>
+              </div>
+              {funnelData.biggestDropPct > 0 && (
+                <div className="text-right">
+                  <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-on-surface-variant/50">Biggest drop</p>
+                  <p className="text-[13px] font-semibold" style={{ color: '#ef4444' }}>
+                    Step {funnelData.biggestDropStep - 1} → {funnelData.biggestDropStep} ({funnelData.biggestDropPct}%)
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              {funnelData.funnel.map((row) => {
+                const isDrop = row.step === funnelData.biggestDropStep
+                return (
+                  <div key={row.step} className="flex items-center gap-3 text-[12px]">
+                    <span className="w-8 text-on-surface-variant/40 font-mono text-[11px]">S{row.step}</span>
+                    <span className="w-32 text-on-surface-variant truncate">{row.label}</span>
+                    <div className="flex-1 h-6 rounded-[6px] bg-surface-container overflow-hidden relative">
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: `${row.percent}%`,
+                          background: isDrop ? 'rgba(239,68,68,0.25)' : 'rgba(59,130,246,0.2)',
+                          borderRight: isDrop ? '2px solid #ef4444' : '2px solid rgba(59,130,246,0.6)',
+                        }}
+                      />
+                    </div>
+                    <span className="w-16 text-right font-mono text-[11px] tabular-nums text-on-surface">
+                      {row.reached} ({row.percent}%)
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         <div className="relative mb-6">
           <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(255,255,255,0.25)' }}>
             <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.4"/>
