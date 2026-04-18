@@ -998,3 +998,65 @@ body::after {
     margin: 0.5in;
   }
 }
+
+/* Waste calculator sliders — premium styling, no native browser look */
+.waste-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.waste-slider:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.waste-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.3);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.waste-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(255, 255, 255, 0.45);
+}
+
+.waste-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.12);
+}
+
+.waste-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: none;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.3);
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+
+.waste-slider::-moz-range-thumb:hover {
+  transform: scale(1.08);
+}
