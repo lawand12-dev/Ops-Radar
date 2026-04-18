@@ -10,17 +10,17 @@ import Footer from '<npm>/components/Footer'
 export const metadata: Metadata = {
   title: "About",
   description:
-    "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
+    "I'm Lawand Soran. I build automation systems for marketing agencies from Kurdistan \u2014 paid-media, SEO, and full-service shops under 25 people. No middlemen. No account managers. You work directly with the person building your workflow.",
   openGraph: {
     title: "About — OpsRadar",
     description:
-      "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
+      "I'm Lawand Soran. I build automation systems for marketing agencies from Kurdistan \u2014 paid-media, SEO, and full-service shops under 25 people. No middlemen. No account managers. You work directly with the person building your workflow.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "About — OpsRadar" }],
   },
   twitter: {
     title: "About — OpsRadar",
     description:
-      "I'm Lawand Soran. I build automation systems for agencies from Kurdistan. No middlemen. No account managers. You work directly with the person building your workflow.",
+      "I'm Lawand Soran. I build automation systems for marketing agencies from Kurdistan \u2014 paid-media, SEO, and full-service shops under 25 people. No middlemen. No account managers. You work directly with the person building your workflow.",
     images: ["/og-image.png"],
   },
 }
@@ -93,9 +93,10 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
             <div className="space-y-6">
               <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
-                I&apos;m Lawand Soran. I build automation systems for agencies
-                from Kurdistan. No middlemen. No account managers. You work
-                directly with the person building your workflow.
+                I&apos;m Lawand Soran. I build automation systems for marketing
+                agencies from Kurdistan — paid-media, SEO, and full-service
+                shops under 25 people. No middlemen. No account managers. You
+                work directly with the person building your workflow.
               </p>
               <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
                 OpsRadar is not a SaaS tool. It&apos;s not an agency. It&apos;s one

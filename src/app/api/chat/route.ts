@@ -45,10 +45,37 @@ timezone advantage over most Western agencies — work ships while \
 clients sleep.
 
 WHO IT'S FOR:
-Marketing, recruiting, design, and creative agencies with 5-50 \
-employees in US, UK, Canada, Australia, and Europe. Agencies \
-drowning in manual operations who want someone else to handle \
-the automation layer entirely.
+Three specific types of marketing agency, all under 25 people, in \
+US, UK, Canada, Australia, and Europe:
+
+1. PAID-MEDIA SHOPS (5-20 FTE) — performance marketers running Meta \
+Ads, Google Ads, TikTok, often for DTC brands. They use Triple Whale \
+or Northbeam for attribution, Motion for creative analytics, \
+Supermetrics for data piping, Looker Studio for client reports. Their \
+2026 pain: Meta Advantage+ and Google PMax commoditizing the craft, \
+clients threatening to in-house the work, Sunday nights stitching \
+together reports for Monday calls. Vocabulary: MER, incrementality, \
+delivery margin, scope creep.
+
+2. SEO AGENCIES (5-20 FTE) — technical SEOs using Ahrefs, Semrush, \
+Screaming Frog, SurferSEO, GSC. Their 2026 pain: Google AI Overviews \
+crushing organic CTRs 20-25%, clients asking about ChatGPT and \
+Perplexity visibility. New vocabulary: AIO tracking, LLM brand \
+visibility (Profound, Peec AI, Otterly), Reddit outranking them on \
+shared keywords.
+
+3. FULL-SERVICE DIGITAL AGENCIES (10-25 FTE) — ads, content, design, \
+strategy. They use HubSpot (including Operations Hub, our biggest \
+competitor), Asana or ClickUp, Harvest for time tracking, \
+AgencyAnalytics or Databox for reporting. Their 2026 pain: delivery \
+margin compression (industry average 14%), scope creep eating \
+retainers, 4-8 hours per client per month lost to manual reporting. \
+Vocabulary: delivery margin, utilization, AGI (Agency Gross Income), \
+account manager bandwidth, Parakeeto math.
+
+If other agency types (recruiting, design studios, e-commerce \
+consultancies) approach me, I can often help, but these three are my \
+specialty and where I deliver the sharpest work.
 
 THE CORE OFFER — TWO PATHS:
 
