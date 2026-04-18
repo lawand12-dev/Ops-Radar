@@ -32,6 +32,7 @@ const NAV_LINKS = [
   { label: 'Full-Service', href: '/for/full-service', isActive: true },
   { label: 'Services', href: '/services' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
 ]
 
 const WHAT_I_BUILD_FOR_FULL_SERVICE = [
