@@ -724,10 +724,21 @@ function getIdentityTone(identity: string | undefined, readiness: number | null)
 function VerdictHero({
   verdict,
   readiness,
+  agencyType,
 }: {
   verdict: AuditVerdict
   readiness: number | null
+  agencyType?: string
 }) {
+  // Map the 3 marketing segments to their landing-page-consistent label.
+  // Any other agency type returns null → badge is not rendered.
+  const segmentLabel = (() => {
+    if (!agencyType) return null
+    if (agencyType === 'Marketing — Paid Media') return 'For paid-media agencies'
+    if (agencyType === 'Marketing — SEO') return 'For SEO agencies'
+    if (agencyType === 'Marketing — Full-Service Digital') return 'For full-service agencies'
+    return null
+  })()
   const headline = verdict.headline?.trim() ?? ''
   const subline = verdict.subline?.trim() ?? ''
   const stakes = verdict.stakes?.trim() ?? ''
@@ -747,6 +758,13 @@ function VerdictHero({
         }}
       />
       <div className="relative z-[1] py-16 sm:py-20">
+        {/* Segment label — mirrors /for/* landing page style, shown only for 3 marketing segments */}
+        {segmentLabel && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
+            {segmentLabel}
+          </p>
+        )}
+
         {/* Identity tag */}
         <div
           className="inline-flex items-center gap-2.5 rounded-full border px-3.5 py-1.5"
@@ -3014,7 +3032,7 @@ function ResultsContent() {
           <div className="mt-10"><Divider /></div>
 
           {a.verdict && (
-            <VerdictHero verdict={a.verdict} readiness={readiness} />
+            <VerdictHero verdict={a.verdict} readiness={readiness} agencyType={auditContext?.agencyType} />
           )}
 
           <h1 className="font-headline font-extrabold text-[clamp(24px,3.8vw,44px)] leading-[1.1] tracking-[-0.03em] mt-8 max-w-[680px] text-on-surface">
