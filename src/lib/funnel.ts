@@ -12,6 +12,7 @@ export type FunnelEventName =
   | 'unlock_email_sent'
   | 'email_gate_shown'
   | 'email_gate_passed'
+  | 'results_shared'
 
 export type FunnelEventPayload = {
   event: FunnelEventName
