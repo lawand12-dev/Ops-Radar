@@ -25,7 +25,20 @@ export async function generateAuditPdf(
     }
   })
 
-  // Let the DOM update settle before capture
+  // Force all scroll-reveal sections into their visible state.
+  // RevealSection / FadeInOnScroll rely on IntersectionObserver to add
+  // `.visible`, but html2canvas snapshots the DOM as-is — any section the
+  // user hasn't scrolled to yet still has `opacity: 0` and would render
+  // as blank pages in the PDF. We add `.visible` to every `.reveal` so
+  // the screenshot captures them fully rendered.
+  const revealEls = element.querySelectorAll<HTMLElement>('.reveal')
+  revealEls.forEach((el) => {
+    el.classList.add('visible')
+  })
+
+  // Let the DOM update settle before capture (two RAFs to be safe —
+  // one for class additions, one for style recalc).
+  await new Promise((resolve) => requestAnimationFrame(resolve))
   await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // Convert oklch/oklab/color-mix values to RGB so html2canvas can parse them
