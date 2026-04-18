@@ -2511,6 +2511,7 @@ function ResultsContent() {
   )
   const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
   const resultsViewRef = useRef<string | null>(null)
@@ -2713,6 +2714,41 @@ function ResultsContent() {
     })
     setModalOpp({ title, source })
   }, [audit?.report_stage, auditId])
+
+  const handleShareResults = () => {
+    if (typeof window === 'undefined') return
+    const currentUrl = window.location.href
+
+    const copyToClipboard = async () => {
+      try {
+        await navigator.clipboard.writeText(currentUrl)
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      } catch {
+        const textarea = document.createElement('textarea')
+        textarea.value = currentUrl
+        textarea.style.position = 'fixed'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        try {
+          document.execCommand('copy')
+          setShareCopied(true)
+          setTimeout(() => setShareCopied(false), 2000)
+        } catch {
+          // Give up silently
+        }
+        document.body.removeChild(textarea)
+      }
+    }
+
+    void copyToClipboard()
+
+    sendFunnelEvent({
+      event: 'results_shared',
+      auditId: auditId || undefined,
+    })
+  }
 
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit
@@ -3343,6 +3379,32 @@ function ResultsContent() {
                   >
                     Request a Build Quote →
                   </Button>
+                </div>
+                <div className="mt-8 pt-6 border-t border-outline-variant/10 flex flex-col items-center gap-2">
+                  <p className="text-[12px] text-on-surface-variant/50">
+                    Want your team to see this?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleShareResults}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-[10px] text-[13px] font-semibold border border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/50 hover:text-on-surface bg-surface-container-low/50 transition-colors"
+                  >
+                    {shareCopied ? (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Copied to clipboard
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M9 3H11.5C12.0523 3 12.5 3.44772 12.5 4V11C12.5 11.5523 12.0523 12 11.5 12H5C4.44772 12 4 11.5523 4 11V9.5M9 3V4.5C9 5.05228 8.55228 5.5 8 5.5H3.5C2.94772 5.5 2.5 5.05228 2.5 4.5V4C2.5 3.44772 2.94772 3 3.5 3H9ZM9 3V3C9 2.44772 8.55228 2 8 2H3.5C2.94772 2 2.5 2.44772 2.5 3V9.5C2.5 10.0523 2.94772 10.5 3.5 10.5H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Copy share link
+                      </>
+                    )}
+                  </button>
                 </div>
                 <p className="mt-6 text-[12px] text-on-surface-variant/30">
                   No pitch. No commitment. I&apos;ll scope the build and give you an exact price.
