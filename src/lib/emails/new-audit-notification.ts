@@ -15,6 +15,7 @@ interface NewAuditNotificationInput {
   agencyType?: string
   teamSize?: string
   revenueRange?: string
+  draftResponse?: { subject: string; body: string } | null
 }
 
 export function buildNewAuditNotification(input: NewAuditNotificationInput) {
@@ -35,6 +36,27 @@ export function buildNewAuditNotification(input: NewAuditNotificationInput) {
   const eAgencyType = escapeHtml(input.agencyType ?? 'Not specified')
   const eTeamSize = escapeHtml(input.teamSize ?? 'Unknown team')
   const eRevenue = escapeHtml(input.revenueRange ?? 'Unknown revenue')
+
+  const draftBlock = input.draftResponse
+    ? `
+    <div style="margin:0 24px 24px;padding:20px;background:#0a1628;border:1px solid rgba(59,130,246,0.3);border-radius:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:18px;">💡</span>
+        <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#60a5fa;">Suggested Response — Copy, Adjust, Send</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:16px;">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);">Subject</p>
+        <p style="margin:0 0 16px;font-size:14px;color:#eef2ff;font-weight:600;">${escapeHtml(input.draftResponse.subject)}</p>
+        <p style="margin:0 0 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);">Body</p>
+        <pre style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:#dbeafe;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(input.draftResponse.body)}</pre>
+      </div>
+      <p style="margin:12px 0 0;font-size:11px;color:rgba(255,255,255,0.3);font-style:italic;">Generated from this prospect's specific audit answers. Review before sending.</p>
+    </div>`
+    : ''
+
+  const draftTextBlock = input.draftResponse
+    ? `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSUGGESTED RESPONSE — Copy, Adjust, Send\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nSubject: ${input.draftResponse.subject}\n\n${input.draftResponse.body}\n\n(Generated from prospect's audit. Review before sending.)\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+    : ''
 
   const html = `
     <!DOCTYPE html>
@@ -67,7 +89,7 @@ export function buildNewAuditNotification(input: NewAuditNotificationInput) {
           <h1>New Audit Completed</h1>
           <p>Pre-call briefing for ${eCompany}</p>
         </div>
-
+        ${draftBlock}
         <div class="content">
           <div class="section">
             <div class="label">Prospect</div>
@@ -130,7 +152,7 @@ export function buildNewAuditNotification(input: NewAuditNotificationInput) {
     </html>
   `
 
-  const text = `
+  const text = `${draftTextBlock}
 NEW AUDIT COMPLETED — ${input.company}
 
 Prospect: ${input.name} (${input.email})
