@@ -102,6 +102,38 @@ export default function ForSeoPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: 'n8n Automation for SEO Agencies',
+            provider: {
+              '@type': 'Organization',
+              name: 'OpsRadar',
+              url: 'https://www.opsradar.co',
+              founder: { '@type': 'Person', name: 'Lawand Soran' },
+            },
+            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
+            audience: {
+              '@type': 'BusinessAudience',
+              audienceType: 'SEO Agencies',
+              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 20 },
+            },
+            description:
+              'Custom n8n automations for SEO agencies under 20 people. Weekly rank rollups from Ahrefs and GSC; AI Overview and LLM mention tracking; technical audit alerting from Screaming Frog.',
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: 'USD',
+              lowPrice: 400,
+              highPrice: 4500,
+              offerCount: 6,
+            },
+            url: 'https://www.opsradar.co/for/seo',
+          }),
+        }}
+      />
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative px-6 pb-28 pt-16 sm:pt-20">

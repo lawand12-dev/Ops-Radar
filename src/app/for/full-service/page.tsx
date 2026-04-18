@@ -102,6 +102,38 @@ export default function ForFullServicePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: 'n8n Automation for Full-Service Digital Agencies',
+            provider: {
+              '@type': 'Organization',
+              name: 'OpsRadar',
+              url: 'https://www.opsradar.co',
+              founder: { '@type': 'Person', name: 'Lawand Soran' },
+            },
+            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
+            audience: {
+              '@type': 'BusinessAudience',
+              audienceType: 'Full-Service Digital Agencies',
+              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 10, maxValue: 25 },
+            },
+            description:
+              'Custom n8n automations for full-service digital agencies (10-25 people). Client reporting that protects delivery margin; utilization dashboards; scope-creep flagging; structured onboarding.',
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: 'USD',
+              lowPrice: 400,
+              highPrice: 4500,
+              offerCount: 6,
+            },
+            url: 'https://www.opsradar.co/for/full-service',
+          }),
+        }}
+      />
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative px-6 pb-28 pt-16 sm:pt-20">
