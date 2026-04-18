@@ -5,6 +5,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For Full-Service Digital Agencies — OpsRadar',
@@ -102,6 +103,7 @@ export default function ForFullServicePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
+      <SegmentPageAnalytics segment="full-service" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
