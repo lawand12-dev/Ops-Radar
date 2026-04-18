@@ -8,19 +8,19 @@ import WorkflowImage from '<npm>/components/ui/workflow-image'
 import Footer from '<npm>/components/Footer'
 
 export const metadata: Metadata = {
-  title: "OpsRadar — Done-For-You Automation for Agencies",
+  title: "OpsRadar — Ops Automation for Marketing Agencies",
   description:
-    "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
+    "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
   openGraph: {
-    title: "OpsRadar — Done-For-You Automation for Agencies",
+    title: "OpsRadar — Ops Automation for Marketing Agencies",
     description:
-      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Done-For-You Automation for Agencies" }],
+      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Ops Automation for Marketing Agencies" }],
   },
   twitter: {
-    title: "OpsRadar — Done-For-You Automation for Agencies",
+    title: "OpsRadar — Ops Automation for Marketing Agencies",
     description:
-      "I build and maintain custom n8n automations for agencies. You own the workflow in your n8n account. I handle the building and the maintenance.",
+      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
     images: ["/og-image.png"],
   },
 }
@@ -82,10 +82,10 @@ export default function Home() {
         <ResponsiveHeroBanner
           navLinks={NAV_LINKS}
           badgeLabel=""
-          badgeText="n8n automation for agencies"
-          title="Your agency loses 20 hours a week"
-          titleLine2="on reporting, lead routing, and onboarding."
-          description="I'm Lawand. I build the n8n workflows that do it for you — inside your n8n account, so you own the system. I just build it and maintain it."
+          badgeText="Ops automation for marketing agencies"
+          title="AI is eating the craft."
+          titleLine2="Let me eat the ops."
+          description="I'm Lawand. I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. Onboarding that ships in days, not weeks. Alerts tied to MER, not last-click ROAS. AIO mention tracking. Delivery margin you can actually defend. You own the workflows in your n8n account. I build them. I maintain them. You get your strategy hours back."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}
@@ -144,9 +144,13 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 py-12">
             <p className="text-[15px] leading-[1.8] text-white/[0.65]">
               I&apos;m Lawand Soran, founder of OpsRadar. I build automation
-              systems for agencies from Kurdistan. You work directly with
-              the person building your workflow &mdash; no account managers,
-              no sales handoffs, no project managers between you and the work.
+              systems for marketing agencies from Kurdistan. I work with
+              three kinds of shop: paid-media agencies drowning in client
+              reports, SEO agencies tracking AI Overview mentions, and
+              full-service digital agencies defending delivery margin. You
+              work directly with the person building your workflow &mdash;
+              no account managers, no sales handoffs, no project managers
+              between you and the work.
             </p>
             <ul className="space-y-6">
               <li className="flex items-start gap-3">
