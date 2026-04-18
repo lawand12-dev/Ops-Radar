@@ -258,38 +258,41 @@ body::after {
   position: relative;
 }
 
-/* Limelight bar — small bright line positioned above the active tab */
+/* Limelight bar — proportional to tab width, stronger multi-layer bloom */
 .header-link-active::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: -8px;
-  width: 36px;
-  height: 3px;
+  top: -10px;
+  width: 70%;
+  height: 4px;
   transform: translateX(-50%);
   border-radius: 9999px;
   background: #ffffff;
   box-shadow:
-    0 0 12px rgba(255, 255, 255, 0.9),
-    0 0 24px rgba(255, 255, 255, 0.6),
-    0 8px 20px rgba(255, 255, 255, 0.35);
+    0 0 6px rgba(255, 255, 255, 1),
+    0 0 14px rgba(255, 255, 255, 0.95),
+    0 0 28px rgba(255, 255, 255, 0.7),
+    0 0 50px rgba(255, 255, 255, 0.45),
+    0 10px 32px rgba(255, 255, 255, 0.4);
   pointer-events: none;
   z-index: 2;
 }
 
-/* Limelight cone — triangular light shining down onto the tab */
+/* Limelight cone — radial volumetric falloff with soft blur for realism */
 .header-link-active::after {
   content: "";
   position: absolute;
   left: 50%;
-  top: -5px;
-  width: 110%;
-  height: 28px;
+  top: -6px;
+  width: 150%;
+  height: 52px;
   transform: translateX(-50%);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 100%);
-  clip-path: polygon(30% 0%, 70% 0%, 95% 100%, 5% 100%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.22) 28%, rgba(255, 255, 255, 0.08) 55%, rgba(255, 255, 255, 0) 78%);
+  clip-path: polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%);
   pointer-events: none;
   z-index: 1;
+  filter: blur(1.5px);
 }
 
 .header-cta {
