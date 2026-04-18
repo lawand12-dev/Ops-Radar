@@ -5,6 +5,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For SEO Agencies — OpsRadar',
@@ -102,6 +103,7 @@ export default function ForSeoPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
+      <SegmentPageAnalytics segment="seo" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
