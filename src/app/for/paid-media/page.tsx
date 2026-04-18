@@ -102,6 +102,38 @@ export default function ForPaidMediaPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: 'n8n Automation for Paid-Media Agencies',
+            provider: {
+              '@type': 'Organization',
+              name: 'OpsRadar',
+              url: 'https://www.opsradar.co',
+              founder: { '@type': 'Person', name: 'Lawand Soran' },
+            },
+            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
+            audience: {
+              '@type': 'BusinessAudience',
+              audienceType: 'Paid-Media Agencies',
+              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 20 },
+            },
+            description:
+              'Custom n8n automations for paid-media shops under 20 people. Client reporting rollups from Meta, Google, Klaviyo; pacing alerts tied to MER; onboarding that cuts BM-access-to-first-report from 3 weeks to 5 days.',
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: 'USD',
+              lowPrice: 400,
+              highPrice: 4500,
+              offerCount: 6,
+            },
+            url: 'https://www.opsradar.co/for/paid-media',
+          }),
+        }}
+      />
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative px-6 pb-28 pt-16 sm:pt-20">
