@@ -40,30 +40,30 @@ const NAV_LINKS = [
 const WHAT_I_DO = [
   {
     title: 'I diagnose.',
-    desc: 'A 3-minute AI audit identifies exactly where your agency is losing time and money. Free audit. Results sent to your email.',
+    desc: 'A 3-minute AI audit identifies exactly which reports, handoffs, and alerts are burning your team\u2019s hours. Real dollar figures, sent to your inbox.',
   },
   {
     title: 'I build.',
-    desc: 'Custom n8n workflows built inside your n8n account, tested, documented, delivered in days. You own it from day one.',
+    desc: 'Custom n8n workflows that pull from Meta, Google, GA4, Ahrefs, HubSpot, Triple Whale \u2014 whatever your stack already runs. Built inside your n8n account, delivered in days. You own every workflow from day one.',
   },
   {
     title: 'I maintain.',
-    desc: 'I monitor and fix your workflows. You never touch the automation layer.',
+    desc: 'I monitor your workflows, fix them when Meta\u2019s API changes or an AI Overview update breaks your tracking, and adjust them when you add a new client. You never touch the automation layer.',
   },
 ]
 
 const WHY_US = [
   {
     title: 'Freelancers disappear. I stay.',
-    desc: 'Every build includes a bug-fix window plus optional retainer for ongoing care.',
+    desc: 'Every build includes a bug-fix window plus an optional retainer for ongoing care. I\u2019m still here in year two, knowing your stack and your clients.',
   },
   {
-    title: 'Zapier charges per task. n8n doesn\u2019t.',
-    desc: 'Your workflows run in your own n8n — one predictable monthly cost from n8n, whether you run 100 tasks or 100,000.',
+    title: 'Zapier charges per task. Agencies run thousands.',
+    desc: 'Your reporting workflows run hundreds of times a day \u2014 scraping ad platforms, pulling rank data, merging attribution, pushing to dashboards. On Zapier that\u2019s $500\u2013$2,000/month. On your own n8n, it\u2019s a flat $20.',
   },
   {
-    title: 'AI builds fast. I verify every line.',
-    desc: 'AI accelerates the build. A human (me) reviews every workflow before it touches your business.',
+    title: 'AI builds fast. I verify every line before it touches your clients\u2019 data.',
+    desc: 'AI accelerates the build. I review every workflow before it pulls from your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.',
   },
 ]
 
