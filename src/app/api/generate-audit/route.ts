@@ -29,6 +29,7 @@ import {
 } from '../../../lib/knowledge-retrieval'
 import { Resend } from 'resend'
 import { buildNewAuditNotification } from '../../../lib/emails/new-audit-notification'
+import { generateDraftResponse } from '../../../lib/draft-response'
 import { CONTACT_EMAIL } from '../../../lib/constants'
 
 const RESEARCH_TIMEOUT_MS = 15_000
@@ -374,6 +375,21 @@ export async function POST(request: Request) {
           ? String((audit.opportunities[0] as Record<string, unknown>).title ?? '')
           : null
 
+        const draftResponse = await generateDraftResponse({
+          name,
+          company,
+          agencyType,
+          teamSize,
+          revenueRange: revenue,
+          tools,
+          biggestPain: automationWish || undefined,
+          topOpportunity: topOpp || undefined,
+          annualWaste,
+          readinessScore: typeof audit.automation_readiness_score === 'number'
+            ? audit.automation_readiness_score
+            : undefined,
+        })
+
         const { subject, html, text } = buildNewAuditNotification({
           auditId: storedAuditId,
           accessToken,
@@ -390,6 +406,7 @@ export async function POST(request: Request) {
           agencyType,
           teamSize,
           revenueRange: revenue,
+          draftResponse,
         })
 
         const resend = new Resend(process.env.RESEND_API_KEY)
