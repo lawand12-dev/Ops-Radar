@@ -71,6 +71,27 @@ const WHY_US = [
   },
 ]
 
+const SEGMENTS = [
+  {
+    href: '/for/paid-media',
+    label: 'Paid-media',
+    headline: 'Sunday nights are for your family, not for Meta + Google + Klaviyo reports.',
+    bullets: ['Monthly client reports that build themselves', 'Pacing alerts tied to MER, not last-click ROAS', 'BM-access-to-first-report from 3 weeks to 5 days'],
+  },
+  {
+    href: '/for/seo',
+    label: 'SEO',
+    headline: 'Track what matters in 2026 — including AI Overviews and LLM mentions.',
+    bullets: ['Weekly rank digests from Ahrefs + GSC + Semrush', 'AIO presence tracking across ChatGPT, Perplexity, Google AIO', 'Technical audit alerts before Google notices'],
+  },
+  {
+    href: '/for/full-service',
+    label: 'Full-service',
+    headline: 'Defend your delivery margin while scaling across ad ops, SEO, and content.',
+    bullets: ['Unified reporting across ad + organic + content', 'Utilization alerts before scope creep eats margin', 'Cross-channel attribution your clients actually believe'],
+  },
+]
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -101,8 +122,8 @@ export default function Home() {
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 -mt-8">
-          <p className="text-[13px] italic text-white/30 mb-4">
-            &ldquo;I only take calls with agencies who&apos;ve completed the audit. It saves us both time.&rdquo;
+          <p className="text-[13px] text-white/30 mb-4">
+            I only take calls with agencies who&apos;ve completed the audit — it saves us both time.
           </p>
           <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-[11px] text-white/40">
             <span className="flex items-center gap-1.5">
@@ -133,6 +154,49 @@ export default function Home() {
       </section>
 
       <WasteCalculator />
+
+      {/* ── Segment picker ──────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="py-24 px-6 max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+              Built for three kinds of shop
+            </p>
+            <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white leading-[1.1]">
+              Which one are you running?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {SEGMENTS.map((seg) => (
+              <Link
+                key={seg.href}
+                href={seg.href}
+                className="group relative rounded-3xl border border-white/[0.08] bg-white/[0.015] p-8 transition-all hover:border-cyan-400/30 hover:bg-white/[0.03]"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-400/70 mb-5">
+                  For {seg.label}
+                </p>
+                <h3 className="font-headline text-xl font-bold text-white mb-5 leading-[1.3] tracking-[-0.01em]">
+                  {seg.headline}
+                </h3>
+                <ul className="space-y-2.5 mb-8">
+                  {seg.bullets.map((b, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-white/55">
+                      <span className="text-cyan-400/50 mt-1 shrink-0">—</span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-[13px] text-white/50 group-hover:text-white/85 transition-colors inline-flex items-center gap-1.5">
+                  See the {seg.label} page
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </FadeInOnScroll>
 
       {/* ── 2. Who ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
