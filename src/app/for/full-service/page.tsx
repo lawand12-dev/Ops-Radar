@@ -5,6 +5,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import WorkflowImage from '<npm>/components/ui/workflow-image'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
@@ -163,6 +164,12 @@ export default function ForFullServicePage() {
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
+            <Link
+              href="/workflows"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
+            >
+              See real workflows I&apos;ve built →
+            </Link>
           </div>
         </div>
       </section>
@@ -219,6 +226,60 @@ export default function ForFullServicePage() {
           <p className="text-sm text-white/40 mt-6 max-w-2xl leading-relaxed">
             If your tool isn't here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
           </p>
+        </section>
+      </FadeInOnScroll>
+
+      {/* ── Real builds proof ────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="max-w-5xl mx-auto px-6 py-24">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+            Real builds, not mockups
+          </p>
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-3">
+            A look at the work.
+          </h2>
+          <p className="text-[15px] text-white/45 mb-10">
+            Every workflow below runs in production for a real agency. Click through to see all of them.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Link href="/workflows" className="group block">
+              <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/25">
+                <WorkflowImage
+                  src="/workflows/workflow-2.png"
+                  alt="Daily client performance briefing — n8n workflow"
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                />
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.25em] text-emerald-400/80">
+                Revenue Ops
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/95 transition-colors">
+                Daily Client Performance Briefing
+              </p>
+            </Link>
+            <Link href="/workflows" className="group block">
+              <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/25">
+                <WorkflowImage
+                  src="/workflows/workflow-1.png"
+                  alt="Zero-touch client onboarding — n8n workflow"
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                />
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400/80">
+                Client Ops
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/95 transition-colors">
+                Zero-Touch Client Onboarding
+              </p>
+            </Link>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link href="/workflows" className="text-sm text-white/50 hover:text-white/85 transition-colors">
+              See all workflows →
+            </Link>
+          </div>
         </section>
       </FadeInOnScroll>
 
