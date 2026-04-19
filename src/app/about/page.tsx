@@ -107,8 +107,11 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-[-0.04em] text-white leading-[1.08]">
-            Who is Lawand, and why should you trust him?
+            One operator. No middlemen. No disappearing act.
           </h1>
+          <p className="mt-5 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
+            I&apos;m Lawand Soran — the person who scopes, builds, and maintains every workflow. Here&apos;s who you&apos;re actually hiring.
+          </p>
         </div>
       </section>
 
