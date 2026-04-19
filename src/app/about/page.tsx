@@ -40,6 +40,29 @@ const NAV_LINKS = [
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
+const CREDIBILITY_MARKERS = [
+  {
+    label: 'Working hours',
+    value: '8-hour advantage',
+    detail: 'Based in Kurdistan (UTC+3). Your team signs off, I ship overnight, you wake up to updates.',
+  },
+  {
+    label: 'Primary platform',
+    value: 'n8n certified builder',
+    detail: 'Every workflow built on n8n in your own account — not a hidden SaaS layer. You keep everything if we part ways.',
+  },
+  {
+    label: 'Stack depth',
+    value: '30+ integrations deployed',
+    detail: 'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — real production integrations, not demos.',
+  },
+  {
+    label: 'Delivery model',
+    value: 'One builder, full accountability',
+    detail: 'No account managers, no outsourced labor, no agency markup. Every workflow scoped, built, and maintained by me personally.',
+  },
+]
+
 const WHY_TRUST = [
   {
     title: 'One person, full accountability.',
@@ -115,6 +138,37 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
+          <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        </section>
+      </FadeInOnScroll>
+
+      {/* ── Credibility markers ──────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="max-w-5xl mx-auto px-6 py-24">
+          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+            The specifics
+          </p>
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
+            What you&apos;re actually hiring.
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+            {CREDIBILITY_MARKERS.map((marker) => (
+              <div key={marker.label}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
+                  {marker.label}
+                </p>
+                <p className="font-headline text-xl md:text-2xl font-bold text-white mb-3 tracking-[-0.01em]">
+                  {marker.value}
+                </p>
+                <p className="text-[14px] leading-relaxed text-white/60">
+                  {marker.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+
           <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
         </section>
       </FadeInOnScroll>
