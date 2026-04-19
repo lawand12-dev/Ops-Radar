@@ -4,6 +4,7 @@ import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import OpsRadarPricing from '<npm>/components/ui/pricing-component'
 import Footer from '<npm>/components/Footer'
+import BookCallButton from '../components/BookCallButton'
 
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
@@ -74,6 +75,17 @@ export default function PricingPage() {
       <main className="relative z-10">
         <OpsRadarPricing />
       </main>
+
+      {/* Still deciding? Book a call ────────────────────────────────── */}
+      <section className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center">
+        <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
+          Not sure which tier fits?
+        </h2>
+        <p className="text-white/60 mb-10 leading-relaxed max-w-xl mx-auto">
+          Book a 15-minute intro call and we&apos;ll talk through your operation. I&apos;ll recommend the tier that makes sense — or tell you honestly if OpsRadar isn&apos;t the right fit yet.
+        </p>
+        <BookCallButton />
+      </section>
 
       {/* Footer */}
       <Footer />

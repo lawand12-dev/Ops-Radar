@@ -6,6 +6,7 @@ import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import BookCallButton from '../components/BookCallButton'
 
 export const metadata: Metadata = {
   title: "About",
@@ -221,9 +222,12 @@ export default function AboutPage() {
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-8 text-white">
             Ready to stop doing it manually?
           </h2>
-          <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
-            <Link href="/audit">Start Free Audit &rarr;</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+              <Link href="/audit">Start Free Audit &rarr;</Link>
+            </Button>
+            <BookCallButton />
+          </div>
           <p className="mt-4 text-xs text-white/20">3 minutes &middot; Free &middot; No commitment</p>
         </div>
       </section>

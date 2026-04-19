@@ -8,6 +8,7 @@ import WorkflowImage from '<npm>/components/ui/workflow-image'
 import Footer from '<npm>/components/Footer'
 import WasteCalculator from './components/WasteCalculator'
 import RhythmBreak from './components/RhythmBreak'
+import BookCallButton from './components/BookCallButton'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Ops Automation for Marketing Agencies",
@@ -405,9 +406,12 @@ export default function Home() {
           <p className="text-white/40 mb-10 text-lg">
             Free audit. Results sent to your email.
           </p>
-          <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
-            <Link href="/audit">Start Free Audit &rarr;</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
+              <Link href="/audit">Start Free Audit &rarr;</Link>
+            </Button>
+            <BookCallButton />
+          </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/40">
             <span className="flex items-center gap-1.5">
