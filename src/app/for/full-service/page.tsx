@@ -7,6 +7,7 @@ import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
+import BookCallButton from '../../components/BookCallButton'
 
 export const metadata: Metadata = {
   title: 'For Full-Service Digital Agencies — OpsRadar',
@@ -342,9 +343,12 @@ export default function ForFullServicePage() {
           <p className="text-white/40 mb-10 leading-relaxed">
             3-minute audit. Real dollar numbers for your agency. Shareable with your ops lead.
           </p>
-          <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
-            <Link href="/audit">Start Free Audit &rarr;</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+              <Link href="/audit">Start Free Audit &rarr;</Link>
+            </Button>
+            <BookCallButton />
+          </div>
         </div>
       </section>
 

@@ -6,6 +6,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import BookCallButton from '../components/BookCallButton'
 
 export const metadata: Metadata = {
   title: "Services",
@@ -273,6 +274,7 @@ export default function ServicesPage() {
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
+            <BookCallButton />
           </div>
         </div>
       </section>

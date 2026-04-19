@@ -5,6 +5,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
+import BookCallButton from '../components/BookCallButton'
 
 export const metadata: Metadata = {
   title: 'How it works',
@@ -323,12 +324,15 @@ export default function HowItWorksPage() {
           <p className="text-white/45 mb-10 leading-relaxed">
             3 minutes. Free. You&apos;ll know by the end whether this is worth a kickoff call.
           </p>
-          <Button
-            asChild
-            className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0"
-          >
-            <Link href="/audit">Start Free Audit →</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              asChild
+              className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0"
+            >
+              <Link href="/audit">Start Free Audit →</Link>
+            </Button>
+            <BookCallButton />
+          </div>
         </div>
       </section>
 
