@@ -67,34 +67,6 @@ const WHAT_I_BUILD = [
   },
 ]
 
-const PROCESS_STEPS = [
-  {
-    n: '01',
-    title: 'You tell me the problem.',
-    desc: 'Start with a free audit or a quick call. Tell me which manual tasks are burning your team\u2019s time. No technical knowledge needed — plain English is fine.',
-  },
-  {
-    n: '02',
-    title: 'I scope & price it.',
-    desc: 'Within 48 hours you get a clear proposal: exactly what I\u2019ll build, how long it takes, and a fixed price. You approve before anything starts.',
-  },
-  {
-    n: '03',
-    title: 'I build & test.',
-    desc: 'I build the automation in n8n, integrate it with your existing tools, and test every path — including edge cases and error handling.',
-  },
-  {
-    n: '04',
-    title: 'You review & approve.',
-    desc: 'I walk you through the live workflow in a recorded session. Nothing goes live until you\u2019ve reviewed it and given the green light.',
-  },
-  {
-    n: '05',
-    title: 'It runs 24/7.',
-    desc: 'I deploy inside your n8n account, set up monitoring, and maintain the workflow long-term. If something breaks at 3am — I fix it, not you.',
-  },
-]
-
 const FAQS = [
   {
     q: 'What tools can you connect?',
@@ -226,40 +198,52 @@ export default function ServicesPage() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── The Process ──────────────────────────────────────────────── */}
+      {/* ── The process (compressed, full details on /how-it-works) ─── */}
       <FadeInOnScroll>
-        <section className="max-w-5xl mx-auto px-6 py-28">
+        <section className="max-w-4xl mx-auto px-6 py-24">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            How It Works
+            The process
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
-            Five steps. No mystery.
+          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-12">
+            From audit to running workflow in ~10 business days.
           </h2>
-          <p className="text-white/40 max-w-lg mb-16 leading-relaxed">
-            You always know what&apos;s happening, what it costs, and what comes next.
-          </p>
 
-          <div className="space-y-0">
-            {PROCESS_STEPS.map(({ n, title, desc }, i) => (
-              <div key={n}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[60px_220px_1fr] gap-4 md:gap-8 py-8 md:py-10 items-start">
-                  <span className="font-mono text-[13px] font-bold text-white/20">
-                    {n}
-                  </span>
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
+                Day 0–2
+              </p>
+              <p className="text-base font-semibold text-white mb-2">Scope & price</p>
+              <p className="text-[14px] leading-relaxed text-white/60">
+                You run the audit, we have a kickoff call, I send a written fixed-price proposal within 48 hours.
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
+                Day 3–9
+              </p>
+              <p className="text-base font-semibold text-white mb-2">Build & walk-through</p>
+              <p className="text-[14px] leading-relaxed text-white/60">
+                I build in a dev environment, walk you through the live workflow on Day 9, you approve before it touches production.
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
+                Day 10+
+              </p>
+              <p className="text-base font-semibold text-white mb-2">Deploy & maintain</p>
+              <p className="text-[14px] leading-relaxed text-white/60">
+                Deploy to your n8n account, documentation delivered, monitoring runs in the background. You go back to your clients.
+              </p>
+            </div>
           </div>
+
+          <Link
+            href="/how-it-works"
+            className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white/90 transition-colors"
+          >
+            See the full 6-phase breakdown →
+          </Link>
         </section>
       </FadeInOnScroll>
 
