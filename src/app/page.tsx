@@ -7,6 +7,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
 import Footer from '<npm>/components/Footer'
 import WasteCalculator from './components/WasteCalculator'
+import RhythmBreak from './components/RhythmBreak'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Ops Automation for Marketing Agencies",
@@ -149,6 +150,15 @@ export default function Home() {
               </svg>
               Real dollar numbers, not fluff
             </span>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex justify-center mt-12 mb-2" aria-hidden="true">
+          <div className="scroll-cue flex flex-col items-center gap-1.5 text-white/40">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.28em]">Scroll</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
         </div>
       </section>
@@ -352,6 +362,8 @@ export default function Home() {
           </div>
         </section>
       </FadeInOnScroll>
+
+      <RhythmBreak />
 
       {/* ── 4. Why ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
