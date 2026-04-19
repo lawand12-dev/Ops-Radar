@@ -31,6 +31,7 @@ const NAV_LINKS = [
   { label: 'SEO', href: '/for/seo', isActive: true },
   { label: 'Full-Service', href: '/for/full-service' },
   { label: 'Services', href: '/services' },
+  { label: 'Process', href: '/how-it-works' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
