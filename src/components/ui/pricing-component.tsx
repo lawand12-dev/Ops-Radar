@@ -18,7 +18,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Starter Build',
     price: '$1,500',
-    description: 'Replaces about 5 hours/week of manual work. Pays back in ~8 weeks.',
+    description: 'Typically replaces about 5 hours/week of manual work \u2014 at the numbers most agencies report, that should pay back in roughly 8 weeks.',
     features: [
       'Single automation workflow',
       'Up to 3 tool integrations',
@@ -33,7 +33,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Core Build',
     price: '$2,800',
-    description: 'Replaces a $2,000/month ops hire\u2019s routine work. Pays back in ~6 weeks.',
+    description: 'Replaces the routine work of a $2,000/month ops hire. At those numbers it should pay back in roughly 6 weeks.',
     features: [
       'Multi-step workflow with branching logic',
       'Up to 6 tool integrations',
@@ -49,7 +49,7 @@ const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Advanced Build',
     price: '$4,500',
-    description: 'Replace 3\u20135 manual processes at once. A full ops transformation.',
+    description: 'Built to replace 3\u20135 manual processes at once. A full ops overhaul.',
     features: [
       'Complex multi-workflow system',
       'Unlimited tool integrations',
@@ -122,7 +122,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can\u2019t we just build this ourselves?',
-    a: 'You can. Most agencies that try spend 200+ developer hours a year on automation projects that should take 20 \u2014 that\u2019s roughly $50K of diverted billable work per year. I\u2019ve built 30+ workflows. You\u2019re paying for experience that avoids the expensive mistakes. If you want to try it yourself first, take the free audit and build from my recommendations. No hard feelings.',
+    a: 'You can. Most agencies that try to build this in-house end up spending hundreds of hours a year on it \u2014 developer time that was supposed to be billable client work. I\u2019ve built and tested 30+ agency workflows end-to-end. You\u2019re paying for experience that avoids the expensive mistakes. If you want to try it yourself first, take the free audit and build from my recommendations. No hard feelings.',
   },
   {
     q: 'What happens if you disappear?',
@@ -134,7 +134,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I start with a one-time build and move to monthly later?',
-    a: 'Yes. Most clients start with a Core Build, then move to a monthly plan once they see the value.',
+    a: 'Yes. My recommendation is to start with a Core Build, then move to a monthly plan once you see the value from the first workflow.',
   },
   {
     q: 'Is there a contract?',
@@ -241,7 +241,7 @@ export default function OpsRadarPricing() {
               Monthly retainers are for ongoing care of a workflow I&apos;ve already built for you. They begin after delivery and don&apos;t include new builds — except where noted. New builds are scoped and priced separately using the build tiers above.
             </p>
             <p className="text-[13px] text-white/30 max-w-2xl mx-auto leading-relaxed">
-              For context: hiring an ops coordinator costs $5,500–$9,500/month fully loaded. A Zapier/Make retainer typically runs $2,500–$8,000/month.
+              For context: hiring an ops coordinator costs $5,500–$9,500/month fully loaded. A Zapier or Make retainer typically runs $500–$2,000/month and gets more expensive as your workflow volume scales.
             </p>
           </div>
 
