@@ -62,7 +62,7 @@ export default function PricingPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
             Pricing
           </p>
-          <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-[-0.03em] text-white mb-5">
+          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-5">
             What does it cost?
           </h1>
           <p className="text-white/40 mx-auto max-w-lg leading-relaxed text-lg">
