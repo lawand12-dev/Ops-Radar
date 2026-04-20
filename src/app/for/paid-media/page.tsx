@@ -87,11 +87,11 @@ const FAQS = [
   },
   {
     q: 'We built it in n8n ourselves and it broke. Why will this be different?',
-    a: 'Because you\u2019re running a paid-media shop, not an ops shop. I\u2019ve built 30+ agency workflows and know the specific breakage points \u2014 Meta\u2019s API deprecations, Shopify rate limits, Klaviyo\u2019s list sync quirks. I build it, monitor it, and fix it when it breaks. You never touch the canvas.',
+    a: 'Because you\u2019re running a paid-media shop, not an ops shop. I\u2019ve built and tested 30+ agency workflows end-to-end and know the specific breakage points \u2014 Meta\u2019s API deprecations, Shopify rate limits, Klaviyo\u2019s list sync quirks. I build it, monitor it, and fix it when it breaks. You never touch the canvas.',
   },
   {
     q: 'How do you compete with Motion, Varos, AgencyAnalytics?',
-    a: 'I don\u2019t. Those tools each solve one slice \u2014 creative analytics, benchmarks, reporting dashboards. I connect them together and plug the gaps in your workflow. Most of my paid-media clients keep their existing tools and use me to stitch them into one system.',
+    a: 'I don\u2019t. Those tools each solve one slice \u2014 creative analytics, benchmarks, reporting dashboards. I connect them together and plug the gaps in your workflow. Most paid-media founders I talk to want to keep their existing tools and have me stitch them into one clean system.',
   },
   {
     q: 'Can you work with Advantage+ and Performance Max reporting?',
@@ -238,7 +238,7 @@ export default function ForPaidMediaPage() {
             A look at the work.
           </h2>
           <p className="text-[15px] text-white/45 mb-10">
-            Every workflow below runs in production for a real agency. Click through to see all of them.
+            Real n8n workflows I&apos;ve built and tested end-to-end. No Figma mockups, no stock screenshots. Click through to see all of them.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -302,7 +302,7 @@ export default function ForPaidMediaPage() {
               The same shop pays <span className="text-white font-semibold">$500–$2,000/month for a Zapier retainer</span> that breaks at scale, or <span className="text-white font-semibold">$5,500–$9,500/month for an ops coordinator</span> who still needs managing.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. Most paid-media shops break even in about six weeks.
+              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. At those numbers, most paid-media shops should break even in about six weeks.
             </p>
           </div>
         </section>

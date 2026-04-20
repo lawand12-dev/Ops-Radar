@@ -54,8 +54,8 @@ const CREDIBILITY_MARKERS = [
   },
   {
     label: 'Stack depth',
-    value: '30+ integrations deployed',
-    detail: 'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — real production integrations, not demos.',
+    value: '30+ integrations hands-on',
+    detail: 'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — built and tested end-to-end, ready to deploy to your stack.',
   },
   {
     label: 'Delivery model',
@@ -192,7 +192,7 @@ export default function AboutPage() {
             Why Trust Me
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            Four reasons agencies stay.
+            Four reasons this model works.
           </h2>
 
           <div className="space-y-0">
