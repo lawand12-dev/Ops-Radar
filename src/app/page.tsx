@@ -44,21 +44,6 @@ const NAV_LINKS = [
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WHAT_I_DO = [
-  {
-    title: 'I diagnose.',
-    desc: 'A 3-minute AI audit identifies exactly which reports, handoffs, and alerts are burning your team\u2019s hours. Real dollar figures, sent to your inbox.',
-  },
-  {
-    title: 'I build.',
-    desc: 'Custom n8n workflows that pull from Meta, Google, GA4, Ahrefs, HubSpot, Triple Whale \u2014 whatever your stack already runs. Built inside your n8n account, delivered in days. You own every workflow from day one.',
-  },
-  {
-    title: 'I maintain.',
-    desc: 'I monitor your workflows, fix them when Meta\u2019s API changes or an AI Overview update breaks your tracking, and adjust them when you add a new client. You never touch the automation layer.',
-  },
-]
-
 const WHY_US = [
   {
     title: 'Freelancers disappear. I stay.',
@@ -354,31 +339,87 @@ export default function Home() {
 
       {/* ── 3. What ──────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-32 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-6xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             What
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Three things I do, nothing else.
+          <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-4 leading-[1.1]">
+            Three things I do.
           </h2>
+          <p className="text-base md:text-lg text-white/[0.55] mb-14 max-w-xl leading-relaxed">
+            Nothing else. Not hourly consulting. Not training. Not dashboards you have to maintain. Just these three, end to end.
+          </p>
 
-          <div className="space-y-0">
-            {WHAT_I_DO.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 md:gap-16 py-8 md:py-10">
-                  <h3 className="text-lg font-bold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
+          <div className="relative rounded-3xl border border-white/[0.08] bg-white/[0.015] overflow-hidden">
+            <div className="grid md:grid-cols-3">
+              {/* DIAGNOSE */}
+              <div className="relative p-8 md:p-10 border-b md:border-b-0 md:border-r border-white/[0.06]">
+                <div className="flex items-start justify-between mb-8">
+                  <p className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-400/70">
+                    Step 01
                   </p>
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                    <circle cx="20" cy="20" r="18" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
+                    <circle cx="20" cy="20" r="13" stroke="rgba(34, 211, 238, 0.35)" strokeWidth="1" />
+                    <circle cx="20" cy="20" r="8" stroke="rgba(34, 211, 238, 0.55)" strokeWidth="1" />
+                    <circle cx="20" cy="20" r="3" fill="rgb(34, 211, 238)" />
+                  </svg>
                 </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                  I diagnose.
+                </h3>
+                <p className="text-[15px] leading-[1.7] text-white/[0.65]">
+                  A 3-minute audit shows exactly what your agency is losing: real dollar figures, tied to the tools you already run.
+                </p>
               </div>
-            ))}
+
+              {/* BUILD */}
+              <div className="relative p-8 md:p-10 border-b md:border-b-0 md:border-r border-white/[0.06]">
+                <div className="flex items-start justify-between mb-8">
+                  <p className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-400/70">
+                    Step 02
+                  </p>
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                    <rect x="3" y="7" width="10" height="8" rx="2" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
+                    <rect x="27" y="7" width="10" height="8" rx="2" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
+                    <rect x="15" y="24" width="10" height="8" rx="2" stroke="rgba(34, 211, 238, 0.8)" strokeWidth="1" fill="rgba(34, 211, 238, 0.12)" />
+                    <path d="M8 15 L20 24" stroke="rgba(34, 211, 238, 0.45)" strokeWidth="1" strokeLinecap="round" />
+                    <path d="M32 15 L20 24" stroke="rgba(34, 211, 238, 0.45)" strokeWidth="1" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                  I build.
+                </h3>
+                <p className="text-[15px] leading-[1.7] text-white/[0.65]">
+                  Custom n8n workflows, inside your own n8n account. Delivered in 5 to 14 days. You own every workflow from day one.
+                </p>
+              </div>
+
+              {/* MAINTAIN */}
+              <div className="relative p-8 md:p-10">
+                <div className="flex items-start justify-between mb-8">
+                  <p className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-400/70">
+                    Step 03
+                  </p>
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                    <path d="M20 4 L34 10 L34 22 C34 30 27 35 20 37 C13 35 6 30 6 22 L6 10 Z" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" fill="rgba(34, 211, 238, 0.06)" />
+                    <path d="M13 20 L17.5 24.5 L27 15" stroke="rgba(34, 211, 238, 0.95)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                  I maintain.
+                </h3>
+                <p className="text-[15px] leading-[1.7] text-white/[0.65]">
+                  Meta&apos;s API changes. Triple Whale pushes a breaking update. I fix it, usually before you notice. You never touch the automation layer.
+                </p>
+              </div>
+            </div>
+
+            {/* Connector pulse dots at card junctions (desktop only) */}
+            <div className="hidden md:block pointer-events-none">
+              <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7),0_0_20px_rgba(34,211,238,0.35)]" />
+              <div className="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7),0_0_20px_rgba(34,211,238,0.35)]" />
+            </div>
           </div>
         </section>
       </FadeInOnScroll>
