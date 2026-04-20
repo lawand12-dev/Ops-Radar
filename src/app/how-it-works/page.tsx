@@ -168,7 +168,7 @@ const CONCERNS: Concern[] = [
   },
   {
     question: 'Can this move faster than 10 days?',
-    answer: 'Yes, for simpler workflows or when you need it fast for a client deadline. I\'ve shipped single workflows in 3-4 days when the scope is clear and you\'re responsive on tool access. I won\'t promise faster than 10 in the proposal unless I\'ve actually sized it and I\'m confident.',
+    answer: 'Yes, for simpler workflows or when you need it fast for a client deadline. Single workflows can ship in 3–4 days when the scope is tight and you\'re responsive on tool access. I won\'t promise faster than 10 in the proposal unless I\'ve actually sized it and I\'m confident.',
   },
 ]
 
@@ -310,7 +310,7 @@ export default function HowItWorksPage() {
             When I build for you, it goes into a n8n instance you own, with credentials you control, on infrastructure you pay for (or self-host). If you ever want to stop working with me, you keep everything. The workflows. The documentation. The entire system. I just stop maintaining it.
           </p>
           <p className="text-[15px] md:text-base leading-relaxed text-white/70">
-            No vendor lock-in. No &ldquo;your data is hostage.&rdquo; No per-task pricing that scales against you. That&apos;s the single biggest reason agencies work with me instead of Zapier retainers or locked automation consultancies.
+            No vendor lock-in. No &ldquo;your data is hostage.&rdquo; No per-task pricing that scales against you. That&apos;s the single biggest reason I built OpsRadar this way instead of running a Zapier-retainer model or a locked automation subscription.
           </p>
         </div>
       </section>
