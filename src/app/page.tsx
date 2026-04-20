@@ -214,53 +214,69 @@ export default function Home() {
 
       {/* ── 2. Who ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-32 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-4xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Who
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            One operator. No middlemen.
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-16 leading-[1.1]">
+            Four rules I won&apos;t break.
           </h2>
 
-          <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <div className="space-y-0">
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 py-12">
-            <p className="text-[15px] leading-[1.8] text-white/[0.65]">
-              I&apos;m Lawand Soran, founder of OpsRadar. I build automation
-              systems for marketing agencies from Kurdistan. I work with
-              three kinds of shop: paid-media agencies drowning in client
-              reports, SEO agencies tracking AI Overview mentions, and
-              full-service digital agencies defending delivery margin. You
-              work directly with the person building your workflow &mdash;
-              no account managers, no sales handoffs, no project managers
-              between you and the work.
-            </p>
-            <ul className="space-y-6">
-              <li className="flex items-start gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
-                <span className="text-[15px] text-white/80">
-                  <span className="font-semibold text-white/90">Direct founder access</span>
-                  {' '}&mdash; every message reaches me, not a ticket queue
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
-                <span className="text-[15px] text-white/80">
-                  <span className="font-semibold text-white/90">8-hour timezone advantage</span>
-                  {' '}&mdash; work ships while your team sleeps
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white/40 shrink-0" />
-                <span className="text-[15px] text-white/80">
-                  <span className="font-semibold text-white/90">Days, not weeks</span>
-                  {' '}&mdash; most builds delivered in 5&ndash;14 days
-                </span>
-              </li>
-            </ul>
+            <div className="py-10 md:py-14">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/50 mb-5">
+                — 01
+              </p>
+              <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                I build it myself.
+              </h3>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                No freelancer handoffs. No outsourced labor. The person who scopes your workflow is the person who ships it — and the person who fixes it when Meta&apos;s API changes at 3am.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-10 md:py-14">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/50 mb-5">
+                — 02
+              </p>
+              <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                I audit before I pitch.
+              </h3>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                Every call starts with a real diagnosis of what your agency is actually losing. I don&apos;t take meetings to talk about what I might do for you.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-10 md:py-14">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/50 mb-5">
+                — 03
+              </p>
+              <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                I charge per workflow, not per task.
+              </h3>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                Flat monthly retainers. No surprise bills. Zapier punishes you for scaling — I don&apos;t.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-10 md:py-14">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/50 mb-5">
+                — 04
+              </p>
+              <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
+                I stay for year two.
+              </h3>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                Most freelancers disappear after launch. I&apos;m still here when you add client #15 and Triple Whale breaks its API.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
           </div>
-
-          <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
         </section>
       </FadeInOnScroll>
 
