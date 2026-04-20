@@ -112,7 +112,7 @@ export default function Home() {
           badgeText="Ops automation for marketing agencies"
           title="AI is eating the craft."
           titleLine2="Let me eat the ops."
-          description="I'm Lawand. I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. Onboarding that ships in days, not weeks. Alerts tied to MER, not last-click ROAS. AIO mention tracking. Delivery margin you can actually defend. You own the workflows in your n8n account. I build them. I maintain them. You get your strategy hours back."
+          description="I'm Lawand. I build the automation layer for marketing agencies — in your own n8n account, maintained by me. Reporting, onboarding, pacing alerts. The work your team does at 11pm, handled while you sleep."
           primaryButtonText="Start Free Audit"
           primaryButtonHref="/audit"
           showPrimaryArrowIcon={true}

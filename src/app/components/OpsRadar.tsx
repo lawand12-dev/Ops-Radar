@@ -12,71 +12,86 @@ type Blip = {
 };
 
 const BLIPS: Blip[] = [
+  // INNER (0.30-0.45) = universal, hits every agency
   {
     id: 'reporting',
     angle: 18,
-    distance: 0.78,
+    distance: 0.32,
     label: 'Manual reporting',
     detail: '14\u201320 hours/week stitching Meta, Google, and Klaviyo into client PDFs. Every single week.',
     category: 'Reporting',
   },
   {
+    id: 'leads',
+    angle: 168,
+    distance: 0.36,
+    label: 'Lead scatter',
+    detail: '4+ inboxes nobody reconciles: website form, DMs, email, platform ad forms.',
+    category: 'Data',
+  },
+  {
+    id: 'creative',
+    angle: 258,
+    distance: 0.44,
+    label: 'Creative untagged',
+    detail: 'Cross-platform creative performance with no hook, format, or offer tags.',
+    category: 'Reporting',
+  },
+
+  // MID (0.50-0.62) = common at scale
+  {
     id: 'zapier',
     angle: 62,
-    distance: 0.52,
+    distance: 0.54,
     label: 'Zapier overrun',
     detail: '$500\u2013$2,000/mo once you scale past 10 clients. Per-task pricing doesn\u2019t.',
     category: 'Cost',
   },
   {
+    id: 'hiring',
+    angle: 340,
+    distance: 0.58,
+    label: 'Ops coordinator math',
+    detail: 'Hire one at $5.5K/mo \u2014 or automate the role for $400/mo.',
+    category: 'Cost',
+  },
+
+  // OUTER (0.70-0.82) = segment-specific or advanced
+  {
     id: 'onboarding',
     angle: 118,
-    distance: 0.82,
+    distance: 0.72,
     label: 'Onboarding drag',
     detail: 'BM access \u2192 first report typically takes 3 weeks. Should take 5 days.',
-    category: 'Onboarding',
-  },
-  {
-    id: 'leads',
-    angle: 168,
-    distance: 0.45,
-    label: 'Lead scatter',
-    detail: '4+ inboxes nobody reconciles: website form, DMs, email, platform ad forms.',
-    category: 'Leads',
-  },
-  {
-    id: 'mer',
-    angle: 212,
-    distance: 0.68,
-    label: 'MER drift',
-    detail: 'Last-click ROAS lies. MER tells the real story \u2014 if you track it.',
-    category: 'Attribution',
-  },
-  {
-    id: 'creative',
-    angle: 258,
-    distance: 0.38,
-    label: 'Creative untagged',
-    detail: 'Cross-platform creative performance with no hook, format, or offer tags.',
-    category: 'Reporting',
+    category: 'Ops',
   },
   {
     id: 'handoffs',
     angle: 302,
-    distance: 0.72,
+    distance: 0.76,
     label: 'Handoff failures',
     detail: 'AM \u2192 Strategist \u2192 Builder with data re-entered at every step.',
     category: 'Ops',
   },
   {
-    id: 'hiring',
-    angle: 340,
-    distance: 0.52,
-    label: 'Ops coordinator math',
-    detail: 'Hire one at $5.5K/mo \u2014 or automate the role for $400/mo.',
-    category: 'Cost',
+    id: 'mer',
+    angle: 212,
+    distance: 0.82,
+    label: 'MER drift',
+    detail: 'Last-click ROAS lies. MER tells the real story \u2014 if you track it.',
+    category: 'Data',
   },
 ];
+
+// Category color system (consistent with About page specialty cards)
+type CategoryColor = { base: string; glow: string; haloSoft: string };
+const CATEGORY_COLORS: Record<string, CategoryColor> = {
+  Reporting: { base: 'rgb(34, 211, 238)',  glow: 'rgba(34, 211, 238, 0.9)',  haloSoft: 'rgba(34, 211, 238, 0.35)' },
+  Cost:      { base: 'rgb(251, 146, 60)',  glow: 'rgba(251, 146, 60, 0.9)',  haloSoft: 'rgba(251, 146, 60, 0.32)' },
+  Ops:       { base: 'rgb(167, 139, 250)', glow: 'rgba(167, 139, 250, 0.9)', haloSoft: 'rgba(167, 139, 250, 0.32)' },
+  Data:      { base: 'rgb(52, 211, 153)',  glow: 'rgba(52, 211, 153, 0.9)',  haloSoft: 'rgba(52, 211, 153, 0.32)' },
+};
+const DEFAULT_COLOR: CategoryColor = { base: 'rgb(34, 211, 238)', glow: 'rgba(34, 211, 238, 0.9)', haloSoft: 'rgba(34, 211, 238, 0.35)' };
 
 const ROTATION_S = 6;      // full radar sweep in seconds
 const SIZE = 480;          // SVG viewBox size
@@ -98,13 +113,13 @@ const RADAR_CSS = `
 }
 @keyframes opsradar-blip-ping {
   0% { opacity: 1; }
-  18% { opacity: 0.22; }
+  14% { opacity: 0.22; }
   100% { opacity: 0.22; }
 }
 @keyframes opsradar-halo-ping {
-  0% { opacity: 0.55; r: 6; }
-  18% { opacity: 0; r: 18; }
-  100% { opacity: 0; r: 18; }
+  0% { opacity: 0.7; r: 4; }
+  22% { opacity: 0; r: 22; }
+  100% { opacity: 0; r: 22; }
 }
 @keyframes opsradar-center-pulse {
   0% { r: 4; opacity: 0.5; }
@@ -113,6 +128,10 @@ const RADAR_CSS = `
 @keyframes opsradar-panel-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes opsradar-status-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 .opsradar-sweep {
   animation: opsradar-sweep ${ROTATION_S}s linear infinite;
@@ -127,6 +146,9 @@ const RADAR_CSS = `
 .opsradar-center-halo {
   animation: opsradar-center-pulse 2.2s ease-out infinite;
 }
+.opsradar-status-dot {
+  animation: opsradar-status-pulse 1.8s ease-in-out infinite;
+}
 .opsradar-panel {
   animation: opsradar-panel-in 0.25s ease-out;
 }
@@ -134,7 +156,8 @@ const RADAR_CSS = `
   .opsradar-sweep { display: none; }
   .opsradar-blip-dot,
   .opsradar-blip-halo,
-  .opsradar-center-halo {
+  .opsradar-center-halo,
+  .opsradar-status-dot {
     animation: none;
   }
   .opsradar-blip-dot { opacity: 0.85; }
@@ -166,7 +189,29 @@ export default function OpsRadar() {
 
         {/* Radar + side panel */}
         <div className="grid md:grid-cols-[1fr_340px] gap-10 md:gap-16 items-center">
-          <div className="relative aspect-square max-w-[480px] mx-auto w-full">
+          <div className="relative max-w-[480px] mx-auto w-full">
+            {/* Status bar */}
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5">
+                <span className="opsradar-status-dot h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                  Scanning
+                </span>
+                <span className="text-white/20">{'\u00B7'}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/50">
+                  {BLIPS.length} contacts
+                </span>
+                <span className="text-white/20">{'\u00B7'}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
+                  Live
+                </span>
+              </div>
+              <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-[0.22em] text-white/30">
+                {'6s cycle'}
+              </span>
+            </div>
+
+            <div className="relative aspect-square w-full">
             <svg
               viewBox={`0 0 ${SIZE} ${SIZE}`}
               className="w-full h-full"
@@ -234,6 +279,7 @@ export default function OpsRadar() {
                 const pos = polarToCartesian(blip.angle, blip.distance);
                 const delay = -(blip.angle / 360) * ROTATION_S;
                 const isActive = activeBlipId === blip.id;
+                const color = CATEGORY_COLORS[blip.category] ?? DEFAULT_COLOR;
 
                 return (
                   <g key={blip.id}>
@@ -241,28 +287,40 @@ export default function OpsRadar() {
                     <circle
                       cx={pos.x}
                       cy={pos.y}
-                      r="6"
-                      fill="rgba(34, 211, 238, 0.35)"
+                      r="4"
+                      fill={color.haloSoft}
                       className="opsradar-blip-halo"
                       style={{ animationDelay: `${delay}s` }}
                     />
                     {/* Active outer ring (only when selected) */}
                     {isActive && (
-                      <circle
-                        cx={pos.x}
-                        cy={pos.y}
-                        r="14"
-                        fill="none"
-                        stroke="rgba(34, 211, 238, 0.6)"
-                        strokeWidth="1"
-                      />
+                      <>
+                        <circle
+                          cx={pos.x}
+                          cy={pos.y}
+                          r="14"
+                          fill="none"
+                          stroke={color.glow}
+                          strokeWidth="1"
+                          opacity="0.7"
+                        />
+                        <circle
+                          cx={pos.x}
+                          cy={pos.y}
+                          r="20"
+                          fill="none"
+                          stroke={color.glow}
+                          strokeWidth="0.5"
+                          opacity="0.4"
+                        />
+                      </>
                     )}
                     {/* Core dot */}
                     <circle
                       cx={pos.x}
                       cy={pos.y}
-                      r={isActive ? 6 : 4.5}
-                      fill={isActive ? 'rgb(34, 211, 238)' : 'rgb(6, 182, 212)'}
+                      r={isActive ? 6.5 : 4.5}
+                      fill={color.base}
                       stroke={isActive ? 'rgba(255, 255, 255, 0.9)' : 'none'}
                       strokeWidth={isActive ? 1.5 : 0}
                       className={isActive ? '' : 'opsradar-blip-dot'}
@@ -291,32 +349,66 @@ export default function OpsRadar() {
                 );
               })}
             </svg>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-5 flex items-center justify-center gap-5 flex-wrap">
+              {(['Reporting', 'Cost', 'Ops', 'Data'] as const).map((cat) => {
+                const color = CATEGORY_COLORS[cat];
+                return (
+                  <div key={cat} className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: color.base, boxShadow: `0 0 6px ${color.glow}` }}
+                    />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                      {cat}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Side panel */}
           <div className="min-h-[220px]">
             {activeBlip ? (
-              <div
-                key={activeBlip.id}
-                className="opsradar-panel rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.03] p-6 backdrop-blur-xl"
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-cyan-400/70 mb-3">
-                  {activeBlip.category}
-                </p>
-                <h3 className="font-headline text-xl md:text-2xl font-bold text-white mb-3 tracking-[-0.01em]">
-                  {activeBlip.label}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-white/[0.75] mb-5">
-                  {activeBlip.detail}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setActiveBlipId(null)}
-                  className="text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white/70 transition-colors"
-                >
-                  {'\u2190 Clear'}
-                </button>
-              </div>
+              (() => {
+                const panelColor = CATEGORY_COLORS[activeBlip.category] ?? DEFAULT_COLOR;
+                return (
+                  <div
+                    key={activeBlip.id}
+                    className="opsradar-panel rounded-2xl border bg-white/[0.02] p-6 backdrop-blur-xl"
+                    style={{ borderColor: panelColor.haloSoft }}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: panelColor.base, boxShadow: `0 0 8px ${panelColor.glow}` }}
+                      />
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-[0.24em]"
+                        style={{ color: panelColor.base }}
+                      >
+                        {activeBlip.category}
+                      </p>
+                    </div>
+                    <h3 className="font-headline text-xl md:text-2xl font-bold text-white mb-3 tracking-[-0.01em]">
+                      {activeBlip.label}
+                    </h3>
+                    <p className="text-[15px] leading-relaxed text-white/[0.75] mb-5">
+                      {activeBlip.detail}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveBlipId(null)}
+                      className="text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white/70 transition-colors"
+                    >
+                      {'\u2190 Clear'}
+                    </button>
+                  </div>
+                );
+              })()
             ) : (
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40 mb-3">
@@ -341,20 +433,30 @@ export default function OpsRadar() {
           <ul className="space-y-2">
             {BLIPS.map((blip) => {
               const isActive = activeBlipId === blip.id;
+              const color = CATEGORY_COLORS[blip.category] ?? DEFAULT_COLOR;
               return (
                 <li key={blip.id}>
                   <button
                     type="button"
                     onClick={() => setActiveBlipId(isActive ? null : blip.id)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                    className={`w-full flex items-center gap-3 text-left p-3 rounded-lg border transition-colors ${
                       isActive
-                        ? 'border-cyan-400/30 bg-cyan-400/[0.04]'
-                        : 'border-white/[0.06] hover:border-cyan-400/20'
+                        ? 'border-white/20 bg-white/[0.04]'
+                        : 'border-white/[0.06] hover:border-white/[0.14]'
                     }`}
                   >
-                    <span className="text-sm font-semibold text-white/85">{blip.label}</span>
-                    <span className="block text-[11px] uppercase tracking-[0.18em] text-cyan-400/60 mt-0.5">
-                      {blip.category}
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: color.base, boxShadow: `0 0 6px ${color.glow}` }}
+                    />
+                    <span className="flex-1">
+                      <span className="block text-sm font-semibold text-white/85">{blip.label}</span>
+                      <span
+                        className="block text-[11px] uppercase tracking-[0.18em] mt-0.5"
+                        style={{ color: color.base, opacity: 0.75 }}
+                      >
+                        {blip.category}
+                      </span>
                     </span>
                   </button>
                 </li>
