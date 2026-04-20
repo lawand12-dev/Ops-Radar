@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Button } from '<npm>/components/ui/button'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import BeamsBackground from '<npm>/components/ui/beams-background'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
@@ -9,7 +8,6 @@ import Footer from '<npm>/components/Footer'
 import WasteCalculator from './components/WasteCalculator'
 import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
-import BookCallButton from './components/BookCallButton'
 
 export const metadata: Metadata = {
   title: "OpsRadar — Ops Automation for Marketing Agencies",
@@ -267,7 +265,7 @@ export default function Home() {
 
           {/* Flagship preview */}
           <Link href="/workflows" className="group block mb-6">
-            <div className="rounded-xl overflow-hidden p-px bg-gradient-to-r from-pink-500/60 via-purple-500/60 to-pink-500/60 shadow-[0_0_30px_rgba(236,72,153,0.15)] transition-shadow group-hover:shadow-[0_0_40px_rgba(236,72,153,0.25)]">
+            <div className="rounded-xl overflow-hidden p-px bg-gradient-to-r from-cyan-400/50 via-cyan-300/60 to-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.2)] transition-shadow group-hover:shadow-[0_0_40px_rgba(34,211,238,0.35)]">
               <div className="rounded-[11px] overflow-hidden bg-black">
                 <WorkflowImage
                   src="/workflows/workflow-5.png"
@@ -277,10 +275,10 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3 mt-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-400/80">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-400/80">
                 Sales Intelligence
               </p>
-              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-pink-300">
+              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-cyan-500/20 to-cyan-400/20 border border-cyan-400/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-cyan-300">
                 Flagship
               </span>
             </div>
@@ -291,9 +289,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
-              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-blue-400/80' },
-              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-emerald-400/80' },
-              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-purple-400/80' },
+              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-purple-400/80' },
+              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-cyan-400/80' },
+              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-emerald-400/80' },
               { src: '/workflows/workflow-4.png', title: 'AI Content Machine', category: 'CONTENT OPS', color: 'text-orange-400/80' },
             ].map((wf) => (
               <Link key={wf.src} href="/workflows" className="group block">
@@ -467,46 +465,58 @@ export default function Home() {
       </FadeInOnScroll>
 
       {/* ── 5. Final CTA ─────────────────────────────────────────────── */}
-      <section className="py-40 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-headline text-4xl md:text-6xl font-extrabold mb-5 tracking-[-0.03em] text-white">
-            See exactly what to automate, in 3 minutes.
-          </h2>
-          <p className="text-white/40 mb-10 text-lg">
-            Free audit. Results sent to your email.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
-              <Link href="/audit">Start Free Audit &rarr;</Link>
-            </Button>
-            <BookCallButton />
+      <section className="relative py-40 px-6 overflow-hidden">
+        {/* Subtle radial glow behind CTA */}
+        <div
+          className="absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto max-w-2xl h-96 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(34,211,238,0.08) 0%, transparent 70%)',
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          {/* Radar echo icon */}
+          <div className="flex justify-center mb-10" aria-hidden="true">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="28" stroke="rgba(34, 211, 238, 0.12)" strokeWidth="1" />
+              <circle cx="32" cy="32" r="20" stroke="rgba(34, 211, 238, 0.22)" strokeWidth="1" />
+              <circle cx="32" cy="32" r="12" stroke="rgba(34, 211, 238, 0.38)" strokeWidth="1" />
+              <circle cx="32" cy="32" r="6" stroke="rgba(34, 211, 238, 0.65)" strokeWidth="1" />
+              <circle cx="32" cy="32" r="3" fill="rgb(34, 211, 238)" />
+            </svg>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/40">
-            <span className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
-                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              3-minute AI audit
-            </span>
-            <span className="text-white/20">&middot;</span>
-            <span className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
-                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              3 minutes. Results to your inbox.
-            </span>
-            <span className="text-white/20">&middot;</span>
-            <span className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
-                <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Real dollar numbers, not fluff
-            </span>
+          <h2 className="font-headline text-4xl md:text-6xl font-extrabold mb-6 tracking-[-0.03em] text-white leading-[1.05]">
+            Ready to see your radar?
+          </h2>
+
+          <p className="text-white/55 mb-12 text-lg md:text-xl leading-relaxed max-w-xl mx-auto">
+            Free audit. 3 minutes. Real numbers on what your agency is losing.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+            <a
+              href="/audit"
+              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)]"
+            >
+              Start Free Audit
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+            <a
+              href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
+            >
+              Book a 15-min intro call
+              <span aria-hidden="true">&rarr;</span>
+            </a>
           </div>
+
+          <p className="text-[13px] text-white/40 max-w-md mx-auto leading-relaxed">
+            No credit card. No sales pitch. Just the list of workflows burning the most money in your agency right now.
+          </p>
         </div>
       </section>
 
