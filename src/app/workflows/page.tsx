@@ -10,17 +10,17 @@ import Footer from '<npm>/components/Footer'
 export const metadata: Metadata = {
   title: "Workflows",
   description:
-    "Real n8n automations, built and tested end-to-end. Every node connected to real tools — replacing hours of manual work with something that runs 24/7.",
+    "Real n8n automations, built and tested end-to-end against live APIs. Every canvas is ready to deploy to your stack.",
   openGraph: {
     title: "Workflows — OpsRadar",
     description:
-      "Real n8n automations, built and tested end-to-end. Every node connected to real tools — replacing hours of manual work with something that runs 24/7.",
+      "Real n8n automations, built and tested end-to-end against live APIs. Every canvas is ready to deploy to your stack.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Workflows — OpsRadar" }],
   },
   twitter: {
     title: "Workflows — OpsRadar",
     description:
-      "Real n8n automations, built and tested end-to-end. Every node connected to real tools — replacing hours of manual work with something that runs 24/7.",
+      "Real n8n automations, built and tested end-to-end against live APIs. Every canvas is ready to deploy to your stack.",
     images: ["/og-image.png"],
   },
 }
