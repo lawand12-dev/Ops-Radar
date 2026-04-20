@@ -7,6 +7,7 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
 import Footer from '<npm>/components/Footer'
 import WasteCalculator from './components/WasteCalculator'
+import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
 import BookCallButton from './components/BookCallButton'
 
@@ -163,6 +164,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <OpsRadar />
 
       <WasteCalculator />
 
