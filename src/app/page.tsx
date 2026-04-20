@@ -44,21 +44,6 @@ const NAV_LINKS = [
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WHY_US = [
-  {
-    title: 'Freelancers disappear. I stay.',
-    desc: 'Every build includes a bug-fix window plus an optional retainer for ongoing care. I\u2019m still here in year two, knowing your stack and your clients.',
-  },
-  {
-    title: 'Zapier charges per task. Agencies run thousands.',
-    desc: 'Your reporting workflows run hundreds of times a day \u2014 scraping ad platforms, pulling rank data, merging attribution, pushing to dashboards. On Zapier that\u2019s $500\u2013$2,000/month. On your own n8n, it\u2019s a flat $20.',
-  },
-  {
-    title: 'AI builds fast. I verify every line before it touches your clients\u2019 data.',
-    desc: 'AI accelerates the build. I review every workflow before it pulls from your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.',
-  },
-]
-
 const SEGMENTS = [
   {
     href: '/for/paid-media',
@@ -428,31 +413,55 @@ export default function Home() {
 
       {/* ── 4. Why ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="py-32 px-6 max-w-5xl mx-auto">
+        <section className="py-32 px-6 max-w-4xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Why
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Why agencies choose OpsRadar.
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-20 leading-[1.1]">
+            Why this works.
           </h2>
 
           <div className="space-y-0">
-            {WHY_US.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 md:gap-16 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
-            ))}
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-16 md:py-20">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
+                — On ownership
+              </p>
+              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+                You own it.<br />All of it.
+              </blockquote>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                Every workflow I build lives in your n8n account, on your Google Drive, running on your credentials. If I disappear tomorrow, nothing breaks. You keep the code, the logic, and the logs &mdash; day one.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-16 md:py-20">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
+                — On reliability
+              </p>
+              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+                Meta breaks something.<br />I know before you do.
+              </blockquote>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                Ad platforms push breaking API changes every quarter. My monitoring catches them before your Monday morning report fails. You see the fix, not the error.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            <div className="py-16 md:py-20">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
+                — On AI
+              </p>
+              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+                AI builds fast.<br />I verify every line.
+              </blockquote>
+              <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
+                AI accelerates the build. I review every workflow before it touches your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.
+              </p>
+            </div>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
           </div>
         </section>
       </FadeInOnScroll>
