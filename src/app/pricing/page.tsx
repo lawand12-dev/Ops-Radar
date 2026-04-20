@@ -79,10 +79,10 @@ export default function PricingPage() {
       {/* Still deciding? Book a call ────────────────────────────────── */}
       <section className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center">
         <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
-          Not sure which tier fits?
+          Still have questions?
         </h2>
         <p className="text-white/60 mb-10 leading-relaxed max-w-xl mx-auto">
-          Book a 15-minute intro call and we&apos;ll talk through your operation. I&apos;ll recommend the tier that makes sense — or tell you honestly if OpsRadar isn&apos;t the right fit yet.
+          Book a 15-minute call. Bring anything — tool stack, workflow sketch, budget questions. No prep needed.
         </p>
         <BookCallButton />
       </section>
