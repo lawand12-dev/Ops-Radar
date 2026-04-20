@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "<npm>/lib/constants";
 import "./globals.css";
-import { FloatingAiAssistant } from "../components/ui/glowing-ai-chat-assistant";
 
 const sansFont = localFont({
   src: [
@@ -92,7 +91,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <FloatingAiAssistant />
         <Analytics />
       </body>
     </html>

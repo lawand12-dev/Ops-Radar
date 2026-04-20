@@ -162,7 +162,7 @@ export default function ForFullServicePage() {
             back the hours you've been losing to manual status work.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <Link
@@ -344,7 +344,7 @@ export default function ForFullServicePage() {
             3-minute audit. Real dollar numbers for your agency. Shareable with your ops lead.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <BookCallButton />

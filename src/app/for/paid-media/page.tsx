@@ -160,7 +160,7 @@ export default function ForPaidMediaPage() {
             n8n account. I build them, I maintain them, you get your strategy hours back.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <Link
@@ -342,7 +342,7 @@ export default function ForPaidMediaPage() {
             3-minute audit. Real dollar numbers for your agency. No commitment.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <BookCallButton />

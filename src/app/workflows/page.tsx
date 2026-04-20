@@ -206,7 +206,7 @@ export default function WorkflowsPage() {
             most time, then scope the exact build.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-10 py-4 h-auto rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
           </div>
