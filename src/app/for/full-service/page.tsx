@@ -240,7 +240,7 @@ export default function ForFullServicePage() {
             A look at the work.
           </h2>
           <p className="text-[15px] text-white/45 mb-10">
-            Every workflow below runs in production for a real agency. Click through to see all of them.
+            Real n8n workflows I&apos;ve built and tested end-to-end. No Figma mockups, no stock screenshots. Click through to see all of them.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -304,7 +304,7 @@ export default function ForFullServicePage() {
               HubSpot Operations Hub starts at <span className="text-white font-semibold">$800/month for 3 users</span> and scales with seat count. Hiring an ops coordinator runs <span className="text-white font-semibold">$5,500–$9,500/month fully loaded</span> and still needs managing.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>, flat. No per-seat tax, no management overhead. Most full-service shops see payback within a quarter.
+              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>, flat. No per-seat tax, no management overhead. At those numbers, most full-service shops should see payback within a quarter.
             </p>
           </div>
         </section>

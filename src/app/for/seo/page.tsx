@@ -87,7 +87,7 @@ const FAQS = [
   },
   {
     q: 'How is this different from SEOmonitor, Nightwatch, or Local Falcon?',
-    a: 'Those tools each solve one slice — rank tracking, local SEO, technical monitoring. I connect them together and plug the gaps. Most of my SEO clients keep their existing subscriptions and use me to stitch them into one workflow that feeds client reports, Slack alerts, and internal dashboards.',
+    a: 'Those tools each solve one slice — rank tracking, local SEO, technical monitoring. I connect them together and plug the gaps. Most SEO founders I talk to want to keep their existing subscriptions and have me stitch them into one workflow that feeds client reports, Slack alerts, and internal dashboards.',
   },
   {
     q: 'Could I just hire a VA for $1,500/month to do this manually?',
@@ -239,7 +239,7 @@ export default function ForSeoPage() {
             A look at the work.
           </h2>
           <p className="text-[15px] text-white/45 mb-10">
-            Every workflow below runs in production for a real agency. Click through to see all of them.
+            Real n8n workflows I&apos;ve built and tested end-to-end. No Figma mockups, no stock screenshots. Click through to see all of them.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -303,7 +303,7 @@ export default function ForSeoPage() {
               The common alternative — hiring a VA at <span className="text-white font-semibold">$1,500/month</span> — replaces the labor but not the management overhead. You still train, QA, and hand-hold.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. The outcome, without the management layer. Most SEO agencies break even in about six weeks.
+              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. The outcome, without the management layer. At those numbers, most SEO agencies should break even in about six weeks.
             </p>
           </div>
         </section>
