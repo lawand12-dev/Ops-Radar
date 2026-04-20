@@ -122,7 +122,7 @@ export default function ServicesPage() {
             maintained by me.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
           </div>
@@ -158,7 +158,7 @@ export default function ServicesPage() {
                 <p className="text-white/90 text-sm leading-relaxed">Built in your n8n account in 7–14 days</p>
               </div>
             </div>
-            <Button asChild className="px-6 py-3 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-6 py-3 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">See if this fits your agency &rarr;</Link>
             </Button>
           </div>
@@ -271,7 +271,7 @@ export default function ServicesPage() {
             3-minute audit. Instant results. No commitment.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0">
+            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
               <Link href="/audit">Start Free Audit &rarr;</Link>
             </Button>
             <BookCallButton />

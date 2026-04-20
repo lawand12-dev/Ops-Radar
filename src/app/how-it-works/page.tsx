@@ -327,7 +327,7 @@ export default function HowItWorksPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               asChild
-              className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0"
+              className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press"
             >
               <Link href="/audit">Start Free Audit →</Link>
             </Button>

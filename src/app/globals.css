@@ -1147,3 +1147,40 @@ p {
     opacity: 0.45;
   }
 }
+
+/* Microinteractions — unified hover vocabulary */
+.hover-card {
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+.hover-card:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 32px rgba(34, 211, 238, 0.08);
+  transform: translateY(-1px);
+}
+
+.hover-chip {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+.hover-chip:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.btn-press {
+  transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 220ms ease;
+}
+.btn-press:hover {
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.22), 0 0 80px rgba(255, 255, 255, 0.08);
+}
+.btn-press:active {
+  transform: scale(0.97) translateY(1px);
+  transition-duration: 80ms;
+}
+
+/* Focus ring in brand color for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.7);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

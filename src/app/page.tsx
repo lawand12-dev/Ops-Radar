@@ -498,7 +498,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <a
               href="/audit"
-              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)]"
+              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)] btn-press"
             >
               Start Free Audit
               <span aria-hidden="true">&rarr;</span>
