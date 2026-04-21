@@ -1028,6 +1028,106 @@ function normalizeTopLevelFields(
   return normalized
 }
 
+function classifyPainCategory(automationWish: string): string {
+  const text = (automationWish || '').toLowerCase()
+  if (!text.trim()) return 'unknown'
+
+  // Order matters — more specific keywords first
+  if (/\b(answer|respond|reply|follow[\s-]?up).*(lead|inquir|prospect)\b/.test(text)) return 'lead_response'
+  if (/\b(lead|inquir|prospect).*(answer|respond|reply|follow[\s-]?up)\b/.test(text)) return 'lead_response'
+  if (/\b(qualif|score|rout|nurtur).*lead\b/.test(text)) return 'lead_qualification'
+  if (/\breport|dashboard|client update\b/.test(text)) return 'reporting'
+  if (/\bonboard|kickoff|new client/.test(text)) return 'onboarding'
+  if (/\binvoic|bill|payment|quickbook/.test(text)) return 'invoicing'
+  if (/\bcontent.*(repurpos|recycle|multi.?channel|social)/.test(text)) return 'content_repurposing'
+  if (/\b(proposal|pitch|sow)\b/.test(text)) return 'proposal'
+  if (/\bproject.*(status|update|handoff)/.test(text)) return 'pm'
+  if (/\bmeeting.*(summary|note|follow[\s-]?up|recap)/.test(text)) return 'meeting_followup'
+  if (/\blead\b/.test(text)) return 'lead_response'
+  return 'other'
+}
+
+function classifyOpportunityCategory(title: string): string {
+  const t = (title || '').toLowerCase()
+  if (/lead.*(respon|answer|reply)|respon.*lead/.test(t)) return 'lead_response'
+  if (/lead.*(qualif|scor|rout|attribut)/.test(t)) return 'lead_qualification'
+  if (/(report|dashboard|client.*brief)/.test(t)) return 'reporting'
+  if (/onboard|kickoff|new.client/.test(t)) return 'onboarding'
+  if (/invoic|bill|payment/.test(t)) return 'invoicing'
+  if (/content.*(repurpos|recycle|multi)/.test(t)) return 'content_repurposing'
+  if (/proposal|pitch|sow/.test(t)) return 'proposal'
+  if (/project.*(status|handoff|update|recap)/.test(t)) return 'pm'
+  if (/meeting.*(summary|recap|note)/.test(t)) return 'meeting_followup'
+  return 'other'
+}
+
+// Some pain categories have multiple valid opportunity answers.
+// e.g. "answering leads" pain can be addressed by response OR qualification workflows.
+const PAIN_CATEGORY_EQUIVALENCES: Record<string, string[]> = {
+  lead_response: ['lead_response', 'lead_qualification'],
+  lead_qualification: ['lead_qualification', 'lead_response'],
+  // Other categories are only equivalent to themselves (fallthrough below).
+}
+
+function isOpportunityAcceptable(painCategory: string, opportunityCategory: string): boolean {
+  const acceptable = PAIN_CATEGORY_EQUIVALENCES[painCategory] ?? [painCategory]
+  return acceptable.includes(opportunityCategory)
+}
+
+export type PainAlignmentResult = {
+  result: Record<string, unknown>
+  needsRepair: boolean
+  mismatch?: { expected: string; got: string }
+}
+
+export function enforcePainAlignment(
+  result: Record<string, unknown>,
+  automationWish: string,
+): PainAlignmentResult {
+  const painCategory = classifyPainCategory(automationWish)
+
+  if (painCategory === 'unknown' || painCategory === 'other') {
+    return { result, needsRepair: false }
+  }
+
+  const rawOpportunities = Array.isArray(result.opportunities)
+    ? (result.opportunities as unknown[])
+    : []
+
+  if (rawOpportunities.length === 0) {
+    return { result, needsRepair: true, mismatch: { expected: painCategory, got: 'none' } }
+  }
+
+  const opportunities = rawOpportunities.map((op) => (op ?? {}) as Record<string, unknown>)
+  const topCategory = classifyOpportunityCategory(asString(opportunities[0].title) ?? '')
+
+  if (isOpportunityAcceptable(painCategory, topCategory)) {
+    return { result, needsRepair: false }
+  }
+
+  const matchIdx = opportunities.findIndex(
+    (op) => isOpportunityAcceptable(painCategory, classifyOpportunityCategory(asString(op.title) ?? '')),
+  )
+
+  if (matchIdx > 0) {
+    const [matched] = opportunities.splice(matchIdx, 1)
+    matched.rank = 1
+    opportunities.forEach((op, i) => {
+      op.rank = i + 2
+    })
+    opportunities.unshift(matched)
+    console.log(
+      `[audit-grounding] pain-aligned re-rank: promoted ${painCategory} opportunity from position ${matchIdx + 1} to 1`,
+    )
+    return {
+      result: { ...result, opportunities },
+      needsRepair: false,
+    }
+  }
+
+  return { result, needsRepair: true, mismatch: { expected: painCategory, got: topCategory } }
+}
+
 export function groundAuditResult(
   raw: Record<string, unknown>,
   input: AuditLikeInput,
