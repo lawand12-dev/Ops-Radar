@@ -164,6 +164,23 @@ LANGUAGE POLISH — MANDATORY:
 
 ACCURACY RULES — non-negotiable:
 
+RULE #0 — PAIN ALIGNMENT (MANDATORY, NON-NEGOTIABLE):
+
+The prospect's stated pain (from their automationWish input) is the anchor for the entire audit. The #1 opportunity MUST directly address this stated pain, even if another workflow would save more hours.
+
+Examples of correct pain-to-opportunity mapping:
+- Pain says "answering leads" or "lead response" → #1 opportunity must be lead response/qualification automation
+- Pain says "reporting" or "client reports" → #1 opportunity must be reporting automation
+- Pain says "onboarding" or "new clients" → #1 opportunity must be onboarding automation
+- Pain says "invoicing" or "billing" → #1 opportunity must be billing automation
+- Pain says "content" or "repurposing" → #1 opportunity must be content automation
+
+If no listed workflow addresses the stated pain, generate a custom opportunity that does. Do not pivot to a larger-hours workflow just because the math is bigger.
+
+The polished_pain_statement and opportunities[0] MUST tell the same story. A prospect reading the audit should see: "they heard what I said, and they're addressing it first."
+
+Violating this rule destroys prospect trust instantly and is the single worst failure mode of this system.
+
 NUMBER CONSISTENCY — ABSOLUTE RULES:
 
 1. ONE annual waste number for the entire report. Calculate it ONCE and use it everywhere:
@@ -222,7 +239,7 @@ OPPORTUNITY MATH VALIDATION:
 6. READ their emotional language. If they use words like "drowning", "chaos", "burning out" in free text fields, reflect that back in the hard_truth copy. If they sound calm and analytical, match that tone.
 7. The urgency_reason for each opportunity must reference a SPECIFIC consequence — not generic fear. Bad: "This is costing you money." Good: "Every week you delay this, your account managers spend 6 hours on work Claude could do in 6 minutes — and they're interviewing with your competitors because of it."
 8. The executive_summary must include ONE specific number they can't unsee. Not a range. Not "thousands." A precise dollar figure calculated from their inputs.
-9. Rank opportunities by URGENCY × IMPACT, not by ease. The #1 opportunity is the one that's bleeding them the most RIGHT NOW, even if it's complex to fix.
+9. Rank opportunities by URGENCY × IMPACT (urgency is primarily determined by pain-match per Rule #0, not by hours-saved), not by ease. The #1 opportunity is the one that's bleeding them the most RIGHT NOW, even if it's complex to fix.
 10. If evidence is thin (they gave short answers), lower confidence and stay conservative. Do not generate 6 opportunities from 2 data points.
 
 INDUSTRY BENCHMARKS — include benchmark comparisons in every audit:
@@ -507,6 +524,7 @@ export function buildAuditRepairPrompt(
     opportunityIssues: string[][]
     lowEvidenceMode: boolean
   },
+  painMismatch?: { expected: string; got: string; automationWish: string },
 ): string {
   const issueLines = quality.issues.length > 0
     ? quality.issues.map((issue) => `- ${issue}`).join('\n')
@@ -518,6 +536,19 @@ export function buildAuditRepairPrompt(
       return `- Opportunity ${index + 1}: ${issues.join(' ')}`
     })
     .join('\n')
+
+  const painSection = painMismatch
+    ? `
+
+CRITICAL REPAIR DIRECTIVE — PAIN MISALIGNMENT:
+The previous draft ranked an unrelated workflow as opportunities[0].
+- Prospect's stated pain: "${painMismatch.automationWish}"
+- Expected category: ${painMismatch.expected}
+- What you generated: ${painMismatch.got}
+
+Regenerate the opportunities list with a ${painMismatch.expected} workflow as opportunities[0]. If no existing opportunity fits, create a custom one that directly addresses the stated pain. This rule is MANDATORY. No exceptions.
+`
+    : ''
 
   return `${buildUserPrompt(data)}
 
@@ -539,7 +570,7 @@ ${issueLines}
 
 OPPORTUNITY ISSUES:
 ${opportunityLines}
-
+${painSection}
 CURRENT DRAFT JSON:
 ${JSON.stringify(draft)}`
 }

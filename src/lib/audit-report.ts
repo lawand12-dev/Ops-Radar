@@ -1,6 +1,6 @@
 import { openai } from './openai'
 import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildAuditRepairPrompt, buildUserPrompt, type AuditInput } from './prompts'
-import { assessAuditConfidence, groundAuditResult } from './audit-grounding'
+import { assessAuditConfidence, enforcePainAlignment, groundAuditResult } from './audit-grounding'
 import { sanitizeString } from './security'
 
 export type AuditReportStage = 'preview' | 'full'
@@ -169,24 +169,43 @@ export async function generateAuditReport(
 
   const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input), knowledgeContext)
   const initialGrounded = groundAuditResult(initialDraft, input, stage, allowedSources)
-  const initialConfidence = assessAuditConfidence(initialGrounded, input, stage)
+  const initialAlignment = enforcePainAlignment(initialGrounded, input.automationWish || '')
+  const initialResult = initialAlignment.result
+  const initialConfidence = assessAuditConfidence(initialResult, input, stage)
 
-  let bestAudit = initialGrounded
+  let bestAudit = initialResult
   let bestConfidence = initialConfidence
 
-  if (shouldRepairAudit(initialConfidence, stage)) {
+  const mustRepair = shouldRepairAudit(initialConfidence, stage) || initialAlignment.needsRepair
+
+  if (mustRepair) {
+    if (initialAlignment.needsRepair) {
+      console.warn('[audit-report] pain alignment mismatch — forcing repair pass', {
+        stage,
+        mismatch: initialAlignment.mismatch,
+      })
+    }
     try {
+      const painMismatch = initialAlignment.mismatch
+        ? { ...initialAlignment.mismatch, automationWish: input.automationWish || '' }
+        : undefined
       const repairedDraft = await requestAuditDraft(
         input,
         stage,
-        buildAuditRepairPrompt(input, stage, initialGrounded, initialConfidence),
+        buildAuditRepairPrompt(input, stage, initialResult, initialConfidence, painMismatch),
         knowledgeContext,
       )
       const repairedGrounded = groundAuditResult(repairedDraft, input, stage, allowedSources)
-      const repairedConfidence = assessAuditConfidence(repairedGrounded, input, stage)
+      const repairedAlignment = enforcePainAlignment(repairedGrounded, input.automationWish || '')
+      const repairedResult = repairedAlignment.result
+      const repairedConfidence = assessAuditConfidence(repairedResult, input, stage)
 
-      if (rankAuditConfidence(repairedConfidence) >= rankAuditConfidence(initialConfidence)) {
-        bestAudit = repairedGrounded
+      const repairFixedAlignment = initialAlignment.needsRepair && !repairedAlignment.needsRepair
+      if (
+        repairFixedAlignment ||
+        rankAuditConfidence(repairedConfidence) >= rankAuditConfidence(initialConfidence)
+      ) {
+        bestAudit = repairedResult
         bestConfidence = repairedConfidence
       }
     } catch (error) {
