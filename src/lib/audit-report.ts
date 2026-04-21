@@ -1,6 +1,11 @@
 import { openai } from './openai'
 import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildAuditRepairPrompt, buildUserPrompt, type AuditInput } from './prompts'
-import { assessAuditConfidence, enforcePainAlignment, groundAuditResult } from './audit-grounding'
+import {
+  assessAuditConfidence,
+  enforceBenchmarkVerdictCoherence,
+  enforcePainAlignment,
+  groundAuditResult,
+} from './audit-grounding'
 import { sanitizeString } from './security'
 
 export type AuditReportStage = 'preview' | 'full'
@@ -103,7 +108,7 @@ async function requestAuditDraft(
     : baseSystemPrompt
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-4o-2024-11-20',
     messages: [
       {
         role: 'system',
@@ -170,7 +175,7 @@ export async function generateAuditReport(
   const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input), knowledgeContext)
   const initialGrounded = groundAuditResult(initialDraft, input, stage, allowedSources)
   const initialAlignment = enforcePainAlignment(initialGrounded, input.automationWish || '')
-  const initialResult = initialAlignment.result
+  const initialResult = enforceBenchmarkVerdictCoherence(initialAlignment.result)
   const initialConfidence = assessAuditConfidence(initialResult, input, stage)
 
   let bestAudit = initialResult
@@ -197,7 +202,7 @@ export async function generateAuditReport(
       )
       const repairedGrounded = groundAuditResult(repairedDraft, input, stage, allowedSources)
       const repairedAlignment = enforcePainAlignment(repairedGrounded, input.automationWish || '')
-      const repairedResult = repairedAlignment.result
+      const repairedResult = enforceBenchmarkVerdictCoherence(repairedAlignment.result)
       const repairedConfidence = assessAuditConfidence(repairedResult, input, stage)
 
       const repairFixedAlignment = initialAlignment.needsRepair && !repairedAlignment.needsRepair
