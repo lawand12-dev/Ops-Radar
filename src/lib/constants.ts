@@ -9,4 +9,4 @@ export const CALENDLY_STRATEGY_CALL_URL =
 
 export const SITE_URL = 'https://www.opsradar.co'
 
-export const CONTACT_EMAIL = 'opsradar.ai@gmail.com'
+export const CONTACT_EMAIL = 'lawand@opsradar.co'

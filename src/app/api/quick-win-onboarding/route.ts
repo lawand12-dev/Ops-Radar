@@ -11,6 +11,7 @@ import {
   getServerSupabaseClient,
   hasServerSupabaseClient,
 } from '<npm>/lib/supabase-server'
+import { CONTACT_EMAIL } from '<npm>/lib/constants'
 
 // Table DDL (run once in Supabase SQL editor):
 // CREATE TABLE quick_win_onboarding_requests (
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
     const { error: emailError } = await resend.emails.send({
       from: 'OpsRadar <notifications@opsradar.co>',
       to,
+      replyTo: CONTACT_EMAIL,
       subject: `Quick Win Onboarding — ${payload.primary_tool}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 640px; margin: 0 auto; background: #0a0f1e; color: #eef2ff; padding: 32px; border-radius: 18px;">
