@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
+import { CONTACT_EMAIL } from '../../../lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
     const { error } = await resend.emails.send({
       from: 'OpsRadar <notifications@opsradar.co>',
       to,
+      replyTo: CONTACT_EMAIL,
       subject: `New OpsRadar Audit — ${payload.company}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1e; color: #eef2ff; padding: 32px; border-radius: 12px;">

@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 import { isAbusiveSubmission, MIN_CHAT_LEAD_MS } from '../../../lib/abuse-protection'
+import { CONTACT_EMAIL } from '../../../lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
     const { error } = await resend.emails.send({
       from: 'OpsRadar <notifications@opsradar.co>',
       to,
+      replyTo: CONTACT_EMAIL,
       subject: `🔥 Chat lead — ${visitorName ?? visitorEmail}`,
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;background:#060c1e;color:#eef2ff;border-radius:12px;overflow:hidden;">

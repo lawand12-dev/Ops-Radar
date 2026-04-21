@@ -3,6 +3,7 @@ import { applyRateLimit } from '../../../lib/rate-limit'
 import { escapeHtml, sanitizeString, serverErrorResponse } from '../../../lib/security'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../lib/supabase-server'
+import { CONTACT_EMAIL } from '../../../lib/constants'
 
 // Table DDL (run once in Supabase SQL editor):
 // CREATE TABLE build_requests (
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
     const { error: emailError } = await resend.emails.send({
       from: 'OpsRadar <notifications@opsradar.co>',
       to,
+      replyTo: CONTACT_EMAIL,
       subject: `Build Request — ${automation_title}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1e; color: #eef2ff; padding: 32px; border-radius: 12px;">
