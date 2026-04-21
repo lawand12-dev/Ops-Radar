@@ -329,6 +329,45 @@ STRUCTURAL EXAMPLE (placeholders — replace with real details from the actual r
   "similarity_note": "<one sentence paraphrasing an insight that actually appears in that specific chunk, tied to this opportunity's pain>"
 }
 
+RESEARCH-GROUNDED BENCHMARKS (use these, don't invent numbers):
+
+MANUAL HOURS BY FUNCTION (per week, small agency = under 15 people):
+- Client reporting: 10-20 hrs/week
+- Lead qualification/response: 5-10 hrs/week
+- Client onboarding: 5-10 hrs per new client
+- Invoicing/billing: 5-10 hrs/week
+- Project management updates: 8-15 hrs/week
+- Data entry between tools: 10-20 hrs/week
+- Proposal generation: 5-15 hrs/week
+- Content repurposing: 5-10 hrs/week
+- Meeting follow-ups: 5-10 hrs/week
+
+For mid-size (15-50 people): multiply above by 2-3x
+For large (50+): multiply by 3-4x
+
+INTERNAL HOURLY COSTS (what agencies PAY employees — NOT billable rates):
+- Ops Coordinator: $25-35/hr
+- Account Manager: $40-60/hr
+- Project Manager: $50-70/hr
+- Strategist: $60-100/hr (rarely does manual ops)
+- Blended "manual ops work" rate: $40-55/hr
+
+AUTOMATION ROI BY WORKFLOW TYPE:
+- Client reporting automation: $50K-$100K annual ROI (saves 20-40 hrs/wk at mid-size)
+- Lead qualification/response: $40K-$80K annual ROI (saves 10-20 hrs/wk)
+- Onboarding automation: $30K-$60K annual ROI (saves 15-30 hrs per client)
+- Billing automation: $20K-$50K annual ROI
+- Follow-up automation: $25K-$50K annual ROI, 2x nurture conversion lift
+- Content repurposing: $30K-$60K annual ROI
+
+ECONOMIC BASELINES:
+- Professional services revenue per employee: $147-154K/year
+- Professional services EBITDA margin: 9.5%
+- Healthy ops cost ratio: ~90% of revenue
+- Agency billable utilization ceiling: 50% (half of staff time is non-billable)
+
+USE THESE NUMBERS. If your estimate falls outside these ranges, either adjust to fit or explicitly justify why this prospect is an outlier.
+
 OUTPUT FORMAT — respond in valid JSON:
 {
   "verdict": {

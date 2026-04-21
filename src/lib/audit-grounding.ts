@@ -233,20 +233,69 @@ function midpointForRevenue(revenue: string): number {
   return 50_000
 }
 
+// Internal hourly labor costs (NOT billable rates) from research-04-hourly-rate-benchmarks.
+// These represent what agencies PAY employees to do manual ops work, not what they CHARGE clients.
+const INTERNAL_HOURLY_COSTS = {
+  ops_coordinator: { min: 25, max: 35, blended: 30 },
+  account_manager: { min: 40, max: 60, blended: 50 },
+  project_manager: { min: 50, max: 70, blended: 60 },
+  designer: { min: 50, max: 80, blended: 65 },
+  content_creator: { min: 40, max: 70, blended: 55 },
+  developer: { min: 70, max: 120, blended: 95 },
+  strategist: { min: 60, max: 100, blended: 80 },
+  blended_ops_waste: { min: 35, max: 55, blended: 45 },
+} as const
+
+// Agency segment → which role's rate to use for manual ops work.
+function selectHourlyRateForSegment(agencyType: string | undefined): { rate: number; roleLabel: string } {
+  const type = (agencyType || '').toLowerCase()
+  if (type.includes('paid') || type.includes('performance')) {
+    return { rate: INTERNAL_HOURLY_COSTS.account_manager.blended, roleLabel: 'account manager (paid-media ops)' }
+  }
+  if (type.includes('seo')) {
+    return { rate: INTERNAL_HOURLY_COSTS.account_manager.blended, roleLabel: 'account manager (SEO ops)' }
+  }
+  if (type.includes('design') || type.includes('creative')) {
+    return { rate: INTERNAL_HOURLY_COSTS.designer.blended, roleLabel: 'designer' }
+  }
+  if (type.includes('dev') || type.includes('engineering')) {
+    return { rate: INTERNAL_HOURLY_COSTS.developer.blended, roleLabel: 'developer' }
+  }
+  if (type.includes('full')) {
+    return { rate: INTERNAL_HOURLY_COSTS.blended_ops_waste.blended, roleLabel: 'blended ops (full-service)' }
+  }
+  return { rate: INTERNAL_HOURLY_COSTS.blended_ops_waste.blended, roleLabel: 'blended ops' }
+}
+
+const HOURLY_RATE_MIN = 25
+const HOURLY_RATE_MAX = 70
+
 function estimateHourlyRate(input: AuditLikeInput): { rate: number; label: string } {
+  const { rate: baseRate, roleLabel } = selectHourlyRateForSegment(input.agencyType)
   const revenueMidpoint = midpointForRevenue(input.revenue)
   const teamMidpoint = midpointForTeamSize(input.teamSize)
-  const perHeadMonthlyRevenue = revenueMidpoint / Math.max(teamMidpoint, 1)
-  const hourlyRate = Math.round((perHeadMonthlyRevenue / 160) * 1.05)
-  const MAX_HOURLY_RATE = 100
-  const MIN_HOURLY_RATE = 30
-  const clampedRate = Math.min(Math.max(hourlyRate, MIN_HOURLY_RATE), MAX_HOURLY_RATE)
-  if (hourlyRate > MAX_HOURLY_RATE) {
-    console.log(`[audit-grounding] clamped hourly rate from $${hourlyRate} to $${MAX_HOURLY_RATE}`)
+
+  let adjusted = baseRate
+  let adjustmentNote = ''
+  if (revenueMidpoint > 0 && teamMidpoint > 0) {
+    const revenuePerHead = revenueMidpoint / teamMidpoint
+    if (revenuePerHead > 20000) {
+      adjusted = Math.round(baseRate * 1.1)
+      adjustmentNote = ', +10% for high revenue-per-head'
+    } else if (revenuePerHead < 8000) {
+      adjusted = Math.round(baseRate * 0.9)
+      adjustmentNote = ', -10% for low revenue-per-head'
+    }
   }
+
+  const clampedRate = Math.min(Math.max(adjusted, HOURLY_RATE_MIN), HOURLY_RATE_MAX)
+  if (adjusted !== clampedRate) {
+    console.log(`[audit-grounding] clamped hourly rate from $${adjusted} to $${clampedRate}`)
+  }
+
   return {
     rate: clampedRate,
-    label: `Based on industry benchmarks for ${input.teamSize} team at ${input.revenue}/mo revenue`,
+    label: `Based on research-grounded internal labor cost for ${roleLabel}${adjustmentNote}`,
   }
 }
 
@@ -831,7 +880,7 @@ function normalizeTopLevelFields(
     estimated_hourly_rate: clampNumber(
       laborSource.estimated_hourly_rate,
       asNumber(fallbackLabor.estimated_hourly_rate) ?? context.hourlyRate,
-      { min: 30, max: 100 },
+      { min: HOURLY_RATE_MIN, max: HOURLY_RATE_MAX },
     ),
     hours_wasted_on_low_value_weekly: clampNumber(
       laborSource.hours_wasted_on_low_value_weekly,
@@ -1126,6 +1175,64 @@ export function enforcePainAlignment(
   }
 
   return { result, needsRepair: true, mismatch: { expected: painCategory, got: topCategory } }
+}
+
+// If the verdict / waste implies urgency but the benchmarks section says the prospect
+// is healthy (below-average waste, top-percentile maturity), the report contradicts
+// itself. Rebuild the benchmarks to match the waste reality rather than fight it.
+export function enforceBenchmarkVerdictCoherence(
+  result: Record<string, unknown>,
+): Record<string, unknown> {
+  const verdict = asRecord(result.verdict)
+  const benchmarks = asRecord(result.benchmarks)
+  if (!asString(verdict.headline) || Object.keys(benchmarks).length === 0) {
+    return result
+  }
+
+  const annualWaste = asNumber(result.estimated_annual_waste) ?? 0
+  const wasteIsSignificant = annualWaste >= 20000
+
+  const hoursBenchmarkRec = asRecord(benchmarks.hours_wasted_vs_average)
+  const maturityRec = asRecord(benchmarks.automation_maturity)
+
+  const hoursVerdict = (asString(hoursBenchmarkRec.verdict) ?? '').toLowerCase()
+  const maturityPercentile = (asString(maturityRec.percentile) ?? '').toLowerCase()
+
+  const benchmarksSayHealthy =
+    hoursVerdict.includes('below average') ||
+    (maturityPercentile.includes('top') && /\b(10|15|20|25|30)%/.test(maturityPercentile))
+
+  if (!(wasteIsSignificant && benchmarksSayHealthy)) {
+    return result
+  }
+
+  const impliedHours = Math.round(annualWaste / 52 / 45)
+  const readinessScore = asNumber(result.automation_readiness_score) ?? 45
+  const currentMaturityScore = asNumber(maturityRec.their_score)
+  const newMaturityScore = currentMaturityScore != null
+    ? Math.min(currentMaturityScore, readinessScore)
+    : readinessScore
+
+  console.log(
+    '[audit-grounding] benchmark-verdict coherence: waste claims urgency but benchmarks say healthy — rebuilding benchmarks',
+  )
+
+  return {
+    ...result,
+    benchmarks: {
+      ...benchmarks,
+      hours_wasted_vs_average: {
+        ...hoursBenchmarkRec,
+        verdict: 'above average',
+        their_hours: impliedHours,
+      },
+      automation_maturity: {
+        ...maturityRec,
+        percentile: 'bottom 60%',
+        their_score: newMaturityScore,
+      },
+    },
+  }
 }
 
 export function groundAuditResult(
