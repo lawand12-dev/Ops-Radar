@@ -952,6 +952,43 @@ function normalizeTopLevelFields(
     }
   }
 
+  // ── Scale opportunity hours to match labor arbitrage hours ─────────────
+  // If opportunity hours_saved_weekly sums higher than the labor breakdown's
+  // hours_wasted_on_low_value_weekly, the report would claim to recover more
+  // hours than it says are being wasted. Scale opportunities proportionally
+  // (preserving relative ranking) so the numbers agree.
+  const opportunitiesArr = Array.isArray(normalized.opportunities)
+    ? (normalized.opportunities as Record<string, unknown>[])
+    : []
+  const oppSum = opportunitiesArr.reduce(
+    (total, op) => total + (asNumber(op.hours_saved_weekly) ?? 0),
+    0,
+  )
+  const laborBreakdownRec = asRecord(normalized.labor_arbitrage_breakdown)
+  const laborHoursForScale = asNumber(laborBreakdownRec.hours_wasted_on_low_value_weekly) ?? 0
+  const laborRateForScale = asNumber(laborBreakdownRec.estimated_hourly_rate) ?? 45
+
+  if (oppSum > laborHoursForScale && laborHoursForScale > 0) {
+    const scaleFactor = laborHoursForScale / oppSum
+    console.log(
+      `[audit-grounding] opportunity hours (${oppSum}) exceed labor arbitrage hours (${laborHoursForScale}) — scaling by ${scaleFactor.toFixed(2)}`,
+    )
+    opportunitiesArr.forEach((op) => {
+      const currentHours = asNumber(op.hours_saved_weekly) ?? 0
+      const scaled = Math.max(1, Math.round(currentHours * scaleFactor))
+      op.hours_saved_weekly = scaled
+      op.monthly_savings = Math.round((scaled * laborRateForScale * 52) / 12)
+    })
+
+    const summaryRec = normalized.summary && typeof normalized.summary === 'object'
+      ? (normalized.summary as Record<string, unknown>)
+      : null
+    if (summaryRec) {
+      summaryRec.total_hours_saved_weekly = laborHoursForScale
+      summaryRec.total_annual_cost_savings = Math.round(laborHoursForScale * laborRateForScale * 52)
+    }
+  }
+
   // Only include context switching analysis if we have real tool/team data
   const knownToolsCount = context.allowedToolNames.length > 0 || splitList(input.tools).length > 0
   const knownTeamSize = Boolean(input.teamSize.trim())
@@ -1207,6 +1244,24 @@ export function enforceBenchmarkVerdictCoherence(
   }
 
   const impliedHours = Math.round(annualWaste / 52 / 45)
+  const industryAvg = asNumber(hoursBenchmarkRec.industry_average) ?? 30
+
+  // Recalculate percent_difference so the numbers agree with the verdict.
+  // Edge case: if the implied hours are still at or below industry average,
+  // the "above average" claim would be a lie — flip to honest labeling instead.
+  let finalHoursVerdict: string
+  let finalTheirHours: number
+  let finalPercentDifference: number
+  if (impliedHours <= industryAvg) {
+    finalHoursVerdict = 'at industry average'
+    finalTheirHours = industryAvg
+    finalPercentDifference = 0
+  } else {
+    finalHoursVerdict = 'above average'
+    finalTheirHours = impliedHours
+    finalPercentDifference = Math.round(((impliedHours - industryAvg) / industryAvg) * 100)
+  }
+
   const readinessScore = asNumber(result.automation_readiness_score) ?? 45
   const currentMaturityScore = asNumber(maturityRec.their_score)
   const newMaturityScore = currentMaturityScore != null
@@ -1223,8 +1278,10 @@ export function enforceBenchmarkVerdictCoherence(
       ...benchmarks,
       hours_wasted_vs_average: {
         ...hoursBenchmarkRec,
-        verdict: 'above average',
-        their_hours: impliedHours,
+        verdict: finalHoursVerdict,
+        their_hours: finalTheirHours,
+        industry_average: industryAvg,
+        percent_difference: finalPercentDifference,
       },
       automation_maturity: {
         ...maturityRec,
