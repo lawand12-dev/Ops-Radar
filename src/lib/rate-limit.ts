@@ -1,8 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
-const ONE_HOUR_MS = 60 * 60 * 1000
-
 type RateLimitName =
   | 'admin-auth'
   | 'admin-data'
@@ -35,6 +33,29 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'research-preview': { limit: 20, window: '1 h' },
   'send-unlock-email': { limit: 10, window: '1 h' },
 }
+
+/**
+ * Routes that MUST NOT be allowed through if the rate limiter is unavailable.
+ * Rationale: these routes trigger real spend (OpenAI, Resend, Supabase writes)
+ * or gate admin access. A single Upstash outage should never become an
+ * unbounded liability window.
+ *
+ * Fail-open routes (audit-result, audit-step, funnel-event, chat-conversations,
+ * admin-data) are either read-mostly, analytics, or already protected by
+ * another layer (admin session). Losing their rate limits during an Upstash
+ * incident is a smaller cost than breaking the product for legitimate users.
+ */
+const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
+  'admin-auth',
+  'build-request',
+  'chat',
+  'generate-audit',
+  'notify',
+  'notify-chat-lead',
+  'quick-win-onboarding',
+  'research-preview',
+  'send-unlock-email',
+])
 
 function createLimiters() {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -81,17 +102,50 @@ export function getClientIp(request: Request): string {
   )
 }
 
+function serviceUnavailableResponse() {
+  return Response.json(
+    { error: 'Service temporarily unavailable. Please try again in a moment.' },
+    { status: 503, headers: { 'Retry-After': '30' } },
+  )
+}
+
+function tooManyRequestsResponse(remaining: number, reset: number) {
+  return Response.json(
+    { error: 'Too many requests. Please try again later.' },
+    {
+      status: 429,
+      headers: {
+        'X-RateLimit-Remaining': String(remaining),
+        'X-RateLimit-Reset': String(reset),
+      },
+    },
+  )
+}
+
 export async function applyRateLimit(
   request: Request,
   routeName: RateLimitName,
 ): Promise<Response | null> {
   const instances = getLimiters()
+  const isFailClosed = FAIL_CLOSED_ROUTES.has(routeName)
+  const isProd = process.env.NODE_ENV === 'production'
 
+  // 1. Upstash not configured at all.
   if (!instances) {
-    console.warn('[rate-limit] Upstash not configured — allowing request')
+    if (isFailClosed && isProd) {
+      // In production, a missing rate limiter on a fail-closed route is a
+      // deployment error, not an acceptable state. Reject immediately.
+      console.error(
+        `[rate-limit] FAIL-CLOSED: Upstash not configured for route "${routeName}" in production`,
+      )
+      return serviceUnavailableResponse()
+    }
+    // Dev / non-critical route — allow through but make the gap visible.
+    console.warn(`[rate-limit] Upstash not configured — allowing "${routeName}"`)
     return null
   }
 
+  // 2. Upstash configured — call it.
   try {
     const ip = getClientIp(request)
     const { success, remaining, reset } = await instances[routeName].limit(ip)
@@ -100,18 +154,17 @@ export async function applyRateLimit(
       return null
     }
 
-    return Response.json(
-      { error: 'Too many requests. Please try again later.' },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Remaining': String(remaining),
-          'X-RateLimit-Reset': String(reset),
-        },
-      },
-    )
+    return tooManyRequestsResponse(remaining, reset)
   } catch (err) {
-    console.error('[rate-limit] Redis error — allowing request:', err)
+    // 3. Upstash transient failure.
+    console.error(`[rate-limit] Redis error on "${routeName}":`, err)
+
+    if (isFailClosed) {
+      // Protect the expensive/sensitive path rather than let it run uncapped.
+      return serviceUnavailableResponse()
+    }
+
+    // Non-critical route — prefer availability over strict rate limiting.
     return null
   }
 }
