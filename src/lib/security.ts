@@ -47,17 +47,3 @@ export function escapeHtml(value: string): string {
 export function serverErrorResponse() {
   return Response.json({ error: 'An error occurred' }, { status: 500 })
 }
-
-export function requireAdminPassword(request: Request): Response | null {
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword) {
-    return serverErrorResponse()
-  }
-
-  const providedPassword = request.headers.get('x-admin-password')
-  if (!providedPassword || providedPassword !== adminPassword) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  return null
-}

@@ -1,5 +1,5 @@
 import { applyRateLimit } from '../../../lib/rate-limit'
-import { requireAdminPassword } from '../../../lib/security'
+import { requireAdminPassword } from '../../../lib/security-server'
 import {
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE,
