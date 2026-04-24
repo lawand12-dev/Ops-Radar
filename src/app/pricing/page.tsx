@@ -67,7 +67,7 @@ export default function PricingPage() {
           </h1>
           <p className="text-white/40 mx-auto max-w-lg leading-relaxed text-lg">
             Fixed price, fixed scope. One-time builds or monthly managed plans.
-            Start with the free audit to know exactly which tier fits.
+            Book a 20-min call to know exactly which tier fits.
           </p>
         </div>
       </header>
@@ -82,7 +82,7 @@ export default function PricingPage() {
           Still have questions?
         </h2>
         <p className="text-white/60 mb-10 leading-relaxed max-w-xl mx-auto">
-          Book a 15-minute call. Bring anything — tool stack, workflow sketch, budget questions. No prep needed.
+          Book a free 20-min call. Bring anything — tool stack, workflow sketch, budget questions. No prep needed.
         </p>
         <BookCallButton />
       </section>

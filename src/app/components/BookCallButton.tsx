@@ -1,7 +1,7 @@
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 export default function BookCallButton({
-  label = 'Book a 15-min intro call',
+  label = 'Book a free 20-min call',
   className = '',
 }: {
   label?: string

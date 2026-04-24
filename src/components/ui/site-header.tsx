@@ -6,6 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ArrowUpRight, Menu, X } from "lucide-react"
 
+import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 import { cn } from "<npm>/lib/utils"
 
 export interface SiteNavLink {
@@ -38,13 +39,14 @@ export default function SiteHeader({
   logoAlt = "OpsRadar",
   logoHref = "/",
   navLinks = DEFAULT_NAV_LINKS,
-  ctaLabel = "Start Free Audit",
-  ctaHref = "/audit",
+  ctaLabel = "Book a free 20-min call",
+  ctaHref = CALENDLY_STRATEGY_CALL_URL,
   sticky = false,
   className,
 }: SiteHeaderProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const ctaIsExternal = /^https?:\/\//i.test(ctaHref)
 
   const isActiveLink = (link: SiteNavLink) => {
     if (typeof link.isActive === "boolean") {
@@ -114,6 +116,8 @@ export default function SiteHeader({
 
                 <Link
                   href={ctaHref}
+                  target={ctaIsExternal ? "_blank" : undefined}
+                  rel={ctaIsExternal ? "noopener noreferrer" : undefined}
                   className="header-cta ml-1 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
                 >
                   {ctaLabel}
@@ -161,6 +165,8 @@ export default function SiteHeader({
 
                 <Link
                   href={ctaHref}
+                  target={ctaIsExternal ? "_blank" : undefined}
+                  rel={ctaIsExternal ? "noopener noreferrer" : undefined}
                   onClick={() => setMobileMenuOpen(false)}
                   className="header-cta mt-2 inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors"
                 >
