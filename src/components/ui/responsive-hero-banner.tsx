@@ -16,6 +16,7 @@ import {
 import { Badge } from "<npm>/components/ui/badge"
 import { Button } from "<npm>/components/ui/button"
 import SiteHeader, { type SiteNavLink } from "<npm>/components/ui/site-header"
+import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 import { cn } from "<npm>/lib/utils"
 
 interface Partner {
@@ -41,6 +42,8 @@ interface ResponsiveHeroBannerProps {
   secondaryButtonText?: string
   secondaryButtonHref?: string
   showSecondaryIcon?: boolean
+  subtleLinkText?: string
+  subtleLinkHref?: string
   partnersTitle?: string
   partners?: Partner[]
   className?: string
@@ -61,19 +64,21 @@ export default function ResponsiveHeroBanner({
   logoUrl = "/logo.png",
   backgroundImageUrl,
   navLinks,
-  ctaButtonText = "Start Free Audit",
-  ctaButtonHref = "/audit",
+  ctaButtonText = "Book a free 20-min call",
+  ctaButtonHref = CALENDLY_STRATEGY_CALL_URL,
   badgeLabel = "New",
   badgeText = "Done-for-you automation systems for busy agency teams",
   title = "Automation for Agencies",
   titleLine2 = "Without Another Tool to Manage",
   description = "I design, host, and maintain the workflows behind lead routing, onboarding, reporting, and AI handoffs so your team can operate faster without hiring internal ops engineers.",
-  primaryButtonText = "Start Your Free Audit",
-  primaryButtonHref = "/audit",
+  primaryButtonText = "Book a free 20-min call",
+  primaryButtonHref = CALENDLY_STRATEGY_CALL_URL,
   showPrimaryArrowIcon = true,
   secondaryButtonText = "See How It Works",
   secondaryButtonHref = "#how",
   showSecondaryIcon = true,
+  subtleLinkText = "",
+  subtleLinkHref = "",
   partnersTitle = "Built around the layers agencies need most under load",
   partners = DEFAULT_PARTNERS,
   className,
@@ -81,6 +86,7 @@ export default function ResponsiveHeroBanner({
   headerSticky = false,
   showBackground = false,
 }: ResponsiveHeroBannerProps) {
+  const primaryIsExternal = /^https?:\/\//i.test(primaryButtonHref)
   return (
     <section className={cn("relative isolate overflow-hidden", className)}>
       {showBackground && backgroundImageUrl ? (
@@ -135,7 +141,12 @@ export default function ResponsiveHeroBanner({
                 asChild
                 className="btn-spring btn-main-sheen h-auto rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.16)] hover:bg-white/92"
               >
-                <Link href={primaryButtonHref} onClick={() => track('audit_started')}>
+                <Link
+                  href={primaryButtonHref}
+                  target={primaryIsExternal ? "_blank" : undefined}
+                  rel={primaryIsExternal ? "noopener noreferrer" : undefined}
+                  onClick={() => track(primaryIsExternal ? 'call_booking_clicked' : 'audit_started')}
+                >
                   {primaryButtonText}
                   {showPrimaryArrowIcon ? <ArrowRight className="h-4 w-4" /> : null}
                 </Link>
@@ -152,6 +163,18 @@ export default function ResponsiveHeroBanner({
                 </Link>
               ) : null}
             </div>
+
+            {subtleLinkText ? (
+              <div className="animate-fade-slide-in-4 mt-4 flex justify-center">
+                <Link
+                  href={subtleLinkHref}
+                  onClick={() => track('audit_started')}
+                  className="text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
+                >
+                  {subtleLinkText}
+                </Link>
+              </div>
+            ) : null}
 
             <div className="mt-16">
               <p className="animate-fade-slide-in-1 text-sm uppercase tracking-[0.2em] text-white/56">

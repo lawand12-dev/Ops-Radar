@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react'
 import Link from 'next/link'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 
 type Plan = {
@@ -17,22 +18,22 @@ type Plan = {
 const ONE_TIME_PLANS: Plan[] = [
   {
     name: 'Starter Build',
-    price: '$1,500',
-    description: 'Typically replaces about 5 hours/week of manual work \u2014 at the numbers most agencies report, that should pay back in roughly 8 weeks.',
+    price: '$3,500',
+    description: 'Typically replaces 5-8 hours/week of manual work \u2014 pays back in roughly 6-10 weeks.',
     features: [
       'Single automation workflow',
       'Up to 3 tool integrations',
-      'Delivered in 3-5 days',
+      'Delivered in 5-7 business days',
       'Full documentation',
-      '14-day bug-fix window',
+      '30-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: false,
   },
   {
     name: 'Core Build',
-    price: '$2,800',
+    price: '$7,500',
     description: 'Replaces the routine work of a $2,000/month ops hire. At those numbers it should pay back in roughly 6 weeks.',
     features: [
       'Multi-step workflow with branching logic',
@@ -43,7 +44,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '30-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: true,
   },
   {
@@ -60,7 +61,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '60-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: false,
   },
 ]
@@ -68,17 +69,18 @@ const ONE_TIME_PLANS: Plan[] = [
 const MONTHLY_PLANS: Plan[] = [
   {
     name: 'Care',
-    price: '$400',
+    price: '$750',
     period: '/month',
     description: 'After your build is delivered, I monitor your workflow and fix it if it breaks.',
     features: [
       'Monitoring of all your workflows',
-      'Bug fixes within 48 hours',
+      'Bug fixes within 24 hours',
       'Monthly health report',
       'Email support',
+      '10% discount on any new builds',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: false,
   },
   {
@@ -93,7 +95,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Priority email support',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: true,
   },
   {
@@ -110,7 +112,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Direct founder access',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Start Free Audit',
+    cta: 'Book a free 20-min call',
     highlighted: false,
   },
 ]
@@ -130,7 +132,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What if my automation breaks after the bug-fix window?',
-    a: 'One-time builds include a bug-fix window (14\u201360 days). After that, you can switch to a monthly plan for ongoing support or request paid fixes.',
+    a: 'One-time builds include a bug-fix window (30\u201360 days). After that, you can switch to a monthly plan for ongoing support or request paid fixes.',
   },
   {
     q: 'Can I start with a one-time build and move to monthly later?',
@@ -185,8 +187,10 @@ function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </div>
 
-      <Link
-        href="/audit"
+      <a
+        href={CALENDLY_STRATEGY_CALL_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-colors text-center block ${
           plan.highlighted
             ? 'bg-white text-black hover:bg-white/90'
@@ -194,7 +198,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         }`}
       >
         {plan.cta}
-      </Link>
+      </a>
     </div>
   )
 }
@@ -224,7 +228,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Take the free audit first — it tells you exactly what to build and which tier fits.
+            Book a 20-min call — I'll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -252,7 +256,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Take the free audit first — it tells you exactly what to build and which tier fits.
+            Book a 20-min call — I'll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -281,14 +285,24 @@ export default function OpsRadarPricing() {
             Not sure which one fits?
           </h2>
           <p className="text-white/40 mb-8 mx-auto max-w-md">
-            Take the free audit first. It tells you exactly what to build, how complex it is, and which tier matches your needs.
+            Book a 20-min call — I'll tell you what to build, how complex it is, and which tier fits.
           </p>
-          <Link
-            href="/audit"
+          <a
+            href={CALENDLY_STRATEGY_CALL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-white text-black font-semibold text-[15px] hover:bg-white/90 transition-colors"
           >
-            Start Free Audit →
-          </Link>
+            Book a free 20-min call →
+          </a>
+          <div className="mt-4">
+            <Link
+              href="/audit"
+              className="text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
+            >
+              Or run a 3-minute self-serve audit
+            </Link>
+          </div>
         </section>
       </div>
     </div>

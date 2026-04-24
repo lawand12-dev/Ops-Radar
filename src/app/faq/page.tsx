@@ -153,7 +153,7 @@ export default function FAQPage() {
             Still didn&apos;t find it?
           </h2>
           <p className="text-white/55 mb-10 text-base md:text-lg leading-relaxed">
-            Book a 15-minute call. Bring any question — tool stack, workflow idea, budget constraints. No prep needed.
+            Book a free 20-min call. Bring any question — tool stack, workflow idea, budget constraints. No prep needed.
           </p>
           <a
             href={CALENDLY_STRATEGY_CALL_URL}
@@ -161,7 +161,7 @@ export default function FAQPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white border border-white/30 hover:border-white/60 hover:bg-white/[0.03] transition-all btn-press"
           >
-            Book a 15-minute call
+            Book a free 20-min call
             <span aria-hidden="true">&rarr;</span>
           </a>
         </div>

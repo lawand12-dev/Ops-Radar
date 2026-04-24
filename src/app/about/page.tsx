@@ -6,7 +6,7 @@ import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
-import BookCallButton from '../components/BookCallButton'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 export const metadata: Metadata = {
   title: "About",
@@ -224,11 +224,18 @@ export default function AboutPage() {
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <Link href="/audit">Start Free Audit &rarr;</Link>
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a free 20-min call &rarr;
+              </a>
             </Button>
-            <BookCallButton />
           </div>
-          <p className="mt-4 text-xs text-white/20">3 minutes &middot; Free &middot; No commitment</p>
+          <Link
+            href="/audit"
+            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
+          >
+            Or run a 3-minute self-serve audit
+          </Link>
+          <p className="mt-4 text-xs text-white/20">20 minutes &middot; Free &middot; No commitment</p>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 
 export default function Footer() {
   return (
@@ -57,23 +58,22 @@ export default function Footer() {
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-400/60 mb-5">
               Start
             </p>
-            <Link
-              href="/audit"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 hover:border-white/40 px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-white/[0.03] transition-all mb-4"
+            <a
+              href={CALENDLY_STRATEGY_CALL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-white text-black hover:bg-white/90 px-4 py-2.5 text-[13px] font-semibold transition-all mb-4"
             >
-              Free Audit
+              Book a free 20-min call
               <span aria-hidden="true">&rarr;</span>
-            </Link>
+            </a>
             <div>
-              <a
-                href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[13px] text-white/55 hover:text-white transition-colors"
+              <Link
+                href="/audit"
+                className="inline-flex items-center gap-2 text-[13px] text-white/55 hover:text-white transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
               >
-                Book a 15-min call
-                <span aria-hidden="true">&rarr;</span>
-              </a>
+                Or run a 3-minute self-serve audit
+              </Link>
             </div>
             <p className="text-[11px] text-white/30 leading-relaxed mt-5 max-w-[180px]">
               3 minutes. Real dollar numbers. No credit card.
@@ -95,23 +95,6 @@ export default function Footer() {
             <div className="flex items-center gap-5">
               <Link href="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-colors">Privacy</Link>
               <Link href="/terms" className="text-xs text-white/30 hover:text-white/60 transition-colors">Terms</Link>
-              <Link
-                href="https://www.linkedin.com/in/lawand-soran-opsradar"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="text-white/30 hover:text-white/60 transition-opacity hover:opacity-80"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                >
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.852 3.37-1.852 3.602 0 4.267 2.37 4.267 5.455v6.288zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                </svg>
-              </Link>
               <Link
                 href="https://x.com/ops_radar"
                 target="_blank"

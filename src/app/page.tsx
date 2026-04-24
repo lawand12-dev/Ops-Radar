@@ -5,6 +5,7 @@ import BeamsBackground from '<npm>/components/ui/beams-background'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
 import Footer from '<npm>/components/Footer'
+import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import WasteCalculator from './components/WasteCalculator'
 import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
@@ -77,25 +78,24 @@ export default function Home() {
         <ResponsiveHeroBanner
           navLinks={NAV_LINKS}
           badgeLabel=""
-          badgeText="Ops automation for marketing agencies"
-          title="AI is eating the craft."
-          titleLine2="Let me eat the ops."
+          badgeText="For marketing agencies under 30 people"
+          title="n8n automation for marketing agencies."
+          titleLine2="Built in your account. Maintained by me."
           description="I'm Lawand. I build the automation layer for marketing agencies — in your own n8n account, maintained by me. Reporting, onboarding, pacing alerts. The work your team does at 11pm, handled while you sleep."
-          primaryButtonText="Start Free Audit"
-          primaryButtonHref="/audit"
+          primaryButtonText="Book a free 20-min call"
+          primaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
           showPrimaryArrowIcon={true}
           secondaryButtonText=""
           secondaryButtonHref=""
           showSecondaryIcon={false}
+          subtleLinkText="Or run a 3-minute self-serve audit"
+          subtleLinkHref="/audit"
           partnersTitle=""
           partners={[]}
           contentClassName="items-start pt-16 sm:pt-20 lg:pt-24"
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 -mt-8">
-          <p className="text-[13px] text-white/30 mb-4">
-            I only take calls with agencies who&apos;ve completed the audit — it saves us both time.
-          </p>
           <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-[11px] text-white/40">
             <span className="flex items-center gap-1.5">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -409,6 +409,17 @@ export default function Home() {
 
       <RhythmBreak />
 
+      {/* ── Aphorism divider ─────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="relative max-w-3xl mx-auto px-6 py-20 text-center">
+          <p className="font-serif italic text-2xl md:text-3xl tracking-[-0.01em] text-white/75 leading-[1.2]">
+            AI is eating the craft.
+            <br />
+            Let me eat the ops.
+          </p>
+        </section>
+      </FadeInOnScroll>
+
       {/* ── 4. Why ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
         <section className="py-32 px-6 max-w-4xl mx-auto">
@@ -492,26 +503,25 @@ export default function Home() {
           </h2>
 
           <p className="text-white/55 mb-12 text-lg md:text-xl leading-relaxed max-w-xl mx-auto">
-            Free audit. 3 minutes. Real numbers on what your agency is losing.
+            Free 20-min call. Real numbers on what your agency is losing.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+          <div className="flex flex-col items-center justify-center gap-4 mb-10">
             <a
-              href="/audit"
-              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)] btn-press"
-            >
-              Start Free Audit
-              <span aria-hidden="true">&rarr;</span>
-            </a>
-            <a
-              href="https://calendly.com/opsradar-ai/ops-radar-strategy-call"
+              href={CALENDLY_STRATEGY_CALL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-lg font-semibold text-base bg-white text-black hover:bg-white/90 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)] btn-press"
             >
-              Book a 15-min intro call
+              Book a free 20-min call
               <span aria-hidden="true">&rarr;</span>
             </a>
+            <Link
+              href="/audit"
+              className="text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
+            >
+              Or run a 3-minute self-serve audit
+            </Link>
           </div>
 
           <p className="text-[13px] text-white/40 max-w-md mx-auto leading-relaxed">
