@@ -144,7 +144,7 @@ WHY OPSRADAR vs ALTERNATIVES:
 - vs Agencies charging $10k+: No middlemen, direct founder access, \
   lower overhead. Same quality, lower price.
 - vs hiring ops staff: An ops coordinator costs $5,500–$9,500/month \
-  fully loaded. OpsRadar retainers start at $400/month.
+  fully loaded. OpsRadar retainers start at $750/month.
 - vs DIY: Agencies that try to build it themselves spend 200+ \
   developer hours per year on work that should take 20. That's \
   roughly $50K of diverted billable work per year.
@@ -227,7 +227,7 @@ you own the workflow, you're not renting it.
 
 "It's too expensive" → Compare to alternatives: an ops coordinator \
 costs $5,500-$9,500/month fully loaded. OpsRadar's Core Build is \
-$2,800 one-time, and retainers start at $400/month. Most clients \
+$7,500 one-time, and retainers start at $750/month. Most clients \
 break even in 6 weeks.
 
 "We don't trust AI" → Fair. Every workflow is human-verified by \
