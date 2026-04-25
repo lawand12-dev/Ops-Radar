@@ -36,7 +36,7 @@ const GROUPS: FAQGroup[] = [
     items: [
       {
         q: 'What does it cost?',
-        a: "One-time builds range from $1,500 (Starter, single workflow) to $4,500 (Advanced, multi-workflow with AI layer). Monthly retainers for ongoing care range from $400 to $1,500/month. Full breakdown on the pricing page."
+        a: "One-time builds range from $3,500 (Starter Build) to $9,500 (Advanced Build). Monthly retainers for ongoing care range from $750 to $3,000/month. Full breakdown on the pricing page."
       },
       {
         q: 'How does payment work?',
