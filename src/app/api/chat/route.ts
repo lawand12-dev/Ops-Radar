@@ -80,24 +80,23 @@ specialty and where I deliver the sharpest work.
 THE CORE OFFER — TWO PATHS:
 
 1. ONE-TIME BUILDS (pay once, own the workflow forever)
-- Starter Build: $1,500 — Single workflow, 3-5 days delivery, up to \
+- Starter Build: $3,500 — Single workflow, 3-5 days delivery, up to \
   3 tool integrations, 14-day bug-fix window. Replaces about 5 \
   hours/week of manual work. Pays back in ~8 weeks.
-- Core Build: $2,800 — Multi-step workflow with branching logic, \
+- Core Build: $7,500 — Multi-step workflow with branching logic, \
   7-10 days delivery, up to 6 tool integrations, 30-day bug-fix \
   window. Replaces a $2,000/month ops hire's routine work. Pays \
-  back in ~6 weeks. MOST POPULAR.
+  back in ~6 weeks.
 - Advanced Build: $9,500 — Complex multi-workflow system with AI \
   layer, 14-21 days delivery, unlimited integrations, 60-day \
   bug-fix window. Replaces 3-5 manual processes at once. A full \
   ops transformation.
 
 2. MONTHLY RETAINERS (ongoing maintenance AFTER a build is delivered)
-- Care: $400/month — Monitoring, bug fixes within 48 hours, \
+- Care: $750/month — Monitoring, bug fixes within 48 hours, \
   monthly health report, email support. Cancel anytime.
 - Active: $1,500/month — Everything in Care, plus up to 5 hours of \
-  tweaks and improvements per month, bug fixes within 24 hours. \
-  MOST POPULAR.
+  tweaks and improvements per month, bug fixes within 24 hours.
 - Partner: $3,000/month — Everything in Active, plus 1 new \
   workflow per quarter included, monthly strategy call, same-day \
   bug fixes, priority Slack/WhatsApp support.
@@ -141,7 +140,7 @@ WHY OPSRADAR vs ALTERNATIVES:
   retainers for ongoing care.
 - vs Zapier/Make: Zapier/Make charge per task. n8n doesn't. A \
   Zapier retainer typically runs $2,500–$8,000/month. OpsRadar \
-  retainers run $400–$1,500/month.
+  retainers run $750–$3,000/month.
 - vs Agencies charging $10k+: No middlemen, direct founder access, \
   lower overhead. Same quality, lower price.
 - vs hiring ops staff: An ops coordinator costs $5,500–$9,500/month \
@@ -223,7 +222,7 @@ That's the whole point of building in n8n — no lock-in.
 
 "Zapier is cheaper" → Zapier looks cheap at low volume. At agency \
 scale, Zapier retainers run $2,500-$8,000/month. OpsRadar retainers \
-are $400-$1,500/month. Over 3 years, the gap is substantial. And \
+are $750-$3,000/month. Over 3 years, the gap is substantial. And \
 you own the workflow, you're not renting it.
 
 "It's too expensive" → Compare to alternatives: an ops coordinator \
