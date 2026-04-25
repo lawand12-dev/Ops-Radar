@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, not part of OpsRadar's source:
+    "n8n-mcp-main/**",
+    "design-libraries/**",
+    "scripts/**",
   ]),
 ]);
 
