@@ -311,7 +311,7 @@ export default function ForSeoPage() {
               The common alternative — hiring a VA at <span className="text-white font-semibold">$1,500/month</span> — replaces the labor but not the management overhead. You still train, QA, and hand-hold.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. The outcome, without the management layer. At those numbers, most SEO agencies should break even in about six weeks.
+              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>. The outcome, without the management layer. At those numbers, most SEO agencies should break even in about six weeks.
             </p>
           </div>
         </section>

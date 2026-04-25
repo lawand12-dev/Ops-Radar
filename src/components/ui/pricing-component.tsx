@@ -45,12 +45,12 @@ const ONE_TIME_PLANS: Plan[] = [
       'You own the workflow',
     ],
     cta: 'Book a free 20-min call',
-    highlighted: true,
+    highlighted: false,
   },
   {
     name: 'Advanced Build',
-    price: '$4,500',
-    description: 'Built to replace 3\u20135 manual processes at once. A full ops overhaul.',
+    price: '$9,500',
+    description: 'Replaces an entire ops layer \u2014 multiple processes, AI integration, custom error handling. For agencies running complex multi-tool stacks.',
     features: [
       'Complex multi-workflow system',
       'Unlimited tool integrations',
@@ -85,7 +85,7 @@ const MONTHLY_PLANS: Plan[] = [
   },
   {
     name: 'Active',
-    price: '$800',
+    price: '$1,500',
     period: '/month',
     description: 'Everything in Care, plus small tweaks and improvements as you ask. Up to 5 hours of my time per month.',
     features: [
@@ -96,11 +96,11 @@ const MONTHLY_PLANS: Plan[] = [
       'Cancel anytime — workflows stay in your account',
     ],
     cta: 'Book a free 20-min call',
-    highlighted: true,
+    highlighted: false,
   },
   {
     name: 'Partner',
-    price: '$1,500',
+    price: '$3,000',
     period: '/month',
     description: 'Everything in Active, plus 1 new workflow per quarter is included in the price. Anything beyond that is a separate build.',
     features: [

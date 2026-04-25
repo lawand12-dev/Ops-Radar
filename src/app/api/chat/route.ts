@@ -87,7 +87,7 @@ THE CORE OFFER — TWO PATHS:
   7-10 days delivery, up to 6 tool integrations, 30-day bug-fix \
   window. Replaces a $2,000/month ops hire's routine work. Pays \
   back in ~6 weeks. MOST POPULAR.
-- Advanced Build: $4,500 — Complex multi-workflow system with AI \
+- Advanced Build: $9,500 — Complex multi-workflow system with AI \
   layer, 14-21 days delivery, unlimited integrations, 60-day \
   bug-fix window. Replaces 3-5 manual processes at once. A full \
   ops transformation.
@@ -95,10 +95,10 @@ THE CORE OFFER — TWO PATHS:
 2. MONTHLY RETAINERS (ongoing maintenance AFTER a build is delivered)
 - Care: $400/month — Monitoring, bug fixes within 48 hours, \
   monthly health report, email support. Cancel anytime.
-- Active: $800/month — Everything in Care, plus up to 5 hours of \
+- Active: $1,500/month — Everything in Care, plus up to 5 hours of \
   tweaks and improvements per month, bug fixes within 24 hours. \
   MOST POPULAR.
-- Partner: $1,500/month — Everything in Active, plus 1 new \
+- Partner: $3,000/month — Everything in Active, plus 1 new \
   workflow per quarter included, monthly strategy call, same-day \
   bug fixes, priority Slack/WhatsApp support.
 

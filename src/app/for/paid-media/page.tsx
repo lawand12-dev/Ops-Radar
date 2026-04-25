@@ -310,7 +310,7 @@ export default function ForPaidMediaPage() {
               The same shop pays <span className="text-white font-semibold">$500–$2,000/month for a Zapier retainer</span> that breaks at scale, or <span className="text-white font-semibold">$5,500–$9,500/month for an ops coordinator</span> who still needs managing.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>. At those numbers, most paid-media shops should break even in about six weeks.
+              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>. At those numbers, most paid-media shops should break even in about six weeks.
             </p>
           </div>
         </section>

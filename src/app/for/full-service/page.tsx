@@ -312,7 +312,7 @@ export default function ForFullServicePage() {
               HubSpot Operations Hub starts at <span className="text-white font-semibold">$800/month for 3 users</span> and scales with seat count. Hiring an ops coordinator runs <span className="text-white font-semibold">$5,500–$9,500/month fully loaded</span> and still needs managing.
             </p>
             <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$400–$1,500/month</span>, flat. No per-seat tax, no management overhead. At those numbers, most full-service shops should see payback within a quarter.
+              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>, flat. No per-seat tax, no management overhead. At those numbers, most full-service shops should see payback within a quarter.
             </p>
           </div>
         </section>
