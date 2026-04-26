@@ -1,6 +1,7 @@
 import { openai } from './openai'
 import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildAuditRepairPrompt, buildUserPrompt, type AuditInput } from './prompts'
 import {
+  applyDefensivePostProcessing,
   assessAuditConfidence,
   enforceBenchmarkVerdictCoherence,
   enforcePainAlignment,
@@ -175,7 +176,7 @@ export async function generateAuditReport(
   const initialDraft = await requestAuditDraft(input, stage, buildUserPrompt(input), knowledgeContext)
   const initialGrounded = groundAuditResult(initialDraft, input, stage, allowedSources)
   const initialAlignment = enforcePainAlignment(initialGrounded, input.automationWish || '')
-  const initialResult = enforceBenchmarkVerdictCoherence(initialAlignment.result)
+  const initialResult = applyDefensivePostProcessing(enforceBenchmarkVerdictCoherence(initialAlignment.result))
   const initialConfidence = assessAuditConfidence(initialResult, input, stage)
 
   let bestAudit = initialResult
@@ -202,7 +203,7 @@ export async function generateAuditReport(
       )
       const repairedGrounded = groundAuditResult(repairedDraft, input, stage, allowedSources)
       const repairedAlignment = enforcePainAlignment(repairedGrounded, input.automationWish || '')
-      const repairedResult = enforceBenchmarkVerdictCoherence(repairedAlignment.result)
+      const repairedResult = applyDefensivePostProcessing(enforceBenchmarkVerdictCoherence(repairedAlignment.result))
       const repairedConfidence = assessAuditConfidence(repairedResult, input, stage)
 
       const repairFixedAlignment = initialAlignment.needsRepair && !repairedAlignment.needsRepair
