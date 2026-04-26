@@ -52,7 +52,7 @@ const BLIPS: Blip[] = [
     angle: 340,
     distance: 0.58,
     label: 'Ops coordinator math',
-    detail: 'Hire one at $5.5K/mo \u2014 or automate the role for $400/mo.',
+    detail: 'Hire one at $5.5K/mo \u2014 or automate the role for $750/mo.',
     category: 'Cost',
   },
 

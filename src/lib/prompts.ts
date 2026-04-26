@@ -118,7 +118,7 @@ When AGENCY WEBSITE INTELLIGENCE is provided in this prompt, use it ONLY to:
 2. Adjust recommendations based on their detected stack
 3. Use their niche/positioning to make language more specific ('For a B2B SaaS marketing agency like yours...')
 4. Calibrate team size and revenue estimates from their services and case count
-5. If LINKEDIN JOB SIGNALS exist, weave them into urgency. Example: "You're hiring an Operations Coordinator on LinkedIn right now — that's a $60K hire to solve a problem we can solve for $400/month."
+5. If LINKEDIN JOB SIGNALS exist, weave them into urgency. Example: "You're hiring an Operations Coordinator on LinkedIn right now — that's a $60K hire to solve a problem we can solve for $750/month."
 6. If research FAILED (errors array is non-empty AND homepage.headline is null), say nothing about their site and run the audit on form inputs alone.
 
 NEVER use website intelligence to:
