@@ -44,7 +44,7 @@ const GROUPS: FAQGroup[] = [
       },
       {
         q: 'Do I need a retainer?',
-        a: "No. You can do a one-time build and never see me again. But most agencies add the Care retainer ($400/month) because Meta, Shopify, and ad platforms push breaking API changes every quarter — and someone has to fix them before your Monday morning report fails."
+        a: "No. You can do a one-time build and never see me again. But most agencies add the Care retainer ($750/month) because Meta, Shopify, and ad platforms push breaking API changes every quarter — and someone has to fix them before your Monday morning report fails."
       },
       {
         q: "How is this cheaper than Zapier?",

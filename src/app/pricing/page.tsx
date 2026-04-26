@@ -9,11 +9,11 @@ import BookCallButton from '../components/BookCallButton'
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
   description:
-    'Transparent pricing for done-for-you n8n automation builds. Starting at $1,500. Custom workflows, built in your n8n account and maintained by me.',
+    'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500. Custom workflows, built in your n8n account and maintained by me.',
   openGraph: {
     title: 'Pricing — OpsRadar',
     description:
-      'Transparent pricing for done-for-you n8n automation builds. Starting at $1,500.',
+      'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500.',
     url: 'https://www.opsradar.co/pricing',
     siteName: 'OpsRadar',
     images: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Pricing — OpsRadar',
     description:
-      'Transparent pricing for done-for-you n8n automation builds. Starting at $1,500.',
+      'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500.',
     images: ['/og-image.png'],
   },
 }
