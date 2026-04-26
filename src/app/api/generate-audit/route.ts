@@ -8,6 +8,7 @@ import {
   hasServerSupabaseClient,
 } from '../../../lib/supabase-server'
 import type { Json } from '../../../lib/database.types'
+import { stripWrappingQuotes } from '../../../lib/utils'
 import { isAbusiveSubmission } from '../../../lib/abuse-protection'
 import {
   fetchWebsiteSignals,
@@ -197,6 +198,12 @@ export async function POST(request: Request) {
     if (!body) {
       return Response.json({ error: 'Invalid request payload' }, { status: 400 })
     }
+
+    body.automationWish = stripWrappingQuotes(body.automationWish)
+    body.failureImpact = stripWrappingQuotes(body.failureImpact)
+    body.futureVision = stripWrappingQuotes(body.futureVision)
+    body.progressTracking = stripWrappingQuotes(body.progressTracking)
+    body.onboarding = stripWrappingQuotes(body.onboarding)
 
     const {
       name, email, company,

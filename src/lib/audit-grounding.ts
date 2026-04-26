@@ -1303,6 +1303,60 @@ export function groundAuditResult(
   return normalized
 }
 
+// Defensive post-processing applied after grounding + verdict-coherence:
+// clamp context-switching math to benchmark-defensible values, and rewrite
+// the verdict's headline + stakes from estimated_annual_waste so all
+// dollar figures shown to the user trace back to a single source of truth.
+export function applyDefensivePostProcessing(
+  result: Record<string, unknown>,
+): Record<string, unknown> {
+  const cs = asRecord(result.context_switching_analysis)
+  if (Object.keys(cs).length > 0) {
+    const calcSources = asRecord(result.calculation_sources)
+    const hourlyRateRec = asRecord(calcSources.estimated_hourly_rate)
+    const hourlyRate = asNumber(hourlyRateRec.value) ?? 45
+
+    const dailySwitches = Math.min(asNumber(cs.estimated_daily_switches) ?? 0, 15)
+    const dailyMinutes = Math.min(asNumber(cs.time_lost_daily_minutes) ?? 0, 90)
+    const recalculated = Math.round((dailyMinutes / 60) * hourlyRate * 250)
+
+    result.context_switching_analysis = {
+      ...cs,
+      estimated_daily_switches: dailySwitches,
+      time_lost_daily_minutes: dailyMinutes,
+      annual_cost: recalculated,
+      is_benchmark_estimate: true,
+    }
+
+    if (calcSources.context_switching_annual_cost) {
+      const csCalcRec = asRecord(calcSources.context_switching_annual_cost)
+      result.calculation_sources = {
+        ...calcSources,
+        context_switching_annual_cost: {
+          ...csCalcRec,
+          value: recalculated,
+          source: 'benchmark_estimate',
+        },
+      }
+    }
+  }
+
+  const annualWaste = asNumber(result.estimated_annual_waste)
+  const verdict = asRecord(result.verdict)
+  if (annualWaste != null && annualWaste > 0 && Object.keys(verdict).length > 0) {
+    const weekly = Math.round(annualWaste / 52)
+    const formatMoney = (n: number) => `$${n.toLocaleString('en-US')}`
+
+    result.verdict = {
+      ...verdict,
+      headline: `You're losing approximately ${formatMoney(annualWaste)} annually to manual operations work.`,
+      stakes: `Every week this stays manual, you're losing approximately ${formatMoney(weekly)} in labor waste — and risking client trust.`,
+    }
+  }
+
+  return result
+}
+
 function buildOpportunityCorpus(opportunity: OpportunityLike): string {
   return normalizeToken([
     asString(opportunity.title),
