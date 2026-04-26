@@ -1310,6 +1310,8 @@ export function groundAuditResult(
 export function applyDefensivePostProcessing(
   result: Record<string, unknown>,
 ): Record<string, unknown> {
+  const formatMoney = (n: number) => `$${n.toLocaleString('en-US')}`
+
   const cs = asRecord(result.context_switching_analysis)
   if (Object.keys(cs).length > 0) {
     const calcSources = asRecord(result.calculation_sources)
@@ -1345,12 +1347,51 @@ export function applyDefensivePostProcessing(
   const verdict = asRecord(result.verdict)
   if (annualWaste != null && annualWaste > 0 && Object.keys(verdict).length > 0) {
     const weekly = Math.round(annualWaste / 52)
-    const formatMoney = (n: number) => `$${n.toLocaleString('en-US')}`
 
     result.verdict = {
       ...verdict,
       headline: `You're losing approximately ${formatMoney(annualWaste)} annually to manual operations work.`,
       stakes: `Every week this stays manual, you're losing approximately ${formatMoney(weekly)} in labor waste — and risking client trust.`,
+    }
+  }
+
+  // Anchor executive_summary with canonical numbers. Different phrasing
+  // than verdict.headline to avoid redundancy; "pure labor waste" signals
+  // this is a conservative figure that excludes churn, so any higher
+  // number the AI mentions reads as additional context, not contradiction.
+  if (annualWaste != null && annualWaste > 0) {
+    const existingSummary = typeof result.executive_summary === 'string'
+      ? result.executive_summary
+      : ''
+
+    if (!existingSummary.startsWith('Bottom line:')) {
+      const hoursLostWeekly = asNumber(
+        asRecord(result.labor_arbitrage_breakdown).hours_wasted_on_low_value_weekly,
+      ) ?? 0
+
+      const hoursClause = hoursLostWeekly > 0
+        ? ` across ${hoursLostWeekly} hours per week of manual operations work,`
+        : ''
+
+      const anchor = `Bottom line:${hoursClause} this agency is losing roughly ${formatMoney(annualWaste)} annually in pure labor waste. `
+
+      result.executive_summary = anchor + existingSummary
+    }
+  }
+
+  // Regenerate labor_arbitrage_breakdown.explanation from structured numbers
+  // so the prose math always agrees with the forced annual_labor_waste.
+  const labArb = asRecord(result.labor_arbitrage_breakdown)
+  if (Object.keys(labArb).length > 0) {
+    const hourlyRate = asNumber(labArb.estimated_hourly_rate) ?? 45
+    const hoursWeekly = asNumber(labArb.hours_wasted_on_low_value_weekly) ?? 0
+    const annualLaborWaste = asNumber(labArb.annual_labor_waste) ?? 0
+
+    if (hoursWeekly > 0 && annualLaborWaste > 0) {
+      result.labor_arbitrage_breakdown = {
+        ...labArb,
+        explanation: `${formatMoney(hourlyRate)}/hour × ${hoursWeekly} hours/week × 52 weeks = ${formatMoney(annualLaborWaste)}/year wasted on low-value manual work.`,
+      }
     }
   }
 
