@@ -2178,7 +2178,7 @@ function OnboardingAssessmentSection({
 
 // ─── Opportunity card ─────────────────────────────────────────────────────────
 
-function OpportunityCard({ opp }: { opp: Opportunity }) {
+function OpportunityCard({ opp, onCallClick }: { opp: Opportunity; onCallClick: (source: string) => void }) {
   const diff       = DIFF_CONFIG[opp.difficulty] ?? DIFF_CONFIG.medium
   const color      = rankColor(opp.rank)
   const monthlyVal = opp.monthly_savings ?? 0
@@ -2296,7 +2296,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
             href={CALENDLY_STRATEGY_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => track('call_booking_clicked')}
+            onClick={() => onCallClick('opportunity-card')}
             className="block w-full text-center py-4 px-6 rounded-[10px] text-[14px] font-bold text-white transition-all duration-200"
             style={{
               background: `linear-gradient(135deg, ${color}cc 0%, ${color}99 100%)`,
@@ -3233,7 +3233,7 @@ function ResultsContent() {
             {opportunities.map((opp) => (
               <StaggerItem key={opp.rank}>
                 <GlowCard glowColor={`${RANK_COLORS[opp.rank] ?? '#6b7280'}0d`} className="rounded-[18px]">
-                  <OpportunityCard opp={opp} />
+                  <OpportunityCard opp={opp} onCallClick={trackStrategyCallClick} />
                 </GlowCard>
               </StaggerItem>
             ))}
@@ -3362,13 +3362,6 @@ function ResultsContent() {
                     >
                       Book a Free Strategy Call →
                     </a>
-                  </Button>
-                  <Button
-                    onClick={() => openBuildRequest('Full Automation Build', 'final-cta-quote')}
-                    variant="outline"
-                    className="px-7 py-[14px] h-auto rounded-[13px] text-[15px] font-semibold border-outline-variant/30 text-on-surface-variant hover:border-outline-variant/60 hover:text-on-surface bg-transparent"
-                  >
-                    Request a Build Quote →
                   </Button>
                 </div>
                 <div className="mt-8 pt-6 border-t border-outline-variant/10 flex flex-col items-center gap-2">
