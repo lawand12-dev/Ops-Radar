@@ -92,7 +92,7 @@ function buildDay1Email(name: string, company: string, resultsUrl: string, score
 
 function buildDay3Email(name: string, resultsUrl: string, topOpp: { title: string; hours_saved_weekly: number; difficulty: string } | null, unsubscribeUrl: string) {
   const buildTime = topOpp?.difficulty === 'easy' ? '5–7 days' : topOpp?.difficulty === 'medium' ? '7–14 days' : '14–21 days'
-  const buildCost = topOpp?.difficulty === 'easy' ? '$1,500–$2,500' : topOpp?.difficulty === 'medium' ? '$2,500–$4,000' : '$4,000–$7,000'
+  const buildCost = topOpp?.difficulty === 'easy' ? '$3,500' : topOpp?.difficulty === 'medium' ? '$7,500' : '$9,500'
   return {
     subject: `${name ? name.split(' ')[0] + ': ' : ''}this one automation would save you ${topOpp?.hours_saved_weekly ?? '5'}h/week`,
     html: `
