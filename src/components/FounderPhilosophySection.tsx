@@ -16,7 +16,7 @@ type FounderPhilosophySectionProps = {
   name: string
   title?: string
   imageSrc?: string | null
-  summary?: string
+  summary?: React.ReactNode
   principles?: string[]
   specialties?: Specialty[]
 }
@@ -226,9 +226,9 @@ export default function FounderPhilosophySection({
                     </span>
                     <span className="h-px flex-1 bg-white/8 min-w-10" />
                   </div>
-                  <p className="mt-5 text-base md:text-lg leading-relaxed text-on-surface">
-                    {summary}
-                  </p>
+                  <div className="mt-5 space-y-5 text-base md:text-lg leading-relaxed text-on-surface">
+                    {typeof summary === 'string' ? <p>{summary}</p> : summary}
+                  </div>
                   <div className="mt-6 flex flex-wrap gap-2">
                     {principles.map((principle, index) => (
                       <span

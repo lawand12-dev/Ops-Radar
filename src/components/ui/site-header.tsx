@@ -29,10 +29,46 @@ interface SiteHeaderProps {
 const DEFAULT_NAV_LINKS: SiteNavLink[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "Architecture", href: "/#architecture" },
   { label: "Workflows", href: "/workflows" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ]
+
+function withArchitectureLink(navLinks: SiteNavLink[], pathname: string): SiteNavLink[] {
+  const hasArchitectureLink = navLinks.some(
+    (link) => link.label === "Architecture" || link.href === "#architecture" || link.href === "/#architecture"
+  )
+
+  if (hasArchitectureLink) {
+    return navLinks
+  }
+
+  const architectureLink: SiteNavLink = {
+    label: "Architecture",
+    href: pathname === "/" ? "#architecture" : "/#architecture",
+  }
+  const servicesIndex = navLinks.findIndex((link) => link.label === "Services")
+  const processIndex = navLinks.findIndex((link) => link.label === "Process")
+
+  if (servicesIndex !== -1) {
+    return [
+      ...navLinks.slice(0, servicesIndex + 1),
+      architectureLink,
+      ...navLinks.slice(servicesIndex + 1),
+    ]
+  }
+
+  if (processIndex !== -1) {
+    return [
+      ...navLinks.slice(0, processIndex),
+      architectureLink,
+      ...navLinks.slice(processIndex),
+    ]
+  }
+
+  return [...navLinks, architectureLink]
+}
 
 export default function SiteHeader({
   logoSrc = "/logo.png",
@@ -47,6 +83,7 @@ export default function SiteHeader({
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const ctaIsExternal = /^https?:\/\//i.test(ctaHref)
+  const renderedNavLinks = withArchitectureLink(navLinks, pathname)
 
   const isActiveLink = (link: SiteNavLink) => {
     if (typeof link.isActive === "boolean") {
@@ -94,7 +131,7 @@ export default function SiteHeader({
 
             <nav className="hidden lg:flex items-center gap-2">
               <div className="header-nav-pill flex items-center gap-1 rounded-full px-1 py-1">
-                {navLinks.map((link) => {
+                {renderedNavLinks.map((link) => {
                   const isActive = isActiveLink(link)
 
                   return (
@@ -142,7 +179,7 @@ export default function SiteHeader({
           {mobileMenuOpen ? (
             <div className="header-mobile-panel px-3 pb-3 pt-3 lg:hidden">
               <nav className="flex flex-col gap-2">
-                {navLinks.map((link) => {
+                {renderedNavLinks.map((link) => {
                   const isActive = isActiveLink(link)
 
                   return (
