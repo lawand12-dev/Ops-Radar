@@ -112,6 +112,9 @@ export default function AboutPage() {
           </h1>
           <p className="mt-5 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
             I&apos;m Lawand Soran — the person who scopes, builds, and maintains every workflow. Here&apos;s who you&apos;re actually hiring.
+            <span className="mt-3 block text-white/85">
+              Building the AI operations layer for marketing agencies. Claude Code is the manager. n8n is the employee.
+            </span>
           </p>
         </div>
       </section>

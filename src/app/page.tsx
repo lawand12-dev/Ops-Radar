@@ -4,6 +4,7 @@ import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import BeamsBackground from '<npm>/components/ui/beams-background'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import WorkflowImage from '<npm>/components/ui/workflow-image'
+import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import WasteCalculator from './components/WasteCalculator'
@@ -64,6 +65,57 @@ const SEGMENTS = [
   },
 ]
 
+const SYSTEM_COLUMNS = [
+  {
+    label: 'DIAGNOSE',
+    copy: (
+      <>
+        Claude analyzes your agency&apos;s exact stack, team size, and operational pain points.
+        Identifies the highest-leverage workflow to automate first.
+        Returns a structured operations brief — specific to your tools, your clients, your bottlenecks.
+      </>
+    ),
+  },
+  {
+    label: 'BUILD',
+    copy: (
+      <>
+        The workflow architecture gets built in n8n — in your account, using your tools, under your control.
+        Nothing lives on infrastructure you don&apos;t own.
+        Delivered in 5–12 days, documented, with a 30–60 day bug-fix window.
+      </>
+    ),
+  },
+  {
+    label: 'MAINTAIN',
+    copy: (
+      <>
+        The system monitors itself. When APIs change, workflows drift, or your stack evolves — the intelligence layer detects it and responds.
+        You don&apos;t manage the ops. The ops manage themselves.
+      </>
+    ),
+  },
+]
+
+const HOMEPAGE_FOUNDER_SUMMARY = (
+  <>
+    <p>
+      I&apos;m Lawand Soran. I&apos;m building OpsRadar as the AI operations layer for marketing agencies &mdash;
+      starting with done-for-you builds that prove the market, building toward a system that
+      diagnoses, deploys, and maintains itself.
+    </p>
+    <p>
+      Before OpsRadar I spent years studying how modern businesses actually operate &mdash; not how they
+      look on LinkedIn, but where the work leaks, why tools don&apos;t talk to each other, and why
+      agencies keep hiring for problems that should be automated.
+    </p>
+    <p>
+      OpsRadar exists because the gap between AI capability and operational reality is still enormous.
+      Most agencies have the tools. Almost none have the system connecting them.
+    </p>
+  </>
+)
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -79,9 +131,9 @@ export default function Home() {
           navLinks={NAV_LINKS}
           badgeLabel=""
           badgeText="For marketing agencies under 30 people"
-          title="n8n automation for marketing agencies."
-          titleLine2="Built in your account. Maintained by me."
-          description="I'm Lawand. I build the automation layer for marketing agencies — in your own n8n account, maintained by me. Reporting, onboarding, pacing alerts. The work your team does at 11pm, handled while you sleep."
+          title="The AI operations layer"
+          titleLine2="for marketing agencies."
+          description="OpsRadar diagnoses how your agency leaks time and money between tools — then builds the system that stops it. Claude Code manages the architecture. n8n runs the execution. You own everything."
           primaryButtonText="Book a free 20-min call"
           primaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
           showPrimaryArrowIcon={true}
@@ -132,6 +184,40 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── The System ──────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section id="architecture" className="py-24 px-6 max-w-6xl mx-auto scroll-mt-28">
+          <div className="text-center mb-14">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
+              Architecture
+            </p>
+            <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white leading-[1.1]">
+              The System
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {SYSTEM_COLUMNS.map((column) => (
+              <div
+                key={column.label}
+                className="relative rounded-3xl border border-white/[0.08] bg-white/[0.015] p-8 transition-colors hover:border-[#06B6A4]/30 hover:bg-white/[0.03]"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#06B6A4] mb-5">
+                  {column.label}
+                </p>
+                <p className="text-[15px] leading-[1.75] text-white/[0.65]">
+                  {column.copy}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-12 text-center font-serif italic text-2xl md:text-4xl tracking-[-0.02em] text-white leading-[1.15]">
+            Claude Code is the manager. n8n is the employee. Your agency is the owner.
+          </p>
+        </section>
+      </FadeInOnScroll>
 
       <OpsRadar />
 
@@ -471,6 +557,37 @@ export default function Home() {
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          </div>
+        </section>
+      </FadeInOnScroll>
+
+      <FounderPhilosophySection
+        name="Lawand Soran"
+        title="Founder & AI Operations Architect"
+        summary={HOMEPAGE_FOUNDER_SUMMARY}
+      />
+
+      {/* ── Vision ──────────────────────────────────────────────────── */}
+      <FadeInOnScroll>
+        <section className="px-6 py-24 max-w-4xl mx-auto">
+          <div className="border-l-[3px] border-[#06B6A4] bg-white/[0.015] px-7 py-8 md:px-10 md:py-10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#06B6A4] mb-6">
+              The Vision
+            </p>
+            <div className="space-y-6 text-base md:text-lg leading-[1.8] text-white/[0.68]">
+              <p>
+                Every agency that works with OpsRadar teaches the system something new &mdash;
+                how reporting workflows fail, where client handoffs break, what patterns precede churn.
+                That accumulated understanding becomes the moat.
+              </p>
+              <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
+                We are not building another automation tool.
+              </p>
+              <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
+                We are building the intelligence layer that understands how agencies operate &mdash;
+                and compounds that understanding into better systems for every client that follows.
+              </p>
+            </div>
           </div>
         </section>
       </FadeInOnScroll>
