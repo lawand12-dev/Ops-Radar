@@ -117,7 +117,7 @@ def main():
             links = extract_links(content)
 
             research_id_match = re.match(r"^(research-\d+)", slug_base)
-            source_file = f"{research_id_match.group(1)}.json" if research_id_match else f"{slug_base}.md"
+            source_file = filename  # the .md file itself
 
             chunks = chunk_text(content, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
 

@@ -70,9 +70,8 @@ async function main() {
       const slug = slugFromFilename(file)
       const links = extractLinks(content)
 
-      // Extract source_file from the research-id prefix or fall back to slug.md
-      const researchIdMatch = slug.match(/^(research-\d+)/)
-      const sourceFile = researchIdMatch ? `${researchIdMatch[1]}.json` : `${slug}.md`
+
+      const sourceFile = file // the .md file itself
 
       const chunks = chunkText(content, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
 
