@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ops Radar Automation Console</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <div class="bg-shape shape-a"></div>
+    <div class="bg-shape shape-b"></div>
+    <div class="bg-shape shape-c"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <h1>Automation Control Center</h1>
+        <p>Build, Deploy, Monitor, Fix</p>
+      </div>
+      <div class="topbar-actions">
+        <span id="healthBadge" class="badge badge-muted">Checking health...</span>
+        <button id="globalRefreshBtn" class="btn btn-ghost">Refresh</button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <aside class="sidebar">
+        <button class="nav-btn active" data-view="builder">AI Builder</button>
+        <button class="nav-btn" data-view="projects">Projects</button>
+        <button class="nav-btn" data-view="workflow">Workflow Health</button>
+        <button class="nav-btn" data-view="analytics">Analytics</button>
+        <button class="nav-btn" data-view="events">Event Collector</button>
+      </aside>
+
+      <section class="content">
+        <div id="toast" class="toast"></div>
+
+        <article class="view view-active" id="view-builder">
+          <div class="panel">
+            <h2>Generate Automation from Chat</h2>
+            <form id="chatForm" class="stack">
+              <label for="chatInput">User Request</label>
+              <textarea
+                id="chatInput"
+                rows="5"
+                placeholder="Send weekly report to Slack every Friday at 9 AM"
+              ></textarea>
+              <div class="row">
+                <button type="submit" id="generateBtn" class="btn btn-primary">Generate Project</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Generated Output</h3>
+              <div class="row">
+                <button id="copyBuilderJsonBtn" class="btn btn-ghost">Copy JSON</button>
+                <button id="deployFromBuilderBtn" class="btn btn-accent" disabled>Deploy Latest</button>
+              </div>
+            </div>
+            <div class="status-line">
+              <span id="builderProjectId">Project: -</span>
+              <span id="builderValidation" class="badge badge-muted">Validation: -</span>
+            </div>
+            <pre id="builderOutput">No output yet.</pre>
+          </div>
+        </article>
+
+        <article class="view" id="view-projects">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Projects</h2>
+              <div class="row">
+                <input id="projectSearchInput" class="input" placeholder="Search by name..." />
+                <button id="refreshProjectsBtn" class="btn btn-ghost">Refresh</button>
+              </div>
+            </div>
+            <div id="projectsList" class="projects-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Project Details</h3>
+              <button id="deployProjectBtn" class="btn btn-accent" disabled>Deploy</button>
+            </div>
+            <div class="row">
+              <label class="switch">
+                <input id="deployActivateInput" type="checkbox" checked />
+                <span>Activate after deploy</span>
+              </label>
+            </div>
+            <h4>Credential Bindings</h4>
+            <div class="row">
+              <button id="checkDeployBtn" class="btn btn-ghost" disabled>Check Requirements</button>
+              <button id="saveCredentialsBtn" class="btn btn-primary" disabled>Save Credentials</button>
+            </div>
+            <div id="deployCheckSummary" class="details-box">
+              Select a project, then check required credentials.
+            </div>
+            <div id="deployCredentialsForm" class="stack"></div>
+            <h4>Create Credential in n8n</h4>
+            <div class="stack">
+              <div class="row two-col">
+                <input id="quickCredentialTypeInput" class="input" placeholder="credential type e.g. slackApi" />
+                <input id="quickCredentialNameInput" class="input" placeholder="credential name" />
+              </div>
+              <textarea
+                id="quickCredentialDataInput"
+                rows="5"
+                placeholder='credential data JSON e.g. {"accessToken":"xoxb-..."}'
+              ></textarea>
+              <div class="row">
+                <button id="loadCredentialSchemaBtn" class="btn btn-ghost" disabled>Load Schema</button>
+                <button id="createCredentialBtn" class="btn btn-primary" disabled>Create in n8n</button>
+              </div>
+              <pre id="credentialSchemaOutput">Schema not loaded.</pre>
+            </div>
+            <div id="projectDetails" class="details-box">Select a project.</div>
+            <h4>Workflow JSON</h4>
+            <pre id="projectWorkflowJson">-</pre>
+            <h4>Chat Messages</h4>
+            <div id="projectMessages" class="messages-box"></div>
+          </div>
+        </article>
+
+        <article class="view" id="view-workflow">
+          <div class="panel">
+            <h2>Workflow Status</h2>
+            <div class="row">
+              <input id="workflowIdInput" class="input" placeholder="workflow uuid" />
+              <button id="loadWorkflowStatusBtn" class="btn btn-primary">Load</button>
+            </div>
+            <div id="workflowStatusSummary" class="details-box">Enter workflow ID.</div>
+          </div>
+          <div class="panel">
+            <h3>Status Payload</h3>
+            <pre id="workflowStatusJson">-</pre>
+          </div>
+        </article>
+
+        <article class="view" id="view-analytics">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Global Analytics</h2>
+              <button id="refreshAnalyticsBtn" class="btn btn-ghost">Refresh</button>
+            </div>
+            <div id="analyticsCards" class="cards-grid"></div>
+          </div>
+          <div class="panel">
+            <h3>Workflows Health</h3>
+            <div class="table-wrap">
+              <table class="table" id="analyticsTable">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Status</th>
+                    <th>Runs</th>
+                    <th>Failures</th>
+                    <th>Alerts</th>
+                    <th>Workflow ID</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <article class="view" id="view-events">
+          <div class="panel">
+            <h2>Send Test Event</h2>
+            <form id="eventForm" class="stack">
+              <div class="row two-col">
+                <input id="eventWorkflowIdInput" class="input" placeholder="workflow_id (uuid)" />
+                <input id="eventN8nWorkflowIdInput" class="input" placeholder="n8n_workflow_id (optional)" />
+              </div>
+              <div class="row two-col">
+                <input id="eventRunIdInput" class="input" placeholder="run_id" />
+                <input id="eventNodeNameInput" class="input" placeholder="node_name" />
+              </div>
+              <div class="row two-col">
+                <select id="eventTypeInput" class="input">
+                  <option value="run_started">run_started</option>
+                  <option value="run_succeeded">run_succeeded</option>
+                  <option value="run_failed">run_failed</option>
+                  <option value="node_started">node_started</option>
+                  <option value="node_succeeded">node_succeeded</option>
+                  <option value="node_failed">node_failed</option>
+                </select>
+                <select id="eventStatusInput" class="input">
+                  <option value="">auto</option>
+                  <option value="success">success</option>
+                  <option value="failure">failure</option>
+                  <option value="info">info</option>
+                </select>
+              </div>
+              <div class="row two-col">
+                <input id="eventDurationInput" class="input" type="number" min="0" placeholder="duration_ms" />
+                <input id="eventErrorInput" class="input" placeholder="error_message" />
+              </div>
+              <textarea id="eventMetaInput" rows="4" placeholder='metadata JSON e.g. {"failed_node":"Send Slack"}'></textarea>
+              <button type="submit" class="btn btn-primary">Send Event</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h3>Event API Response</h3>
+            <pre id="eventResponseJson">-</pre>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
