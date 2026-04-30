@@ -35,6 +35,23 @@ Tool comparisons, platform pricing, n8n ecosystem, build vs buy analysis.
 - [[research-27-agency-tech-stack-signals-for-automation-readiness]]
 - [[research-30-agency-website-red-flags-indicating-operational-chaos]]
 - [[research-42-agency-tech-stack-integration-map]]
+- [[n8n-nodes]] — Node reference: 1,396 nodes, naming, top 20, expressions, code patterns
+- [[n8n-api]] — MCP API tools: search, validate, create, update, templates, audit
+- [[n8n-node-webhook]] — Webhook v2.1: HTTP trigger, response modes, inbound auth, body nesting
+- [[n8n-node-httprequest]] — HTTP Request v4.4: 8 auth types, 5 body formats, pagination
+- [[n8n-node-code]] — Code v2: JS/Python, runOnceForAll vs perItem, return format
+- [[n8n-node-if]] — If v2.3: binary routing, typed condition operators (string/number/boolean/dateTime)
+- [[n8n-node-switch]] — Switch v3.4: N-output routing, rules mode vs expression mode, fallthrough
+- [[n8n-node-merge]] — Merge v3.2: Append, join by key, multiplex, positional, keep/remove matches
+- [[n8n-node-set]] — Set v3.4: add/rename/strip fields, manual mode, expression mode
+- [[n8n-node-google-ads]] — Google Ads v1: `googleAds` type, OAuth2, Campaign resource, micros values
+- [[n8n-node-google-analytics]] — Google Analytics v2: GA4 only, Report/User Activity resources
+- [[n8n-node-facebook]] — Facebook Graph API: `facebookGraphApi` type, direct proxy, v16–v23
+- [[n8n-node-hubspot]] — HubSpot v2.2: Contact, Company, Deal, Ticket, Contact List, Engagement
+- [[n8n-node-klaviyo]] — Klaviyo: community node (not in main repo), HTTP Request pattern, revision header
+- [[n8n-node-slack]] — Slack v2.4: Channel, Message, File, Reaction, User; rate limits by tier
+- [[n8n-node-gmail]] — Gmail v2.2: Message, Label, Draft, Thread; OAuth2 or Service Account
+- [[n8n-node-notion]] — Notion v2.2: Database Page CRUD, must share integration with each DB
 
 ---
 
@@ -50,6 +67,8 @@ Frameworks, workflow blueprints, architecture patterns, methodologies.
 - [[research-34-theory-of-constraints-applied-to-agency-bottlenecks]]
 - [[research-41-client-onboarding-workflow-blueprints]]
 - [[research-43-ai-agent-architecture-for-agency-operations]]
+- [[n8n-workflow-patterns]] — 5 core patterns: webhook, HTTP API, DB, AI agent, scheduled
+- [[n8n-best-practices]] — Build discipline, validation, security, MCP tooling efficiency
 
 ---
 
@@ -59,6 +78,7 @@ DIY automation failure modes, production failure patterns, prevention.
 
 - [[research-12-why-agencies-fail-at-diy-automation-projects]]
 - [[research-18-common-automation-workflow-failure-modes-and-prevention-patterns]]
+- [[n8n-common-failures]] — n8n-specific failures: expression errors, config mistakes, runtime, validation
 
 ---
 
