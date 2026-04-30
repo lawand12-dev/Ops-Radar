@@ -7,7 +7,6 @@ import WorkflowImage from '<npm>/components/ui/workflow-image'
 import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
-import WasteCalculator from './components/WasteCalculator'
 import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
 
@@ -216,8 +215,6 @@ export default function Home() {
       </FadeInOnScroll>
 
       <OpsRadar />
-
-      <WasteCalculator />
 
       {/* ── Segment picker ──────────────────────────────────────────── */}
       <FadeInOnScroll>
@@ -559,7 +556,7 @@ export default function Home() {
 
       <FounderPhilosophySection
         name="OpsRadar"
-        title="AI Operations Team"
+        title="AI Operating System"
         imageSrc={null}
         summary={HOMEPAGE_FOUNDER_SUMMARY}
       />
