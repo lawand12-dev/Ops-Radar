@@ -30,8 +30,8 @@ const DEFAULT_PRINCIPLES = [
 const DEFAULT_SPECIALTIES: Specialty[] = [
   {
     tag: 'Specialty',
-    title: 'LLM Operations',
-    desc: 'Production-minded prompt systems, tool orchestration, eval-aware workflows, and approval layers that hold up under real client pressure.',
+    title: 'Agency Brain',
+    desc: 'We build a living knowledge base of how your agency actually operates — your tools, your clients, your failures, your preferences. Claude reads it before every action. Never reasons from scratch.',
     color: '#34d399',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -43,8 +43,8 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   },
   {
     tag: 'Specialty',
-    title: 'Enterprise Integrations',
-    desc: 'CRM, billing, reporting, Slack, ad platforms, and custom APIs stitched into one controlled operating layer instead of five brittle handoffs.',
+    title: 'Workflow Guardian',
+    desc: 'Every workflow we deploy is monitored permanently. Every run logged. Every failure caught before your client notices. Rules handle the predictable. Claude explains the unknown.',
     color: '#60a5fa',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -58,8 +58,8 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   },
   {
     tag: 'Specialty',
-    title: 'Operational Strategy',
-    desc: 'We map the real margin leaks first: duplicate entry, handoff failures, reporting debt, and the workflows your team keeps rescuing by hand.',
+    title: 'Autonomous Operations',
+    desc: 'Your AI Operating System runs your agency ops without a human doing manual work. Reporting runs itself. Leads route themselves. Your team spends time on clients, not spreadsheets.',
     color: '#22d3ee',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -71,8 +71,8 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   },
   {
     tag: 'Specialty',
-    title: 'Reliability Engineering',
-    desc: 'Hosted n8n, alerting, failure recovery, and post-launch stewardship so the system still works after launch day and under volume.',
+    title: 'Operational Memory',
+    desc: 'Every failure resolved, every decision approved, every pattern learned — stored permanently in your agency brain. The system gets smarter every week. Switching cost grows every month.',
     color: '#fb923c',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -193,7 +193,7 @@ export default function FounderPhilosophySection({
                       Why This Works
                     </p>
                     <p className="mt-2 text-sm leading-6 text-on-surface">
-                      The team that scopes the logic also builds the system and owns its reliability.
+                      We evaluate your real operations first. Then we build the system around what actually breaks — not what you think breaks.
                     </p>
                   </div>
                 </div>
