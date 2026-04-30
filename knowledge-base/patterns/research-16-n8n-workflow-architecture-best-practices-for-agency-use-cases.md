@@ -1,6 +1,6 @@
 # n8n Workflow Architecture Best Practices for Agency Use Cases
 
-**Category:** Tools  
+**Category:** Patterns  
 **Research ID:** `research-16`  
 **Tier:** 3  
 **Updated:** 2026-04-11

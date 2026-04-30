@@ -25,7 +25,7 @@ const CATEGORY_MAP: Record<string, string> = {
   'research-13': 'tools',
   'research-14': 'agency-profiles',
   'research-15': 'patterns',
-  'research-16': 'tools',
+  'research-16': 'patterns',
   'research-17': 'tools',
   'research-18': 'failures',
   'research-19': 'tools',
