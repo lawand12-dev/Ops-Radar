@@ -12,19 +12,19 @@ import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
 
 export const metadata: Metadata = {
-  title: "OpsRadar — Ops Automation for Marketing Agencies",
+  title: "OpsRadar — AI Operating System for Marketing Agencies",
   description:
-    "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
+    "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
   openGraph: {
-    title: "OpsRadar — Ops Automation for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Marketing Agencies",
     description:
-      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Ops Automation for Marketing Agencies" }],
+      "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — AI Operating System for Marketing Agencies" }],
   },
   twitter: {
-    title: "OpsRadar — Ops Automation for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Marketing Agencies",
     description:
-      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. Client reports that build themselves. You own the workflow, I build and maintain it.",
+      "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
     images: ["/og-image.png"],
   },
 }
@@ -33,11 +33,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/', isActive: true },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo' },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services' },
-  { label: 'Process', href: '/how-it-works' },
+  { label: 'AIOS', href: '#architecture' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
@@ -70,9 +66,8 @@ const SYSTEM_COLUMNS = [
     label: 'DIAGNOSE',
     copy: (
       <>
-        Claude analyzes your agency&apos;s exact stack, team size, and operational pain points.
-        Identifies the highest-leverage workflow to automate first.
-        Returns a structured operations brief — specific to your tools, your clients, your bottlenecks.
+        We evaluate your agency&apos;s real operations — not just what you report, but what is actually breaking.
+        We map your tools, your team, your clients, and your biggest operational drain.
       </>
     ),
   },
@@ -80,18 +75,20 @@ const SYSTEM_COLUMNS = [
     label: 'BUILD',
     copy: (
       <>
-        The workflow architecture gets built in n8n — in your account, using your tools, under your control.
-        Nothing lives on infrastructure you don&apos;t own.
-        Delivered in 5–12 days, documented, with a 30–60 day bug-fix window.
+        We build your Agency Brain — a living knowledge base of how your agency operates.
+        Then we deploy the workflows that run on it.
+        In your n8n account. Under your control. Forever.
       </>
     ),
   },
   {
-    label: 'MAINTAIN',
+    label: 'OPERATE',
     copy: (
       <>
-        The system monitors itself. When APIs change, workflows drift, or your stack evolves — the intelligence layer detects it and responds.
-        You don&apos;t manage the ops. The ops manage themselves.
+        Your AI Operating System runs permanently.
+        Claude answers your team&apos;s questions from your real data.
+        Guardian monitors every workflow.
+        The brain gets smarter every week.
       </>
     ),
   },
@@ -100,18 +97,15 @@ const SYSTEM_COLUMNS = [
 const HOMEPAGE_FOUNDER_SUMMARY = (
   <>
     <p>
-      I&apos;m Lawand Soran. I&apos;m building OpsRadar as the AI operations layer for marketing agencies &mdash;
-      starting with done-for-you builds that prove the market, building toward a system that
-      diagnoses, deploys, and maintains itself.
+      OpsRadar is built by a team that spent years studying how marketing agencies actually operate &mdash;
+      not how they look on LinkedIn, but where the work leaks, why tools do not talk to each other,
+      and why agencies keep hiring for problems that should be automated.
     </p>
     <p>
-      Before OpsRadar I spent years studying how modern businesses actually operate &mdash; not how they
-      look on LinkedIn, but where the work leaks, why tools don&apos;t talk to each other, and why
-      agencies keep hiring for problems that should be automated.
-    </p>
-    <p>
-      OpsRadar exists because the gap between AI capability and operational reality is still enormous.
-      Most agencies have the tools. Almost none have the system connecting them.
+      We exist because the gap between AI capability and operational reality is still enormous.
+      Most agencies have the tools.
+      Almost none have the system connecting them.
+      We are building that system.
     </p>
   </>
 )
@@ -131,9 +125,9 @@ export default function Home() {
           navLinks={NAV_LINKS}
           badgeLabel=""
           badgeText="For marketing agencies under 30 people"
-          title="The AI operations layer"
+          title="The AI Operating System"
           titleLine2="for marketing agencies."
-          description="OpsRadar diagnoses how your agency leaks time and money between tools — then builds the system that stops it. Claude Code manages the architecture. n8n runs the execution. You own everything."
+          description="OpsRadar builds your agency's brain — from your real operations, your tools, your data. Your team queries it. Your workflows run on it. It gets smarter every week."
           primaryButtonText="Book a free 20-min call"
           primaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
           showPrimaryArrowIcon={true}
@@ -214,7 +208,9 @@ export default function Home() {
           </div>
 
           <p className="mt-12 text-center font-serif italic text-2xl md:text-4xl tracking-[-0.02em] text-white leading-[1.15]">
-            Claude Code is the manager. n8n is the employee. Your agency is the owner.
+            Your agency. Your brain. Your system.
+            <br />
+            Powered by OpsRadar.
           </p>
         </section>
       </FadeInOnScroll>
@@ -273,7 +269,7 @@ export default function Home() {
             Who
           </p>
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-16 leading-[1.1]">
-            Four rules I won&apos;t break.
+            Four rules we won&apos;t break.
           </h2>
 
           <div className="space-y-0">
@@ -284,10 +280,10 @@ export default function Home() {
                 — 01
               </p>
               <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                I build it myself.
+                Our team builds it directly.
               </h3>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                No freelancer handoffs. No outsourced labor. The person who scopes your workflow is the person who ships it — and the person who fixes it when Meta&apos;s API changes at 3am.
+                No outsourced handoffs. The team that scopes your AI Operating System is the team that ships it — and the team that fixes it when Meta&apos;s API changes at 3am.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -297,10 +293,10 @@ export default function Home() {
                 — 02
               </p>
               <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                I audit before I pitch.
+                We diagnose before we pitch.
               </h3>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                Every call starts with a real diagnosis of what your agency is actually losing. I don&apos;t take meetings to talk about what I might do for you.
+                Every call starts with a real diagnosis of what your agency is actually losing. We do not take meetings to talk about what we might do for you.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -310,10 +306,10 @@ export default function Home() {
                 — 03
               </p>
               <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                I charge per workflow, not per task.
+                We price systems, not task volume.
               </h3>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                Flat monthly retainers. No surprise bills. Zapier punishes you for scaling — I don&apos;t.
+                Flat monthly retainers. No surprise bills. Zapier punishes you for scaling — we do not.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -323,10 +319,10 @@ export default function Home() {
                 — 04
               </p>
               <h3 className="font-headline text-2xl md:text-3xl font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                I stay for year two.
+                We stay for year two.
               </h3>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                Most freelancers disappear after launch. I&apos;m still here when you add client #15 and Triple Whale breaks its API.
+                Your AI Operating System is designed to keep running after launch. Our team is still here when you add client #15 and Triple Whale breaks its API.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -341,7 +337,7 @@ export default function Home() {
             Recent Work
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-3">
-            Automations I&apos;ve built and shipped
+            Automations we&apos;ve built and shipped
           </h2>
           <p className="text-[15px] text-white/40 mb-6">
             Real automations, built and shipped &mdash; including advanced AI-powered lead intelligence systems.
@@ -413,7 +409,7 @@ export default function Home() {
             What
           </p>
           <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-4 leading-[1.1]">
-            Three things I do.
+            Three things we operate.
           </h2>
           <p className="text-base md:text-lg text-white/[0.55] mb-14 max-w-xl leading-relaxed">
             Nothing else. Not hourly consulting. Not training. Not dashboards you have to maintain. Just these three, end to end.
@@ -435,7 +431,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  I diagnose.
+                  We diagnose.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
                   A 3-minute audit shows exactly what your agency is losing: real dollar figures, tied to the tools you already run.
@@ -457,14 +453,14 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  I build.
+                  We build.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
                   Custom n8n workflows, inside your own n8n account. Delivered in 5 to 14 days. You own every workflow from day one.
                 </p>
               </div>
 
-              {/* MAINTAIN */}
+              {/* OPERATE */}
               <div className="relative p-8 md:p-10">
                 <div className="flex items-start justify-between mb-8">
                   <p className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-400/70">
@@ -476,10 +472,10 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  I maintain.
+                  We operate.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
-                  Meta&apos;s API changes. Triple Whale pushes a breaking update. I fix it, usually before you notice. You never touch the automation layer.
+                  Meta&apos;s API changes. Triple Whale pushes a breaking update. Our team fixes it, usually before you notice. You never touch the automation layer.
                 </p>
               </div>
             </div>
@@ -501,7 +497,7 @@ export default function Home() {
           <p className="font-serif italic text-2xl md:text-3xl tracking-[-0.01em] text-white/75 leading-[1.2]">
             AI is eating the craft.
             <br />
-            Let me eat the ops.
+            Let us run the ops.
           </p>
         </section>
       </FadeInOnScroll>
@@ -527,7 +523,7 @@ export default function Home() {
                 You own it.<br />All of it.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                Every workflow I build lives in your n8n account, on your Google Drive, running on your credentials. If I disappear tomorrow, nothing breaks. You keep the code, the logic, and the logs &mdash; day one.
+                Every workflow we build lives in your n8n account, on your Google Drive, running on your credentials. If OpsRadar ever left, nothing breaks. You keep the code, the logic, and the logs &mdash; day one.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -537,10 +533,10 @@ export default function Home() {
                 — On reliability
               </p>
               <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
-                Meta breaks something.<br />I know before you do.
+                Meta breaks something.<br />Guardian knows before you do.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                Ad platforms push breaking API changes every quarter. My monitoring catches them before your Monday morning report fails. You see the fix, not the error.
+                Ad platforms push breaking API changes every quarter. Guardian catches them before your Monday morning report fails. You see the fix, not the error.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -550,10 +546,10 @@ export default function Home() {
                 — On AI
               </p>
               <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
-                AI builds fast.<br />I verify every line.
+                AI builds fast.<br />We verify every line.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                AI accelerates the build. I review every workflow before it touches your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.
+                AI accelerates the build. Our team reviews every workflow before it touches your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -562,8 +558,9 @@ export default function Home() {
       </FadeInOnScroll>
 
       <FounderPhilosophySection
-        name="Lawand Soran"
-        title="Founder & AI Operations Architect"
+        name="OpsRadar"
+        title="AI Operations Team"
+        imageSrc={null}
         summary={HOMEPAGE_FOUNDER_SUMMARY}
       />
 
@@ -576,16 +573,19 @@ export default function Home() {
             </p>
             <div className="space-y-6 text-base md:text-lg leading-[1.8] text-white/[0.68]">
               <p>
-                Every agency that works with OpsRadar teaches the system something new &mdash;
-                how reporting workflows fail, where client handoffs break, what patterns precede churn.
-                That accumulated understanding becomes the moat.
+                Every agency that runs on OpsRadar gets their own AI Operating System &mdash;
+                built from their real operations, their tools, their data, their history.
+              </p>
+              <p>
+                Their team queries it through Claude.
+                Their workflows run on it through n8n.
+                Their brain gets richer every week.
               </p>
               <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
                 We are not building another automation tool.
               </p>
               <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
-                We are building the intelligence layer that understands how agencies operate &mdash;
-                and compounds that understanding into better systems for every client that follows.
+                We are building the operating system that runs the agency.
               </p>
             </div>
           </div>

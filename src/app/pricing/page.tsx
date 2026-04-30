@@ -9,11 +9,11 @@ import BookCallButton from '../components/BookCallButton'
 export const metadata: Metadata = {
   title: 'Pricing — OpsRadar',
   description:
-    'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500. Custom workflows, built in your n8n account and maintained by me.',
+    'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500. Custom workflows, built in your n8n account and maintained by our team.',
   openGraph: {
     title: 'Pricing — OpsRadar',
     description:
-      'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500.',
+      'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500.',
     url: 'https://www.opsradar.co/pricing',
     siteName: 'OpsRadar',
     images: [
@@ -31,18 +31,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Pricing — OpsRadar',
     description:
-      'Transparent pricing for done-for-you n8n automation builds. Starting at $3,500.',
+      'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500.',
     images: ['/og-image.png'],
   },
 }
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo' },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services' },
-  { label: 'Process', href: '/how-it-works' },
+  { label: 'AIOS', href: '/#architecture' },
   { label: 'Pricing', href: '/pricing', isActive: true },
   { label: 'About', href: '/about' },
 ]

@@ -41,26 +41,26 @@ const serifFont = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? SITE_URL),
   title: {
-    default: "OpsRadar — Ops Automation for Marketing Agencies",
+    default: "OpsRadar — AI Operating System for Marketing Agencies",
     template: "%s — OpsRadar",
   },
   description:
-    "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. You own the workflow, I build and maintain it.",
+    "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
   openGraph: {
     type: "website",
     siteName: "OpsRadar",
-    title: "OpsRadar — Ops Automation for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Marketing Agencies",
     description:
-      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. You own the workflow, I build and maintain it.",
+      "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
     url: SITE_URL,
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Ops Automation for Marketing Agencies" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — AI Operating System for Marketing Agencies" }],
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpsRadar — Ops Automation for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Marketing Agencies",
     description:
-      "I build n8n automations for paid-media, SEO, and full-service agencies under 25 people. You own the workflow, I build and maintain it.",
+      "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
     images: ["/og-image.png"],
     creator: "@ops_radar",
   },

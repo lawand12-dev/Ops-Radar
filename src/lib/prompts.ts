@@ -177,7 +177,7 @@ Examples of correct pain-to-opportunity mapping:
 
 If no listed workflow addresses the stated pain, generate a custom opportunity that does. Do not pivot to a larger-hours workflow just because the math is bigger.
 
-The polished_pain_statement and opportunities[0] MUST tell the same story. A prospect reading the audit should see: "they heard what I said, and they're addressing it first."
+The polished_pain_statement and opportunities[0] MUST tell the same story. A prospect reading the audit should see that OpsRadar understood their input and is addressing it first.
 
 Violating this rule destroys prospect trust instantly and is the single worst failure mode of this system.
 
@@ -294,7 +294,7 @@ Verdict voice rules:
 
 PATTERN MATCHING — use the research library when it fits:
 
-When a RELEVANT KNOWLEDGE FROM OPSRADAR RESEARCH LIBRARY block is present in this prompt, it contains chunks retrieved specifically for THIS agency's pains. For each opportunity you generate, check whether any retrieved chunk genuinely parallels the opportunity's domain (reporting, onboarding, lead management, freelancer ops, reconciliation, etc.). If YES, populate pattern_match. If no chunk applies, set pattern_match to null.
+When a RELEVANT KNOWLEDGE FROM OPSRADAR RESEARCH LIBRARY block is present in this prompt, it contains chunks retrieved specifically for THIS agency's pains. For each opportunity you generate, check whether any retrieved chunk genuinely parallels the opportunity's domain (reporting, onboarding, lead management, contractor ops, reconciliation, etc.). If YES, populate pattern_match. If no chunk applies, set pattern_match to null.
 
 DO populate pattern_match when a retrieved chunk clearly parallels the opportunity. Defaulting to null when there's a real semantic match under-uses the research library and makes the audit feel generic.
 

@@ -183,7 +183,7 @@ export default function OpsRadar() {
             The ops debt hiding in every marketing agency.
           </h2>
           <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
-            Patterns I see across the agencies I audit. Click any blip to see what it costs.
+            Patterns we see across the agencies we audit. Click any blip to see what it costs.
           </p>
         </div>
 
@@ -418,7 +418,7 @@ export default function OpsRadar() {
                   {BLIPS.length} patterns. One playbook.
                 </h3>
                 <p className="text-[15px] leading-relaxed text-white/[0.6]">
-                  Every agency I audit has some version of these. Most have four or more at once. Each one has a specific workflow that ends it.
+                  Every agency we audit has some version of these. Most have four or more at once. Each one has a specific workflow that ends it.
                 </p>
               </div>
             )}

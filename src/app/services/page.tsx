@@ -11,17 +11,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+    "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
   openGraph: {
     title: "Services — OpsRadar",
     description:
-      "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+      "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Services — OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
-      "I build six types of automation for paid-media, SEO, and full-service agencies under 25 people: client reporting, onboarding, lead routing, follow-ups, invoicing, and data sync. All on n8n. All maintained by me.",
+      "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
     images: ["/og-image.png"],
   },
 }
@@ -30,21 +30,17 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo' },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services', isActive: true },
-  { label: 'Process', href: '/how-it-works' },
+  { label: 'AIOS', href: '/#architecture' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WHAT_I_BUILD = [
+const WHAT_WE_BUILD = [
   {
     title: 'Automated Reporting',
-    desc: 'I pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
+    desc: 'We pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
   },
   {
     title: 'Lead Qualification & Routing',
@@ -64,7 +60,7 @@ const WHAT_I_BUILD = [
   },
   {
     title: 'Data Sync Between Tools',
-    desc: 'I keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.',
+    desc: 'We keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.',
   },
 ]
 
@@ -75,23 +71,23 @@ const FAQS = [
   },
   {
     q: 'How long does it take to build?',
-    a: 'Most single-workflow builds take 5\u201310 business days. More complex multi-workflow systems take 2\u20134 weeks. I give you a specific timeline in the proposal before you commit.',
+    a: 'Most single-workflow builds take 5\u201310 business days. More complex multi-workflow systems take 2\u20134 weeks. We give you a specific timeline in the proposal before you commit.',
   },
   {
     q: 'What if something breaks?',
-    a: 'On the Managed plan, I monitor every workflow 24/7 and fix it before you notice. On the One-Time Build plan, I include 30 days of free bug fixes after delivery.',
+    a: 'On the Managed plan, our team monitors every workflow 24/7 and fixes it before you notice. On the One-Time Build plan, we include 30 days of free bug fixes after delivery.',
   },
   {
-    q: 'Do I need technical knowledge?',
-    a: 'No. You describe your problem in plain English — I handle all the technical implementation. You\u2019ll review the workflow in a walkthrough session, but you won\u2019t need to touch any code.',
+    q: 'Is technical knowledge required?',
+    a: 'No. You describe your problem in plain English — our team handles all the technical implementation. You\u2019ll review the workflow in a walkthrough session, but you won\u2019t need to touch any code.',
   },
   {
-    q: 'Can I see the workflow before it goes live?',
-    a: 'Always. I record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.',
+    q: 'Can the workflow be reviewed before it goes live?',
+    a: 'Always. We record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.',
   },
   {
-    q: 'What happens if I cancel?',
-    a: 'Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. I just stop maintaining them.',
+    q: 'What happens after cancellation?',
+    a: 'Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. We just stop maintaining them.',
   },
 ]
 
@@ -113,13 +109,13 @@ export default function ServicesPage() {
             Services
           </p>
           <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.08] mb-6">
-            What specifically do I build for marketing agencies?
+            What specifically do we build for marketing agencies?
           </h1>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
             Six types of automation that fix the manual work burning your team: client reporting,
             ad platform handoffs, HubSpot/CRM routing, onboarding, invoicing, and data sync. Built
             for paid-media, SEO, and full-service agencies under 25 people. All on n8n. All
-            maintained by me.
+            maintained by our team.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
@@ -148,7 +144,7 @@ export default function ServicesPage() {
               Automated Client Reporting
             </h2>
             <p className="text-[15px] md:text-base leading-relaxed text-white/[0.75] mb-6 max-w-3xl">
-              I pull data from Google Ads, Meta, GA4, and your CRM on schedule.
+              We pull data from Google Ads, Meta, GA4, and your CRM on schedule.
               Merge it, format it, and deliver branded client reports automatically
               — every week, zero manual work.
             </p>
@@ -173,21 +169,21 @@ export default function ServicesPage() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── What I Build ──────────────────────────────────────────────── */}
+      {/* ── What We Build ──────────────────────────────────────────────── */}
       <FadeInOnScroll>
         <section className="max-w-5xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             The Full Menu
           </p>
           <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
-            Other things I build.
+            Other things we build.
           </h2>
           <p className="text-white/40 max-w-lg mb-16 leading-relaxed">
             Reporting is the most common, but not the only one. Here are the other five.
           </p>
 
           <div className="space-y-0">
-            {WHAT_I_BUILD.map(({ title, desc }, i) => (
+            {WHAT_WE_BUILD.map(({ title, desc }, i) => (
               <div key={title}>
                 {i === 0 && (
                   <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -224,7 +220,7 @@ export default function ServicesPage() {
               </p>
               <p className="text-base font-semibold text-white mb-2">Scope & price</p>
               <p className="text-[14px] leading-relaxed text-white/60">
-                You run the audit, we have a kickoff call, I send a written fixed-price proposal within 48 hours.
+                You run the audit, we have a kickoff call, and our team sends a written fixed-price proposal within 48 hours.
               </p>
             </div>
             <div>
@@ -233,7 +229,7 @@ export default function ServicesPage() {
               </p>
               <p className="text-base font-semibold text-white mb-2">Build & walk-through</p>
               <p className="text-[14px] leading-relaxed text-white/60">
-                I build in a dev environment, walk you through the live workflow on Day 9, you approve before it touches production.
+                We build in a dev environment, walk you through the live workflow on Day 9, and you approve before it touches production.
               </p>
             </div>
             <div>
@@ -273,7 +269,7 @@ export default function ServicesPage() {
       <section className="py-32 px-6 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            See what I&apos;d automate for you.
+            See what we&apos;d automate for you.
           </h2>
           <p className="text-white/40 mb-10 leading-relaxed">
             3-minute audit. Instant results. No commitment.

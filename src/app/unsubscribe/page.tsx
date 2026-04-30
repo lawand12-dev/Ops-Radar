@@ -53,7 +53,7 @@ function UnsubscribeContent() {
             <h1 className="text-3xl font-bold mb-4">Unsubscribe failed</h1>
             <p className="text-white/70 mb-6">
               This unsubscribe link is invalid or expired. If you keep receiving
-              emails you don't want, reply to any of them and I'll remove you manually.
+              emails you don't want, reply to any of them and we'll remove you manually.
             </p>
             <a
               href="/"
