@@ -555,9 +555,6 @@ export default function Home() {
       </FadeInOnScroll>
 
       <FounderPhilosophySection
-        name="OpsRadar"
-        title="AI Operating System"
-        imageSrc={null}
         summary={HOMEPAGE_FOUNDER_SUMMARY}
       />
 

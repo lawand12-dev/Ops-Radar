@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { Card, CardContent } from '<npm>/components/ui/card'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
@@ -13,9 +12,6 @@ type Specialty = {
 }
 
 type FounderPhilosophySectionProps = {
-  name: string
-  title?: string
-  imageSrc?: string | null
   summary?: React.ReactNode
   principles?: string[]
   specialties?: Specialty[]
@@ -83,27 +79,11 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   },
 ]
 
-function initialsFromName(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
-
 export default function FounderPhilosophySection({
-  name,
-  title = 'AI Operations Team',
-  imageSrc,
   summary = 'We spent years inside agencies watching good teams lose margin to broken handoffs, spreadsheet rituals, and automations that looked clever in demos but collapsed in production. OpsRadar is the response: an operator-minded team designing systems that stay useful after launch.',
   principles = DEFAULT_PRINCIPLES,
   specialties = DEFAULT_SPECIALTIES,
 }: FounderPhilosophySectionProps) {
-  const initials = initialsFromName(name)
-  const profileImageSrc = imageSrc === undefined ? '/founder.jpg' : imageSrc
-
   return (
     <section id="founder" className="max-w-6xl mx-auto px-6 py-24">
       <FadeInOnScroll className="max-w-3xl">
@@ -116,189 +96,93 @@ export default function FounderPhilosophySection({
         </p>
       </FadeInOnScroll>
 
-      <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
+      <div className="mt-12 space-y-6">
         <FadeInOnScroll delay={0.08}>
-          <GlowCard glowColor="rgba(173,198,255,0.08)" className="h-full rounded-[26px]">
-            <Card className="h-full overflow-hidden rounded-[26px] border border-outline-variant/10 bg-surface-container-low/80 py-0 ring-0 shadow-none backdrop-blur-xl">
+          <GlowCard glowColor="rgba(76,215,246,0.08)" className="rounded-[26px]">
+            <Card className="overflow-hidden rounded-[26px] border border-outline-variant/10 bg-surface-container-low/80 py-0 ring-0 shadow-none backdrop-blur-xl">
               <div
                 className="h-px w-full"
-                style={{ background: 'linear-gradient(90deg, rgba(173,198,255,0.85), rgba(76,215,246,0.5), rgba(76,215,246,0))' }}
+                style={{ background: 'linear-gradient(90deg, rgba(76,215,246,0.65), rgba(173,198,255,0.25), rgba(173,198,255,0))' }}
               />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-                    Architect Profile
+              <CardContent className="p-6 sm:p-7">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">
+                    Why Us
                   </span>
-                  <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant/70">
-                    Ops Team
-                  </span>
+                  <span className="h-px flex-1 bg-white/8 min-w-10" />
                 </div>
-
-                <div className="group mt-5 relative overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 aspect-[4/5]">
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'radial-gradient(circle at 30% 20%, rgba(96,165,250,0.2), transparent 30%), radial-gradient(circle at 75% 25%, rgba(34,211,238,0.14), transparent 28%), linear-gradient(180deg, rgba(10,14,24,0.85), rgba(9,13,22,0.98))',
-                    }}
-                  />
-                  <div
-                    className="absolute inset-0 opacity-70"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(rgba(173,198,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.04) 1px, transparent 1px)',
-                      backgroundSize: '34px 34px',
-                      maskImage: 'radial-gradient(circle at 50% 35%, black 0%, black 45%, transparent 100%)',
-                      WebkitMaskImage: 'radial-gradient(circle at 50% 35%, black 0%, black 45%, transparent 100%)',
-                    }}
-                  />
-
-                  <div
-                    className="pointer-events-none absolute inset-0 rounded-[24px] border border-primary/15 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_0_36px_rgba(96,165,250,0.12)] transition duration-500 group-hover:border-secondary/20 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_0_48px_rgba(76,215,246,0.18)]"
-                    aria-hidden
-                  />
-                  <div
-                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(173,198,255,0.12),transparent_42%),linear-gradient(180deg,rgba(10,14,24,0.02),rgba(10,14,24,0.42))] opacity-80 transition duration-500 group-hover:opacity-100"
-                    aria-hidden
-                  />
-
-                  {profileImageSrc ? (
-                    <div className="absolute inset-[10px] overflow-hidden rounded-[18px]">
-                      <Image
-                        src={profileImageSrc}
-                        alt={`${name} headshot`}
-                        fill
-                        className="object-cover object-center transition duration-700 ease-out grayscale-[0.24] saturate-[0.85] group-hover:scale-[1.02] group-hover:grayscale-0 group-hover:saturate-100"
-                        sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1200px) 42vw, 380px"
-                      />
-                      <div
-                        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,14,24,0.02),rgba(10,14,24,0.18)_42%,rgba(10,14,24,0.58))]"
-                        aria-hidden
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="absolute left-1/2 top-[22%] h-28 w-28 -translate-x-1/2 rounded-full border border-primary/20 bg-primary/10 shadow-[0_0_40px_rgba(173,198,255,0.16)]" />
-                      <div className="absolute left-1/2 top-[24%] flex h-24 w-24 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-surface-container-high/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                        <span className="bg-gradient-to-r from-white via-primary to-secondary bg-clip-text text-4xl font-black tracking-[-0.05em] text-transparent">
-                          {initials}
-                        </span>
-                      </div>
-                      <div className="absolute inset-x-[16%] bottom-0 h-[58%] rounded-t-[120px] border border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))]" />
-                    </>
-                  )}
-
-                  <div className="absolute inset-x-4 bottom-4 rounded-[20px] border border-white/10 bg-slate-950/45 p-4 backdrop-blur-xl">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">
-                      Why This Works
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-on-surface">
-                      We evaluate your real operations first. Then we build the system around what actually breaks — not what you think breaks.
-                    </p>
-                  </div>
+                <div className="mt-5 space-y-5 text-base md:text-lg leading-relaxed text-on-surface">
+                  {typeof summary === 'string' ? <p>{summary}</p> : summary}
                 </div>
-
-                <div className="mt-6">
-                  <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
-                    {name}
-                  </h3>
-                  <p className="mt-2 text-sm uppercase tracking-[0.2em] text-on-surface-variant/70">
-                    {title}
-                  </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {principles.map((principle, index) => (
+                    <span
+                      key={principle}
+                      className="rounded-full border px-3 py-1.5 text-[11px] font-medium tracking-[0.08em] text-on-surface"
+                      style={{
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        background: 'rgba(255,255,255,0.03)',
+                        boxShadow:
+                          index === 0
+                            ? '0 0 18px rgba(96,165,250,0.12)'
+                            : index === 1
+                              ? '0 0 18px rgba(34,211,238,0.1)'
+                              : '0 0 18px rgba(167,139,250,0.08)',
+                      }}
+                    >
+                      {principle}
+                    </span>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </GlowCard>
         </FadeInOnScroll>
 
-        <div className="space-y-6">
-          <FadeInOnScroll delay={0.14}>
-            <GlowCard glowColor="rgba(76,215,246,0.08)" className="rounded-[26px]">
-              <Card className="overflow-hidden rounded-[26px] border border-outline-variant/10 bg-surface-container-low/80 py-0 ring-0 shadow-none backdrop-blur-xl">
-                <div
-                  className="h-px w-full"
-                  style={{ background: 'linear-gradient(90deg, rgba(76,215,246,0.65), rgba(173,198,255,0.25), rgba(173,198,255,0))' }}
-                />
-                <CardContent className="p-6 sm:p-7">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">
-                      Why Us
-                    </span>
-                    <span className="h-px flex-1 bg-white/8 min-w-10" />
-                  </div>
-                  <div className="mt-5 space-y-5 text-base md:text-lg leading-relaxed text-on-surface">
-                    {typeof summary === 'string' ? <p>{summary}</p> : summary}
-                  </div>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {principles.map((principle, index) => (
-                      <span
-                        key={principle}
-                        className="rounded-full border px-3 py-1.5 text-[11px] font-medium tracking-[0.08em] text-on-surface"
+        <StaggerChildren className="grid gap-4 sm:grid-cols-2">
+          {specialties.map((specialty) => (
+            <StaggerItem key={specialty.title}>
+              <GlowCard glowColor={`${specialty.color}10`} className="h-full rounded-[22px]">
+                <Card className="h-full rounded-[22px] border border-outline-variant/10 bg-surface-container/80 py-0 ring-0 shadow-none backdrop-blur-xl">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div
+                        className="flex h-11 w-11 items-center justify-center rounded-[14px] border"
                         style={{
-                          borderColor: 'rgba(255,255,255,0.08)',
-                          background: 'rgba(255,255,255,0.03)',
-                          boxShadow:
-                            index === 0
-                              ? '0 0 18px rgba(96,165,250,0.12)'
-                              : index === 1
-                                ? '0 0 18px rgba(34,211,238,0.1)'
-                                : '0 0 18px rgba(167,139,250,0.08)',
+                          borderColor: `${specialty.color}26`,
+                          background: `${specialty.color}10`,
+                          boxShadow: `0 0 24px ${specialty.color}12`,
                         }}
                       >
-                        {principle}
+                        {specialty.icon}
+                      </div>
+                      <span
+                        className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em]"
+                        style={{
+                          color: specialty.color,
+                          borderColor: `${specialty.color}26`,
+                          background: `${specialty.color}10`,
+                          boxShadow: `0 0 18px ${specialty.color}18`,
+                        }}
+                      >
+                        {specialty.tag}
                       </span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </GlowCard>
-          </FadeInOnScroll>
+                    </div>
 
-          <StaggerChildren className="grid gap-4 sm:grid-cols-2">
-            {specialties.map((specialty) => (
-              <StaggerItem key={specialty.title}>
-                <GlowCard glowColor={`${specialty.color}10`} className="h-full rounded-[22px]">
-                  <Card className="h-full rounded-[22px] border border-outline-variant/10 bg-surface-container/80 py-0 ring-0 shadow-none backdrop-blur-xl">
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div
-                          className="flex h-11 w-11 items-center justify-center rounded-[14px] border"
-                          style={{
-                            borderColor: `${specialty.color}26`,
-                            background: `${specialty.color}10`,
-                            boxShadow: `0 0 24px ${specialty.color}12`,
-                          }}
-                        >
-                          {specialty.icon}
-                        </div>
-                        <span
-                          className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em]"
-                          style={{
-                            color: specialty.color,
-                            borderColor: `${specialty.color}26`,
-                            background: `${specialty.color}10`,
-                            boxShadow: `0 0 18px ${specialty.color}18`,
-                          }}
-                        >
-                          {specialty.tag}
-                        </span>
-                      </div>
-
-                      <div className="mt-5">
-                        <h3 className="font-headline text-[18px] font-bold tracking-tight text-on-surface">
-                          {specialty.title}
-                        </h3>
-                        <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-                          {specialty.desc}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </GlowCard>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
-        </div>
+                    <div className="mt-5">
+                      <h3 className="font-headline text-[18px] font-bold tracking-tight text-on-surface">
+                        {specialty.title}
+                      </h3>
+                      <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+                        {specialty.desc}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </GlowCard>
+            </StaggerItem>
+          ))}
+        </StaggerChildren>
       </div>
     </section>
   )
