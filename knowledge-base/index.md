@@ -35,7 +35,6 @@ Tool comparisons, platform pricing, n8n ecosystem, build vs buy analysis.
 - [[research-27-agency-tech-stack-signals-for-automation-readiness]]
 - [[research-30-agency-website-red-flags-indicating-operational-chaos]]
 - [[research-42-agency-tech-stack-integration-map]]
-- [[research-43-ai-agent-architecture-for-agency-operations]]
 
 ---
 
@@ -49,8 +48,8 @@ Frameworks, workflow blueprints, architecture patterns, methodologies.
 - [[research-32-eisenhower-matrix-applied-to-agency-operational-tasks]]
 - [[research-33-first-principles-thinking-for-identifying-agency-operational-debt]]
 - [[research-34-theory-of-constraints-applied-to-agency-bottlenecks]]
-- [[research-40-agency-distribution-channels]]
 - [[research-41-client-onboarding-workflow-blueprints]]
+- [[research-43-ai-agent-architecture-for-agency-operations]]
 
 ---
 
@@ -78,3 +77,4 @@ Pain points, buyer psychology, hiring signals, positioning, objection handling.
 - [[research-37-done-for-you-services-vs-saas-market-trends-2024-2026]]
 - [[research-38-productized-services-vs-hourly-consulting-economics]]
 - [[research-39-competitor-teardown]]
+- [[research-40-agency-distribution-channels]]
