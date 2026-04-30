@@ -176,9 +176,6 @@ export default function AboutPage() {
 
       {/* ── Founder card (existing component) ────────────────────────── */}
       <FounderPhilosophySection
-        name={FOUNDER_PROFILE.name}
-        title={FOUNDER_PROFILE.title}
-        imageSrc={null}
         summary={FOUNDER_PROFILE.summary}
       />
 
