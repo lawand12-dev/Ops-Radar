@@ -3,7 +3,7 @@ import { CONTACT_EMAIL } from "<npm>/lib/constants"
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — OpsRadar',
-  description: 'How OpsRadar handles your data. Written honestly by Lawand, the founder.',
+  description: 'How OpsRadar handles your data. Written plainly by the OpsRadar team.',
 }
 
 export default function PrivacyPolicy() {
@@ -21,18 +21,16 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">The short version</h2>
             <p>
-              I'm Lawand, the founder and only operator of OpsRadar. When you
-              use this site, I collect the minimum data needed to give you
-              useful output. I don't sell your data. I don't share it with
-              advertisers. I don't have a marketing team to leak it to. If you
-              want me to delete everything I have on you, email me and I'll
-              do it.
+              When you use this site, we collect the minimum data needed to give
+              you useful output. We don't sell your data. We don't share it with
+              advertisers. If you want us to delete everything we have on you,
+              email us and we'll do it.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">What I collect</h2>
-            <p className="mb-3">When you complete an audit, I collect:</p>
+            <h2 className="text-xl font-bold text-white mb-3">What we collect</h2>
+            <p className="mb-3">When you complete an audit, we collect:</p>
             <ul className="space-y-2 list-disc pl-6">
               <li>Your name, work email, and company name (you type these in Step 1)</li>
               <li>Your answers to the audit questions</li>
@@ -43,7 +41,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">Why I collect it</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Why we collect it</h2>
             <ul className="space-y-2 list-disc pl-6">
               <li>Your name/email/company: to send you the audit report and follow up about it</li>
               <li>Your audit answers: to generate your personalized report</li>
@@ -59,18 +57,17 @@ export default function PrivacyPolicy() {
               Your audit data is stored in Supabase (US-based PostgreSQL database).
               Emails are sent through Resend. Rate limiting uses Upstash Redis.
               The site is hosted on Vercel. Analytics is Vercel Analytics —
-              cookieless and privacy-friendly. I do not use Google Analytics,
+              cookieless and privacy-friendly. We do not use Google Analytics,
               Facebook Pixel, or any other tracking.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">Who I share it with</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Who we share it with</h2>
             <p>
               Nobody, except the subprocessors listed above (Supabase, Resend,
-              Vercel, Upstash) who help me run the service. I don't sell your
-              data. I don't share it with advertisers. I don't have partners.
-              I don't have investors. It's just me.
+              Vercel, Upstash) who help us run the service. We don't sell your
+              data. We don't share it with advertisers.
             </p>
             <p className="mt-3">
               Your audit inputs ARE sent to OpenAI's API to generate the report
@@ -80,10 +77,10 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">How long I keep it</h2>
+            <h2 className="text-xl font-bold text-white mb-3">How long we keep it</h2>
             <p>
               Audit records are retained indefinitely so you can return to your
-              results URL. If you want your data deleted, email me and I'll
+              results URL. If you want your data deleted, email us and we'll
               remove it within 7 days.
             </p>
           </section>
@@ -95,15 +92,15 @@ export default function PrivacyPolicy() {
               right to:
             </p>
             <ul className="space-y-2 list-disc pl-6">
-              <li>Know what data I have about you</li>
+              <li>Know what data we have about you</li>
               <li>Correct it if it's wrong</li>
               <li>Delete it entirely</li>
               <li>Export it in a readable format</li>
               <li>Opt out of follow-up emails (every email has an unsubscribe link)</li>
             </ul>
             <p className="mt-3">
-              To exercise any of these rights, email me at {CONTACT_EMAIL}.
-              No form to fill out. I'll reply personally within 3 business days.
+              To exercise any of these rights, email us at {CONTACT_EMAIL}.
+              No form to fill out. We'll reply within 3 business days.
             </p>
           </section>
 
@@ -119,9 +116,9 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Changes to this policy</h2>
             <p>
-              If I change anything material, I'll update the "Last updated"
-              date at the top and note what changed. I won't silently expand
-              what I collect.
+              If we change anything material, we'll update the "Last updated"
+              date at the top and note what changed. We won't silently expand
+              what we collect.
             </p>
           </section>
 
@@ -131,7 +128,7 @@ export default function PrivacyPolicy() {
               Questions, concerns, or data requests: <a href={`mailto:${CONTACT_EMAIL}`} className="text-white underline hover:text-white/80">{CONTACT_EMAIL}</a>
             </p>
             <p className="mt-3">
-              — Lawand Soran, Founder, OpsRadar
+              — The OpsRadar Team
             </p>
           </section>
         </div>

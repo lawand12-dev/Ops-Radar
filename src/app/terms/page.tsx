@@ -21,14 +21,14 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">The deal</h2>
             <p>
-              OpsRadar is operated by Lawand Soran ("I", "me"). By using this
+              OpsRadar is operated by the OpsRadar team ("we", "us"). By using this
               website, you agree to these terms. If you don't agree, don't
               use the site.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">What I provide</h2>
+            <h2 className="text-xl font-bold text-white mb-3">What we provide</h2>
             <p>
               This site offers a free AI-powered audit of agency operations,
               educational content about automation, and access to book a
@@ -73,8 +73,8 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">No warranty</h2>
             <p>
-              The site and audit are provided "as is." I try to keep everything
-              working, but I can't guarantee the site is always available,
+              The site and audit are provided "as is." We try to keep everything
+              working, but we can't guarantee the site is always available,
               the audit is always accurate, or the output fits your exact
               situation. Use it at your own judgment.
             </p>
@@ -83,9 +83,9 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Limitation of liability</h2>
             <p>
-              To the maximum extent permitted by law, I'm not liable for any
+              To the maximum extent permitted by law, we are not liable for any
               indirect, incidental, or consequential damages arising from your
-              use of the free audit or this website. If you think I directly
+              use of the free audit or this website. If you think we directly
               caused you harm through a paid engagement, that's governed by
               the specific engagement agreement we signed.
             </p>
@@ -94,10 +94,10 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Intellectual property</h2>
             <p>
-              The OpsRadar name, logo, and website content are mine. The audit
-              REPORT I generate for you is yours — you can share it, print it,
+              The OpsRadar name, logo, and website content are ours. The audit
+              report we generate for you is yours — you can share it, print it,
               quote from it freely. The underlying system and research library
-              that produced it stays mine.
+              that produced it stays ours.
             </p>
           </section>
 
@@ -113,7 +113,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Changes to these terms</h2>
             <p>
-              If I update these terms, I'll change the date at the top.
+              If we update these terms, we'll change the date at the top.
               Material changes will be announced on the homepage.
             </p>
           </section>
@@ -124,7 +124,7 @@ export default function TermsOfService() {
               Questions about these terms: <a href={`mailto:${CONTACT_EMAIL}`} className="text-white underline hover:text-white/80">{CONTACT_EMAIL}</a>
             </p>
             <p className="mt-3">
-              — Lawand Soran, Founder, OpsRadar
+              — The OpsRadar Team
             </p>
           </section>
         </div>

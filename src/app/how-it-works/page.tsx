@@ -10,7 +10,7 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'From first message to first workflow running: 10 business days. Exact timeline, what you do, what I do, what you get at each phase.',
+    'From first message to first workflow running: 10 business days. Exact timeline, what you do, what we do, what you get at each phase.',
   openGraph: {
     title: 'How it works — OpsRadar',
     description:
@@ -27,11 +27,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo' },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services' },
-  { label: 'Process', href: '/how-it-works', isActive: true },
+  { label: 'AIOS', href: '/#architecture' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
@@ -41,7 +37,7 @@ type Phase = {
   phaseTitle: string
   headline: string
   yourSide: string[]
-  mySide: string[]
+  ourSide: string[]
   youGet: string
   timeCost: string
 }
@@ -55,7 +51,7 @@ const PHASES: Phase[] = [
       'Spend 3 minutes answering 13 questions about your ops.',
       'Get a personalized report: annual waste estimate, top 4 workflow opportunities, your automation readiness score.',
     ],
-    mySide: [
+    ourSide: [
       'The AI synthesizes your answers + public website signals into a diagnosis tuned for your segment (paid-media / SEO / full-service / other).',
       'No human in this step yet. Fully automated, fully private.',
     ],
@@ -68,12 +64,12 @@ const PHASES: Phase[] = [
     headline: 'We get on a 30-minute call. You approve a fixed scope.',
     yourSide: [
       'Book a 30-min call using the link in your audit results.',
-      'Tell me which workflow is priority #1 and why.',
+      'Tell us which workflow is priority #1 and why.',
       'Share tool access (Meta, Google Ads, HubSpot, Klaviyo — whatever\'s involved).',
     ],
-    mySide: [
-      'I listen, ask sharp questions, and leave the call with a scope in my head.',
-      'Within 48 hours I send you a written proposal: exactly what I\'ll build, every tool I\'ll touch, timeline, fixed price.',
+    ourSide: [
+      'We listen, ask sharp questions, and leave the call with a clear scope.',
+      'Within 48 hours we send you a written proposal: exactly what we\'ll build, every tool we\'ll touch, timeline, fixed price.',
       'You review and approve — or we iterate once on scope. Nothing starts until you say go.',
     ],
     youGet: 'A written scope document with fixed price, exact deliverables, and timeline. No hourly billing surprises.',
@@ -82,15 +78,15 @@ const PHASES: Phase[] = [
   {
     dayRange: 'Day 3–8',
     phaseTitle: 'Build',
-    headline: 'I build in my dev environment. You stay focused on clients.',
+    headline: 'We build in a dev environment. You stay focused on clients.',
     yourSide: [
       'Go back to your actual work. Serve your clients.',
       'Respond to one mid-build check-in (async Slack or email — takes 5 minutes on your end).',
     ],
-    mySide: [
-      'I build the workflow in an isolated dev n8n instance. Every node connected to real APIs — no mock data, no "we\'ll figure it out in production."',
-      'I test every edge case: what happens when the Meta API times out, when Klaviyo rate-limits, when a field is missing. Error handling is built in from day one.',
-      'I send you one mid-build update so you know it\'s on track. No status meetings, no check-in theater.',
+    ourSide: [
+      'We build the workflow in an isolated dev n8n instance. Every node connected to real APIs — no mock data, no "we\'ll figure it out in production."',
+      'We test every edge case: what happens when the Meta API times out, when Klaviyo rate-limits, when a field is missing. Error handling is built in from day one.',
+      'We send you one mid-build update so you know it\'s on track. No status meetings, no check-in theater.',
     ],
     youGet: 'A tested, production-ready workflow waiting for your review — not a demo.',
     timeCost: '~5 minutes of your time total during the build.',
@@ -98,15 +94,15 @@ const PHASES: Phase[] = [
   {
     dayRange: 'Day 9',
     phaseTitle: 'Walkthrough',
-    headline: 'I show you the live workflow. You approve it.',
+    headline: 'We show you the live workflow. You approve it.',
     yourSide: [
-      'Join a 20-minute screen share. I record it so your team can watch later.',
+      'Join a 20-minute screen share. We record it so your team can watch later.',
       'Ask anything, request tweaks, or give the green light.',
     ],
-    mySide: [
-      'I walk you through every node — what it does, what it\'s connected to, what triggers it.',
-      'I show you the output live (a test run in front of you, not a screenshot).',
-      'If you want something different, I note it and we iterate before going live.',
+    ourSide: [
+      'We walk you through every node — what it does, what it\'s connected to, what triggers it.',
+      'We show you the output live (a test run in front of you, not a screenshot).',
+      'If you want something different, we note it and iterate before going live.',
     ],
     youGet: 'A recorded walkthrough your team can reference forever, plus full confidence in what you\'re about to deploy.',
     timeCost: '20 minutes on a call.',
@@ -119,10 +115,10 @@ const PHASES: Phase[] = [
       'Confirm deployment is healthy.',
       'Watch the first automated run complete.',
     ],
-    mySide: [
-      'I migrate the workflow from dev to your own n8n account (not mine, never mine).',
-      'I deploy monitoring and alerts — if something breaks at 3am, I get paged, not you.',
-      'I send you a documentation doc: what the workflow does, how to pause it, how to change thresholds, who owns what.',
+    ourSide: [
+      'We migrate the workflow from dev to your own n8n account (not ours, never ours).',
+      'We deploy monitoring and alerts — if something breaks at 3am, our team gets paged, not you.',
+      'We send you a documentation doc: what the workflow does, how to pause it, how to change thresholds, who owns what.',
     ],
     youGet: 'The workflow running automatically inside your own n8n account. A written doc. A direct line to me if anything needs attention.',
     timeCost: '15 minutes to confirm deployment.',
@@ -133,10 +129,10 @@ const PHASES: Phase[] = [
     headline: 'You stop thinking about it. That\'s the whole point.',
     yourSide: [
       'Do the strategy work you actually got into this business for.',
-      'Tell me when something changes (new tool, new client structure, new goal) — I adapt the workflow.',
+      'Tell us when something changes (new tool, new client structure, new goal) — we adapt the workflow.',
     ],
-    mySide: [
-      'I monitor 24/7. If an API deprecates, a vendor changes auth, or anything breaks, I fix it before you notice.',
+    ourSide: [
+      'We monitor 24/7. If an API deprecates, a vendor changes auth, or anything breaks, we fix it before you notice.',
       'Monthly check-in email with performance metrics: hours saved, errors caught, edge cases hit.',
     ],
     youGet: 'Your Sunday nights back. Your strategy hours back. An ops layer that compounds silently instead of breaking loudly.',
@@ -151,24 +147,24 @@ type Concern = {
 
 const CONCERNS: Concern[] = [
   {
-    question: 'What if I\'m slammed with client work mid-build?',
-    answer: 'You won\'t derail the timeline. The build is self-contained — I need about 5 minutes of your time total during Day 3–8 for one async check-in. If you\'re heads-down, just reply when you can. I build, you serve your clients.',
+    question: 'What if our team is slammed with client work mid-build?',
+    answer: 'You won\'t derail the timeline. The build is self-contained — we need about 5 minutes of your time total during Day 3–8 for one async check-in. If you\'re heads-down, just reply when you can. We build, you serve your clients.',
   },
   {
     question: 'What if the workflow you build misses something important?',
-    answer: 'Day 9 exists for exactly this. You see the live workflow before it touches production. If something\'s off, I adjust it before deploy — no awkward "well, we\'ll fix it later." If I misunderstood something in scope, I fix it on my time, not yours.',
+    answer: 'Day 9 exists for exactly this. You see the live workflow before it touches production. If something\'s off, we adjust it before deploy. If we misunderstood something in scope, we fix it on our time, not yours.',
   },
   {
-    question: 'What if I want to stop after Day 0?',
+    question: 'What if we want to stop after Day 0?',
     answer: 'You stop. The audit is free. There\'s no follow-up pressure, no "but wait." You keep the results. If you want to use them to hire someone else or DIY, that\'s fine — the report is yours.',
   },
   {
-    question: 'What if I want to stop after deploy?',
-    answer: 'You keep everything. The workflow is already in your n8n account (not mine). The documentation is already yours. You just stop my monthly retainer. The workflow keeps running — you or anyone else can maintain it from that point.',
+    question: 'What if we want to stop after deploy?',
+    answer: 'You keep everything. The workflow is already in your n8n account (not ours). The documentation is already yours. You just stop the monthly retainer. The workflow keeps running — you or anyone else can maintain it from that point.',
   },
   {
     question: 'Can this move faster than 10 days?',
-    answer: 'Yes, for simpler workflows or when you need it fast for a client deadline. Single workflows can ship in 3–4 days when the scope is tight and you\'re responsive on tool access. I won\'t promise faster than 10 in the proposal unless I\'ve actually sized it and I\'m confident.',
+    answer: 'Yes, for simpler workflows or when you need it fast for a client deadline. Single workflows can ship in 3–4 days when the scope is tight and you\'re responsive on tool access. We won\'t promise faster than 10 in the proposal unless we\'ve actually sized it and we\'re confident.',
   },
 ]
 
@@ -194,7 +190,7 @@ export default function HowItWorksPage() {
             Here&apos;s exactly what that looks like on your side.
           </p>
           <p className="text-lg text-white/60 max-w-2xl leading-relaxed">
-            No mystery, no &ldquo;we&apos;ll figure it out as we go.&rdquo; Every phase is concrete — what you do, what I do, what you get at the end, and how much of your time it actually costs.
+            No mystery, no &ldquo;we&apos;ll figure it out as we go.&rdquo; Every phase is concrete — what you do, what we do, what you get at the end, and how much of your time it actually costs.
           </p>
         </div>
       </section>
@@ -237,10 +233,10 @@ export default function HowItWorksPage() {
 
                       <div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/50 mb-3">
-                          My side
+                          Our side
                         </p>
                         <ul className="space-y-2.5">
-                          {phase.mySide.map((item, idx) => (
+                          {phase.ourSide.map((item, idx) => (
                             <li key={idx} className="text-[15px] leading-relaxed text-white/75 flex gap-3">
                               <span className="text-white/30 mt-1.5 shrink-0">—</span>
                               <span>{item}</span>
@@ -304,13 +300,13 @@ export default function HowItWorksPage() {
             The part most automation agencies won&apos;t tell you
           </p>
           <h2 className="font-headline text-2xl md:text-3xl font-extrabold tracking-[-0.02em] text-white leading-[1.2] mb-5">
-            Every workflow lives in your n8n account. Not mine.
+            Every workflow lives in your n8n account. Not ours.
           </h2>
           <p className="text-[15px] md:text-base leading-relaxed text-white/70 mb-4">
-            When I build for you, it goes into a n8n instance you own, with credentials you control, on infrastructure you pay for (or self-host). If you ever want to stop working with me, you keep everything. The workflows. The documentation. The entire system. I just stop maintaining it.
+            When we build for you, it goes into a n8n instance you own, with credentials you control, on infrastructure you pay for (or self-host). If you ever want to stop working with OpsRadar, you keep everything. The workflows. The documentation. The entire system. We just stop maintaining it.
           </p>
           <p className="text-[15px] md:text-base leading-relaxed text-white/70">
-            No vendor lock-in. No &ldquo;your data is hostage.&rdquo; No per-task pricing that scales against you. That&apos;s the single biggest reason I built OpsRadar this way instead of running a Zapier-retainer model or a locked automation subscription.
+            No vendor lock-in. No &ldquo;your data is hostage.&rdquo; No per-task pricing that scales against you. That&apos;s the single biggest reason we built OpsRadar this way instead of running a Zapier-retainer model or a locked automation subscription.
           </p>
         </div>
       </section>

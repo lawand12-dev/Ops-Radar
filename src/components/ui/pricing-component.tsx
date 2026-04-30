@@ -71,7 +71,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Care',
     price: '$750',
     period: '/month',
-    description: 'After your build is delivered, I monitor your workflow and fix it if it breaks.',
+    description: 'After your build is delivered, our team monitors your workflow and fixes it if it breaks.',
     features: [
       'Monitoring of all your workflows',
       'Bug fixes within 24 hours',
@@ -87,7 +87,7 @@ const MONTHLY_PLANS: Plan[] = [
     name: 'Active',
     price: '$1,500',
     period: '/month',
-    description: 'Everything in Care, plus small tweaks and improvements as you ask. Up to 5 hours of my time per month.',
+    description: 'Everything in Care, plus small tweaks and improvements as you ask. Up to 5 hours of team time per month.',
     features: [
       'Everything in Care',
       'Up to 5 hours/month of tweaks and improvements',
@@ -109,7 +109,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Monthly strategy call',
       'Same-day bug fixes',
       'Priority Slack/WhatsApp support',
-      'Direct founder access',
+      'Direct OpsRadar team access',
       'Cancel anytime — workflows stay in your account',
     ],
     cta: 'Book a free 20-min call',
@@ -119,24 +119,24 @@ const MONTHLY_PLANS: Plan[] = [
 
 const FAQ_ITEMS = [
   {
-    q: 'Do I need my own n8n instance?',
-    a: 'Yes — and that\u2019s a good thing. You create an n8n Cloud account (about $20/month) or self-host. I build inside your account so you own the workflow forever. If we ever stop working together, the workflow keeps running. You never get locked in.',
+    q: 'Is an n8n instance required?',
+    a: 'Yes — and that\u2019s a good thing. You create an n8n Cloud account (about $20/month) or self-host. We build inside your account so you own the workflow forever. If we ever stop working together, the workflow keeps running. You never get locked in.',
   },
   {
     q: 'Can\u2019t we just build this ourselves?',
-    a: 'You can. Most agencies that try to build this in-house end up spending hundreds of hours a year on it \u2014 developer time that was supposed to be billable client work. I\u2019ve built and tested 30+ agency workflows end-to-end. You\u2019re paying for experience that avoids the expensive mistakes. If you want to try it yourself first, take the free audit and build from my recommendations. No hard feelings.',
+    a: 'You can. Most agencies that try to build this in-house end up spending hundreds of hours a year on it \u2014 developer time that was supposed to be billable client work. We\u2019ve built and tested 30+ agency workflows end-to-end. You\u2019re paying for experience that avoids the expensive mistakes. If you want to try it yourself first, take the free audit and build from our recommendations. No hard feelings.',
   },
   {
-    q: 'What happens if you disappear?',
-    a: 'The workflow lives in your n8n account, not mine. If I vanished tomorrow, your automation keeps running. Your team can edit it. Another automation consultant can take it over. That\u2019s the whole reason I build in n8n instead of a proprietary SaaS — there\u2019s no lock-in to me or to anyone.',
+    q: 'What happens if OpsRadar disappears?',
+    a: 'The workflow lives in your n8n account, not ours. If our team vanished tomorrow, your automation keeps running. Your team can edit it. Another automation consultant can take it over. That\u2019s the whole reason we build in n8n instead of a proprietary SaaS — there\u2019s no lock-in to us or to anyone.',
   },
   {
     q: 'What if my automation breaks after the bug-fix window?',
     a: 'One-time builds include a bug-fix window (30\u201360 days). After that, you can switch to a monthly plan for ongoing support or request paid fixes.',
   },
   {
-    q: 'Can I start with a one-time build and move to monthly later?',
-    a: 'Yes. My recommendation is to start with a Core Build, then move to a monthly plan once you see the value from the first workflow.',
+    q: 'Can a one-time build move to monthly later?',
+    a: 'Yes. Our recommendation is to start with a Core Build, then move to a monthly plan once you see the value from the first workflow.',
   },
   {
     q: 'Is there a contract?',
@@ -217,7 +217,7 @@ export default function OpsRadarPricing() {
               Pay once. Own the workflow.
             </h2>
             <p className="text-lg text-white/40">
-              I build it, you keep it.
+              We build it, you keep it.
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Book a 20-min call — I'll tell you which tier actually fits before you commit.
+            Book a 20-min call — we&apos;ll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -239,10 +239,10 @@ export default function OpsRadarPricing() {
               Monthly Retainers
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-              I maintain it. You never touch a workflow.
+              We maintain it. You never touch a workflow.
             </h2>
             <p className="text-lg text-white/40 max-w-2xl mx-auto mb-6">
-              Monthly retainers are for ongoing care of a workflow I&apos;ve already built for you. They begin after delivery and don&apos;t include new builds — except where noted. New builds are scoped and priced separately using the build tiers above.
+              Monthly retainers are for ongoing care of a workflow we&apos;ve already built for you. They begin after delivery and don&apos;t include new builds — except where noted. New builds are scoped and priced separately using the build tiers above.
             </p>
             <p className="text-[13px] text-white/30 max-w-2xl mx-auto leading-relaxed">
               For context: hiring an ops coordinator costs $5,500–$9,500/month fully loaded. A Zapier or Make retainer typically runs $500–$2,000/month and gets more expensive as your workflow volume scales.
@@ -256,7 +256,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Book a 20-min call — I'll tell you which tier actually fits before you commit.
+            Book a 20-min call — we&apos;ll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -285,7 +285,7 @@ export default function OpsRadarPricing() {
             Not sure which one fits?
           </h2>
           <p className="text-white/40 mb-8 mx-auto max-w-md">
-            Book a 20-min call — I'll tell you what to build, how complex it is, and which tier fits.
+            Book a 20-min call — we&apos;ll tell you what to build, how complex it is, and which tier fits.
           </p>
           <a
             href={CALENDLY_STRATEGY_CALL_URL}

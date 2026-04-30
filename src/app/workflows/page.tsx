@@ -30,11 +30,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo' },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services' },
-  { label: 'Process', href: '/how-it-works' },
+  { label: 'AIOS', href: '/#architecture' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
@@ -47,7 +43,7 @@ const WORKFLOWS = [
     categoryColor: 'text-pink-400/80',
     title: 'AI Inbound Lead Intelligence System',
     description:
-      "The most advanced lead system in this catalog. Every inbound lead triggers parallel enrichment — I pull their company website, firmographic data, and LinkedIn profile simultaneously. An AI research agent synthesizes everything into a full lead brief, then a scoring engine grades them. Hot leads automatically get a personalized AI-written icebreaker ready for sales to send, while warm and cold leads flow into nurture sequences. Sales stops researching. Sales starts closing.",
+      "The most advanced lead system in this catalog. Every inbound lead triggers parallel enrichment — we pull their company website, firmographic data, and LinkedIn profile simultaneously. An AI research agent synthesizes everything into a full lead brief, then a scoring engine grades them. Hot leads automatically get a personalized AI-written icebreaker ready for sales to send, while warm and cold leads flow into nurture sequences. Sales stops researching. Sales starts closing.",
     image: '/workflows/workflow-5.png',
     stats: 'Designed to replace ~15 hours per week · 8 tool integrations · Full research in under 30 seconds',
     flow: 'Webhook → Normalize → Parallel Enrichment → Merge → AI Research → AI Scoring → Hot/Cold Router → Personalized Icebreaker or Nurture',
@@ -116,7 +112,7 @@ export default function WorkflowsPage() {
 
           <div className="max-w-4xl mx-auto px-6 pt-24 pb-16">
             <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
-              What I build
+              What we build
             </span>
             <h1 className="font-headline text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] text-white mb-6">
               Real workflows. Nothing staged.
@@ -203,7 +199,7 @@ export default function WorkflowsPage() {
             Want one of these built for your agency?
           </h2>
           <p className="text-white/40 mb-10 text-lg max-w-xl mx-auto">
-            Start with the free audit. I&apos;ll identify which workflow would save you the
+            Start with the free audit. We&apos;ll identify which workflow would save you the
             most time, then scope the exact build.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

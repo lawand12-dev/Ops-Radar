@@ -59,7 +59,7 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   {
     tag: 'Specialty',
     title: 'Operational Strategy',
-    desc: 'I map the real margin leaks first: duplicate entry, handoff failures, reporting debt, and the workflows your team keeps rescuing by hand.',
+    desc: 'We map the real margin leaks first: duplicate entry, handoff failures, reporting debt, and the workflows your team keeps rescuing by hand.',
     color: '#22d3ee',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -95,9 +95,9 @@ function initialsFromName(name: string) {
 
 export default function FounderPhilosophySection({
   name,
-  title = 'Founder & Lead Automation Architect',
+  title = 'AI Operations Team',
   imageSrc,
-  summary = 'I spent years inside agencies watching good teams lose margin to broken handoffs, spreadsheet rituals, and automations that looked clever in demos but collapsed in production. OpsRadar is the response: one operator-minded builder designing systems that stay useful after launch.',
+  summary = 'We spent years inside agencies watching good teams lose margin to broken handoffs, spreadsheet rituals, and automations that looked clever in demos but collapsed in production. OpsRadar is the response: an operator-minded team designing systems that stay useful after launch.',
   principles = DEFAULT_PRINCIPLES,
   specialties = DEFAULT_SPECIALTIES,
 }: FounderPhilosophySectionProps) {
@@ -107,12 +107,12 @@ export default function FounderPhilosophySection({
   return (
     <section id="founder" className="max-w-6xl mx-auto px-6 py-24">
       <FadeInOnScroll className="max-w-3xl">
-        <span className="uppercase tracking-[0.2em] text-secondary font-bold text-xs">Founder & Philosophy</span>
+        <span className="uppercase tracking-[0.2em] text-secondary font-bold text-xs">Team & Philosophy</span>
         <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mt-4 text-on-surface">
-          The operator behind the systems.
+          The team behind the systems.
         </h2>
         <p className="mt-5 max-w-2xl text-base md:text-lg leading-relaxed text-on-surface-variant">
-          OpsRadar is intentionally built like an engineering dossier: one accountable architect, clear specialties, and a bias toward systems that survive real operating pressure.
+          OpsRadar is intentionally built like an engineering dossier: accountable operators, clear specialties, and a bias toward systems that survive real operating pressure.
         </p>
       </FadeInOnScroll>
 
@@ -130,7 +130,7 @@ export default function FounderPhilosophySection({
                     Architect Profile
                   </span>
                   <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant/70">
-                    Solo Operator
+                    Ops Team
                   </span>
                 </div>
 
@@ -193,7 +193,7 @@ export default function FounderPhilosophySection({
                       Why This Works
                     </p>
                     <p className="mt-2 text-sm leading-6 text-on-surface">
-                      The same person who scopes the logic also builds the system and owns its reliability.
+                      The team that scopes the logic also builds the system and owns its reliability.
                     </p>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ export default function FounderPhilosophySection({
                 <CardContent className="p-6 sm:p-7">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">
-                      Why Me
+                      Why Us
                     </span>
                     <span className="h-px flex-1 bg-white/8 min-w-10" />
                   </div>

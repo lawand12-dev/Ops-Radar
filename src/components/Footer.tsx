@@ -17,10 +17,10 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-[14px] text-white/55 leading-relaxed max-w-xs mb-6">
-              n8n automation for paid-media, SEO, and full-service marketing agencies. You own the workflows. I build and maintain them.
+              AI Operating System for marketing agencies. Your brain, your workflows, your Claude interface — getting smarter every week.
             </p>
             <div className="text-[12px] text-white/40 leading-[1.8]">
-              <p className="text-white/55">Built by Lawand Soran</p>
+              <p className="text-white/55">Built by the OpsRadar team</p>
               <p>Sulaymaniyah, Kurdistan</p>
               <p className="text-white/35">8 hours ahead of your team</p>
             </div>
@@ -90,7 +90,7 @@ export default function Footer() {
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs uppercase tracking-widest text-white/30">
-              &copy; 2026 OpsRadar. Built by Lawand.
+              &copy; 2026 OpsRadar. Built by the OpsRadar team.
             </p>
             <div className="flex items-center gap-5">
               <Link href="/privacy" className="text-xs text-white/30 hover:text-white/60 transition-colors">Privacy</Link>

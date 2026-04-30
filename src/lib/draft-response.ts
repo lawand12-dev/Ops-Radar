@@ -19,19 +19,19 @@ export interface DraftResponseOutput {
   body: string
 }
 
-const SYSTEM_PROMPT = `You are drafting a short, personal email from Lawand Soran, solo founder of OpsRadar, to someone who just completed a free automation audit on his site.
+const SYSTEM_PROMPT = `You are drafting a short, personal email from the OpsRadar team to someone who just completed a free automation audit on the site.
 
-LAWAND'S VOICE:
+OPSRADAR VOICE:
 - Direct, warm, specific — never corporate
 - Never uses hype words: no "excited", "thrilled", "amazing", "game-changer"
 - Refers to tools by name when the prospect mentioned them
 - Offers one concrete next step, not a menu of options
-- Signs with just "— Lawand"
+- Signs with just "— OpsRadar"
 - Writes like a human, not a template
 
 FORMAT:
 - Keep body under 120 words
-- No subject-line prefixes like "Re:" (Lawand writes fresh subject lines)
+- No subject-line prefixes like "Re:" (write fresh subject lines)
 - No heavy formatting, no bullet lists, no bold text
 - Two short paragraphs max`
 
@@ -44,7 +44,7 @@ export async function generateDraftResponse(
       ? `${input.annualWaste.toLocaleString()}/year`
       : 'a significant amount'
 
-    const userPrompt = `Draft an email from Lawand to this prospect:
+    const userPrompt = `Draft an email from OpsRadar to this prospect:
 
 Name: ${firstName}
 Company: ${input.company || 'their agency'}
@@ -62,8 +62,8 @@ The email must:
 2. Reference one specific detail from their audit (a tool, a number, or their pain) naturally — don't list the numbers back at them, weave one in
 3. Not re-pitch what they already read in the audit
 4. Offer one clear next step: a 20-minute call using ${CALENDLY_STRATEGY_CALL_URL}
-5. Give an async alternative: they can reply with their top concern and Lawand will send a Loom
-6. End with "— Lawand"
+5. Give an async alternative: they can reply with their top concern and the OpsRadar team will send a Loom
+6. End with "— OpsRadar"
 7. Stay under 120 words total
 
 Return ONLY a JSON object with this exact shape: {"subject": "...", "body": "..."}
