@@ -310,7 +310,10 @@ export async function POST(request: Request) {
 
     let knowledgeContext = ''
     try {
-      const chunks = await retrieveRelevantKnowledge(knowledgeQuery, 5)
+      const chunks = await retrieveRelevantKnowledge(knowledgeQuery, 5, {
+        agencyType,
+        automationWish,
+      })
       knowledgeContext = formatKnowledgeContext(chunks)
       if (chunks.length > 0) {
         console.log(
