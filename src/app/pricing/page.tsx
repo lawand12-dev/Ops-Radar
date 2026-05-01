@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
@@ -34,7 +35,13 @@ export const metadata: Metadata = {
       'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500.',
     images: ['/og-image.png'],
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
+
+const PRICING_PAGE_VISIBLE = process.env.NEXT_PUBLIC_SHOW_PRICING_PAGE === 'true'
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -44,6 +51,10 @@ const NAV_LINKS = [
 ]
 
 export default function PricingPage() {
+  if (!PRICING_PAGE_VISIBLE) {
+    notFound()
+  }
+
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">

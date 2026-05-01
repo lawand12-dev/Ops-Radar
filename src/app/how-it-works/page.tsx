@@ -28,7 +28,6 @@ export const metadata: Metadata = {
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'AIOS', href: '/#architecture' },
-  { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
 ]
 
