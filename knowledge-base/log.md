@@ -110,3 +110,88 @@ Service nodes (source-verified from GitHub TypeScript + credential files):
 
 **Pages updated**:
 - `index.md` — Added 15 new node page entries to the Tools section
+
+---
+
+## 2026-05-01 — Wiki Expansion Batch 2 Completed
+
+**Goal**: Finish the 74 remaining pages from the 88-page expansion plan after the previous batch was blocked by usage limits.
+
+**Outcome**: Added 74 new pages across API deep dives, production failure patterns, workflow templates, approval/safety rules, AI integration, agency business operations, and n8n production depth. Updated `index.md` to remove the expansion-in-progress banner and link every new page. No intentional deviations from the handoff brief.
+
+### Pages added (74)
+
+- `tools/api-meta-marketing.md` — Meta Marketing API powers Facebook and Instagram advertising automation, lead ads retrieval, insights reporting, and Conversions API integrations
+- `tools/api-google-ads.md` — Google Ads API integrates campaign reporting, conversion uploads, asset management, and account hierarchy operations
+- `tools/api-ga4.md` — GA4 reporting splits between the Data API for operational reports and BigQuery export for raw event analysis
+- `tools/api-hubspot.md` — HubSpot API spans CRM records, associations, marketing assets, service objects, timeline events, and webhooks
+- `tools/api-klaviyo.md` — Klaviyo API handles profiles, events, lists, segments, metrics, flows, and ecommerce marketing data
+- `tools/api-shopify.md` — Shopify Admin API now strongly favors GraphQL for new apps while REST remains legacy
+- `tools/api-stripe.md` — Stripe API covers payments, subscriptions, refunds, disputes, invoices, and Connect platform flows
+- `tools/api-mailchimp.md` — Mailchimp Marketing API manages audiences, members, tags, segments, campaigns, ecommerce stores, and batch jobs
+- `tools/api-notion.md` — Notion API is useful for lightweight portals, task databases, report pages, and knowledge-base storage
+- `tools/api-airtable.md` — Airtable API is a practical operational datastore for agencies, but it behaves like a collaborative spreadsheet with API constraints rather than a relational database
+- `tools/api-slack-deep.md` — Slack API can be a notification channel, approval surface, workflow trigger, and lightweight internal app platform
+- `failures/timezone-handling.md` — UTC vs local vs platform-local time breaks reports, schedules, and filters when systems interpret the same date differently
+- `failures/currency-conversion.md` — Multi-region money data fails when workflows mix micros, cents, zero-decimal currencies, stale FX rates, and display formatting
+- `failures/date-format-mismatches.md` — Systems alternate between ISO 8601, Unix seconds, Unix milliseconds, GA4-style dates, and ambiguous local formats
+- `failures/pagination-failures.md` — Pagination breaks at scale through offset drift, cursor expiry, missing next tokens, and workflows that retry from the wrong boundary
+- `failures/n8n-memory-limits.md` — Large JSON arrays, binary files, AI prompts, and manual executions can exceed n8n instance memory before a workflow reaches its apparent API limit
+- `failures/workflow-execution-timeouts.md` — Long API backfills, LLM calls, file processing, and slow databases can outlive workflow or node-level timeouts
+- `failures/concurrent-execution-race-conditions.md` — Simultaneous webhooks and overlapping schedules create duplicate records, double sends, and last-write-wins data loss
+- `failures/database-connection-pool.md` — n8n workers, Code nodes, long transactions, and external BI tools can exhaust database connection budgets
+- `failures/email-deliverability.md` — SPF, DKIM, DMARC, sender reputation, bounce handling, and client-domain misconfiguration decide whether automations reach inboxes
+- `failures/file-handling-failures.md` — Binary handling fails through memory buffering, MIME mismatches, multipart bodies, file-size caps, and temporary URL expiry
+- `failures/oauth-refresh-failures.md` — Refresh token rotation, revoked consent, app test mode, SSO changes, and concurrent refreshes can silently break live workflows
+- `patterns/workflow-reporting-full-service.md` — Paid, SEO, social, email, CRM, and PM data become one executive report with outage-aware partial reporting
+- `patterns/workflow-lead-routing-budget.md` — Inbound leads are routed by declared or inferred budget tier, with deduplication and SLA alerts
+- `patterns/workflow-lead-routing-source.md` — UTM and referrer data route leads to the correct owner and sequence while preserving attribution
+- `patterns/workflow-lead-routing-service.md` — Service interest from forms or AI classification routes prospects to specialists and proposal templates
+- `patterns/workflow-onboarding-paid-media.md` — Contract signature launches project setup, access requests, kickoff scheduling, Slack channel, and first follow-up
+- `patterns/workflow-onboarding-seo.md` — SEO onboarding creates audit tasks, GA4/GSC access requests, keyword brief, reporting sheet, and AM review gate
+- `patterns/workflow-content-distribution.md` — Published content is adapted to social, newsletter, and tracking formats with approval before scheduling
+- `patterns/workflow-proposal-generation.md` — Deal data, case studies, and templates generate a proposal draft, PDF, tracking, and follow-up sequence
+- `patterns/workflow-meeting-followup.md` — Meeting notes and transcripts become action items, CRM updates, and approved client follow-up emails
+- `patterns/workflow-slack-digest.md` — A scheduled digest combines approvals, overdue tasks, anomalies, new leads, reports due, and on-call info
+- `patterns/workflow-client-health-score.md` — NPS, response time, performance, billing, activity, tickets, and renewal proximity become a weekly health score
+- `patterns/workflow-churn-detection.md` — Risk signals are scored into intervention levels with AM tasks, director escalation, and win-back context
+- `patterns/workflow-upsell-detection.md` — Positive performance and growth signals create timed upsell tasks without surfacing offers during unresolved issues
+- `patterns/workflow-capacity-planning.md` — Projects, PTO, pipeline, role estimates, and velocity become a capacity dashboard and feasibility check
+- `patterns/workflow-project-status.md` — Task progress, billable hours, milestones, blockers, and budget variance become a reviewed weekly status narrative
+- `patterns/workflow-time-tracking.md` — Time entries are mapped to clients/projects, compared with estimates, and routed into utilization and profitability reports
+- `patterns/approval-human-decision-framework.md` — Decide when automation must pause for a person using irreversibility, blast radius, confidence, and client visibility
+- `patterns/approval-auto-fix-safe.md` — Define when automated correction is acceptable and when the workflow must escalate instead
+- `patterns/approval-client-facing-actions.md` — Require review for emails, reports, invoices, ad changes, meeting updates, and portal posts that clients can see
+- `patterns/approval-money-touching.md` — Protect charges, refunds, invoices, ad budgets, and performance-fee calculations with thresholds and dual approval
+- `patterns/approval-data-deletion.md` — Separate soft delete, unsubscribe, merge, and hard delete paths with backup and escalation rules
+- `patterns/approval-bulk-actions.md` — Control high-volume updates with dry runs, progress reporting, abort thresholds, and rollback assessment
+- `patterns/approval-anomaly-detection.md` — Define alert thresholds for volume spikes, metric drops, schema changes, and auth failure rates
+- `patterns/approval-ai-confidence-scoring.md` — Use confidence, calibration, and validation to route AI outputs between automation and human review
+- `patterns/approval-multi-stage.md` — Model sequential and parallel approvals for large budgets, sensitive data, and executive signoff
+- `patterns/approval-audit-logging.md` — Capture actor, action, timestamp, before/after state, source IP, and outcome for every important automation decision
+- `patterns/ai-prompt-engineering-n8n.md` — Prompts in n8n need versioning, variable hygiene, structured instructions, and test fixtures
+- `patterns/ai-structured-output.md` — Structured outputs make AI usable in automation by enforcing JSON schemas, enums, and required fields
+- `patterns/ai-cost-optimization.md` — AI cost control comes from model tiering, prompt compression, caching, batching, and per-client attribution
+- `patterns/ai-failure-handling.md` — AI nodes fail through rate limits, malformed JSON, timeouts, empty responses, hallucinations, and context overflow
+- `patterns/ai-hallucination-prevention.md` — Automation must prevent models from inventing numbers, contacts, dates, or decisions
+- `patterns/ai-confidence-scoring.md` — Confidence scores must be calibrated against real outcomes before they control workflow routing
+- `patterns/ai-when-not-to-use.md` — Many workflow steps are cheaper, faster, and safer as deterministic code or API queries
+- `patterns/ai-rag-vs-finetune.md` — Choose prompt engineering, RAG, or fine-tuning based on knowledge freshness, format consistency, and request volume
+- `patterns/ai-vector-search.md` — Vector search supports semantic retrieval, deduplication, similar-client matching, and FAQ routing when thresholds are calibrated
+- `agency-profiles/client-tier-patterns.md` — Client tiers define SLA, automation level, approval depth, reporting cadence, and escalation path
+- `agency-profiles/retainer-vs-project.md` — Retainers reward recurring automation, while projects need milestone controls and clean closure
+- `agency-profiles/white-label-reporting.md` — White-label work hides the delivery agency behind another brand and raises branding, access, and data-isolation stakes
+- `agency-profiles/multi-brand-complexity.md` — Multi-brand accounts need isolated reporting, permissions, workflows, and billing namespaces
+- `agency-profiles/agency-of-agencies.md` — Holding-company and specialist-collective models require cross-agency handoffs, shared reporting, and clear ownership
+- `agency-profiles/performance-pricing-ops.md` — Performance pricing needs attribution evidence, reconciliation, dispute handling, and finance approval
+- `agency-profiles/cash-flow-patterns.md` — Cash timing drives ops priorities: dunning, hiring, automation investment, and renewal-risk management
+- `agency-profiles/partnership-referral-ops.md` — Referral, white-label, channel, and strategic partnerships need attribution, commission, and portal workflows
+- `tools/n8n-version-migration.md` — n8n upgrades require staging, workflow export, credential validation, node typeVersion checks, and rollback plans
+- `tools/n8n-credential-management.md` — Credential security depends on encryption keys, sharing rules, rotation, service accounts, and external secret storage
+- `tools/n8n-queue-mode.md` — Queue mode separates main, worker, Redis, and database responsibilities for scalable production execution
+- `tools/n8n-monitoring.md` — Production n8n monitoring combines execution logs, metrics, health checks, queue depth, memory, and workflow-level alerts
+- `tools/n8n-backup-recovery.md` — Recoverability depends on workflow exports, database backups, encryption keys, environment variables, and credential rotation procedures
+- `tools/n8n-testing-strategies.md` — n8n testing uses pinned data, staging workflows, schema validation, canaries, and regression checklists
+- `tools/n8n-performance.md` — Performance is controlled by node count, item volume, batching, binary handling, expressions, and external API behavior
+- `tools/n8n-security-hardening.md` — Hardening covers webhooks, credentials, risky nodes, network isolation, auth, CORS, audit, and instance updates
+- `tools/n8n-cost-management.md` — n8n cost control requires execution accounting, workflow design, self-hosted TCO, AI cost attribution, and pruning
