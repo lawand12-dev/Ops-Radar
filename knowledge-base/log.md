@@ -2,6 +2,65 @@
 
 ---
 
+## 2026-05-01 — Wiki Expansion Batch 1 (BLOCKED by usage limit) + Indexing Pass
+
+**Goal**: Add ~88 new wiki pages across 7 sections (API deep-dives, production failures, workflow templates, approval/safety, AI integration, agency business operations, n8n production depth).
+
+**Method**: Dispatched 7 parallel research agents, each scoped to one section cluster, with WebSearch/WebFetch instructions for current API docs, error codes, rate limits, and community-reported gotchas.
+
+**Outcome**: **0 new pages produced today.** All background agents were killed by the org monthly usage limit before writing any files. Original prompts are preserved in conversation history and can be redispatched after the limit resets.
+
+### What this commit actually contains
+
+An **indexing pass**, not a content pass. The 14 pages listed below were written yesterday in commit `52501a3 (2026-04-30 21:28) feat: expand markdown knowledge base` but were never linked from `index.md`, so the RAG system was not surfacing them. This commit adds those entries to `index.md` and records a clear status of the 88-page plan.
+
+### Pages indexed (14 — written previously, indexed today)
+
+**Tools — API behaviour deep dives** (5 of 15):
+- `tools/api-google-workspace.md` — Sheets/Drive/Gmail: service account, batch requests, Drive resumable upload, Gmail 250 quota units/sec
+- `tools/api-microsoft-graph.md` — App registration, delegated vs application perms, per-service throttling, delta queries, 4230-min webhook renewal
+- `tools/api-linkedin-marketing.md` — Marketing Developer Platform partner tiers, OAuth, Campaign Manager API, Lead Gen Forms
+- `tools/api-tiktok-marketing.md` — Marketing API approval tiers (basic 10 QPS / standard 20 QPS), async reporting, Events API server-side tracking
+
+**Tools — n8n Production Depth** (1 of 10):
+- `tools/n8n-cloud-vs-self-hosted.md` — Decision framework: pricing tiers, execution limits, TCO, when each model wins
+
+**Failures — Production failure patterns** (4 of 15):
+- `failures/token-expiration-patterns.md` — Token lifetimes by platform, refresh rotation races, service account alternatives
+- `failures/rate-limit-recovery.md` — Exponential backoff with jitter, leaky/fixed/sliding window detection, platform-specific recovery
+- `failures/webhook-reliability.md` — Delivery guarantees by platform, silent failures, dedup requirement, signature verification
+- `failures/data-sync-drift.md` — How drift happens, detection (checksum/count), reconciliation patterns
+
+**Patterns — Workflow templates** (4 of 20):
+- `patterns/workflow-reporting-paid-media.md` — Multi-platform paid media reporting workflow
+- `patterns/workflow-reporting-seo.md` — SEO reporting workflow (GSC + GA4 + rank tracker)
+- `patterns/workflow-invoicing-retainer.md` — Recurring retainer invoicing
+- `patterns/workflow-invoicing-performance.md` — Performance-based invoicing with two-stage approval
+
+**Patterns — AI integration** (1 of 10):
+- `patterns/ai-model-selection.md` — Claude vs GPT-4 vs smaller models decision framework
+
+### Pages remaining (74)
+
+| Section | Total | Done | Remaining | Folder |
+|---|---|---|---|---|
+| 1. Tool API Behaviour Deep Dives | 15 | 4 | 11 (Meta, Google Ads, GA4, HubSpot, Klaviyo, Slack-deep, Shopify, Stripe, Mailchimp, Notion, Airtable) | `tools/` |
+| 2. Production Failure Patterns | 15 | 4 | 11 (timezone, currency, date-format, pagination, n8n-memory, exec-timeouts, race-conditions, db-pool, email-deliverability, file-handling, oauth-refresh) | `failures/` |
+| 3. Agency Workflow Templates | 20 | 4 | 16 (full-service reporting, 3× lead-routing, 2× onboarding, content-distribution, proposal-gen, meeting-followup, slack-digest, client-health, churn, upsell, capacity, project-status, time-tracking) | `patterns/` |
+| 4. Approval & Safety Rules | 10 | 0 | 10 (all) | `patterns/` |
+| 5. AI Integration Deep Dives | 10 | 1 | 9 (prompt-eng, structured-output, cost-opt, failure-handling, hallucination, confidence-scoring, when-not-to-use, RAG-vs-finetune, vector-search) | `patterns/` |
+| 6. Agency Business Operations | 8 | 0 | 8 (all) | `agency-profiles/` |
+| 7. n8n Production Depth | 10 | 1 | 9 (version-migration, credential-mgmt, queue-mode, monitoring, backup-recovery, testing, performance, security-hardening, cost-mgmt) | `tools/` |
+| **Total** | **88** | **14** | **74** | |
+
+### Next steps when usage limit resets
+
+1. Re-dispatch the 6 interrupted agents (or split into more agents per section to reduce per-agent load).
+2. Original prompts are preserved in conversation history; can be reused verbatim minus the pages already done.
+3. After all batches land, replace this entry's "(partial — interrupted)" header with a completion entry, and drop the "expansion in progress" banner from `index.md`.
+
+---
+
 ## 2026-04-30 — n8n Knowledge Ingestion
 
 **Source repos**: `opsradar/n8n-mcp-main` (n8n-mcp v2.14.2) and `opsradar/n8n-skills-main` (7-skill suite)

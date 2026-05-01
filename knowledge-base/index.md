@@ -3,6 +3,8 @@
 This index links to all research notes used by the audit engine RAG system.
 Notes are organized by category and injected into audit prompts via semantic search.
 
+> **Wiki expansion plan (started 2026-04-30, paused 2026-05-01)**: Target ~88 new pages across API deep-dives, production failures, workflow templates, approval/safety, AI integration, agency operations, and n8n production depth. **14 written so far (in commit `52501a3`); 74 remaining.** The 2026-05-01 batch was blocked by an org monthly usage limit before any agent produced output; remaining batches resume after reset. See [[log]] for the breakdown.
+
 ---
 
 ## Benchmarks
@@ -53,6 +55,17 @@ Tool comparisons, platform pricing, n8n ecosystem, build vs buy analysis.
 - [[n8n-node-gmail]] — Gmail v2.2: Message, Label, Draft, Thread; OAuth2 or Service Account
 - [[n8n-node-notion]] — Notion v2.2: Database Page CRUD, must share integration with each DB
 
+### API Behaviour Deep Dives (2026-05-01 batch — partial)
+
+- [[api-google-workspace]] — Sheets/Drive/Gmail: service account, batch requests, Drive resumable upload, Gmail 250 quota units/sec
+- [[api-microsoft-graph]] — App registration, delegated vs application perms, per-service throttling, delta queries, 4230-min webhook renewal
+- [[api-linkedin-marketing]] — Marketing Developer Platform partner tiers, OAuth, Campaign Manager API, Lead Gen Forms, polling-based webhooks
+- [[api-tiktok-marketing]] — Marketing API approval tiers (basic 10 QPS / standard 20 QPS), async reporting, Events API server-side tracking
+
+### n8n Production Depth (2026-05-01 batch — partial)
+
+- [[n8n-cloud-vs-self-hosted]] — Decision framework: pricing tiers, execution limits, TCO, when each model wins
+
 ---
 
 ## Patterns
@@ -70,6 +83,17 @@ Frameworks, workflow blueprints, architecture patterns, methodologies.
 - [[n8n-workflow-patterns]] — 5 core patterns: webhook, HTTP API, DB, AI agent, scheduled
 - [[n8n-best-practices]] — Build discipline, validation, security, MCP tooling efficiency
 
+### Workflow Templates (2026-05-01 batch — partial)
+
+- [[workflow-reporting-paid-media]] — Multi-platform paid media reporting: Google Ads + Meta + LinkedIn/TikTok, KPI calc, PDF, approval gate
+- [[workflow-reporting-seo]] — SEO reporting: GSC + GA4 + rank tracker → Notion/Sheets digest, GSC 3-day data lag handling
+- [[workflow-invoicing-retainer]] — Recurring retainer invoicing: schedule trigger, generation, dunning sequence, multi-currency
+- [[workflow-invoicing-performance]] — Performance-based invoicing: KPI calc, evidence package, two-stage approval (AM → finance)
+
+### AI Integration (2026-05-01 batch — partial)
+
+- [[ai-model-selection]] — Claude vs GPT-4 vs smaller models: task fit, cost, latency, context window comparison
+
 ---
 
 ## Failures
@@ -79,6 +103,13 @@ DIY automation failure modes, production failure patterns, prevention.
 - [[research-12-why-agencies-fail-at-diy-automation-projects]]
 - [[research-18-common-automation-workflow-failure-modes-and-prevention-patterns]]
 - [[n8n-common-failures]] — n8n-specific failures: expression errors, config mistakes, runtime, validation
+
+### Production Failure Patterns (2026-05-01 batch — partial)
+
+- [[token-expiration-patterns]] — Token lifetimes by platform, refresh rotation races, service account alternatives
+- [[rate-limit-recovery]] — Exponential backoff with jitter, leaky/fixed/sliding window detection, platform-specific recovery
+- [[webhook-reliability]] — Delivery guarantees by platform, silent failures, dedup requirement, signature verification
+- [[data-sync-drift]] — How drift happens (missed webhooks, partial batches), detection (checksum/count), reconciliation patterns
 
 ---
 
