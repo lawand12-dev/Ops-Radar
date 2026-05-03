@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
-import { getDb } from "../../lib/db";
+import { dbQuery, getDb } from "../../lib/db";
+import { AppError } from "../../lib/errors";
 import type { EventType, WorkflowEventRecord } from "../../types/workflow";
 
 type WorkflowEventRow = RowDataPacket & {
@@ -59,7 +60,8 @@ export async function createWorkflowEvent(
   const id = randomUUID();
   const runner = connection ?? getDb();
 
-  await runner.query(
+  await dbQuery(
+    runner,
     `INSERT INTO workflow_events (
       id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata
     )
@@ -77,7 +79,8 @@ export async function createWorkflowEvent(
     ]
   );
 
-  const [rows] = await runner.query<WorkflowEventRow[]>(
+  const [rows] = await dbQuery<WorkflowEventRow[]>(
+    runner,
     `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
      FROM workflow_events
      WHERE id = ?`,
@@ -86,7 +89,7 @@ export async function createWorkflowEvent(
 
   const row = rows[0];
   if (!row) {
-    throw new Error("workflow event insert failed");
+    throw new AppError(500, "WORKFLOW_EVENT_INSERT_FAILED", "Workflow event insert failed.");
   }
 
   return mapEventRow(row);
@@ -98,7 +101,8 @@ export async function listRecentEventsByWorkflowId(
 ): Promise<WorkflowEventRecord[]> {
   const db = getDb();
   const capped = Math.min(Math.max(limit, 1), 200);
-  const [rows] = await db.query<WorkflowEventRow[]>(
+  const [rows] = await dbQuery<WorkflowEventRow[]>(
+    db,
     `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
      FROM workflow_events
      WHERE workflow_id = ?
@@ -116,7 +120,8 @@ export async function listRecentFailureEventsByWorkflowId(
 ): Promise<WorkflowEventRecord[]> {
   const db = getDb();
   const capped = Math.min(Math.max(limit, 1), 100);
-  const [rows] = await db.query<WorkflowEventRow[]>(
+  const [rows] = await dbQuery<WorkflowEventRow[]>(
+    db,
     `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
      FROM workflow_events
      WHERE workflow_id = ?
@@ -131,7 +136,8 @@ export async function listRecentFailureEventsByWorkflowId(
 
 export async function countWorkflowFailures(workflowId: string): Promise<number> {
   const db = getDb();
-  const [rows] = await db.query<Array<RowDataPacket & { failures: number }>>(
+  const [rows] = await dbQuery<Array<RowDataPacket & { failures: number }>>(
+    db,
     `SELECT COUNT(*) AS failures
      FROM workflow_events
      WHERE workflow_id = ?
@@ -144,7 +150,8 @@ export async function countWorkflowFailures(workflowId: string): Promise<number>
 
 export async function countConsecutiveWorkflowFailures(workflowId: string, take = 10): Promise<number> {
   const db = getDb();
-  const [rows] = await db.query<Array<RowDataPacket & { event_type: EventType }>>(
+  const [rows] = await dbQuery<Array<RowDataPacket & { event_type: EventType }>>(
+    db,
     `SELECT event_type
      FROM workflow_events
      WHERE workflow_id = ?
@@ -174,7 +181,7 @@ export async function getWorkflowRunStats(workflowId: string): Promise<{
   averageDurationMs: number;
 }> {
   const db = getDb();
-  const [rows] = await db.query<
+  const [rows] = await dbQuery<
     Array<
       RowDataPacket & {
         total_runs: number;
@@ -184,6 +191,7 @@ export async function getWorkflowRunStats(workflowId: string): Promise<{
       }
     >
   >(
+    db,
     `SELECT
       COUNT(*) AS total_runs,
       SUM(CASE WHEN event_type = 'run_failed' THEN 1 ELSE 0 END) AS failed_runs,
@@ -218,7 +226,8 @@ export async function getWorkflowLastTerminalRun(workflowId: string): Promise<{
   runId: string | null;
 }> {
   const db = getDb();
-  const [rows] = await db.query<WorkflowEventRow[]>(
+  const [rows] = await dbQuery<WorkflowEventRow[]>(
+    db,
     `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
      FROM workflow_events
      WHERE workflow_id = ?
@@ -254,7 +263,7 @@ export async function getGlobalRunStats(): Promise<{
   averageDurationMs: number;
 }> {
   const db = getDb();
-  const [rows] = await db.query<
+  const [rows] = await dbQuery<
     Array<
       RowDataPacket & {
         total_runs: number;
@@ -264,6 +273,7 @@ export async function getGlobalRunStats(): Promise<{
       }
     >
   >(
+    db,
     `SELECT
       COUNT(*) AS total_runs,
       SUM(CASE WHEN event_type = 'run_failed' THEN 1 ELSE 0 END) AS failed_runs,
@@ -294,7 +304,7 @@ export async function getGlobalHealthBreakdown(): Promise<{
   unhealthyWorkflows: number;
 }> {
   const db = getDb();
-  const [rows] = await db.query<
+  const [rows] = await dbQuery<
     Array<
       RowDataPacket & {
         healthy_workflows: number;
@@ -302,8 +312,9 @@ export async function getGlobalHealthBreakdown(): Promise<{
       }
     >
   >(
+    db,
     `SELECT
-      SUM(CASE WHEN w.status IN ('deployed', 'approved', 'validated') THEN 1 ELSE 0 END) AS healthy_workflows,
+      SUM(CASE WHEN w.status IN ('validated', 'deployed_inactive', 'deployed_active') THEN 1 ELSE 0 END) AS healthy_workflows,
       SUM(CASE WHEN w.status IN ('failed', 'rejected') THEN 1 ELSE 0 END) AS unhealthy_workflows
     FROM workflows w`
   );

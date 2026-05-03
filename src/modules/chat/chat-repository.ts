@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
-import { getDb } from "../../lib/db";
+import { dbQuery, getDb } from "../../lib/db";
+import { AppError } from "../../lib/errors";
 import type { ChatMessageRecord, ChatRole } from "../../types/workflow";
 
 type ChatSessionRow = RowDataPacket & {
@@ -34,20 +35,22 @@ export async function createChatSession(
   const id = randomUUID();
   const runner = connection ?? getDb();
 
-  await runner.query(
+  await dbQuery(
+    runner,
     `INSERT INTO chat_sessions (id, project_id)
      VALUES (?, ?)`,
     [id, projectId]
   );
 
-  const [rows] = await runner.query<ChatSessionRow[]>(
+  const [rows] = await dbQuery<ChatSessionRow[]>(
+    runner,
     `SELECT id, project_id, created_at FROM chat_sessions WHERE id = ?`,
     [id]
   );
 
   const row = rows[0];
   if (!row) {
-    throw new Error("Chat session insert failed");
+    throw new AppError(500, "CHAT_SESSION_INSERT_FAILED", "Chat session insert failed.");
   }
 
   return row;
@@ -62,13 +65,15 @@ export async function createChatMessage(
   connection?: PoolConnection
 ): Promise<ChatMessageRow> {
   const runner = connection ?? getDb();
-  await runner.query(
+  await dbQuery(
+    runner,
     `INSERT INTO chat_messages (session_id, role, content)
      VALUES (?, ?, ?)`,
     [input.sessionId, input.role, input.content]
   );
 
-  const [rows] = await runner.query<ChatMessageRow[]>(
+  const [rows] = await dbQuery<ChatMessageRow[]>(
+    runner,
     `SELECT id, session_id, role, content, created_at
      FROM chat_messages
      WHERE session_id = ?
@@ -79,7 +84,7 @@ export async function createChatMessage(
 
   const row = rows[0];
   if (!row) {
-    throw new Error("Chat message insert failed");
+    throw new AppError(500, "CHAT_MESSAGE_INSERT_FAILED", "Chat message insert failed.");
   }
 
   return row;
@@ -87,7 +92,8 @@ export async function createChatMessage(
 
 export async function listMessagesByProjectId(projectId: string): Promise<ChatMessageRecord[]> {
   const db = getDb();
-  const [rows] = await db.query<ChatMessageRow[]>(
+  const [rows] = await dbQuery<ChatMessageRow[]>(
+    db,
     `SELECT cm.id, cm.session_id, cm.role, cm.content, cm.created_at
      FROM chat_messages cm
      INNER JOIN chat_sessions cs ON cs.id = cm.session_id

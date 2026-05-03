@@ -1,74 +1,94 @@
 const state = {
+  health: {
+    api: false,
+    n8n: false,
+    monitoring: false
+  },
   projects: [],
+  report: null,
+  analytics: null,
   selectedProjectId: null,
-  latestGeneratedProjectId: null,
-  builderPayload: null,
-  deployPreflightByProject: {},
+  selectedProjectSnapshot: null,
+  preflightByProject: {},
   credentialBindingsByProject: {},
-  credentialSchemaCache: {}
+  healthByProject: {},
+  executionsByProject: {},
+  activityByProject: {},
+  executionDetailByProject: {},
+  chatStream: [],
+  builderTimelineState: "workflow_generated",
+  deletingProjectId: null
 };
 
+const DEBUG_UI = (() => {
+  const host = String(window.location.hostname || "").toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+})();
+
 const el = {
-  healthBadge: document.getElementById("healthBadge"),
-  globalRefreshBtn: document.getElementById("globalRefreshBtn"),
-  navButtons: Array.from(document.querySelectorAll(".nav-btn")),
-  views: {
-    builder: document.getElementById("view-builder"),
-    projects: document.getElementById("view-projects"),
-    workflow: document.getElementById("view-workflow"),
-    analytics: document.getElementById("view-analytics"),
-    events: document.getElementById("view-events")
-  },
-  toast: document.getElementById("toast"),
+  apiStatusPill: document.getElementById("apiStatusPill"),
+  n8nStatusPill: document.getElementById("n8nStatusPill"),
+  monitorStatusPill: document.getElementById("monitorStatusPill"),
+  refreshAllBtn: document.getElementById("refreshAllBtn"),
+  toggleSidebarBtn: document.getElementById("toggleSidebarBtn"),
+  projectsSidebar: document.getElementById("projectsSidebar"),
+  mainCenter: document.getElementById("mainCenter"),
+  detailPanel: document.getElementById("detailPanel"),
+
+  projectSearchInput: document.getElementById("projectSearchInput"),
+  newReportBtn: document.getElementById("newReportBtn"),
+  projectStatsCards: document.getElementById("projectStatsCards"),
+  projectsList: document.getElementById("projectsList"),
 
   chatForm: document.getElementById("chatForm"),
   chatInput: document.getElementById("chatInput"),
   generateBtn: document.getElementById("generateBtn"),
-  builderOutput: document.getElementById("builderOutput"),
-  builderProjectId: document.getElementById("builderProjectId"),
-  builderValidation: document.getElementById("builderValidation"),
-  copyBuilderJsonBtn: document.getElementById("copyBuilderJsonBtn"),
-  deployFromBuilderBtn: document.getElementById("deployFromBuilderBtn"),
+  retryFixBtn: document.getElementById("retryFixBtn"),
+  chatStream: document.getElementById("chatStream"),
+  builderTimeline: document.getElementById("builderTimeline"),
 
-  projectSearchInput: document.getElementById("projectSearchInput"),
-  refreshProjectsBtn: document.getElementById("refreshProjectsBtn"),
-  projectsList: document.getElementById("projectsList"),
-  projectDetails: document.getElementById("projectDetails"),
-  projectWorkflowJson: document.getElementById("projectWorkflowJson"),
-  projectMessages: document.getElementById("projectMessages"),
-  deployProjectBtn: document.getElementById("deployProjectBtn"),
-  deployActivateInput: document.getElementById("deployActivateInput"),
-  checkDeployBtn: document.getElementById("checkDeployBtn"),
-  saveCredentialsBtn: document.getElementById("saveCredentialsBtn"),
-  deployCheckSummary: document.getElementById("deployCheckSummary"),
-  deployCredentialsForm: document.getElementById("deployCredentialsForm"),
-  quickCredentialTypeInput: document.getElementById("quickCredentialTypeInput"),
-  quickCredentialNameInput: document.getElementById("quickCredentialNameInput"),
-  quickCredentialDataInput: document.getElementById("quickCredentialDataInput"),
-  loadCredentialSchemaBtn: document.getElementById("loadCredentialSchemaBtn"),
-  createCredentialBtn: document.getElementById("createCredentialBtn"),
-  credentialSchemaOutput: document.getElementById("credentialSchemaOutput"),
+  reportSearchInput: document.getElementById("reportSearchInput"),
+  reportFilterSelect: document.getElementById("reportFilterSelect"),
+  refreshReportBtn: document.getElementById("refreshReportBtn"),
+  reportTotalsCards: document.getElementById("reportTotalsCards"),
+  reportTableBody: document.getElementById("reportTableBody"),
 
-  workflowIdInput: document.getElementById("workflowIdInput"),
-  loadWorkflowStatusBtn: document.getElementById("loadWorkflowStatusBtn"),
-  workflowStatusSummary: document.getElementById("workflowStatusSummary"),
-  workflowStatusJson: document.getElementById("workflowStatusJson"),
+  detailProjectTitle: document.getElementById("detailProjectTitle"),
+  detailLifecycleBadge: document.getElementById("detailLifecycleBadge"),
+  tabButtons: Array.from(document.querySelectorAll(".tab-btn")),
+  tabPanels: Array.from(document.querySelectorAll(".tab-panel")),
 
-  refreshAnalyticsBtn: document.getElementById("refreshAnalyticsBtn"),
-  analyticsCards: document.getElementById("analyticsCards"),
-  analyticsTableBody: document.querySelector("#analyticsTable tbody"),
+  overviewCards: document.getElementById("overviewCards"),
+  deployInactiveBtn: document.getElementById("deployInactiveBtn"),
+  activateBtn: document.getElementById("activateBtn"),
+  redeployBtn: document.getElementById("redeployBtn"),
+  deactivateBtn: document.getElementById("deactivateBtn"),
+  openN8nWorkflowBtn: document.getElementById("openN8nWorkflowBtn"),
+  refreshHealthBtn: document.getElementById("refreshHealthBtn"),
+  workflowJsonBox: document.getElementById("workflowJsonBox"),
 
-  eventForm: document.getElementById("eventForm"),
-  eventWorkflowIdInput: document.getElementById("eventWorkflowIdInput"),
-  eventN8nWorkflowIdInput: document.getElementById("eventN8nWorkflowIdInput"),
-  eventRunIdInput: document.getElementById("eventRunIdInput"),
-  eventNodeNameInput: document.getElementById("eventNodeNameInput"),
-  eventTypeInput: document.getElementById("eventTypeInput"),
-  eventStatusInput: document.getElementById("eventStatusInput"),
-  eventDurationInput: document.getElementById("eventDurationInput"),
-  eventErrorInput: document.getElementById("eventErrorInput"),
-  eventMetaInput: document.getElementById("eventMetaInput"),
-  eventResponseJson: document.getElementById("eventResponseJson")
+  credentialsSummary: document.getElementById("credentialsSummary"),
+  credentialsCards: document.getElementById("credentialsCards"),
+  checkRequirementsBtn: document.getElementById("checkRequirementsBtn"),
+  saveBindingsBtn: document.getElementById("saveBindingsBtn"),
+  openN8nCredentialsBtn: document.getElementById("openN8nCredentialsBtn"),
+
+  monitoringSummary: document.getElementById("monitoringSummary"),
+  loadExecutionsBtn: document.getElementById("loadExecutionsBtn"),
+  executionsTableBody: document.getElementById("executionsTableBody"),
+  executionDetailBox: document.getElementById("executionDetailBox"),
+
+  refreshActivityBtn: document.getElementById("refreshActivityBtn"),
+  activityFeed: document.getElementById("activityFeed"),
+
+  deleteAutomationBtn: document.getElementById("deleteAutomationBtn"),
+  deleteWarningsBox: document.getElementById("deleteWarningsBox"),
+  deleteModal: document.getElementById("deleteModal"),
+  cancelDeleteBtn: document.getElementById("cancelDeleteBtn"),
+  confirmDeleteBtn: document.getElementById("confirmDeleteBtn"),
+
+  mobileNavButtons: Array.from(document.querySelectorAll(".mobile-nav button")),
+  toast: document.getElementById("toast")
 };
 
 function escapeHtml(value) {
@@ -87,847 +107,1167 @@ function formatDate(value) {
   return date.toLocaleString("ar-IQ");
 }
 
-function setToast(message, tone = "ok") {
+function toNumber(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function isFailureStatus(status) {
+  const normalized = String(status || "").toLowerCase();
+  return ["failing", "failure", "failed", "error", "crashed"].includes(normalized);
+}
+
+function lifecycleLabel(value) {
+  const normalized = String(value || "unknown").toLowerCase();
+  const map = {
+    draft: "draft",
+    validated: "validated",
+    rejected: "rejected",
+    deployed_inactive: "deployed inactive",
+    deployed_active: "active",
+    failed: "failed",
+    missing_in_n8n: "missing in n8n",
+    n8n_check_failed: "n8n check failed",
+    no_workflow: "no workflow"
+  };
+  return map[normalized] || normalized;
+}
+
+function healthLabel(value) {
+  const normalized = String(value || "unknown").toLowerCase();
+  return ["healthy", "warning", "failing", "unknown", "inactive"].includes(normalized)
+    ? normalized
+    : "unknown";
+}
+
+function badgeClassForLifecycle(lifecycle) {
+  const normalized = String(lifecycle || "").toLowerCase();
+  if (normalized === "deployed_active") return "status-ok";
+  if (normalized === "validated" || normalized === "deployed_inactive") return "status-warn";
+  if (normalized === "rejected" || normalized === "failed" || normalized === "missing_in_n8n") {
+    return "status-bad";
+  }
+  return "status-neutral";
+}
+
+function badgeClassForHealth(status) {
+  const normalized = healthLabel(status);
+  if (normalized === "healthy") return "status-ok";
+  if (normalized === "warning" || normalized === "inactive") return "status-warn";
+  if (normalized === "failing") return "status-bad";
+  return "status-neutral";
+}
+
+function setToast(message, tone = "neutral") {
+  if (!el.toast) return;
   el.toast.textContent = message;
-  el.toast.style.borderColor =
-    tone === "error" ? "rgba(239,71,111,0.64)" : "rgba(60,201,174,0.55)";
-  el.toast.style.color = tone === "error" ? "#ffc3d1" : "#98f3e1";
-  el.toast.classList.add("show");
-  window.clearTimeout(setToast.timer);
-  setToast.timer = window.setTimeout(() => el.toast.classList.remove("show"), 3800);
+  el.toast.className = "toast show";
+  if (tone === "error") {
+    el.toast.style.borderColor = "rgba(255, 92, 122, 0.45)";
+    el.toast.style.color = "#ffd6df";
+  } else if (tone === "success") {
+    el.toast.style.borderColor = "rgba(92, 255, 177, 0.45)";
+    el.toast.style.color = "#c9ffe6";
+  } else {
+    el.toast.style.borderColor = "rgba(255,255,255,0.16)";
+    el.toast.style.color = "#e5ecf6";
+  }
+  clearTimeout(setToast.timer);
+  setToast.timer = setTimeout(() => {
+    el.toast.className = "toast";
+  }, 3600);
 }
 
 async function apiFetch(path, options = {}) {
   const response = await fetch(path, options);
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const details = payload?.error?.details;
     const code = payload?.error?.code ? `[${payload.error.code}] ` : "";
-    const detailsText =
-      details === undefined
-        ? ""
-        : typeof details === "string"
-          ? `\n${details}`
-          : `\n${JSON.stringify(details, null, 2)}`;
-    const msg = `${code}${payload?.error?.message ?? `Request failed (${response.status})`}${detailsText}`;
-    throw new Error(msg);
+    const message = payload?.error?.message || `Request failed (${response.status})`;
+    throw new Error(`${code}${message}`);
   }
   return payload;
 }
 
-function setActiveView(view) {
-  el.navButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.view === view));
-  Object.entries(el.views).forEach(([name, node]) => {
-    node.classList.toggle("view-active", name === view);
+function getReportItems() {
+  return Array.isArray(state.report?.items) ? state.report.items : [];
+}
+
+function getReportItem(projectId) {
+  return getReportItems().find((item) => item.project_id === projectId) || null;
+}
+
+function uiDebug(step, meta = {}) {
+  if (!DEBUG_UI) return;
+  const stamp = new Date().toISOString();
+  console.info(`[ops-radar-ui] ${stamp} ${step}`, meta);
+}
+
+function debugWorkflowLinkContext(stage) {
+  if (!DEBUG_UI) return;
+
+  const projectId = state.selectedProjectId;
+  const snapshot = projectId ? getProjectSnapshot(projectId) : null;
+  const reportItem = projectId ? getReportItem(projectId) : null;
+
+  console.info("[ops-radar-debug] workflow-link", {
+    stage,
+    project_id: projectId || null,
+    workflow_id: snapshot?.workflow?.id || null,
+    n8n_workflow_id: snapshot?.workflow?.n8n_workflow_id || null,
+    n8n_workflow_url: reportItem?.n8n_workflow_url || null
   });
 }
 
-async function refreshHealth() {
-  try {
-    await apiFetch("/health");
-    el.healthBadge.textContent = "API healthy";
-    el.healthBadge.className = "badge badge-ok";
-  } catch {
-    el.healthBadge.textContent = "API down";
-    el.healthBadge.className = "badge badge-bad";
-  }
+function getProjectSnapshot(projectId) {
+  return state.selectedProjectId === projectId ? state.selectedProjectSnapshot : null;
 }
 
-function validationBadge(valid) {
-  if (valid === true) {
-    return `<span class="badge badge-ok">valid</span>`;
-  }
-  if (valid === false) {
-    return `<span class="badge badge-bad">invalid</span>`;
-  }
-  return `<span class="badge badge-muted">unknown</span>`;
+function getPreflight(projectId) {
+  return state.preflightByProject[projectId] || null;
 }
 
-function healthPill(isWorking, status) {
-  const label = isWorking ? "working" : status || "issue";
-  return `<span class="pill ${isWorking ? "pill-success" : "pill-failure"}">${escapeHtml(label)}</span>`;
-}
-
-function getProjectCredentialBindings(projectId) {
-  if (!projectId) return {};
+function getBindings(projectId) {
   if (!state.credentialBindingsByProject[projectId]) {
-    state.credentialBindingsByProject[projectId] = {};
+    state.credentialBindingsByProject[projectId] = [];
   }
   return state.credentialBindingsByProject[projectId];
 }
 
-function setProjectCredentialBinding(projectId, credentialType, binding) {
-  const bindings = getProjectCredentialBindings(projectId);
-  if (!binding || (!binding.id && !binding.name)) {
-    delete bindings[credentialType];
-    return;
-  }
-  bindings[credentialType] = binding;
+function bindingKey(binding) {
+  return `${binding.node_id || ""}|${binding.credential_type}`;
 }
 
-function currentCredentialBindingsPayload(projectId) {
-  const bindings = getProjectCredentialBindings(projectId);
-  const output = {};
-  Object.entries(bindings).forEach(([type, binding]) => {
-    if (!binding || (typeof binding !== "object")) return;
-    const item = {};
-    if (typeof binding.id === "string" && binding.id.trim()) {
-      item.id = binding.id.trim();
-    }
-    if (typeof binding.name === "string" && binding.name.trim()) {
-      item.name = binding.name.trim();
-    }
-    if (item.id || item.name) {
-      output[type] = item;
-    }
+function findBindingForRequirement(projectId, requirement) {
+  const list = getBindings(projectId);
+  return (
+    list.find(
+      (binding) =>
+        String(binding.node_id || "") === String(requirement.node_id || "") &&
+        String(binding.credential_type || "") === String(requirement.credential_type || "")
+    ) || null
+  );
+}
+
+function upsertBinding(projectId, nextBinding) {
+  const list = getBindings(projectId);
+  const key = bindingKey(nextBinding);
+  const existingIndex = list.findIndex((item) => bindingKey(item) === key);
+  if (existingIndex === -1) {
+    list.push(nextBinding);
+  } else {
+    list[existingIndex] = nextBinding;
+  }
+}
+
+function cleanupBindings(projectId) {
+  const list = getBindings(projectId).filter((binding) => {
+    const id = String(binding.id || "").trim();
+    const name = String(binding.name || "").trim();
+    return id.length > 0 || name.length > 0;
   });
-  return output;
+  state.credentialBindingsByProject[projectId] = list;
+  return list;
 }
 
-function normalizeCredentialType(value) {
-  return String(value || "").trim();
+function updateStatusPill(node, label, className) {
+  node.textContent = label;
+  node.className = `status-pill ${className}`;
 }
 
-function defaultJsonValueFromSchemaProperty(property) {
-  if (!property || typeof property !== "object") return "";
-  if ("default" in property) return property.default;
-
-  const type = property.type;
-  if (type === "boolean") return false;
-  if (type === "number" || type === "integer") return 0;
-  if (type === "array") return [];
-  if (type === "object") return {};
-  return "";
-}
-
-function buildDataTemplateFromCredentialSchema(schema) {
-  const properties = schema?.properties;
-  if (!properties || typeof properties !== "object") {
-    return {};
+async function refreshSystemHealth() {
+  try {
+    const health = await apiFetch("/health");
+    state.health.api = true;
+    state.health.monitoring = Boolean(health.monitoring_enabled);
+    updateStatusPill(el.apiStatusPill, "API healthy", "status-ok");
+    updateStatusPill(
+      el.monitorStatusPill,
+      state.health.monitoring ? "monitoring active" : "monitoring off",
+      state.health.monitoring ? "status-ok" : "status-warn"
+    );
+  } catch {
+    state.health.api = false;
+    updateStatusPill(el.apiStatusPill, "API down", "status-bad");
+    updateStatusPill(el.monitorStatusPill, "monitoring unknown", "status-neutral");
   }
 
-  const template = {};
-  Object.entries(properties).forEach(([key, property]) => {
-    template[key] = defaultJsonValueFromSchemaProperty(property);
-  });
-
-  return template;
-}
-
-function quickCredentialDataPayload() {
-  const raw = (el.quickCredentialDataInput.value || "").trim();
-  if (!raw) return {};
-  return JSON.parse(raw);
-}
-
-function applyQuickCredentialType(type) {
-  const normalized = normalizeCredentialType(type);
-  el.quickCredentialTypeInput.value = normalized;
-  if (!el.quickCredentialNameInput.value.trim()) {
-    el.quickCredentialNameInput.value = `${normalized}-credential`;
+  try {
+    await apiFetch("/n8n/credentials");
+    state.health.n8n = true;
+    updateStatusPill(el.n8nStatusPill, "n8n connected", "status-ok");
+  } catch {
+    state.health.n8n = false;
+    updateStatusPill(el.n8nStatusPill, "n8n unavailable", "status-bad");
   }
-}
-
-async function fetchCredentialSchema(credentialType) {
-  const normalizedType = normalizeCredentialType(credentialType);
-  if (!normalizedType) {
-    throw new Error("Credential type is required.");
-  }
-
-  if (state.credentialSchemaCache[normalizedType]) {
-    return state.credentialSchemaCache[normalizedType];
-  }
-
-  const schema = await apiFetch(`/n8n/credentials/schema/${encodeURIComponent(normalizedType)}`);
-  state.credentialSchemaCache[normalizedType] = schema;
-  return schema;
-}
-
-async function createN8nCredentialFromUi(input) {
-  const payload = await apiFetch("/n8n/credentials", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input)
-  });
-  return payload;
-}
-
-async function loadProjectCredentialBindings(projectId) {
-  const payload = await apiFetch(`/projects/${projectId}/credential-bindings`);
-  state.credentialBindingsByProject[projectId] = payload.credential_bindings || {};
-  return state.credentialBindingsByProject[projectId];
-}
-
-async function saveProjectCredentialBindings(projectId) {
-  const payload = currentCredentialBindingsPayload(projectId);
-  const response = await apiFetch(`/projects/${projectId}/credential-bindings`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential_bindings: payload })
-  });
-  state.credentialBindingsByProject[projectId] = response.credential_bindings || {};
-  return response;
 }
 
 async function loadProjects() {
-  const result = await apiFetch("/projects?limit=50&offset=0");
-  state.projects = Array.isArray(result.items) ? result.items : [];
-  renderProjects();
+  uiDebug("loadProjects:start");
+  const payload = await apiFetch("/projects?limit=200&offset=0&verify_n8n=1");
+  state.projects = Array.isArray(payload.items) ? payload.items : [];
+  uiDebug("loadProjects:done", { count: state.projects.length });
 }
 
-function renderProjects() {
-  const filter = (el.projectSearchInput.value || "").toLowerCase().trim();
-  const items = state.projects.filter((item) =>
-    String(item?.project?.name || "")
-      .toLowerCase()
-      .includes(filter)
-  );
+async function loadReport() {
+  uiDebug("loadReport:start");
+  state.report = await apiFetch("/projects/report?limit=500&offset=0&verify_n8n=1");
+  uiDebug("loadReport:done", { count: Array.isArray(state.report?.items) ? state.report.items.length : 0 });
+}
 
-  if (items.length === 0) {
-    el.projectsList.innerHTML = `<div class="details-box">No projects found.</div>`;
+async function loadAnalytics() {
+  try {
+    state.analytics = await apiFetch("/analytics");
+  } catch {
+    state.analytics = null;
+  }
+}
+
+function renderBuilderTimeline() {
+  const steps = Array.from(el.builderTimeline?.querySelectorAll("span") || []);
+  steps.forEach((step) => step.classList.remove("active"));
+
+  const stateValue = String(state.builderTimelineState || "");
+  const isRejected = stateValue === "rejected";
+  const order = ["workflow_generated", "validated", "deployed_inactive", "deployed_active"];
+  const targetIndex = order.indexOf(stateValue);
+
+  if (isRejected) {
+    steps.forEach((step) => {
+      if (step.dataset.step === "workflow_generated" || step.dataset.step === "rejected") {
+        step.classList.add("active");
+      }
+    });
     return;
   }
 
-  el.projectsList.innerHTML = items
-    .map((item) => {
-      const isActive = state.selectedProjectId === item.project.id;
+  steps.forEach((step) => {
+    const index = order.indexOf(step.dataset.step || "");
+    if (index !== -1 && targetIndex !== -1 && index <= targetIndex) {
+      step.classList.add("active");
+    }
+  });
+}
+
+function pushChatItem(kind, payload) {
+  state.chatStream.push({
+    kind,
+    payload,
+    created_at: new Date().toISOString()
+  });
+  if (state.chatStream.length > 30) {
+    state.chatStream = state.chatStream.slice(-30);
+  }
+}
+
+function renderChatStream() {
+  if (!el.chatStream) return;
+  if (state.chatStream.length === 0) {
+    el.chatStream.innerHTML = `<div class="card-message"><h5>Ready</h5><p>ابدأ بطلب automation عام وسيقوم النظام ببناء workflow قابل للنشر على n8n.</p></div>`;
+    return;
+  }
+
+  el.chatStream.innerHTML = state.chatStream
+    .map((entry) => {
+      if (entry.kind === "user") {
+        return `<div class="bubble user">${escapeHtml(entry.payload.message)}</div>`;
+      }
+      if (entry.kind === "ai-summary") {
+        return `
+          <div class="bubble ai">
+            <div class="card-message">
+              <h5>Workflow Summary</h5>
+              <p>${escapeHtml(entry.payload.summary)}</p>
+            </div>
+          </div>
+        `;
+      }
+      if (entry.kind === "validation") {
+        return `
+          <div class="bubble ai">
+            <div class="card-message">
+              <h5>Validation</h5>
+              <p>${escapeHtml(entry.payload.message)}</p>
+            </div>
+          </div>
+        `;
+      }
+      if (entry.kind === "next-action") {
+        return `
+          <div class="bubble ai">
+            <div class="card-message">
+              <h5>Next Action</h5>
+              <p>${escapeHtml(entry.payload.message)}</p>
+            </div>
+          </div>
+        `;
+      }
+      if (entry.kind === "loading") {
+        return `<div class="bubble ai">Generating workflow...</div>`;
+      }
+      return "";
+    })
+    .join("");
+  el.chatStream.scrollTop = el.chatStream.scrollHeight;
+}
+
+function buildSidebarStats() {
+  const report = state.report;
+  const totals = report?.totals || {};
+  const overview = state.analytics?.overview || {};
+  const cards = [
+    ["Total", toNumber(totals.projects)],
+    ["Active", toNumber(totals.deployed_active)],
+    ["Inactive", toNumber(totals.deployed_inactive)],
+    ["Failing", toNumber(totals.failing)],
+    ["Warning", toNumber(totals.warnings)],
+    ["Success Exec", toNumber(overview.total_runs) - toNumber(overview.failed_runs)],
+    ["Failed Exec", toNumber(overview.failed_runs)],
+    ["Open Alerts", toNumber(overview.unresolved_alerts)],
+    ["Last Check", formatDate(report?.generated_at)]
+  ];
+
+  return cards
+    .map(
+      ([label, value]) => `
+        <div class="stat">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value)}</div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function renderSidebar() {
+  el.projectStatsCards.innerHTML = buildSidebarStats();
+  const search = String(el.projectSearchInput.value || "").trim().toLowerCase();
+  const reportMap = new Map(getReportItems().map((item) => [item.project_id, item]));
+
+  const rows = state.projects.filter((item) => {
+    const name = String(item.project?.name || "").toLowerCase();
+    return !search || name.includes(search);
+  });
+
+  if (rows.length === 0) {
+    el.projectsList.innerHTML = `<div class="summary-strip">No projects found.</div>`;
+    return;
+  }
+
+  el.projectsList.innerHTML = rows
+    .map((row) => {
+      const project = row.project || {};
+      const workflow = row.workflow || {};
+      const lifecycle = reportMap.get(project.id)?.lifecycle_state || row.lifecycle_state || "unknown";
+      const active = state.selectedProjectId === project.id;
       return `
-        <article class="project-card ${isActive ? "active" : ""}" data-project-id="${item.project.id}">
-          <h4 class="project-name">${escapeHtml(item.project.name)}</h4>
-          <div class="project-line">
-            status: ${escapeHtml(item.project.status)} |
-            workflow: ${escapeHtml(item.workflow?.status || "-")}
+        <article class="project-card ${active ? "active" : ""}" data-project-id="${escapeHtml(project.id)}">
+          <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
+          <div class="project-meta">
+            lifecycle: ${escapeHtml(lifecycleLabel(lifecycle))}
           </div>
-          <div class="project-line">
-            ${healthPill(Boolean(item.health?.is_working), item.health?.last_run_status)} |
-            alerts: ${Number(item.health?.unresolved_alerts || 0)}
+          <div class="project-meta">
+            workflow: ${escapeHtml(workflow.id || "-")}
           </div>
-          <div class="project-line">created: ${formatDate(item.project.created_at)}</div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function filterReportItems() {
+  const search = String(el.reportSearchInput.value || "").trim().toLowerCase();
+  const filter = String(el.reportFilterSelect.value || "all");
+  return getReportItems().filter((item) => {
+    const nameMatches = String(item.project_name || "").toLowerCase().includes(search);
+    if (!nameMatches) return false;
+
+    if (filter === "all") return true;
+    if (filter === "failing") return item.health_status === "failing";
+    if (filter === "warning") return item.health_status === "warning";
+    return String(item.lifecycle_state || "") === filter;
+  });
+}
+
+function renderReport() {
+  const totals = state.report?.totals || {};
+  const cards = [
+    ["Total Projects", toNumber(totals.projects)],
+    ["Validated", toNumber(totals.validated)],
+    ["Rejected", toNumber(totals.rejected)],
+    ["Deployed Active", toNumber(totals.deployed_active)],
+    ["Deployed Inactive", toNumber(totals.deployed_inactive)],
+    ["Failing", toNumber(totals.failing)],
+    ["Warning", toNumber(totals.warnings)],
+    ["Generated At", formatDate(state.report?.generated_at)]
+  ];
+  el.reportTotalsCards.innerHTML = cards
+    .map(
+      ([label, value]) => `
+        <div class="stat-card">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value)}</div>
+        </div>
+      `
+    )
+    .join("");
+
+  const rows = filterReportItems();
+  if (rows.length === 0) {
+    el.reportTableBody.innerHTML = `<tr><td colspan="7">No items.</td></tr>`;
+    return;
+  }
+
+  el.reportTableBody.innerHTML = rows
+    .map((item) => {
+      const lifecycle = lifecycleLabel(item.lifecycle_state);
+      const health = healthLabel(item.health_status);
+      return `
+        <tr>
+          <td>${escapeHtml(item.project_name)}</td>
+          <td><span class="status-pill ${badgeClassForLifecycle(item.lifecycle_state)}">${escapeHtml(lifecycle)}</span></td>
+          <td><span class="status-pill ${badgeClassForHealth(item.health_status)}">${escapeHtml(health)}</span></td>
+          <td>${toNumber(item.missing_credentials_count)} / ${toNumber(item.required_credentials_count)}</td>
+          <td>${item.n8n_exists === null ? "-" : item.n8n_exists ? "exists" : "missing"}</td>
+          <td>${escapeHtml(item.recommended_action || "-")}</td>
+          <td><button class="btn btn-ghost btn-sm open-project-btn" data-project-id="${escapeHtml(item.project_id)}">Open</button></td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function renderOverview() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) {
+    el.detailProjectTitle.textContent = "Project Details";
+    el.detailLifecycleBadge.className = "status-pill status-neutral";
+    el.detailLifecycleBadge.textContent = "-";
+    el.overviewCards.innerHTML = `<div class="summary-strip">Select a project.</div>`;
+    el.workflowJsonBox.textContent = "Select a project.";
+    return;
+  }
+
+  const snapshot = state.selectedProjectSnapshot;
+  const reportItem = getReportItem(projectId);
+  const preflight = getPreflight(projectId);
+  const health = state.healthByProject[projectId] || null;
+
+  const lifecycleState = reportItem?.lifecycle_state || snapshot?.workflow?.status || "unknown";
+  debugWorkflowLinkContext("before_render_overview");
+  el.detailProjectTitle.textContent = snapshot?.project?.name || "Project";
+  el.detailLifecycleBadge.className = `status-pill ${badgeClassForLifecycle(lifecycleState)}`;
+  el.detailLifecycleBadge.textContent = lifecycleLabel(lifecycleState);
+
+  const cards = [
+    ["Workflow Status", snapshot?.workflow?.status || "-"],
+    ["n8n Workflow ID", snapshot?.workflow?.n8n_workflow_id || "-"],
+    ["n8n Exists", reportItem?.n8n_exists === null ? "-" : reportItem?.n8n_exists ? "yes" : "no"],
+    ["n8n Active", reportItem?.n8n_active === null ? "-" : reportItem?.n8n_active ? "yes" : "no"],
+    ["Can Deploy", reportItem?.can_deploy_inactive ? "yes" : "no"],
+    ["Can Activate", reportItem?.can_activate ? "yes" : "no"],
+    ["Can Redeploy", reportItem?.can_redeploy ? "yes" : "no"],
+    ["Health", healthLabel(reportItem?.health_status || health?.health_status)],
+    ["Last Run", formatDate(snapshot?.health?.last_run_at)],
+    ["Last Success", formatDate(health?.last_success_at)],
+    ["Last Failure", formatDate(health?.last_failure_at)],
+    ["Missing Credentials", toNumber(reportItem?.missing_credentials_count)],
+    ["Manual Credentials", toNumber(reportItem?.manual_credentials_count)],
+    ["Recommended", reportItem?.recommended_action || "-"]
+  ];
+
+  el.overviewCards.innerHTML = cards
+    .map(
+      ([label, value]) => `
+        <div class="stat-card">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value)}</div>
+        </div>
+      `
+    )
+    .join("");
+
+  el.workflowJsonBox.textContent = JSON.stringify(snapshot?.workflow?.json || {}, null, 2);
+}
+
+function setOverviewButtonsState() {
+  const projectId = state.selectedProjectId;
+  const reportItem = projectId ? getReportItem(projectId) : null;
+  const lifecycle = String(reportItem?.lifecycle_state || "");
+  const hasProject = Boolean(projectId);
+
+  el.deployInactiveBtn.disabled = !hasProject || !reportItem?.can_deploy_inactive;
+  el.activateBtn.disabled = !hasProject || !reportItem?.can_activate;
+  el.redeployBtn.disabled = !hasProject || !reportItem?.can_redeploy;
+  el.deactivateBtn.disabled = !(hasProject && lifecycle === "deployed_active");
+  el.openN8nWorkflowBtn.disabled = !(hasProject && reportItem?.n8n_workflow_url);
+  el.refreshHealthBtn.disabled = !hasProject;
+  el.retryFixBtn.disabled = !(hasProject && lifecycle === "rejected");
+  el.deleteAutomationBtn.disabled = !hasProject;
+}
+
+function renderCredentials() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) {
+    el.credentialsSummary.textContent = "Select a project.";
+    el.credentialsCards.innerHTML = "";
+    el.checkRequirementsBtn.disabled = true;
+    el.saveBindingsBtn.disabled = true;
+    el.openN8nCredentialsBtn.disabled = true;
+    return;
+  }
+
+  const preflight = getPreflight(projectId);
+  el.checkRequirementsBtn.disabled = false;
+  el.saveBindingsBtn.disabled = false;
+  el.openN8nCredentialsBtn.disabled = !(preflight && preflight.n8n_credentials_url);
+
+  if (!preflight) {
+    el.credentialsSummary.textContent = "No deploy-check data. Click Check Requirements.";
+    el.credentialsCards.innerHTML = "";
+    return;
+  }
+
+  const required = Array.isArray(preflight.requirements) ? preflight.requirements : [];
+  const missingCount = Array.isArray(preflight.missing_credentials)
+    ? preflight.missing_credentials.length
+    : 0;
+  el.credentialsSummary.textContent = `required: ${required.length} | missing: ${missingCount} | manual: ${preflight.manual_credentials?.length || 0}`;
+
+  if (required.length === 0) {
+    el.credentialsCards.innerHTML = `<div class="summary-strip">No credentials required by this workflow.</div>`;
+    return;
+  }
+
+  el.credentialsCards.innerHTML = required
+    .map((item) => {
+      const binding = findBindingForRequirement(projectId, item) || {};
+      const resolved = Boolean(item.resolved);
+      return `
+        <article class="credential-card">
+          <h4>${escapeHtml(item.node_name)} · ${escapeHtml(item.credential_type)}</h4>
+          <div class="meta">placeholder: ${escapeHtml(item.placeholder_credential_name)}</div>
+          <div class="meta">status: <span class="status-pill ${resolved ? "status-ok" : "status-warn"}">${resolved ? "resolved" : "unresolved"}</span></div>
+          <div class="meta">Create or complete this credential inside n8n, then bind it here.</div>
+          <div class="bind-row">
+            <input class="input bind-id-input" data-node-id="${escapeHtml(item.node_id)}" data-credential-type="${escapeHtml(item.credential_type)}" placeholder="credential id" value="${escapeHtml(binding.id || "")}" />
+            <input class="input bind-name-input" data-node-id="${escapeHtml(item.node_id)}" data-credential-type="${escapeHtml(item.credential_type)}" placeholder="credential name" value="${escapeHtml(binding.name || "")}" />
+          </div>
         </article>
       `;
     })
     .join("");
 
-  Array.from(document.querySelectorAll(".project-card[data-project-id]")).forEach((card) => {
-    card.addEventListener("click", () => {
-      const id = card.getAttribute("data-project-id");
-      if (id) {
-        selectProject(id).catch((error) => setToast(error.message, "error"));
+  bindCredentialInputs();
+}
+
+function bindCredentialInputs() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+
+  const handle = (target, field) => {
+    const nodeId = target.dataset.nodeId || null;
+    const credentialType = target.dataset.credentialType || "";
+    const value = String(target.value || "").trim();
+    const existing = getBindings(projectId).find(
+      (item) => String(item.node_id || "") === String(nodeId || "") && item.credential_type === credentialType
+    ) || {
+      node_id: nodeId,
+      node_name: null,
+      credential_type: credentialType,
+      id: "",
+      name: ""
+    };
+    const next = { ...existing, [field]: value };
+    upsertBinding(projectId, next);
+  };
+
+  document.querySelectorAll(".bind-id-input").forEach((input) => {
+    input.addEventListener("input", (event) => handle(event.target, "id"));
+  });
+  document.querySelectorAll(".bind-name-input").forEach((input) => {
+    input.addEventListener("input", (event) => handle(event.target, "name"));
+  });
+}
+
+function renderMonitoring() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) {
+    el.monitoringSummary.textContent = "Select a project.";
+    el.executionsTableBody.innerHTML = `<tr><td colspan="7">-</td></tr>`;
+    el.executionDetailBox.textContent = "-";
+    el.loadExecutionsBtn.disabled = true;
+    return;
+  }
+
+  const health = state.healthByProject[projectId] || null;
+  const executions = state.executionsByProject[projectId] || [];
+  el.loadExecutionsBtn.disabled = false;
+
+  if (!health) {
+    el.monitoringSummary.textContent = "Health data not loaded yet.";
+  } else {
+    el.monitoringSummary.textContent =
+      `health: ${healthLabel(health.health_status)} | last success: ${formatDate(health.last_success_at)} | last failure: ${formatDate(health.last_failure_at)}`;
+  }
+
+  if (!Array.isArray(executions) || executions.length === 0) {
+    el.executionsTableBody.innerHTML = `<tr><td colspan="7">No executions.</td></tr>`;
+    return;
+  }
+
+  el.executionsTableBody.innerHTML = executions
+    .map((item) => `
+      <tr>
+        <td>${escapeHtml(formatDate(item.started_at || item.stopped_at))}</td>
+        <td><span class="status-pill ${isFailureStatus(item.status) ? "status-bad" : "status-ok"}">${escapeHtml(item.status || "-")}</span></td>
+        <td>${escapeHtml(item.duration_ms ?? "-")}</td>
+        <td>${escapeHtml(item.mode || "-")}</td>
+        <td>${escapeHtml(item.failed_node || "-")}</td>
+        <td>${escapeHtml(item.error_type || "-")}</td>
+        <td><button class="btn btn-ghost btn-sm execution-detail-btn" data-execution-id="${escapeHtml(item.id)}">Details</button></td>
+      </tr>
+    `)
+    .join("");
+
+  document.querySelectorAll(".execution-detail-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        const details = await apiFetch(`/projects/${projectId}/executions/${encodeURIComponent(button.dataset.executionId)}`);
+        state.executionDetailByProject[projectId] = details;
+        el.executionDetailBox.textContent = JSON.stringify(details, null, 2);
+      } catch (error) {
+        setToast(error.message, "error");
       }
     });
   });
 }
 
-function renderProjectDetails(snapshot, messagesResponse) {
-  const project = snapshot.project;
-  const workflow = snapshot.workflow;
-  const health = snapshot.health;
-
-  el.projectDetails.innerHTML = `
-    <div><strong>${escapeHtml(project.name)}</strong></div>
-    <div>${escapeHtml(project.description)}</div>
-    <div>project_id: ${escapeHtml(project.id)}</div>
-    <div>project_status: ${escapeHtml(project.status)}</div>
-    <div>created_at: ${formatDate(project.created_at)}</div>
-    <hr />
-    <div>is_working: ${health?.is_working ? "yes" : "no"}</div>
-    <div>last_run_status: ${escapeHtml(health?.last_run_status || "-")}</div>
-    <div>last_run_at: ${formatDate(health?.last_run_at)}</div>
-    <div>errors: ${Number(health?.recent_errors?.length || 0)}</div>
-    <div>ai_solution: ${escapeHtml(health?.ai_suggestion?.solution || "-")}</div>
-  `;
-
-  el.projectWorkflowJson.textContent = workflow ? JSON.stringify(workflow.json, null, 2) : "No workflow";
-
-  const messages = Array.isArray(messagesResponse?.messages) ? messagesResponse.messages : [];
-  if (messages.length === 0) {
-    el.projectMessages.innerHTML = "No chat messages";
-  } else {
-    el.projectMessages.innerHTML = messages
-      .map(
-        (msg) => `
-          <div class="message">
-            <div class="message-head">
-              <span>${escapeHtml(msg.role)}</span>
-              <span>${formatDate(msg.created_at)}</span>
-            </div>
-            <div>${escapeHtml(msg.content)}</div>
-          </div>
-        `
-      )
-      .join("");
-  }
-}
-
-async function selectProject(projectId) {
-  state.selectedProjectId = projectId;
-  el.deployProjectBtn.disabled = false;
-  el.checkDeployBtn.disabled = false;
-  el.saveCredentialsBtn.disabled = false;
-  el.loadCredentialSchemaBtn.disabled = false;
-  el.createCredentialBtn.disabled = false;
-  renderProjects();
-
-  const [snapshot, messages] = await Promise.all([
-    apiFetch(`/projects/${projectId}`),
-    apiFetch(`/projects/${projectId}/messages`)
-  ]);
-
-  renderProjectDetails(snapshot, messages);
-  await loadProjectCredentialBindings(projectId);
-  await loadDeployPreflight(projectId);
-}
-
-function renderDeployPreflight(projectId, preflight) {
-  state.deployPreflightByProject[projectId] = preflight;
-
-  const missingCount = Array.isArray(preflight.missing_credentials)
-    ? preflight.missing_credentials.length
-    : 0;
-
-  const actionHint = preflight.can_activate
-    ? "Ready to deploy and activate."
-    : !preflight.deployable
-      ? "Workflow is not deployable. Regenerate/fix workflow validation first."
-      : missingCount > 0
-      ? "Please enter missing credentials, save them, then deploy."
-      : "Deployment blocked. Check source error and workflow status.";
-
-  el.deployCheckSummary.innerHTML = `
-    <div>workflow_status: ${escapeHtml(preflight.workflow_status || "-")}</div>
-    <div>deployable: ${preflight.deployable ? "yes" : "no"}</div>
-    <div>credentials_source_ok: ${preflight.credentials_source_ok ? "yes" : "no"}</div>
-    <div>missing_credentials: ${missingCount}</div>
-    <div>can_activate: ${preflight.can_activate ? "yes" : "no"}</div>
-    <div>n8n_workflow_id: ${escapeHtml(preflight.n8n_workflow_id || "-")}</div>
-    <div>source_error: ${escapeHtml(preflight.credentials_source_error || "-")}</div>
-    <div>action: ${escapeHtml(actionHint)}</div>
-  `;
-
-  const requirements = Array.isArray(preflight.requirements) ? preflight.requirements : [];
-  if (requirements.length === 0) {
-    el.deployCredentialsForm.innerHTML = `<div class="details-box">No credentials required for this workflow.</div>`;
+function renderActivity() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) {
+    el.activityFeed.innerHTML = `<div class="summary-strip">Select a project.</div>`;
+    el.refreshActivityBtn.disabled = true;
     return;
   }
 
-  const currentBindings = getProjectCredentialBindings(projectId);
+  el.refreshActivityBtn.disabled = false;
+  const payload = state.activityByProject[projectId];
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  if (items.length === 0) {
+    el.activityFeed.innerHTML = `<div class="summary-strip">No activity events.</div>`;
+    return;
+  }
 
-  el.deployCredentialsForm.innerHTML = requirements
-    .map((requirement) => {
-      const credentialType = String(requirement.credential_type || "");
-      const nodes = Array.isArray(requirement.nodes) ? requirement.nodes : [];
-      const options = Array.isArray(requirement.available_credentials)
-        ? requirement.available_credentials
-        : [];
-
-      const existingBinding =
-        currentBindings[credentialType] ||
-        requirement.resolved_binding ||
-        requirement.provided_binding ||
-        null;
-
-      const selectedId = existingBinding?.id || "";
-      const selectedName = existingBinding?.name || "";
-
+  el.activityFeed.innerHTML = items
+    .map((item) => {
+      const severityClass =
+        item.severity === "high" ? "status-bad" : item.severity === "medium" ? "status-warn" : "status-ok";
       return `
-        <div class="credential-row">
-          <div class="credential-head">
-            <div class="credential-type">${escapeHtml(credentialType)}</div>
-            <div class="row">
-              <button class="btn btn-ghost use-credential-type-btn" data-credential-type="${escapeHtml(credentialType)}" type="button">Use Type</button>
-              ${requirement.resolved ? '<span class="badge badge-ok">bound</span>' : '<span class="badge badge-bad">missing</span>'}
-            </div>
+        <article class="activity-item">
+          <div class="head">
+            <span>${escapeHtml(formatDate(item.event_time))}</span>
+            <span class="status-pill ${severityClass}">${escapeHtml(item.severity)}</span>
           </div>
-          <div class="credential-meta">nodes: ${escapeHtml(nodes.join(", "))}</div>
-          <div class="row">
-            <select class="input credential-select" data-credential-type="${escapeHtml(credentialType)}">
-              <option value="">Select from n8n credentials</option>
-              ${options
-                .map((option) => {
-                  const isSelected = selectedId && selectedId === option.id;
-                  return `<option value="${escapeHtml(option.id)}" data-name="${escapeHtml(option.name)}" ${isSelected ? "selected" : ""}>${escapeHtml(option.name)} (${escapeHtml(option.id)})</option>`;
-                })
-                .join("")}
-            </select>
+          <div class="msg"><strong>${escapeHtml(item.event_type)}</strong> · ${escapeHtml(item.message || "-")}</div>
+          <div class="meta">
+            n8n: ${escapeHtml(item.n8n_workflow_id || "-")} |
+            execution: ${escapeHtml(item.execution_id || "-")} |
+            failed node: ${escapeHtml(item.failed_node || "-")}
           </div>
-          <div class="credential-meta">
-            ${options.length > 0 ? `${options.length} credential(s) available in n8n` : "No credentials found in n8n for this type."}
-          </div>
-          <div class="row two-col">
-            <input
-              class="input credential-id-input"
-              data-credential-type="${escapeHtml(credentialType)}"
-              placeholder="Credential ID"
-              value="${escapeHtml(selectedId)}"
-            />
-            <input
-              class="input credential-name-input"
-              data-credential-type="${escapeHtml(credentialType)}"
-              placeholder="Credential Name (optional)"
-              value="${escapeHtml(selectedName)}"
-            />
-          </div>
-        </div>
+          <div class="meta">recommended: ${escapeHtml(item.recommended_action || "-")}</div>
+        </article>
       `;
     })
     .join("");
+}
 
-  Array.from(document.querySelectorAll(".credential-select[data-credential-type]")).forEach((select) => {
-    select.addEventListener("change", (event) => {
-      const target = event.target;
-      const credentialType = target.getAttribute("data-credential-type");
-      if (!credentialType) return;
-      const selectedOption = target.options[target.selectedIndex];
-      const id = target.value || "";
-      const name = selectedOption?.getAttribute("data-name") || "";
-      const idInput = document.querySelector(`.credential-id-input[data-credential-type="${credentialType}"]`);
-      const nameInput = document.querySelector(`.credential-name-input[data-credential-type="${credentialType}"]`);
-      if (idInput) idInput.value = id;
-      if (nameInput) nameInput.value = name;
-      setProjectCredentialBinding(projectId, credentialType, id || name ? { id, name } : null);
-    });
+function renderDeleteWarnings() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) {
+    el.deleteWarningsBox.textContent = "";
+    return;
+  }
+  const warnings = state.deleteWarningsByProject?.[projectId] || [];
+  if (warnings.length === 0) {
+    el.deleteWarningsBox.textContent = "";
+    return;
+  }
+  el.deleteWarningsBox.textContent = `Cleanup warnings: ${warnings
+    .map((item) => `${item.operation}:${item.n8n_workflow_id}`)
+    .join(", ")}`;
+}
+
+function renderAll() {
+  renderBuilderTimeline();
+  renderChatStream();
+  renderSidebar();
+  renderReport();
+  renderOverview();
+  renderCredentials();
+  renderMonitoring();
+  renderActivity();
+  renderDeleteWarnings();
+  setOverviewButtonsState();
+}
+
+async function loadProjectRelatedData(projectId) {
+  uiDebug("loadProjectRelatedData:start", { project_id: projectId });
+  const snapshot = await apiFetch(`/projects/${projectId}`);
+  state.selectedProjectSnapshot = snapshot;
+  uiDebug("loadProjectRelatedData:snapshot", {
+    project_id: projectId,
+    workflow_id: snapshot?.workflow?.id || null,
+    workflow_status: snapshot?.workflow?.status || null,
+    n8n_workflow_id: snapshot?.workflow?.n8n_workflow_id || null
   });
 
-  Array.from(document.querySelectorAll(".credential-id-input[data-credential-type]")).forEach((input) => {
-    input.addEventListener("input", (event) => {
-      const target = event.target;
-      const credentialType = target.getAttribute("data-credential-type");
-      if (!credentialType) return;
-      const nameInput = document.querySelector(`.credential-name-input[data-credential-type="${credentialType}"]`);
-      const id = target.value.trim();
-      const name = nameInput ? nameInput.value.trim() : "";
-      setProjectCredentialBinding(projectId, credentialType, id || name ? { id, name } : null);
-    });
-  });
+  const bindingsPayload = await apiFetch(`/projects/${projectId}/credential-bindings`);
+  const bindings = Array.isArray(bindingsPayload.credential_bindings)
+    ? bindingsPayload.credential_bindings
+    : [];
+  state.credentialBindingsByProject[projectId] = bindings;
 
-  Array.from(document.querySelectorAll(".credential-name-input[data-credential-type]")).forEach((input) => {
-    input.addEventListener("input", (event) => {
-      const target = event.target;
-      const credentialType = target.getAttribute("data-credential-type");
-      if (!credentialType) return;
-      const idInput = document.querySelector(`.credential-id-input[data-credential-type="${credentialType}"]`);
-      const id = idInput ? idInput.value.trim() : "";
-      const name = target.value.trim();
-      setProjectCredentialBinding(projectId, credentialType, id || name ? { id, name } : null);
-    });
-  });
+  if (snapshot.workflow && snapshot.workflow.status !== "rejected") {
+    try {
+      state.preflightByProject[projectId] = await apiFetch(`/projects/${projectId}/deploy-check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential_bindings: bindings })
+      });
+    } catch {
+      state.preflightByProject[projectId] = null;
+    }
+  } else {
+    state.preflightByProject[projectId] = null;
+  }
 
-  Array.from(document.querySelectorAll(".use-credential-type-btn[data-credential-type]")).forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const credentialType = btn.getAttribute("data-credential-type");
-      if (!credentialType) return;
-      applyQuickCredentialType(credentialType);
-      setToast(`Credential type selected: ${credentialType}`);
-    });
+  try {
+    state.healthByProject[projectId] = await apiFetch(`/projects/${projectId}/health`);
+  } catch {
+    state.healthByProject[projectId] = null;
+  }
+
+  try {
+    state.activityByProject[projectId] = await apiFetch(`/projects/${projectId}/events?limit=100`);
+  } catch {
+    state.activityByProject[projectId] = { items: [] };
+  }
+  uiDebug("loadProjectRelatedData:done", { project_id: projectId });
+}
+
+async function selectProject(projectId) {
+  uiDebug("selectProject:start", { project_id: projectId });
+  state.selectedProjectId = projectId;
+  await loadProjectRelatedData(projectId);
+  const reportItem = getReportItem(projectId);
+  state.builderTimelineState = reportItem?.lifecycle_state || "workflow_generated";
+  uiDebug("selectProject:done", {
+    project_id: projectId,
+    lifecycle_state: state.builderTimelineState,
+    report_n8n_workflow_id: reportItem?.n8n_workflow_id || null,
+    report_n8n_workflow_url: reportItem?.n8n_workflow_url || null
+  });
+  renderAll();
+}
+
+async function saveCredentialBindings() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  const payload = cleanupBindings(projectId);
+  await apiFetch(`/projects/${projectId}/credential-bindings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential_bindings: payload })
   });
 }
 
-async function loadDeployPreflight(projectId) {
-  const credentialBindings = currentCredentialBindingsPayload(projectId);
-  const payload = await apiFetch(`/projects/${projectId}/deploy-check`, {
+async function loadPreflight() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  const payload = cleanupBindings(projectId);
+  state.preflightByProject[projectId] = await apiFetch(`/projects/${projectId}/deploy-check`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential_bindings: credentialBindings })
+    body: JSON.stringify({ credential_bindings: payload })
   });
-
-  renderDeployPreflight(projectId, payload);
-  return payload;
 }
 
-async function deployProject(projectId, activate, credentialBindings = {}) {
-  const result = await apiFetch(`/projects/${projectId}/deploy`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      activate,
-      credential_bindings: credentialBindings
-    })
+async function deploySelected(activate) {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+
+  // Disable deploy buttons to prevent double-click race conditions
+  const deployButtons = [el.deployInactiveBtn, el.activateBtn, el.redeployBtn];
+  deployButtons.forEach((btn) => { if (btn) btn.disabled = true; });
+
+  const bindings = cleanupBindings(projectId);
+  uiDebug("deploySelected:start", {
+    project_id: projectId,
+    activate,
+    credential_bindings_count: bindings.length
   });
-  return result;
+  try {
+    await apiFetch(`/projects/${projectId}/deploy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        activate,
+        credential_bindings: bindings
+      })
+    });
+    uiDebug("deploySelected:done", { project_id: projectId, activate });
+  } finally {
+    // Re-enable buttons (renderAll will set the correct disabled state anyway)
+    deployButtons.forEach((btn) => { if (btn) btn.disabled = false; });
+  }
+}
+
+function openInNewTab(url) {
+  if (!url) return;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+async function refreshCurrentProjectAfterMutation() {
+  if (!state.selectedProjectId) return;
+  uiDebug("refreshCurrentProjectAfterMutation:start", { project_id: state.selectedProjectId });
+  await loadProjects();
+  await loadReport();
+  await loadAnalytics();
+  await selectProject(state.selectedProjectId);
+  uiDebug("refreshCurrentProjectAfterMutation:done", { project_id: state.selectedProjectId });
 }
 
 async function handleChatSubmit(event) {
   event.preventDefault();
-  const message = (el.chatInput.value || "").trim();
+  const message = String(el.chatInput.value || "").trim();
   if (!message) {
-    setToast("Please type a message first.", "error");
+    setToast("اكتب طلب automation أولًا.", "error");
     return;
   }
 
   el.generateBtn.disabled = true;
+  pushChatItem("user", { message });
+  pushChatItem("loading", {});
+  renderAll();
+
   try {
+    uiDebug("chatSubmit:start", { message_length: message.length });
     const payload = await apiFetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
 
-    state.builderPayload = payload;
-    state.latestGeneratedProjectId = payload.project_id;
-    el.deployFromBuilderBtn.disabled = false;
-    el.builderProjectId.textContent = `Project: ${payload.project_id}`;
-    el.builderValidation.innerHTML = `Validation: ${validationBadge(payload.validation?.valid)}`;
-    el.builderOutput.textContent = JSON.stringify(payload, null, 2);
-    el.chatInput.value = "";
+    state.chatStream = state.chatStream.filter((entry) => entry.kind !== "loading");
+    const workflowStatus = payload?.validation?.valid ? "validated" : "rejected";
+    state.builderTimelineState = workflowStatus;
 
+    pushChatItem("ai-summary", {
+      summary: `Project: ${payload.project_name || "-"} | nodes: ${payload.workflow?.nodes?.length || 0}`
+    });
+    pushChatItem("validation", {
+      message: payload?.validation?.valid
+        ? "Workflow validated and ready for deploy as inactive."
+        : `Workflow rejected: ${(payload?.validation?.errors || []).join(" | ") || "validation failed"}`
+    });
+    pushChatItem("next-action", {
+      message: payload?.validation?.valid
+        ? "Select project and click Deploy to n8n as Inactive."
+        : "Use Fix Workflow to regenerate a valid workflow."
+    });
+
+    el.chatInput.value = "";
     await loadProjects();
+    await loadReport();
+    await loadAnalytics();
     if (payload.project_id) {
-      setActiveView("projects");
       await selectProject(payload.project_id);
     }
-    setToast("Project created successfully.");
+    uiDebug("chatSubmit:done", {
+      project_id: payload.project_id || null,
+      node_count: payload?.workflow?.nodes?.length || 0
+    });
+    setToast("Workflow generated.", "success");
   } catch (error) {
+    uiDebug("chatSubmit:error", { error: error?.message || String(error) });
+    state.chatStream = state.chatStream.filter((entry) => entry.kind !== "loading");
     setToast(error.message, "error");
   } finally {
     el.generateBtn.disabled = false;
+    renderAll();
   }
 }
 
-async function handleDeployFromBuilder() {
-  const projectId = state.latestGeneratedProjectId;
-  if (!projectId) {
-    setToast("No generated project to deploy.", "error");
-    return;
-  }
-
+async function handleFixWorkflow() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
   try {
-    const preflight = await loadDeployPreflight(projectId);
-    if (!preflight.can_activate) {
-      setToast("Fill required credentials first, then deploy.", "error");
-      return;
-    }
-    const result = await deployProject(projectId, true, currentCredentialBindingsPayload(projectId));
-    setToast(`Deployed to n8n (${result.n8n_workflow_id}).`);
+    await apiFetch(`/projects/${projectId}/fix-workflow`, { method: "POST" });
+    await refreshCurrentProjectAfterMutation();
+    setToast("Workflow fix attempt completed.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleDeployInactive() {
+  try {
+    await deploySelected(false);
+    await refreshCurrentProjectAfterMutation();
+    setToast("Deployed as inactive.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleActivate() {
+  try {
+    await deploySelected(true);
+    await refreshCurrentProjectAfterMutation();
+    setToast("Workflow activated.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleRedeploy() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  const lifecycle = String(getReportItem(projectId)?.lifecycle_state || "");
+  const activate = lifecycle === "deployed_active";
+  try {
+    await deploySelected(activate);
+    await refreshCurrentProjectAfterMutation();
+    setToast("Workflow redeployed.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleRefreshHealth() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  try {
+    state.healthByProject[projectId] = await apiFetch(`/projects/${projectId}/health/refresh`, {
+      method: "POST"
+    });
+    await loadReport();
+    renderAll();
+    setToast("Health refreshed.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleLoadExecutions() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  try {
+    const payload = await apiFetch(`/projects/${projectId}/executions?limit=20`);
+    state.executionsByProject[projectId] = Array.isArray(payload.executions)
+      ? payload.executions
+      : [];
+    renderMonitoring();
+    setToast("Executions loaded.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+async function handleRefreshActivity() {
+  const projectId = state.selectedProjectId;
+  if (!projectId) return;
+  try {
+    state.activityByProject[projectId] = await apiFetch(`/projects/${projectId}/events?limit=120`);
+    renderActivity();
+    setToast("Activity refreshed.", "success");
+  } catch (error) {
+    setToast(error.message, "error");
+  }
+}
+
+function openDeleteModal() {
+  state.deletingProjectId = state.selectedProjectId;
+  el.deleteModal.classList.remove("hidden");
+}
+
+function closeDeleteModal() {
+  state.deletingProjectId = null;
+  el.deleteModal.classList.add("hidden");
+}
+
+async function confirmDeleteAutomation() {
+  const projectId = state.deletingProjectId;
+  if (!projectId) return;
+  el.confirmDeleteBtn.disabled = true;
+  try {
+    const payload = await apiFetch(`/projects/${projectId}`, { method: "DELETE" });
+    state.deleteWarningsByProject = state.deleteWarningsByProject || {};
+    state.deleteWarningsByProject[projectId] = Array.isArray(payload.cleanup_warnings)
+      ? payload.cleanup_warnings
+      : [];
+
     await loadProjects();
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleDeploySelectedProject() {
-  if (!state.selectedProjectId) {
-    setToast("Select a project first.", "error");
-    return;
-  }
-
-  el.deployProjectBtn.disabled = true;
-  try {
-    const activate = Boolean(el.deployActivateInput.checked);
-    const preflight = await loadDeployPreflight(state.selectedProjectId);
-    if (activate && !preflight.can_activate) {
-      setToast("Activation blocked: missing credentials. Fill bindings first.", "error");
-      return;
-    }
-
-    const result = await deployProject(
-      state.selectedProjectId,
-      activate,
-      currentCredentialBindingsPayload(state.selectedProjectId)
-    );
-    setToast(`Deploy success (${result.n8n_workflow_id}).`);
-    await loadProjects();
-    await selectProject(state.selectedProjectId);
-  } catch (error) {
-    setToast(error.message, "error");
-  } finally {
-    el.deployProjectBtn.disabled = false;
-  }
-}
-
-async function handleLoadCredentialSchema() {
-  const credentialType = normalizeCredentialType(el.quickCredentialTypeInput.value);
-  if (!credentialType) {
-    setToast("Enter credential type first.", "error");
-    return;
-  }
-
-  el.loadCredentialSchemaBtn.disabled = true;
-  try {
-    const schema = await fetchCredentialSchema(credentialType);
-    const template = buildDataTemplateFromCredentialSchema(schema);
-    el.quickCredentialDataInput.value = JSON.stringify(template, null, 2);
-    el.credentialSchemaOutput.textContent = JSON.stringify(schema, null, 2);
-    if (!el.quickCredentialNameInput.value.trim()) {
-      el.quickCredentialNameInput.value = `${credentialType}-credential`;
-    }
-    setToast("Credential schema loaded.");
-  } catch (error) {
-    setToast(error.message, "error");
-  } finally {
-    el.loadCredentialSchemaBtn.disabled = false;
-  }
-}
-
-async function handleCreateCredential() {
-  if (!state.selectedProjectId) {
-    setToast("Select a project first.", "error");
-    return;
-  }
-
-  const credentialType = normalizeCredentialType(el.quickCredentialTypeInput.value);
-  const credentialName = String(el.quickCredentialNameInput.value || "").trim();
-  if (!credentialType || !credentialName) {
-    setToast("Credential type and name are required.", "error");
-    return;
-  }
-
-  let data;
-  try {
-    data = quickCredentialDataPayload();
-  } catch {
-    setToast("Credential data JSON is invalid.", "error");
-    return;
-  }
-
-  el.createCredentialBtn.disabled = true;
-  try {
-    const created = await createN8nCredentialFromUi({
-      type: credentialType,
-      name: credentialName,
-      data
-    });
-
-    setProjectCredentialBinding(state.selectedProjectId, credentialType, {
-      id: created.id,
-      name: created.name || credentialName
-    });
-    await saveProjectCredentialBindings(state.selectedProjectId);
-    await loadDeployPreflight(state.selectedProjectId);
-    setToast(`Credential created (${created.id}).`);
-  } catch (error) {
-    setToast(error.message, "error");
-  } finally {
-    el.createCredentialBtn.disabled = false;
-  }
-}
-
-async function loadWorkflowStatus() {
-  const id = (el.workflowIdInput.value || "").trim();
-  if (!id) {
-    setToast("Enter workflow ID.", "error");
-    return;
-  }
-
-  try {
-    const payload = await apiFetch(`/workflows/${id}/status`);
-    el.workflowStatusJson.textContent = JSON.stringify(payload, null, 2);
-    el.workflowStatusSummary.innerHTML = `
-      <div>is_working: ${payload.health?.is_working ? "yes" : "no"}</div>
-      <div>last_run_status: ${escapeHtml(payload.health?.last_run_status || "-")}</div>
-      <div>total_runs: ${Number(payload.metrics?.total_runs || 0)}</div>
-      <div>failed_runs: ${Number(payload.metrics?.failed_runs || 0)}</div>
-      <div>success_rate: ${Number(payload.metrics?.success_rate || 0)}%</div>
-      <div>ai_solution: ${escapeHtml(payload.ai_suggestion?.solution || "-")}</div>
-    `;
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-function renderAnalyticsCards(overview) {
-  const metrics = [
-    ["Total Projects", overview.total_projects],
-    ["Total Workflows", overview.total_workflows],
-    ["Total Runs", overview.total_runs],
-    ["Failed Runs", overview.failed_runs],
-    ["Success Rate %", overview.success_rate],
-    ["Avg Duration ms", overview.average_duration_ms],
-    ["Unresolved Alerts", overview.unresolved_alerts],
-    ["Healthy Workflows", overview.healthy_workflows]
-  ];
-
-  el.analyticsCards.innerHTML = metrics
-    .map(
-      ([title, value]) => `
-        <div class="metric-card">
-          <div class="metric-title">${escapeHtml(title)}</div>
-          <div class="metric-value">${escapeHtml(value)}</div>
-        </div>
-      `
-    )
-    .join("");
-}
-
-function renderAnalyticsTable(rows) {
-  if (!rows || rows.length === 0) {
-    el.analyticsTableBody.innerHTML = `<tr><td colspan="6">No data</td></tr>`;
-    return;
-  }
-
-  el.analyticsTableBody.innerHTML = rows
-    .map(
-      (row) => `
-        <tr>
-          <td>${escapeHtml(row.project_name)}</td>
-          <td>${healthPill(Boolean(row.is_working), row.last_run_status)}</td>
-          <td>${Number(row.total_runs)}</td>
-          <td>${Number(row.failed_runs)}</td>
-          <td>${Number(row.unresolved_alerts)}</td>
-          <td>${escapeHtml(row.workflow_id)}</td>
-        </tr>
-      `
-    )
-    .join("");
-}
-
-async function loadAnalytics() {
-  const payload = await apiFetch("/analytics");
-  renderAnalyticsCards(payload.overview || {});
-  renderAnalyticsTable(payload.workflows_health || []);
-}
-
-async function handleSendEvent(event) {
-  event.preventDefault();
-  let metadata = undefined;
-  const metaRaw = (el.eventMetaInput.value || "").trim();
-  if (metaRaw) {
-    try {
-      metadata = JSON.parse(metaRaw);
-    } catch {
-      setToast("metadata JSON is invalid.", "error");
-      return;
-    }
-  }
-
-  const durationRaw = (el.eventDurationInput.value || "").trim();
-  const payload = {
-    workflow_id: (el.eventWorkflowIdInput.value || "").trim() || undefined,
-    n8n_workflow_id: (el.eventN8nWorkflowIdInput.value || "").trim() || undefined,
-    run_id: (el.eventRunIdInput.value || "").trim() || undefined,
-    node_name: (el.eventNodeNameInput.value || "").trim() || undefined,
-    event_type: el.eventTypeInput.value,
-    status: (el.eventStatusInput.value || "").trim() || undefined,
-    duration_ms: durationRaw ? Number(durationRaw) : undefined,
-    error_message: (el.eventErrorInput.value || "").trim() || undefined,
-    metadata
-  };
-
-  try {
-    const response = await apiFetch("/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    el.eventResponseJson.textContent = JSON.stringify(response, null, 2);
-    setToast("Event ingested.");
+    await loadReport();
     await loadAnalytics();
+
+    if (state.selectedProjectId === projectId) {
+      state.selectedProjectId = null;
+      state.selectedProjectSnapshot = null;
+    }
+    closeDeleteModal();
+    renderAll();
+    if (state.deleteWarningsByProject[projectId].length > 0) {
+      setToast("Deleted with cleanup warnings.", "neutral");
+    } else {
+      setToast("Automation deleted.", "success");
+    }
   } catch (error) {
     setToast(error.message, "error");
+  } finally {
+    el.confirmDeleteBtn.disabled = false;
   }
 }
 
-async function copyBuilderJson() {
-  const text = el.builderOutput.textContent || "";
-  try {
-    await navigator.clipboard.writeText(text);
-    setToast("Copied JSON.");
-  } catch {
-    setToast("Copy failed.", "error");
-  }
+function switchTab(tab) {
+  el.tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
+  el.tabPanels.forEach((panel) => panel.classList.toggle("active", panel.id === `tab-${tab}`));
 }
 
-async function refreshCurrentView() {
-  await refreshHealth();
-  const activeView = el.navButtons.find((btn) => btn.classList.contains("active"))?.dataset.view;
-
-  if (activeView === "projects") {
-    await loadProjects();
-    if (state.selectedProjectId) {
-      await selectProject(state.selectedProjectId);
-    }
+function applyMobileLayout(view) {
+  const mobile = window.matchMedia("(max-width: 1060px)").matches;
+  if (!mobile) {
+    el.projectsSidebar.style.display = "";
+    el.mainCenter.style.display = "";
+    el.detailPanel.style.display = "";
     return;
   }
 
-  if (activeView === "analytics") {
-    await loadAnalytics();
-    return;
-  }
+  el.projectsSidebar.style.display = view === "projects" ? "" : "none";
+  el.mainCenter.style.display = view === "builder" ? "" : "none";
+  el.detailPanel.style.display = view === "details" ? "" : "none";
+}
 
-  if (activeView === "workflow") {
-    if ((el.workflowIdInput.value || "").trim()) {
-      await loadWorkflowStatus();
-    }
-    return;
+async function refreshEverything() {
+  await Promise.all([refreshSystemHealth(), loadProjects(), loadReport(), loadAnalytics()]);
+  if (state.selectedProjectId) {
+    await loadProjectRelatedData(state.selectedProjectId);
   }
-
-  if (activeView === "builder") {
-    await loadProjects();
-  }
+  renderAll();
 }
 
 function bindEvents() {
-  el.navButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const view = btn.dataset.view;
-      if (!view || !el.views[view]) return;
+  el.chatForm.addEventListener("submit", handleChatSubmit);
+  el.retryFixBtn.addEventListener("click", handleFixWorkflow);
+  el.refreshAllBtn.addEventListener("click", () =>
+    refreshEverything().catch((error) => setToast(error.message, "error"))
+  );
+  el.refreshReportBtn.addEventListener("click", () =>
+    loadReport()
+      .then(() => renderReport())
+      .catch((error) => setToast(error.message, "error"))
+  );
+  el.reportSearchInput.addEventListener("input", renderReport);
+  el.reportFilterSelect.addEventListener("change", renderReport);
+  el.projectSearchInput.addEventListener("input", renderSidebar);
+  el.newReportBtn.addEventListener("click", () => {
+    el.mainCenter.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
-      setActiveView(view);
-      if (view === "projects") {
-        await loadProjects().catch((error) => setToast(error.message, "error"));
-      }
-      if (view === "analytics") {
-        await loadAnalytics().catch((error) => setToast(error.message, "error"));
-      }
+  el.toggleSidebarBtn.addEventListener("click", () => {
+    el.projectsSidebar.classList.toggle("collapsed");
+  });
+
+  el.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => switchTab(button.dataset.tab));
+  });
+
+  el.projectsList.addEventListener("click", (event) => {
+    const card = event.target.closest(".project-card");
+    if (!card) return;
+    const projectId = card.dataset.projectId;
+    if (!projectId) return;
+    selectProject(projectId).catch((error) => setToast(error.message, "error"));
+  });
+
+  el.reportTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest(".open-project-btn");
+    if (!button) return;
+    const projectId = button.dataset.projectId;
+    if (!projectId) return;
+    selectProject(projectId).catch((error) => setToast(error.message, "error"));
+  });
+
+  el.checkRequirementsBtn.addEventListener("click", async () => {
+    try {
+      await loadPreflight();
+      renderCredentials();
+      renderOverview();
+      setOverviewButtonsState();
+      setToast("Requirements updated.", "success");
+    } catch (error) {
+      setToast(error.message, "error");
+    }
+  });
+
+  el.saveBindingsBtn.addEventListener("click", async () => {
+    try {
+      await saveCredentialBindings();
+      await loadPreflight();
+      await loadReport();
+      renderAll();
+      setToast("Credential bindings saved.", "success");
+    } catch (error) {
+      setToast(error.message, "error");
+    }
+  });
+
+  el.openN8nWorkflowBtn.addEventListener("click", () => {
+    const item = getReportItem(state.selectedProjectId);
+    debugWorkflowLinkContext("before_open_n8n_workflow");
+    openInNewTab(item?.n8n_workflow_url);
+  });
+  el.openN8nCredentialsBtn.addEventListener("click", () => {
+    const preflight = getPreflight(state.selectedProjectId);
+    openInNewTab(preflight?.n8n_credentials_url);
+  });
+
+  el.deployInactiveBtn.addEventListener("click", handleDeployInactive);
+  el.activateBtn.addEventListener("click", handleActivate);
+  el.redeployBtn.addEventListener("click", handleRedeploy);
+  el.deactivateBtn.addEventListener("click", handleDeployInactive);
+  el.refreshHealthBtn.addEventListener("click", handleRefreshHealth);
+  el.loadExecutionsBtn.addEventListener("click", handleLoadExecutions);
+  el.refreshActivityBtn.addEventListener("click", handleRefreshActivity);
+
+  el.deleteAutomationBtn.addEventListener("click", openDeleteModal);
+  el.cancelDeleteBtn.addEventListener("click", closeDeleteModal);
+  el.confirmDeleteBtn.addEventListener("click", confirmDeleteAutomation);
+  el.deleteModal.addEventListener("click", (event) => {
+    if (event.target === el.deleteModal) {
+      closeDeleteModal();
+    }
+  });
+
+  el.mobileNavButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applyMobileLayout(button.dataset.mobileView);
     });
   });
 
-  el.chatForm.addEventListener("submit", handleChatSubmit);
-  el.copyBuilderJsonBtn.addEventListener("click", copyBuilderJson);
-  el.deployFromBuilderBtn.addEventListener("click", handleDeployFromBuilder);
-
-  el.projectSearchInput.addEventListener("input", renderProjects);
-  el.refreshProjectsBtn.addEventListener("click", () =>
-    loadProjects().catch((error) => setToast(error.message, "error"))
-  );
-  el.checkDeployBtn.addEventListener("click", async () => {
-    if (!state.selectedProjectId) {
-      setToast("Select a project first.", "error");
-      return;
-    }
-    try {
-      await loadDeployPreflight(state.selectedProjectId);
-      setToast("Deploy check updated.");
-    } catch (error) {
-      setToast(error.message, "error");
-    }
-  });
-  el.saveCredentialsBtn.addEventListener("click", async () => {
-    if (!state.selectedProjectId) {
-      setToast("Select a project first.", "error");
-      return;
-    }
-
-    el.saveCredentialsBtn.disabled = true;
-    try {
-      await saveProjectCredentialBindings(state.selectedProjectId);
-      await loadDeployPreflight(state.selectedProjectId);
-      setToast("Credentials saved for this project.");
-    } catch (error) {
-      setToast(error.message, "error");
-    } finally {
-      el.saveCredentialsBtn.disabled = false;
-    }
-  });
-  el.loadCredentialSchemaBtn.addEventListener("click", handleLoadCredentialSchema);
-  el.createCredentialBtn.addEventListener("click", handleCreateCredential);
-  el.deployProjectBtn.addEventListener("click", handleDeploySelectedProject);
-
-  el.loadWorkflowStatusBtn.addEventListener("click", loadWorkflowStatus);
-  el.refreshAnalyticsBtn.addEventListener("click", () =>
-    loadAnalytics().catch((error) => setToast(error.message, "error"))
-  );
-  el.eventForm.addEventListener("submit", handleSendEvent);
-
-  el.globalRefreshBtn.addEventListener("click", () =>
-    refreshCurrentView().catch((error) => setToast(error.message, "error"))
-  );
+  window.addEventListener("resize", () => applyMobileLayout("builder"));
 }
 
 async function boot() {
   bindEvents();
-  await refreshHealth();
-  await loadProjects();
-  await loadAnalytics();
+  applyMobileLayout("builder");
+  await refreshEverything();
+  if (state.projects[0]?.project?.id) {
+    await selectProject(state.projects[0].project.id);
+  }
 }
 
-boot().catch((error) => setToast(error.message, "error"));
+boot().catch((error) => {
+  setToast(error.message || "Failed to boot application.", "error");
+});

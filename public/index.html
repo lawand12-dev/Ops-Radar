@@ -3,214 +3,218 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ops Radar Automation Console</title>
+    <title>OpsRadar - AI Automation Control Center</title>
     <link rel="stylesheet" href="/app.css" />
   </head>
   <body>
-    <div class="bg-shape shape-a"></div>
-    <div class="bg-shape shape-b"></div>
-    <div class="bg-shape shape-c"></div>
+    <div class="bg-layer"></div>
+    <div class="bg-grid"></div>
 
-    <header class="topbar">
-      <div class="brand">
-        <h1>Automation Control Center</h1>
-        <p>Build, Deploy, Monitor, Fix</p>
-      </div>
-      <div class="topbar-actions">
-        <span id="healthBadge" class="badge badge-muted">Checking health...</span>
-        <button id="globalRefreshBtn" class="btn btn-ghost">Refresh</button>
-      </div>
-    </header>
+    <div class="app-shell">
+      <header class="topbar glass">
+        <div class="brand-wrap">
+          <div class="brand-mark">OR</div>
+          <div>
+            <h1>OpsRadar</h1>
+            <p>AI Automation Builder + n8n Control Center</p>
+          </div>
+        </div>
+        <div class="status-pills">
+          <span id="apiStatusPill" class="status-pill status-neutral">API...</span>
+          <span id="n8nStatusPill" class="status-pill status-neutral">n8n...</span>
+          <span id="monitorStatusPill" class="status-pill status-neutral">Monitoring...</span>
+          <button id="refreshAllBtn" class="btn btn-ghost">Refresh</button>
+        </div>
+      </header>
 
-    <main class="app-layout">
-      <aside class="sidebar">
-        <button class="nav-btn active" data-view="builder">AI Builder</button>
-        <button class="nav-btn" data-view="projects">Projects</button>
-        <button class="nav-btn" data-view="workflow">Workflow Health</button>
-        <button class="nav-btn" data-view="analytics">Analytics</button>
-        <button class="nav-btn" data-view="events">Event Collector</button>
-      </aside>
+      <div class="workspace">
+        <aside id="projectsSidebar" class="sidebar glass">
+          <div class="sidebar-head">
+            <h2>Projects</h2>
+            <button id="toggleSidebarBtn" class="btn btn-ghost btn-sm">Hide</button>
+          </div>
+          <div class="sidebar-controls">
+            <input id="projectSearchInput" class="input" placeholder="Search project..." />
+            <button id="newReportBtn" class="btn btn-ghost btn-sm">Full Report</button>
+          </div>
+          <div id="projectStatsCards" class="mini-stats"></div>
+          <div id="projectsList" class="projects-list"></div>
+        </aside>
 
-      <section class="content">
-        <div id="toast" class="toast"></div>
+        <main id="mainCenter" class="center-column">
+          <section class="panel glass chat-panel">
+            <div class="panel-head">
+              <h2>AI Chat Builder</h2>
+              <div class="timeline-steps" id="builderTimeline">
+                <span data-step="workflow_generated">workflow generated</span>
+                <span data-step="validated">validated</span>
+                <span data-step="rejected">rejected</span>
+                <span data-step="deployed_inactive">deployed inactive</span>
+                <span data-step="deployed_active">active</span>
+              </div>
+            </div>
 
-        <article class="view view-active" id="view-builder">
-          <div class="panel">
-            <h2>Generate Automation from Chat</h2>
-            <form id="chatForm" class="stack">
-              <label for="chatInput">User Request</label>
+            <div id="chatStream" class="chat-stream"></div>
+
+            <form id="chatForm" class="chat-composer">
               <textarea
                 id="chatInput"
-                rows="5"
-                placeholder="Send weekly report to Slack every Friday at 9 AM"
+                rows="4"
+                placeholder="صف automation المطلوب (trigger + actions + outcome) بشكل عام..."
               ></textarea>
-              <div class="row">
-                <button type="submit" id="generateBtn" class="btn btn-primary">Generate Project</button>
+              <div class="composer-actions">
+                <button id="generateBtn" type="submit" class="btn btn-primary">Generate Workflow</button>
+                <button id="retryFixBtn" type="button" class="btn btn-ghost" disabled>Fix Workflow</button>
               </div>
             </form>
-          </div>
+          </section>
 
-          <div class="panel">
+          <section class="panel glass report-panel">
             <div class="panel-head">
-              <h3>Generated Output</h3>
+              <h2>Full System Report</h2>
               <div class="row">
-                <button id="copyBuilderJsonBtn" class="btn btn-ghost">Copy JSON</button>
-                <button id="deployFromBuilderBtn" class="btn btn-accent" disabled>Deploy Latest</button>
+                <input id="reportSearchInput" class="input" placeholder="Search by project name..." />
+                <select id="reportFilterSelect" class="input">
+                  <option value="all">all</option>
+                  <option value="rejected">rejected</option>
+                  <option value="validated">validated</option>
+                  <option value="deployed_inactive">deployed inactive</option>
+                  <option value="deployed_active">active</option>
+                  <option value="failing">failing</option>
+                  <option value="warning">warnings</option>
+                </select>
+                <button id="refreshReportBtn" class="btn btn-ghost">Refresh (verify_n8n=1)</button>
               </div>
             </div>
-            <div class="status-line">
-              <span id="builderProjectId">Project: -</span>
-              <span id="builderValidation" class="badge badge-muted">Validation: -</span>
-            </div>
-            <pre id="builderOutput">No output yet.</pre>
-          </div>
-        </article>
-
-        <article class="view" id="view-projects">
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Projects</h2>
-              <div class="row">
-                <input id="projectSearchInput" class="input" placeholder="Search by name..." />
-                <button id="refreshProjectsBtn" class="btn btn-ghost">Refresh</button>
-              </div>
-            </div>
-            <div id="projectsList" class="projects-list"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Project Details</h3>
-              <button id="deployProjectBtn" class="btn btn-accent" disabled>Deploy</button>
-            </div>
-            <div class="row">
-              <label class="switch">
-                <input id="deployActivateInput" type="checkbox" checked />
-                <span>Activate after deploy</span>
-              </label>
-            </div>
-            <h4>Credential Bindings</h4>
-            <div class="row">
-              <button id="checkDeployBtn" class="btn btn-ghost" disabled>Check Requirements</button>
-              <button id="saveCredentialsBtn" class="btn btn-primary" disabled>Save Credentials</button>
-            </div>
-            <div id="deployCheckSummary" class="details-box">
-              Select a project, then check required credentials.
-            </div>
-            <div id="deployCredentialsForm" class="stack"></div>
-            <h4>Create Credential in n8n</h4>
-            <div class="stack">
-              <div class="row two-col">
-                <input id="quickCredentialTypeInput" class="input" placeholder="credential type e.g. slackApi" />
-                <input id="quickCredentialNameInput" class="input" placeholder="credential name" />
-              </div>
-              <textarea
-                id="quickCredentialDataInput"
-                rows="5"
-                placeholder='credential data JSON e.g. {"accessToken":"xoxb-..."}'
-              ></textarea>
-              <div class="row">
-                <button id="loadCredentialSchemaBtn" class="btn btn-ghost" disabled>Load Schema</button>
-                <button id="createCredentialBtn" class="btn btn-primary" disabled>Create in n8n</button>
-              </div>
-              <pre id="credentialSchemaOutput">Schema not loaded.</pre>
-            </div>
-            <div id="projectDetails" class="details-box">Select a project.</div>
-            <h4>Workflow JSON</h4>
-            <pre id="projectWorkflowJson">-</pre>
-            <h4>Chat Messages</h4>
-            <div id="projectMessages" class="messages-box"></div>
-          </div>
-        </article>
-
-        <article class="view" id="view-workflow">
-          <div class="panel">
-            <h2>Workflow Status</h2>
-            <div class="row">
-              <input id="workflowIdInput" class="input" placeholder="workflow uuid" />
-              <button id="loadWorkflowStatusBtn" class="btn btn-primary">Load</button>
-            </div>
-            <div id="workflowStatusSummary" class="details-box">Enter workflow ID.</div>
-          </div>
-          <div class="panel">
-            <h3>Status Payload</h3>
-            <pre id="workflowStatusJson">-</pre>
-          </div>
-        </article>
-
-        <article class="view" id="view-analytics">
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Global Analytics</h2>
-              <button id="refreshAnalyticsBtn" class="btn btn-ghost">Refresh</button>
-            </div>
-            <div id="analyticsCards" class="cards-grid"></div>
-          </div>
-          <div class="panel">
-            <h3>Workflows Health</h3>
+            <div id="reportTotalsCards" class="stats-cards"></div>
             <div class="table-wrap">
-              <table class="table" id="analyticsTable">
+              <table class="table">
                 <thead>
                   <tr>
                     <th>Project</th>
-                    <th>Status</th>
-                    <th>Runs</th>
-                    <th>Failures</th>
-                    <th>Alerts</th>
-                    <th>Workflow ID</th>
+                    <th>Lifecycle</th>
+                    <th>Health</th>
+                    <th>Missing Creds</th>
+                    <th>n8n</th>
+                    <th>Recommended Action</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="reportTableBody"></tbody>
               </table>
             </div>
-          </div>
-        </article>
+          </section>
+        </main>
 
-        <article class="view" id="view-events">
-          <div class="panel">
-            <h2>Send Test Event</h2>
-            <form id="eventForm" class="stack">
-              <div class="row two-col">
-                <input id="eventWorkflowIdInput" class="input" placeholder="workflow_id (uuid)" />
-                <input id="eventN8nWorkflowIdInput" class="input" placeholder="n8n_workflow_id (optional)" />
-              </div>
-              <div class="row two-col">
-                <input id="eventRunIdInput" class="input" placeholder="run_id" />
-                <input id="eventNodeNameInput" class="input" placeholder="node_name" />
-              </div>
-              <div class="row two-col">
-                <select id="eventTypeInput" class="input">
-                  <option value="run_started">run_started</option>
-                  <option value="run_succeeded">run_succeeded</option>
-                  <option value="run_failed">run_failed</option>
-                  <option value="node_started">node_started</option>
-                  <option value="node_succeeded">node_succeeded</option>
-                  <option value="node_failed">node_failed</option>
-                </select>
-                <select id="eventStatusInput" class="input">
-                  <option value="">auto</option>
-                  <option value="success">success</option>
-                  <option value="failure">failure</option>
-                  <option value="info">info</option>
-                </select>
-              </div>
-              <div class="row two-col">
-                <input id="eventDurationInput" class="input" type="number" min="0" placeholder="duration_ms" />
-                <input id="eventErrorInput" class="input" placeholder="error_message" />
-              </div>
-              <textarea id="eventMetaInput" rows="4" placeholder='metadata JSON e.g. {"failed_node":"Send Slack"}'></textarea>
-              <button type="submit" class="btn btn-primary">Send Event</button>
-            </form>
+        <aside id="detailPanel" class="detail-panel glass">
+          <div class="detail-head">
+            <h2 id="detailProjectTitle">Project Details</h2>
+            <span id="detailLifecycleBadge" class="status-pill status-neutral">-</span>
           </div>
 
-          <div class="panel">
-            <h3>Event API Response</h3>
-            <pre id="eventResponseJson">-</pre>
+          <div class="detail-tabs">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="credentials">Credentials</button>
+            <button class="tab-btn" data-tab="monitoring">Monitoring</button>
+            <button class="tab-btn" data-tab="activity">Activity</button>
+            <button class="tab-btn" data-tab="delete">Delete</button>
           </div>
-        </article>
-      </section>
-    </main>
 
-    <script src="/app.js" type="module"></script>
+          <section id="tab-overview" class="tab-panel active">
+            <div id="overviewCards" class="stats-cards"></div>
+            <div class="actions-grid">
+              <button id="deployInactiveBtn" class="btn btn-primary" disabled>Deploy to n8n as Inactive</button>
+              <button id="activateBtn" class="btn btn-accent" disabled>Activate</button>
+              <button id="redeployBtn" class="btn btn-ghost" disabled>Redeploy</button>
+              <button id="deactivateBtn" class="btn btn-ghost" disabled>Deactivate</button>
+              <button id="openN8nWorkflowBtn" class="btn btn-ghost" disabled>Open in n8n</button>
+              <button id="refreshHealthBtn" class="btn btn-ghost" disabled>Health</button>
+            </div>
+            <pre id="workflowJsonBox">Select a project.</pre>
+          </section>
+
+          <section id="tab-credentials" class="tab-panel">
+            <div class="panel-note">
+              Default mode: <code>manual_only</code>. Create/complete credentials in n8n, then bind id/name here.
+            </div>
+            <div id="credentialsSummary" class="summary-strip">No credential requirements loaded.</div>
+            <div id="credentialsCards" class="stack"></div>
+            <div class="row">
+              <button id="checkRequirementsBtn" class="btn btn-ghost" disabled>Check Requirements</button>
+              <button id="saveBindingsBtn" class="btn btn-primary" disabled>Save Bindings</button>
+              <button id="openN8nCredentialsBtn" class="btn btn-ghost" disabled>Open n8n Credentials</button>
+            </div>
+          </section>
+
+          <section id="tab-monitoring" class="tab-panel">
+            <div class="summary-strip" id="monitoringSummary">No monitoring data yet.</div>
+            <div class="row">
+              <button id="loadExecutionsBtn" class="btn btn-ghost" disabled>Load Executions</button>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Mode</th>
+                    <th>Failed Node</th>
+                    <th>Error Type</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="executionsTableBody"></tbody>
+              </table>
+            </div>
+            <pre id="executionDetailBox">-</pre>
+          </section>
+
+          <section id="tab-activity" class="tab-panel">
+            <div class="row">
+              <button id="refreshActivityBtn" class="btn btn-ghost" disabled>Refresh Activity</button>
+            </div>
+            <div id="activityFeed" class="activity-feed"></div>
+          </section>
+
+          <section id="tab-delete" class="tab-panel">
+            <div class="delete-card">
+              <h3>Delete Automation</h3>
+              <p>سيتم حذف: المشروع المحلي، workflow المحلي، chat history، health snapshots، alerts/events، والـworkflow المرتبط في n8n (إن وجد).</p>
+              <button id="deleteAutomationBtn" class="btn btn-danger" disabled>Delete Automation</button>
+              <div id="deleteWarningsBox" class="summary-strip"></div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <div id="deleteModal" class="modal hidden">
+      <div class="modal-card glass">
+        <h3>Confirm Delete Automation</h3>
+        <ul>
+          <li>local project</li>
+          <li>local workflow</li>
+          <li>chat history</li>
+          <li>health snapshots</li>
+          <li>alerts/events</li>
+          <li>linked n8n workflow (if exists)</li>
+        </ul>
+        <div class="row">
+          <button id="cancelDeleteBtn" class="btn btn-ghost">Cancel</button>
+          <button id="confirmDeleteBtn" class="btn btn-danger">Confirm Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <nav class="mobile-nav glass">
+      <button data-mobile-view="projects">Projects</button>
+      <button data-mobile-view="builder">Builder</button>
+      <button data-mobile-view="details">Details</button>
+    </nav>
+
+    <script type="module" src="/app.js"></script>
   </body>
 </html>

@@ -1,19 +1,20 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { getDb } from "../../lib/db";
-import { countAllUnresolvedAlerts } from "../alerts/alert-repository";
+import { dbQuery, getDb } from "../../lib/db";
 import { getGlobalHealthBreakdown, getGlobalRunStats } from "../events/event-repository";
 
 export async function getAnalyticsSnapshot() {
   const db = getDb();
 
-  const [projectCountRows] = await db.query<Array<RowDataPacket & { total: number }>>(
+  const [projectCountRows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
+    db,
     `SELECT COUNT(*) AS total FROM projects`
   );
-  const [workflowCountRows] = await db.query<Array<RowDataPacket & { total: number }>>(
+  const [workflowCountRows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
+    db,
     `SELECT COUNT(*) AS total FROM workflows`
   );
 
-  const [topWorkflowRows] = await db.query<
+  const [topWorkflowRows] = await dbQuery<
     Array<
       RowDataPacket & {
         workflow_id: string;
@@ -26,6 +27,7 @@ export async function getAnalyticsSnapshot() {
       }
     >
   >(
+    db,
     `SELECT
       w.id AS workflow_id,
       w.project_id AS project_id,
@@ -52,9 +54,9 @@ export async function getAnalyticsSnapshot() {
       ) AS total_runs,
       (
         SELECT COUNT(*)
-        FROM alerts a
-        WHERE a.workflow_id = w.id
-          AND a.is_resolved = 0
+        FROM workflow_alerts wa
+        WHERE wa.workflow_id = w.id
+          AND wa.status = 'open'
       ) AS unresolved_alerts
     FROM workflows w
     INNER JOIN projects p ON p.id = w.project_id
@@ -62,11 +64,16 @@ export async function getAnalyticsSnapshot() {
     LIMIT 20`
   );
 
-  const [runStats, unresolvedAlerts, healthBreakdown] = await Promise.all([
+  const [runStats, healthBreakdown, unresolvedAlertRows] = await Promise.all([
     getGlobalRunStats(),
-    countAllUnresolvedAlerts(),
-    getGlobalHealthBreakdown()
+    getGlobalHealthBreakdown(),
+    dbQuery<Array<RowDataPacket & { total: number }>>(
+      db,
+      `SELECT COUNT(*) AS total FROM workflow_alerts WHERE status = 'open'`
+    )
   ]);
+
+  const unresolvedAlerts = Number(unresolvedAlertRows[0][0]?.total ?? 0);
 
   return {
     overview: {

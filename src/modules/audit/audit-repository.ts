@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
-import { getDb } from "../../lib/db";
+import { dbQuery, getDb } from "../../lib/db";
+import { AppError } from "../../lib/errors";
 import type { AuditLogRecord, FailureAnalysis } from "../../types/workflow";
 
 type AuditRow = RowDataPacket & {
@@ -45,7 +46,8 @@ export async function createAuditLog(
 ): Promise<AuditLogRecord> {
   const id = randomUUID();
   const runner = connection ?? getDb();
-  await runner.query(
+  await dbQuery(
+    runner,
     `INSERT INTO audit_logs (id, workflow_id, run_id, issue, reason, solution, raw_input)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
@@ -59,7 +61,8 @@ export async function createAuditLog(
     ]
   );
 
-  const [rows] = await runner.query<AuditRow[]>(
+  const [rows] = await dbQuery<AuditRow[]>(
+    runner,
     `SELECT id, workflow_id, run_id, issue, reason, solution, raw_input, created_at
      FROM audit_logs
      WHERE id = ?`,
@@ -68,7 +71,7 @@ export async function createAuditLog(
 
   const row = rows[0];
   if (!row) {
-    throw new Error("audit log insert failed");
+    throw new AppError(500, "AUDIT_LOG_INSERT_FAILED", "Audit log insert failed.");
   }
 
   return mapAuditRow(row);
@@ -77,7 +80,8 @@ export async function createAuditLog(
 export async function listAuditLogsByWorkflowId(workflowId: string, limit = 10): Promise<AuditLogRecord[]> {
   const db = getDb();
   const capped = Math.min(Math.max(limit, 1), 100);
-  const [rows] = await db.query<AuditRow[]>(
+  const [rows] = await dbQuery<AuditRow[]>(
+    db,
     `SELECT id, workflow_id, run_id, issue, reason, solution, raw_input, created_at
      FROM audit_logs
      WHERE workflow_id = ?
@@ -91,7 +95,8 @@ export async function listAuditLogsByWorkflowId(workflowId: string, limit = 10):
 
 export async function getLatestAuditLog(workflowId: string): Promise<AuditLogRecord | null> {
   const db = getDb();
-  const [rows] = await db.query<AuditRow[]>(
+  const [rows] = await dbQuery<AuditRow[]>(
+    db,
     `SELECT id, workflow_id, run_id, issue, reason, solution, raw_input, created_at
      FROM audit_logs
      WHERE workflow_id = ?

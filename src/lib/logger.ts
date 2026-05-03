@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { redactSecrets } from "./redact";
 
 type Level = "debug" | "info" | "warn" | "error";
 
@@ -15,7 +16,7 @@ function shouldLog(level: Level): boolean {
 
 function safeStringify(value: unknown): string {
   try {
-    return JSON.stringify(value, null, 2);
+    return JSON.stringify(redactSecrets(value), null, 2);
   } catch {
     return String(value);
   }

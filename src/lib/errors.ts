@@ -17,7 +17,7 @@ export function toAppError(error: unknown): AppError {
   }
 
   if (error instanceof Error) {
-    return new AppError(500, "INTERNAL_ERROR", error.message);
+    return new AppError(500, "INTERNAL_ERROR", "Internal server error.");
   }
 
   return new AppError(500, "INTERNAL_ERROR", "Unknown error");

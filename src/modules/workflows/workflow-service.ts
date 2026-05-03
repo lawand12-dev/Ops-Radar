@@ -1,11 +1,14 @@
 import { AppError } from "../../lib/errors";
-import { listAlertsByWorkflowId, countUnresolvedAlerts } from "../alerts/alert-repository";
 import { getLatestAuditLog } from "../audit/audit-repository";
 import {
   getWorkflowLastTerminalRun,
   getWorkflowRunStats,
   listRecentFailureEventsByWorkflowId
 } from "../events/event-repository";
+import {
+  countOpenWorkflowAlertsByWorkflowId,
+  listOpenWorkflowAlertsByWorkflowId
+} from "../monitoring/workflow-health-repository";
 import { getWorkflowById } from "./workflow-repository";
 
 export async function getWorkflowStatus(workflowId: string) {
@@ -18,8 +21,8 @@ export async function getWorkflowStatus(workflowId: string) {
     getWorkflowRunStats(workflowId),
     getWorkflowLastTerminalRun(workflowId),
     listRecentFailureEventsByWorkflowId(workflowId, 10),
-    listAlertsByWorkflowId(workflowId, 10),
-    countUnresolvedAlerts(workflowId),
+    listOpenWorkflowAlertsByWorkflowId(workflowId, 10),
+    countOpenWorkflowAlertsByWorkflowId(workflowId),
     getLatestAuditLog(workflowId)
   ]);
 
@@ -60,7 +63,17 @@ export async function getWorkflowStatus(workflowId: string) {
       error_message: event.error_message,
       created_at: event.created_at
     })),
-    alerts,
+    alerts: alerts.map((alert) => ({
+      id: alert.id,
+      alert_type: alert.alert_type,
+      severity: alert.severity,
+      message: alert.message,
+      recommended_action: alert.recommended_action,
+      failed_node: alert.failed_node,
+      first_seen_at: alert.first_seen_at,
+      last_seen_at: alert.last_seen_at,
+      status: alert.status
+    })),
     ai_suggestion: latestAudit
       ? {
           issue: latestAudit.issue,

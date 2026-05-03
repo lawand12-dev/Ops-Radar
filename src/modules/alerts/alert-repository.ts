@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
-import { getDb } from "../../lib/db";
+import { dbQuery, getDb } from "../../lib/db";
+import { AppError } from "../../lib/errors";
 import type { AlertRecord, AlertType } from "../../types/workflow";
 
 type AlertRow = RowDataPacket & {
@@ -35,13 +36,15 @@ export async function createAlert(
 ): Promise<AlertRecord> {
   const id = randomUUID();
   const runner = connection ?? getDb();
-  await runner.query(
+  await dbQuery(
+    runner,
     `INSERT INTO alerts (id, workflow_id, type, message, is_resolved)
      VALUES (?, ?, ?, ?, 0)`,
     [id, input.workflowId, input.type, input.message]
   );
 
-  const [rows] = await runner.query<AlertRow[]>(
+  const [rows] = await dbQuery<AlertRow[]>(
+    runner,
     `SELECT id, workflow_id, type, message, is_resolved, created_at, resolved_at
      FROM alerts
      WHERE id = ?`,
@@ -50,7 +53,7 @@ export async function createAlert(
 
   const row = rows[0];
   if (!row) {
-    throw new Error("alert insert failed");
+    throw new AppError(500, "ALERT_INSERT_FAILED", "Alert insert failed.");
   }
 
   return mapAlertRow(row);
@@ -61,7 +64,8 @@ export async function findUnresolvedAlertByType(
   type: AlertType
 ): Promise<AlertRecord | null> {
   const db = getDb();
-  const [rows] = await db.query<AlertRow[]>(
+  const [rows] = await dbQuery<AlertRow[]>(
+    db,
     `SELECT id, workflow_id, type, message, is_resolved, created_at, resolved_at
      FROM alerts
      WHERE workflow_id = ?
@@ -78,7 +82,8 @@ export async function findUnresolvedAlertByType(
 
 export async function resolveAlertsForWorkflow(workflowId: string): Promise<void> {
   const db = getDb();
-  await db.query(
+  await dbQuery(
+    db,
     `UPDATE alerts
      SET is_resolved = 1, resolved_at = CURRENT_TIMESTAMP
      WHERE workflow_id = ?
@@ -89,7 +94,8 @@ export async function resolveAlertsForWorkflow(workflowId: string): Promise<void
 
 export async function countUnresolvedAlerts(workflowId: string): Promise<number> {
   const db = getDb();
-  const [rows] = await db.query<Array<RowDataPacket & { total: number }>>(
+  const [rows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
+    db,
     `SELECT COUNT(*) AS total
      FROM alerts
      WHERE workflow_id = ?
@@ -103,7 +109,8 @@ export async function countUnresolvedAlerts(workflowId: string): Promise<number>
 export async function listAlertsByWorkflowId(workflowId: string, limit = 20): Promise<AlertRecord[]> {
   const db = getDb();
   const capped = Math.min(Math.max(limit, 1), 200);
-  const [rows] = await db.query<AlertRow[]>(
+  const [rows] = await dbQuery<AlertRow[]>(
+    db,
     `SELECT id, workflow_id, type, message, is_resolved, created_at, resolved_at
      FROM alerts
      WHERE workflow_id = ?
@@ -117,7 +124,8 @@ export async function listAlertsByWorkflowId(workflowId: string, limit = 20): Pr
 
 export async function countAllUnresolvedAlerts(): Promise<number> {
   const db = getDb();
-  const [rows] = await db.query<Array<RowDataPacket & { total: number }>>(
+  const [rows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
+    db,
     `SELECT COUNT(*) AS total FROM alerts WHERE is_resolved = 0`
   );
   return Number(rows[0]?.total ?? 0);

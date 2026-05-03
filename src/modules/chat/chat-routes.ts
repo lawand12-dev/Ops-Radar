@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
-import { logInfo } from "../../lib/logger";
+import { logInfo, logWarn } from "../../lib/logger";
 import { handleChatMessage } from "./chat-service";
 
 const chatBodySchema = z.object({
@@ -25,9 +25,20 @@ chatRoutes.post("/", async (c) => {
     throw new AppError(400, "BAD_REQUEST", "Invalid request body.", parsed.error.issues);
   }
 
-  const result = await handleChatMessage(parsed.data.message, { traceId });
-  c.header("x-trace-id", traceId);
-  return c.json(result, 201);
+  try {
+    const result = await handleChatMessage(parsed.data.message, { traceId });
+    if (env.LOG_CHAT_PROGRESS) {
+      logInfo("chat-route", "Completed /chat request", { project_id: result.project_id }, traceId);
+    }
+    c.header("x-trace-id", traceId);
+    return c.json(result, 201);
+  } catch (error) {
+    if (env.LOG_CHAT_PROGRESS) {
+      const message = error instanceof Error ? error.message : String(error);
+      logWarn("chat-route", "Failed /chat request", { error: message }, traceId);
+    }
+    throw error;
+  }
 });
 
 export default chatRoutes;

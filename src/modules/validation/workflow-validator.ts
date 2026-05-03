@@ -1,12 +1,13 @@
 import { z } from "zod";
 import type { AiWorkflowOutput, N8nConnections, N8nNode, N8nWorkflow } from "../../types/workflow";
+import { resolveNodeTypeVersion } from "../n8n/node-compatibility";
 
 const nodeSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   type: z.string().min(1),
-  typeVersion: z.number().optional(),
-  position: z.tuple([z.number(), z.number()]).optional(),
+  typeVersion: z.number(),
+  position: z.tuple([z.number(), z.number()]),
   parameters: z.record(z.unknown()).optional(),
   credentials: z.record(z.unknown()).optional()
 });
@@ -24,18 +25,20 @@ const connectionEntrySchema = z.object({
 const connectionsSchema: z.ZodType<N8nConnections> = z.record(connectionEntrySchema);
 
 const workflowSchema: z.ZodType<N8nWorkflow> = z.object({
+  name: z.string().min(1),
   nodes: z.array(nodeSchema).min(1),
   connections: connectionsSchema,
-  settings: z.record(z.unknown()).optional()
+  settings: z.record(z.unknown())
 });
 
 export const aiWorkflowOutputSchema: z.ZodType<AiWorkflowOutput> = z.object({
   project_name: z.string().min(3).max(128),
   description: z.string().min(8).max(2000),
+  required_credentials: z.array(z.string().min(1)),
   workflow: workflowSchema
 });
 
-const SAFE_NODE_PREFIXES = ["n8n-nodes-base.", "n8n-nodes-"];
+const SAFE_NODE_PREFIXES = ["n8n-nodes-base.", "n8n-nodes-", "@n8n/"];
 const UNSAFE_NODE_TYPES = new Set([
   "n8n-nodes-base.executeCommand",
   "n8n-nodes-base.readWriteFile",
@@ -44,18 +47,34 @@ const UNSAFE_NODE_TYPES = new Set([
   "n8n-nodes-base.code",
   "n8n-nodes-base.function",
   "n8n-nodes-base.functionItem",
-  "n8n-nodes-base.ssh"
+  "n8n-nodes-base.ssh",
+  "@n8n/n8n-nodes-langchain.code"
 ]);
+const DANGEROUS_NODE_TYPE_HINTS = [
+  /(^|\.)(function|functionItem|code)$/i,
+  /(^|\.)(executeCommand|ssh)$/i,
+  /(^|\.)(shell|cmd|powershell)$/i
+];
 
 const TRIGGER_NODE_TYPES = new Set([
   "n8n-nodes-base.scheduleTrigger",
   "n8n-nodes-base.webhook",
   "n8n-nodes-base.manualTrigger",
   "n8n-nodes-base.errorTrigger",
-  "n8n-nodes-base.n8nTrigger"
+  "n8n-nodes-base.n8nTrigger",
+  "n8n-nodes-base.gmailTrigger",
+  "n8n-nodes-base.slackTrigger",
+  "n8n-nodes-base.telegramTrigger",
+  "n8n-nodes-base.microsoftOutlookTrigger",
+  "n8n-nodes-base.hubspotTrigger",
+  "n8n-nodes-base.googleCalendarTrigger",
+  "n8n-nodes-base.emailReadImap",
+  "n8n-nodes-base.imapEmail"
 ]);
+const TRIGGER_NODE_SUFFIX = /trigger$/i;
 
-const SENSITIVE_KEYS = /(password|secret|token|api[-_]?key|authorization|auth)/i;
+const SENSITIVE_KEYS =
+  /(password|secret|access[-_]?token|refresh[-_]?token|token|api[-_]?key|authorization|cookie|private[-_]?key)/i;
 const EXPRESSION_PREFIX = "=";
 
 export interface WorkflowValidationResult {
@@ -64,7 +83,24 @@ export interface WorkflowValidationResult {
 }
 
 function isLikelySafeNodeType(type: string): boolean {
-  return SAFE_NODE_PREFIXES.some((prefix) => type.startsWith(prefix));
+  if (!SAFE_NODE_PREFIXES.some((prefix) => type.startsWith(prefix))) {
+    return false;
+  }
+  return !DANGEROUS_NODE_TYPE_HINTS.some((pattern) => pattern.test(type));
+}
+
+function isTriggerNodeType(type: string): boolean {
+  const normalized = typeof type === "string" ? type.trim() : "";
+  if (!normalized) {
+    return false;
+  }
+
+  if (TRIGGER_NODE_TYPES.has(normalized)) {
+    return true;
+  }
+
+  const tail = normalized.split(".").at(-1) ?? normalized;
+  return TRIGGER_NODE_SUFFIX.test(tail);
 }
 
 function collectOutgoingConnections(connections: N8nConnections): Array<{ source: string; target: string }> {
@@ -137,7 +173,7 @@ function validateConnections(workflow: N8nWorkflow, nodesByName: Map<string, N8n
   }
 
   for (const node of workflow.nodes) {
-    const isTrigger = TRIGGER_NODE_TYPES.has(node.type);
+    const isTrigger = isTriggerNodeType(node.type);
     const incoming = incomingByNode.get(node.name) ?? 0;
     if (!isTrigger && incoming === 0) {
       errors.push(`Node '${node.name}' has no incoming connection.`);
@@ -185,15 +221,29 @@ export function validateWorkflowSecurity(workflow: N8nWorkflow): WorkflowValidat
       errors.push(`Node '${node.name}' has unsupported type '${node.type}'.`);
     }
 
+    const compatibility = resolveNodeTypeVersion(node.type, node.typeVersion, {
+      nodeName: node.name,
+      warningPrefix: "[validator]",
+      defaultTypeVersion: 1
+    });
+    if (!compatibility.safe_to_deploy) {
+      errors.push(
+        `Node '${node.name}' uses unsupported typeVersion '${node.typeVersion}' for '${node.type}' and cannot be safely normalized (${compatibility.incompatibility_reason ?? "unknown"}).`
+      );
+    }
+
     if (UNSAFE_NODE_TYPES.has(node.type)) {
       errors.push(`Node '${node.name}' uses blocked type '${node.type}'.`);
     }
+    if (DANGEROUS_NODE_TYPE_HINTS.some((pattern) => pattern.test(node.type))) {
+      errors.push(`Node '${node.name}' uses blocked type '${node.type}'.`);
+    }
 
-    if (containsSensitiveLiteral(node.parameters)) {
+    if (containsSensitiveLiteral(node.parameters) || containsSensitiveLiteral(node.credentials)) {
       errors.push(`Node '${node.name}' appears to contain inline credentials/secrets.`);
     }
 
-    if (TRIGGER_NODE_TYPES.has(node.type)) {
+    if (isTriggerNodeType(node.type)) {
       triggerCount += 1;
     }
 
@@ -205,6 +255,18 @@ export function validateWorkflowSecurity(workflow: N8nWorkflow): WorkflowValidat
   }
 
   errors.push(...validateConnections(workflow, nodesByName));
+
+  // Pick up connection errors detected during normalization.
+  // These represent connections that were dropped because source/target nodes
+  // could not be resolved - the workflow MUST be rejected.
+  const connectionErrors = workflow.settings?.__opsRadarConnectionErrors;
+  if (Array.isArray(connectionErrors)) {
+    for (const connectionError of connectionErrors) {
+      if (typeof connectionError === "string" && connectionError.trim().length > 0) {
+        errors.push(connectionError);
+      }
+    }
+  }
 
   return {
     valid: errors.length === 0,

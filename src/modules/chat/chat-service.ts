@@ -2,11 +2,13 @@ import { withTransaction } from "../../lib/db";
 import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
+import { redactSecrets } from "../../lib/redact";
 import { generateWorkflowFromMessage } from "../ai/ai-service";
 import { createProject } from "../projects/project-repository";
 import { createWorkflow } from "../workflows/workflow-repository";
 import { createChatMessage, createChatSession } from "./chat-repository";
 import { validateWorkflowSecurity } from "../validation/workflow-validator";
+import { createWorkflowEvent } from "../events/event-repository";
 
 export interface ChatResult {
   project_id: string;
@@ -50,6 +52,7 @@ export async function handleChatMessage(
 
   const validation = validateWorkflowSecurity(aiOutput.workflow);
   const workflowStatus = validation.valid ? "validated" : "rejected";
+  const workflowToPersist = validation.valid ? aiOutput.workflow : redactSecrets(aiOutput.workflow);
   if (logProgress) {
     if (!validation.valid) {
       logWarn("chat", "Workflow security validation failed", { errors: validation.errors }, traceId);
@@ -92,7 +95,7 @@ export async function handleChatMessage(
     const workflow = await createWorkflow(
       {
         projectId: project.id,
-        json: aiOutput.workflow,
+        json: workflowToPersist,
         status: workflowStatus,
         validationErrors: validation.valid ? null : validation.errors
       },
@@ -102,17 +105,54 @@ export async function handleChatMessage(
       logInfo("chat", "Workflow saved", { workflow_id: workflow.id, status: workflow.status }, traceId);
     }
 
+    await createWorkflowEvent(
+      {
+        workflowId: workflow.id,
+        runId: null,
+        nodeName: null,
+        eventType: "workflow_created",
+        status: "info",
+        durationMs: null,
+        errorMessage: "Workflow generated from chat.",
+        metadata: {
+          project_id: project.id
+        }
+      },
+      connection
+    );
+    await createWorkflowEvent(
+      {
+        workflowId: workflow.id,
+        runId: null,
+        nodeName: null,
+        eventType: validation.valid ? "workflow_validated" : "workflow_rejected",
+        status: validation.valid ? "success" : "failure",
+        durationMs: null,
+        errorMessage: validation.valid
+          ? "Workflow passed validation."
+          : "Workflow failed validation.",
+        metadata: validation.valid
+          ? { project_id: project.id }
+          : {
+              project_id: project.id,
+              validation_errors: validation.errors
+            }
+      },
+      connection
+    );
+
     await createChatMessage(
       {
         sessionId: session.id,
         role: "ai",
         content: JSON.stringify(
-          {
+          redactSecrets({
             project_name: aiOutput.project_name,
             description: aiOutput.description,
-            workflow: aiOutput.workflow,
+            required_credentials: aiOutput.required_credentials,
+            workflow: workflowToPersist,
             validation
-          },
+          }),
           null,
           2
         )
@@ -129,7 +169,7 @@ export async function handleChatMessage(
       session_id: session.id,
       project_name: aiOutput.project_name,
       description: aiOutput.description,
-      workflow: aiOutput.workflow,
+      workflow: workflowToPersist,
       validation,
       trace_id: traceId
     } satisfies ChatResult;

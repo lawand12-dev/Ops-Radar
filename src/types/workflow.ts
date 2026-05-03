@@ -3,10 +3,21 @@ export type ProjectStatus = "draft" | "active" | "failed";
 export type WorkflowStatus =
   | "draft"
   | "validated"
-  | "approved"
-  | "deployed"
   | "rejected"
+  | "deployed_inactive"
+  | "deployed_active"
   | "failed";
+
+export type WorkflowLifecycleState =
+  | "draft"
+  | "validated"
+  | "rejected"
+  | "deployed_inactive"
+  | "deployed_active"
+  | "failed"
+  | "missing_in_n8n"
+  | "n8n_check_failed"
+  | "no_workflow";
 
 export type ChatRole = "user" | "ai";
 export type EventType =
@@ -15,9 +26,24 @@ export type EventType =
   | "run_failed"
   | "node_started"
   | "node_succeeded"
-  | "node_failed";
+  | "node_failed"
+  | "workflow_created"
+  | "workflow_validated"
+  | "workflow_rejected"
+  | "workflow_deployed"
+  | "workflow_activated"
+  | "workflow_deactivated"
+  | "workflow_deleted"
+  | "workflow_execution_success"
+  | "workflow_execution_failed"
+  | "workflow_health_warning"
+  | "workflow_health_failing"
+  | "workflow_alert_created"
+  | "workflow_alert_resolved";
 
 export type AlertType = "high_failure_rate" | "workflow_failure_burst";
+
+export type HealthStatus = "healthy" | "warning" | "failing" | "inactive" | "unknown";
 
 export interface N8nNode {
   id: string;
@@ -38,14 +64,16 @@ export interface N8nConnectionTarget {
 export type N8nConnections = Record<string, { main?: N8nConnectionTarget[][] }>;
 
 export interface N8nWorkflow {
+  name?: string;
   nodes: N8nNode[];
   connections: N8nConnections;
-  settings?: Record<string, unknown>;
+  settings: Record<string, unknown>;
 }
 
 export interface AiWorkflowOutput {
   project_name: string;
   description: string;
+  required_credentials: string[];
   workflow: N8nWorkflow;
 }
 
@@ -65,6 +93,8 @@ export interface WorkflowRecord {
   status: WorkflowStatus;
   validation_errors: string[] | null;
   n8n_workflow_id: string | null;
+  last_deployed_at: Date | null;
+  last_activated_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -113,7 +143,10 @@ export interface AuditLogRecord {
 
 export interface WorkflowCredentialBindingRecord {
   id: string;
+  project_id: string;
   workflow_id: string;
+  node_id: string | null;
+  node_name: string | null;
   credential_type: string;
   credential_id: string | null;
   credential_name: string | null;
@@ -125,4 +158,41 @@ export interface FailureAnalysis {
   issue: string;
   reason: string;
   solution: string;
+}
+
+export interface WorkflowHealthSnapshotRecord {
+  id: string;
+  project_id: string;
+  workflow_id: string;
+  n8n_workflow_id: string | null;
+  status: string;
+  active: boolean;
+  health_status: HealthStatus;
+  last_success_at: Date | null;
+  last_failure_at: Date | null;
+  recent_success_count: number;
+  recent_failure_count: number;
+  last_error_message: string | null;
+  last_error_node: string | null;
+  last_error_type: string | null;
+  recommended_action: string | null;
+  raw_summary_json: Record<string, unknown> | null;
+  created_at: Date;
+}
+
+export interface WorkflowAlertRecord {
+  id: string;
+  project_id: string;
+  workflow_id: string;
+  n8n_workflow_id: string | null;
+  alert_type: string;
+  severity: "low" | "medium" | "high";
+  message: string;
+  recommended_action: string | null;
+  fingerprint: string;
+  failed_node: string | null;
+  first_seen_at: Date;
+  last_seen_at: Date;
+  resolved_at: Date | null;
+  status: "open" | "resolved";
 }
