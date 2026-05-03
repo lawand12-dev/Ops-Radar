@@ -1,0 +1,101 @@
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+
+import SiteHeader from '<npm>/components/ui/site-header'
+import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
+import OpsRadarPricing from '<npm>/components/ui/pricing-component'
+import Footer from '<npm>/components/Footer'
+import BookCallButton from '../components/BookCallButton'
+
+export const metadata: Metadata = {
+  title: 'Pricing — OpsRadar',
+  description:
+    'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500. Custom workflows, built in your n8n account and maintained by our team.',
+  openGraph: {
+    title: 'Pricing — OpsRadar',
+    description:
+      'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500.',
+    url: 'https://www.opsradar.co/pricing',
+    siteName: 'OpsRadar',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'OpsRadar — Pricing',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pricing — OpsRadar',
+    description:
+      'Transparent pricing for OpsRadar AI Operating System builds. Starting at $3,500.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
+const PRICING_PAGE_VISIBLE = process.env.NEXT_PUBLIC_SHOW_PRICING_PAGE === 'true'
+
+const NAV_LINKS = [
+  { label: 'Home', href: '/' },
+  { label: 'AIOS', href: '/#architecture' },
+  { label: 'Pricing', href: '/pricing', isActive: true },
+  { label: 'About', href: '/about' },
+]
+
+export default function PricingPage() {
+  if (!PRICING_PAGE_VISIBLE) {
+    notFound()
+  }
+
+  return (
+    <div className="relative min-h-screen bg-[#000000] text-white font-body">
+      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
+        <BeamsBackground intensity="subtle" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
+      </div>
+      <SiteHeader sticky navLinks={NAV_LINKS} />
+
+      {/* Hero */}
+      <header className="relative px-6 pb-16 pt-16 sm:pt-20">
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
+            Pricing
+          </p>
+          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-5">
+            What does it cost?
+          </h1>
+          <p className="text-white/40 mx-auto max-w-lg leading-relaxed text-lg">
+            Fixed price, fixed scope. One-time builds or monthly managed plans.
+            Book a 20-min call to know exactly which tier fits.
+          </p>
+        </div>
+      </header>
+
+      <main className="relative z-10">
+        <OpsRadarPricing />
+      </main>
+
+      {/* Still deciding? Book a call ────────────────────────────────── */}
+      <section className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center">
+        <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
+          Still have questions?
+        </h2>
+        <p className="text-white/60 mb-10 leading-relaxed max-w-xl mx-auto">
+          Book a free 20-min call. Bring anything — tool stack, workflow sketch, budget questions. No prep needed.
+        </p>
+        <BookCallButton />
+      </section>
+
+      {/* Footer */}
+      <Footer />
+    </div>
+  )
+}
