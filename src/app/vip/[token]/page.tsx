@@ -381,7 +381,7 @@ export default function VipPrecallForm() {
               </FieldBlock>
               <FieldBlock>
                 <Label helper="If one person left tomorrow, what knowledge would disappear with them?">
-                  What knowledge lives only in one person's head?
+                  What knowledge lives only in one person&apos;s head?
                 </Label>
                 <LongText
                   value={form.b4_single_person_knowledge}
