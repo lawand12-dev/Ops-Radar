@@ -1,6 +1,6 @@
 // src/lib/vip-blueprint-prompt.ts
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
 export type TeamMember = { name: string; role: string; dailyWork: string }
 export type Tool = { name: string; dataHeld: string; connections: string; manualBridge: boolean }
@@ -39,7 +39,7 @@ export type BlueprintData = {
   howToProceed: string
 }
 
-const client = new Anthropic()
+const client = new OpenAI()
 
 export async function generateBlueprintData(
   agencyName: string,
@@ -97,14 +97,16 @@ Return a JSON object with these exact top-level keys:
   "howToProceed": "Next steps paragraph"
 }`
 
-  const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o',
     max_tokens: 8000,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userContent }],
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userContent },
+    ],
   })
 
-  const raw = response.content[0].type === 'text' ? response.content[0].text : '{}'
+  const raw = response.choices[0].message.content ?? '{}'
   const clean = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
   const parsed = JSON.parse(clean) as BlueprintData
