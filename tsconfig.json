@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "n8n-mcp-main", "n8n-skills-main"]
+  "exclude": ["node_modules", "n8n-mcp-main", "n8n-skills-main", "backend"]
 }
