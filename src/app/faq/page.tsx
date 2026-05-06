@@ -15,11 +15,11 @@ const GROUPS: FAQGroup[] = [
     items: [
       {
         q: 'What is OpsRadar exactly?',
-        a: "OpsRadar builds the AI Operating System for marketing agencies — paid-media shops, SEO agencies, and full-service teams under 25 people. The Agency Brain, workflows, and Claude interface run around your real operations. The workflows live in your n8n account, not ours. You own them day one."
+        a: "OpsRadar builds the AI Operating System for agencies — paid-media shops, SEO agencies, and full-service teams under 25 people. The Agency Brain, workflows, and Claude interface run around your real operations. The workflows live in your n8n account, not ours. You own them day one."
       },
       {
         q: 'Who is this for?',
-        a: "Marketing agencies with 5 to 25 people who are losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team is spending Sunday nights building client reports, this is for you."
+        a: "Agencies with 5 to 25 people who are losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team is spending Sunday nights building client reports, this is for you."
       },
       {
         q: "Who is this NOT for?",

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
+import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background'
 import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
-import WorkflowImage from '<npm>/components/ui/workflow-image'
 import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
@@ -11,17 +11,17 @@ import OpsRadar from './components/OpsRadar'
 import RhythmBreak from './components/RhythmBreak'
 
 export const metadata: Metadata = {
-  title: "OpsRadar — AI Operating System for Marketing Agencies",
+  title: "OpsRadar — AI Operating System for Agencies",
   description:
     "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
   openGraph: {
-    title: "OpsRadar — AI Operating System for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Agencies",
     description:
       "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — AI Operating System for Marketing Agencies" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — AI Operating System for Agencies" }],
   },
   twitter: {
-    title: "OpsRadar — AI Operating System for Marketing Agencies",
+    title: "OpsRadar — AI Operating System for Agencies",
     description:
       "OpsRadar builds the AI Operating System for your agency. Your brain. Your workflows. Your Claude interface. Getting smarter every week.",
     images: ["/og-image.png"],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/', isActive: true },
-  { label: 'AIOS', href: '#architecture' },
+  { label: 'AIOS', href: '/aios' },
   { label: 'About', href: '/about' },
 ]
 
@@ -95,7 +95,7 @@ const SYSTEM_COLUMNS = [
 const HOMEPAGE_FOUNDER_SUMMARY = (
   <>
     <p>
-      OpsRadar is built by a team that spent years studying how marketing agencies actually operate &mdash;
+      OpsRadar is built by a team that spent years studying how agencies actually operate &mdash;
       not how they look on LinkedIn, but where the work leaks, why tools do not talk to each other,
       and why agencies keep hiring for problems that should be automated.
     </p>
@@ -114,6 +114,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#000000] text-white font-body selection:bg-primary/20">
 
+      <SiteHeader navLinks={NAV_LINKS} sticky />
+
       {/* ── 1. Hero ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
         <BeamsBackground intensity="full" />
@@ -122,9 +124,9 @@ export default function Home() {
         <ResponsiveHeroBanner
           navLinks={NAV_LINKS}
           badgeLabel=""
-          badgeText="For marketing agencies under 30 people"
+          badgeText="For agencies under 30 people"
           title="The AI Operating System"
-          titleLine2="for marketing agencies."
+          titleLine2="for agencies."
           description="Most agencies have the tools. Almost none have the system connecting them. OpsRadar is that system."
           primaryButtonText="Book a free 20-min call"
           primaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
@@ -205,7 +207,7 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="mt-12 text-center font-serif italic text-2xl md:text-4xl tracking-[-0.02em] text-white leading-[1.15]">
+          <p className="mt-12 text-center font-body text-2xl md:text-4xl tracking-[-0.02em] text-white leading-[1.15] font-semibold">
             Your agency. Your brain. Your system.
             <br />
             Powered by OpsRadar.
@@ -326,79 +328,6 @@ export default function Home() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── Recent Work ────────────────────────────────────────────── */}
-      <FadeInOnScroll>
-        <section className="py-32 px-6 max-w-5xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Recent Work
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-3">
-            Automations we&apos;ve built and shipped
-          </h2>
-          <p className="text-[15px] text-white/40 mb-6">
-            Real automations, built and shipped &mdash; including advanced AI-powered lead intelligence systems.
-          </p>
-
-          <div className="h-px w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
-
-          {/* Flagship preview */}
-          <Link href="/workflows" className="group block mb-6">
-            <div className="rounded-xl overflow-hidden p-px bg-gradient-to-r from-cyan-400/50 via-cyan-300/60 to-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.2)] transition-shadow group-hover:shadow-[0_0_40px_rgba(34,211,238,0.35)]">
-              <div className="rounded-[11px] overflow-hidden bg-black">
-                <WorkflowImage
-                  src="/workflows/workflow-5.png"
-                  alt="AI Inbound Lead Intelligence System — n8n workflow"
-                  sizes="(max-width: 640px) 100vw, 100vw"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 mt-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-400/80">
-                Sales Intelligence
-              </p>
-              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-cyan-500/20 to-cyan-400/20 border border-cyan-400/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-cyan-300">
-                Flagship
-              </span>
-            </div>
-            <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
-              AI Inbound Lead Intelligence System
-            </p>
-            <p className="mt-1 text-[11px] font-mono text-cyan-400/60">Response time: 4 hrs → 8 min</p>
-          </Link>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[
-              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-purple-400/80', metric: 'Onboarding time: 3 weeks → 5 days' },
-              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-cyan-400/80', metric: '18 hours saved every Friday' },
-              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-emerald-400/80', metric: undefined },
-              { src: '/workflows/workflow-4.png', title: 'AI Content Machine', category: 'CONTENT OPS', color: 'text-orange-400/80', metric: undefined },
-            ].map((wf) => (
-              <Link key={wf.src} href="/workflows" className="group block">
-                <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/20">
-                  <WorkflowImage
-                    src={wf.src}
-                    alt={`${wf.title} — n8n workflow`}
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                  />
-                </div>
-                <p className={`mt-3 text-[10px] font-bold uppercase tracking-[0.25em] ${wf.color}`}>
-                  {wf.category}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
-                  {wf.title}
-                </p>
-                {wf.metric && <p className="mt-1 text-[11px] font-mono text-cyan-400/60">{wf.metric}</p>}
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link href="/workflows" className="text-sm text-white/50 hover:text-white/80 transition-colors">
-              See all workflows &rarr;
-            </Link>
-          </div>
-        </section>
-      </FadeInOnScroll>
 
       {/* ── 3. What ──────────────────────────────────────────────────── */}
       <FadeInOnScroll>
@@ -489,16 +418,6 @@ export default function Home() {
 
       <RhythmBreak />
 
-      {/* ── Aphorism divider ─────────────────────────────────────────── */}
-      <FadeInOnScroll>
-        <section className="relative max-w-3xl mx-auto px-6 py-20 text-center">
-          <p className="font-serif italic text-2xl md:text-3xl tracking-[-0.01em] text-white/75 leading-[1.2]">
-            AI is eating the craft.
-            <br />
-            Let us run the ops.
-          </p>
-        </section>
-      </FadeInOnScroll>
 
       {/* ── 4. Why ───────────────────────────────────────────────────── */}
       <FadeInOnScroll>
@@ -517,7 +436,7 @@ export default function Home() {
               <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
                 — On ownership
               </p>
-              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+              <blockquote className="font-body font-semibold text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
                 You own it.<br />All of it.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
@@ -530,7 +449,7 @@ export default function Home() {
               <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
                 — On reliability
               </p>
-              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+              <blockquote className="font-body font-semibold text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
                 Meta breaks something.<br />Guardian knows before you do.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
@@ -543,7 +462,7 @@ export default function Home() {
               <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-cyan-400/60 mb-8">
                 — On AI
               </p>
-              <blockquote className="font-serif italic text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
+              <blockquote className="font-body font-semibold text-3xl md:text-5xl tracking-[-0.02em] text-white leading-[1.1] mb-8">
                 AI builds fast.<br />We verify every line.
               </blockquote>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
@@ -576,10 +495,10 @@ export default function Home() {
                 Their workflows run on it through n8n.
                 Their brain gets richer every week.
               </p>
-              <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
+              <p className="font-body text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white font-semibold">
                 We are not building another automation tool.
               </p>
-              <p className="font-serif text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white">
+              <p className="font-body text-2xl md:text-3xl leading-[1.25] tracking-[-0.02em] text-white font-semibold">
                 We are building the operating system that runs the agency.
               </p>
             </div>

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'AIOS', href: '/#architecture' },
+  { label: 'AIOS', href: '/aios' },
   { label: 'About', href: '/about' },
 ]
 
@@ -108,7 +108,7 @@ export default function ServicesPage() {
             Services
           </p>
           <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.08] mb-6">
-            What specifically do we build for marketing agencies?
+            What specifically do we build for agencies?
           </h1>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
             Six types of automation that fix the manual work burning your team: client reporting,
@@ -137,7 +137,7 @@ export default function ServicesPage() {
         <section className="relative max-w-5xl mx-auto px-6 pb-20">
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-4">
-              The automation every marketing agency asks about first
+              The automation every agency asks about first
             </p>
             <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
               Automated Client Reporting

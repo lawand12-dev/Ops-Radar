@@ -30,7 +30,7 @@ ABOUT OPSRADAR (memorize this deeply):
 ═══════════════════════════════════════════
 
 WHAT IT IS:
-OpsRadar builds the AI Operating System for marketing agencies: \
+OpsRadar builds the AI Operating System for agencies: \
 an Agency Brain, Claude interface, and n8n workflows built from \
 each client's real operations, tools, data, and history. Clients \
 own their workflows forever — there is no hosting lock-in, no SaaS \
@@ -44,7 +44,7 @@ workflow. An 8-hour timezone advantage over most Western agencies \
 means work ships while clients sleep.
 
 WHO IT'S FOR:
-Three specific types of marketing agency, all under 25 people, in \
+Three specific types of agency, all under 25 people, in \
 US, UK, Canada, Australia, and Europe:
 
 1. PAID-MEDIA SHOPS (5-20 FTE) — performance marketers running Meta \

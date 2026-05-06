@@ -11,17 +11,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: "About",
   description:
-    "OpsRadar is the AI operations team building the AI Operating System for marketing agencies. Your brain, your workflows, your Claude interface.",
+    "OpsRadar is the AI operations team building the AI Operating System for agencies. Your brain, your workflows, your Claude interface.",
   openGraph: {
     title: "About — OpsRadar",
     description:
-      "OpsRadar is the AI operations team building the AI Operating System for marketing agencies. Your brain, your workflows, your Claude interface.",
+      "OpsRadar is the AI operations team building the AI Operating System for agencies. Your brain, your workflows, your Claude interface.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "About — OpsRadar" }],
   },
   twitter: {
     title: "About — OpsRadar",
     description:
-      "OpsRadar is the AI operations team building the AI Operating System for marketing agencies. Your brain, your workflows, your Claude interface.",
+      "OpsRadar is the AI operations team building the AI Operating System for agencies. Your brain, your workflows, your Claude interface.",
     images: ["/og-image.png"],
   },
 }
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'AIOS', href: '/#architecture' },
+  { label: 'AIOS', href: '/aios' },
   { label: 'About', href: '/about', isActive: true },
 ]
 
@@ -108,7 +108,7 @@ export default function AboutPage() {
           <p className="mt-5 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
             OpsRadar scopes, builds, and maintains the Agency Brain and the workflows that run on it.
             <span className="mt-3 block text-white/85">
-              Building the AI Operating System for marketing agencies. Claude is the interface. n8n runs the execution.
+              Building the AI Operating System for agencies. Claude is the interface. n8n runs the execution.
             </span>
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
             <div className="space-y-6">
               <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
-                OpsRadar builds AI Operating Systems for marketing agencies:
+                OpsRadar builds AI Operating Systems for agencies:
                 the Agency Brain, the workflows, and the Claude interface that
                 lets your team query how the business actually runs.
               </p>

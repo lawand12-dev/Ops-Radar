@@ -5,7 +5,6 @@ import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
-import WorkflowImage from '<npm>/components/ui/workflow-image'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
@@ -26,16 +25,6 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
 }
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Paid-Media', href: '/for/paid-media' },
-  { label: 'SEO', href: '/for/seo', isActive: true },
-  { label: 'Full-Service', href: '/for/full-service' },
-  { label: 'Services', href: '/services' },
-  { label: 'Process', href: '/how-it-works' },
-  { label: 'About', href: '/about' },
-]
 
 const WHAT_I_BUILD_FOR_SEO = [
   {
@@ -105,7 +94,7 @@ export default function ForSeoPage() {
         <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
-      <SiteHeader sticky navLinks={NAV_LINKS} />
+      <SiteHeader sticky />
       <SegmentPageAnalytics segment="seo" />
       <script
         type="application/ld+json"
@@ -127,7 +116,7 @@ export default function ForSeoPage() {
               numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 20 },
             },
             description:
-              'Custom n8n automations for SEO agencies under 20 people. Weekly rank rollups from Ahrefs and GSC; AI Overview and LLM mention tracking; technical audit alerting from Screaming Frog.',
+              'Custom AI Operating System (AIOS) builds for SEO agencies under 20 people. Weekly rank rollups from Ahrefs and GSC; AI Overview and LLM mention tracking; technical audit alerting from Screaming Frog.',
             offers: {
               '@type': 'AggregateOffer',
               priceCurrency: 'USD',
@@ -153,10 +142,10 @@ export default function ForSeoPage() {
             Let me automate what's left to fight for.
           </p>
           <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            I build n8n automations for SEO agencies under 20 people. Weekly rank rollups from
+            We build the AI Operating System (AIOS) for SEO agencies under 20 people. Weekly rank rollups from
             Ahrefs and GSC. AI Overview and LLM mention tracking across ChatGPT, Perplexity, and
             Google AIO. Technical audit alerts from Screaming Frog. You own every workflow in
-            your n8n account. I build them, I maintain them, you get the hours back to do the
+            your n8n account. We build them, we maintain them, you get the hours back to do the
             strategy work AI can't replace.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -166,7 +155,7 @@ export default function ForSeoPage() {
               </a>
             </Button>
             <Link
-              href="/workflows"
+              href="/aios"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
             >
               See real workflows I&apos;ve built →
@@ -236,59 +225,6 @@ export default function ForSeoPage() {
         </section>
       </FadeInOnScroll>
 
-      {/* ── Real builds proof ────────────────────────────────────────── */}
-      <FadeInOnScroll>
-        <section className="max-w-5xl mx-auto px-6 py-24">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Real builds, not mockups
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-3">
-            A look at the work.
-          </h2>
-          <p className="text-[15px] text-white/45 mb-10">
-            Real n8n workflows I&apos;ve built and tested end-to-end. No Figma mockups, no stock screenshots. Click through to see all of them.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Link href="/workflows" className="group block">
-              <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/25">
-                <WorkflowImage
-                  src="/workflows/workflow-2.png"
-                  alt="Daily client performance briefing — n8n workflow"
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                />
-              </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.25em] text-emerald-400/80">
-                Revenue Ops
-              </p>
-              <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/95 transition-colors">
-                Daily Client Performance Briefing
-              </p>
-            </Link>
-            <Link href="/workflows" className="group block">
-              <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/25">
-                <WorkflowImage
-                  src="/workflows/workflow-1.png"
-                  alt="Zero-touch client onboarding — n8n workflow"
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                />
-              </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400/80">
-                Client Ops
-              </p>
-              <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/95 transition-colors">
-                Zero-Touch Client Onboarding
-              </p>
-            </Link>
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link href="/workflows" className="text-sm text-white/50 hover:text-white/85 transition-colors">
-              See all workflows →
-            </Link>
-          </div>
-        </section>
-      </FadeInOnScroll>
 
       {/* ── Cost of NOT automating ────────────────────────────────────── */}
       <FadeInOnScroll>

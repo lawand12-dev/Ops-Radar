@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { getOrCreateAuditSessionId, sendFunnelEvent, type FunnelEventName } from '../../lib/funnel'
 
 interface SegmentPageAnalyticsProps {
-  segment: 'paid-media' | 'seo' | 'full-service'
+  segment: 'paid-media' | 'seo' | 'full-service' | 'recruiting' | 'design' | 'ecommerce'
 }
 
 export default function SegmentPageAnalytics({ segment }: SegmentPageAnalyticsProps) {

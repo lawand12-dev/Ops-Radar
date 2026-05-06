@@ -180,7 +180,7 @@ export default function OpsRadar() {
             What&apos;s on your radar
           </p>
           <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-5 leading-[1.08]">
-            The ops debt hiding in every marketing agency.
+            The ops debt hiding in every agency.
           </h2>
           <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
             Patterns we see across the agencies we audit. Click any blip to see what it costs.
@@ -216,7 +216,7 @@ export default function OpsRadar() {
               viewBox={`0 0 ${SIZE} ${SIZE}`}
               className="w-full h-full"
               role="img"
-              aria-label="Ops radar visualization of 8 common operational pain points for marketing agencies"
+              aria-label="Ops radar visualization of 8 common operational pain points for agencies"
             >
               <defs>
                 <radialGradient id="opsradar-bg">

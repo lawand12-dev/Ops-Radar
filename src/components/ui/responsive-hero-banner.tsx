@@ -15,7 +15,7 @@ import {
 
 import { Badge } from "<npm>/components/ui/badge"
 import { Button } from "<npm>/components/ui/button"
-import SiteHeader, { type SiteNavLink } from "<npm>/components/ui/site-header"
+import { type SiteNavLink } from "<npm>/components/ui/site-header"
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 import { cn } from "<npm>/lib/utils"
 
@@ -98,14 +98,6 @@ export default function ResponsiveHeroBanner({
       ) : null}
 
       <div className="relative z-10">
-        <SiteHeader
-          logoSrc={logoUrl}
-          navLinks={navLinks}
-          ctaLabel={ctaButtonText}
-          ctaHref={ctaButtonHref}
-          sticky={headerSticky}
-        />
-
         <div
           className={cn(
             "mx-auto flex min-h-[calc(100vh-1rem)] max-w-7xl items-center px-6 pb-20 pt-8 sm:pb-24 sm:pt-12 lg:pt-16",
@@ -125,7 +117,7 @@ export default function ResponsiveHeroBanner({
               <span className="text-sm font-medium text-white/92">{badgeText}</span>
             </Badge>
 
-            <h1 className="animate-fade-slide-in-2 font-serif text-5xl leading-[0.96] tracking-[-0.045em] text-white drop-shadow-[0_20px_50px_rgba(2,6,23,0.5)] sm:text-6xl md:text-7xl lg:text-[6.2rem]">
+            <h1 className="animate-fade-slide-in-2 font-serif text-5xl leading-[1.05] tracking-[-0.04em] text-white drop-shadow-[0_20px_50px_rgba(2,6,23,0.5)] sm:text-6xl md:text-7xl lg:text-[6.2rem]">
               <span className="block text-white">{title}</span>
               <span className="mt-2 block bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
                 {titleLine2}
