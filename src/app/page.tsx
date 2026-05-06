@@ -125,7 +125,7 @@ export default function Home() {
           badgeText="For marketing agencies under 30 people"
           title="The AI Operating System"
           titleLine2="for marketing agencies."
-          description="OpsRadar builds your agency's brain — from your real operations, your tools, your data. Your team queries it. Your workflows run on it. It gets smarter every week."
+          description="Most agencies have the tools. Almost none have the system connecting them. OpsRadar is that system."
           primaryButtonText="Book a free 20-min call"
           primaryButtonHref={CALENDLY_STRATEGY_CALL_URL}
           showPrimaryArrowIcon={true}
@@ -279,7 +279,7 @@ export default function Home() {
                 Our team builds it directly.
               </h3>
               <p className="text-base md:text-[17px] leading-[1.7] text-white/[0.65] max-w-2xl">
-                No outsourced handoffs. The team that scopes your AI Operating System is the team that ships it — and the team that fixes it when Meta&apos;s API changes at 3am.
+                No freelancers. No handoffs. The system that scopes your AIOS is the system that runs it.
               </p>
             </div>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -363,14 +363,15 @@ export default function Home() {
             <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
               AI Inbound Lead Intelligence System
             </p>
+            <p className="mt-1 text-[11px] font-mono text-cyan-400/60">Response time: 4 hrs → 8 min</p>
           </Link>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
-              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-purple-400/80' },
-              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-cyan-400/80' },
-              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-emerald-400/80' },
-              { src: '/workflows/workflow-4.png', title: 'AI Content Machine', category: 'CONTENT OPS', color: 'text-orange-400/80' },
+              { src: '/workflows/workflow-1.png', title: 'Zero-Touch Client Onboarding', category: 'CLIENT OPS', color: 'text-purple-400/80', metric: 'Onboarding time: 3 weeks → 5 days' },
+              { src: '/workflows/workflow-2.png', title: 'Daily Client Performance Briefing', category: 'REVENUE OPS', color: 'text-cyan-400/80', metric: '18 hours saved every Friday' },
+              { src: '/workflows/workflow-3.png', title: 'AI Lead Qualification & Routing', category: 'SALES OPS', color: 'text-emerald-400/80', metric: undefined },
+              { src: '/workflows/workflow-4.png', title: 'AI Content Machine', category: 'CONTENT OPS', color: 'text-orange-400/80', metric: undefined },
             ].map((wf) => (
               <Link key={wf.src} href="/workflows" className="group block">
                 <div className="rounded-xl overflow-hidden border border-white/10 transition-colors group-hover:border-white/20">
@@ -386,6 +387,7 @@ export default function Home() {
                 <p className="mt-1 text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">
                   {wf.title}
                 </p>
+                {wf.metric && <p className="mt-1 text-[11px] font-mono text-cyan-400/60">{wf.metric}</p>}
               </Link>
             ))}
           </div>
@@ -427,7 +429,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  We diagnose.
+                  OpsRadar diagnoses.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
                   A 3-minute audit shows exactly what your agency is losing: real dollar figures, tied to the tools you already run.
@@ -449,7 +451,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  We build.
+                  OpsRadar builds.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
                   Custom n8n workflows, inside your own n8n account. Delivered in 5 to 14 days. You own every workflow from day one.
@@ -468,7 +470,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-headline text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-white mb-4 leading-[1.15]">
-                  We operate.
+                  OpsRadar monitors.
                 </h3>
                 <p className="text-[15px] leading-[1.7] text-white/[0.65]">
                   Meta&apos;s API changes. Triple Whale pushes a breaking update. Our team fixes it, usually before you notice. You never touch the automation layer.

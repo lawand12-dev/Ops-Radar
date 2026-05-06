@@ -22,7 +22,6 @@ export default function Footer() {
             <div className="text-[12px] text-white/40 leading-[1.8]">
               <p className="text-white/55">Built by the OpsRadar team</p>
               <p>Sulaymaniyah, Kurdistan</p>
-              <p className="text-white/35">8 hours ahead of your team</p>
             </div>
           </div>
 
