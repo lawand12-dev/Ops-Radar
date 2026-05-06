@@ -6,6 +6,7 @@ import {
   ReactFlowProvider,
   Background,
   BackgroundVariant,
+  Controls,
   Handle,
   Position,
   type Edge,
@@ -126,7 +127,7 @@ interface WorkflowGraphProps {
   height?: number
 }
 
-function WorkflowGraphInner({ graph, className = '', height = 460 }: WorkflowGraphProps) {
+function WorkflowGraphInner({ graph, className = '', height = 600 }: WorkflowGraphProps) {
   const { nodes, edges } = useMemo(() => layoutGraph(graph.nodes, graph.edges), [graph])
   return (
     <div className={`w-full rounded-xl ${className}`} style={{ height, background: 'rgba(8,12,24,0.4)' }}>
@@ -135,18 +136,25 @@ function WorkflowGraphInner({ graph, className = '', height = 460 }: WorkflowGra
         edges={edges}
         nodeTypes={NODE_TYPES}
         fitView
-        fitViewOptions={{ padding: 0.18 }}
+        fitViewOptions={{ padding: 0.12 }}
         proOptions={{ hideAttribution: true }}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
         zoomOnScroll={false}
         panOnScroll={false}
-        zoomOnDoubleClick={false}
-        minZoom={0.3}
-        maxZoom={1.5}
+        panOnDrag
+        zoomOnPinch
+        zoomOnDoubleClick
+        minZoom={0.25}
+        maxZoom={2.0}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(96,165,250,0.18)" />
+        <Controls
+          showInteractive={false}
+          position="bottom-right"
+          className="![&>button]:bg-[#0F1729] ![&>button]:border-white/15 ![&>button]:text-white/70"
+        />
       </ReactFlow>
     </div>
   )

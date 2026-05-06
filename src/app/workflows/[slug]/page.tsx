@@ -126,13 +126,20 @@ export default async function WorkflowDetailPage({
 
       {/* ── Diagram ──────────────────────────────────────────────────── */}
       <FadeInOnScroll>
-        <section className="max-w-5xl mx-auto px-6 pb-20">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/45 mb-5">
-              The flow
-            </p>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-6 md:p-8">
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                The flow
+              </p>
+              {wf.graph && (
+                <p className="text-[10px] text-white/30 hidden sm:block">
+                  Drag to pan · pinch / +- to zoom
+                </p>
+              )}
+            </div>
             {wf.graph ? (
-              <WorkflowGraph graph={wf.graph} height={500} />
+              <WorkflowGraph graph={wf.graph} height={680} />
             ) : (
               <WorkflowDiagram technicalFlow={wf.techFlow} />
             )}
