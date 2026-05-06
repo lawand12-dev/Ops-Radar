@@ -12,6 +12,40 @@
 
 export type WorkflowComplexity = 'Medium' | 'High'
 
+export type GraphNodeKind =
+  | 'trigger'
+  | 'http'
+  | 'set'
+  | 'code'
+  | 'if'
+  | 'switch'
+  | 'slack'
+  | 'postgres'
+  | 'gmail'
+  | 'loop'
+  | 'approval'
+  | 'merge'
+
+export interface GraphNode {
+  id: string
+  label: string
+  kind: GraphNodeKind
+  /** Optional secondary line (e.g. "trigger", "audit row", "approval gate"). */
+  hint?: string
+}
+
+export interface GraphEdge {
+  source: string
+  target: string
+  /** Branch label (e.g. "true", "false", "retainer", "approved"). */
+  label?: string
+}
+
+export interface WorkflowGraph {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+}
+
 export interface WorkflowEntry {
   slug: string
   title: string
@@ -25,6 +59,8 @@ export interface WorkflowEntry {
   howItWorks: string[]
   wireUp: string[]
   guarantees?: string[]
+  /** Real branching graph for the React Flow detail view. Falls back to techFlow string if absent. */
+  graph?: WorkflowGraph
 }
 
 export const WORKFLOWS: WorkflowEntry[] = [
@@ -54,6 +90,38 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Slack credentials + the four operational channels',
       'The client-config endpoint URL',
     ],
+    graph: {
+      nodes: [
+        { id: 'webhook',         label: 'Handoff Event',         kind: 'trigger',  hint: 'Webhook' },
+        { id: 'audit_intake',    label: 'Write Audit Intake',    kind: 'postgres', hint: 'Audit row' },
+        { id: 'fetch_config',    label: 'Fetch Client Config',   kind: 'http',     hint: 'Tier, model, SLA' },
+        { id: 'config_check',    label: 'Config Loaded?',        kind: 'if' },
+        { id: 'route',           label: 'Route by Operating Model', kind: 'switch' },
+        { id: 'notify_retainer', label: 'Notify Retainer AM',    kind: 'slack' },
+        { id: 'notify_project',  label: 'Notify Project PM',     kind: 'slack' },
+        { id: 'notify_wl',       label: 'Notify White-Label Lead', kind: 'slack' },
+        { id: 'notify_partner',  label: 'Notify Partner Ops',    kind: 'slack' },
+        { id: 'fallback',        label: 'Alert Unknown Model',   kind: 'slack' },
+        { id: 'alert_missing',   label: 'Alert Ops: Missing Config', kind: 'slack' },
+        { id: 'audit_outcome',   label: 'Write Audit Outcome',   kind: 'postgres', hint: 'Audit row' },
+      ],
+      edges: [
+        { source: 'webhook',      target: 'audit_intake' },
+        { source: 'audit_intake', target: 'fetch_config' },
+        { source: 'fetch_config', target: 'config_check' },
+        { source: 'config_check', target: 'route',           label: 'true' },
+        { source: 'config_check', target: 'alert_missing',   label: 'false' },
+        { source: 'route',        target: 'notify_retainer', label: 'retainer' },
+        { source: 'route',        target: 'notify_project',  label: 'project' },
+        { source: 'route',        target: 'notify_wl',       label: 'white-label' },
+        { source: 'route',        target: 'notify_partner',  label: 'referral' },
+        { source: 'route',        target: 'fallback',        label: 'default' },
+        { source: 'notify_retainer', target: 'audit_outcome' },
+        { source: 'notify_project',  target: 'audit_outcome' },
+        { source: 'notify_wl',       target: 'audit_outcome' },
+        { source: 'notify_partner',  target: 'audit_outcome' },
+      ],
+    },
   },
   {
     slug: 'retainer-invoicing-dunning',
@@ -84,6 +152,36 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Postgres or Redis for atomic invoice counter',
       'Slack credentials for approval + finance notifications',
     ],
+    graph: {
+      nodes: [
+        { id: 'schedule',        label: 'Monthly Schedule',     kind: 'trigger',  hint: '1st @ 8am' },
+        { id: 'fetch_clients',   label: 'Get Active Clients',   kind: 'http',     hint: 'CRM' },
+        { id: 'loop',            label: 'Per Client',           kind: 'loop' },
+        { id: 'invoice_num',     label: 'Generate Invoice #',   kind: 'postgres', hint: 'Atomic counter' },
+        { id: 'currency_check',  label: 'Non-USD?',             kind: 'if' },
+        { id: 'fx',              label: 'Currency Conversion',  kind: 'http',     hint: 'FX rate' },
+        { id: 'create_invoice',  label: 'Create Invoice',       kind: 'http',     hint: 'QB / Xero / Stripe' },
+        { id: 'approval',        label: 'Slack Approval',       kind: 'approval', hint: '4h timeout' },
+        { id: 'approved_check',  label: 'Approved?',            kind: 'if' },
+        { id: 'send_email',      label: 'Send Invoice Email',   kind: 'gmail' },
+        { id: 'record_crm',      label: 'Record in CRM',        kind: 'http' },
+        { id: 'abort_notify',    label: 'Aborted — Notify',     kind: 'slack' },
+      ],
+      edges: [
+        { source: 'schedule',       target: 'fetch_clients' },
+        { source: 'fetch_clients',  target: 'loop' },
+        { source: 'loop',           target: 'invoice_num' },
+        { source: 'invoice_num',    target: 'currency_check' },
+        { source: 'currency_check', target: 'fx',             label: 'true' },
+        { source: 'currency_check', target: 'create_invoice', label: 'false' },
+        { source: 'fx',             target: 'create_invoice' },
+        { source: 'create_invoice', target: 'approval' },
+        { source: 'approval',       target: 'approved_check' },
+        { source: 'approved_check', target: 'send_email',     label: 'approved' },
+        { source: 'approved_check', target: 'abort_notify',   label: 'rejected' },
+        { source: 'send_email',     target: 'record_crm' },
+      ],
+    },
   },
   {
     slug: 'client-health-score',
@@ -112,6 +210,33 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Slack credentials + three escalation channels (director, AM, digest)',
       'Aggregated signals endpoint, OR replace with 4 parallel HTTP fetches (NPS, support, billing, activity) merged by client_id before scoring',
     ],
+    graph: {
+      nodes: [
+        { id: 'schedule',     label: 'Weekly Schedule',     kind: 'trigger',  hint: 'Mon 7am' },
+        { id: 'fetch',        label: 'Fetch Clients + Signals', kind: 'http' },
+        { id: 'compute',      label: 'Compute Health Score', kind: 'code',    hint: 'Weighted 0–100' },
+        { id: 'lookup_prior', label: 'Lookup Prior Score',  kind: 'postgres' },
+        { id: 'record',       label: 'Record Health Trend', kind: 'postgres' },
+        { id: 'drop_check',   label: 'Drop ≥ 10?',          kind: 'if' },
+        { id: 'tier_router',  label: 'Escalate by Tier',    kind: 'switch' },
+        { id: 'enterprise',   label: 'Page Director',       kind: 'slack',    hint: 'Enterprise' },
+        { id: 'midmarket',    label: 'Notify AM',           kind: 'slack',    hint: 'Midmarket' },
+        { id: 'smb',          label: 'Digest Channel',      kind: 'slack',    hint: 'SMB' },
+        { id: 'no_drop',      label: 'No Significant Drop', kind: 'set' },
+      ],
+      edges: [
+        { source: 'schedule',     target: 'fetch' },
+        { source: 'fetch',        target: 'compute' },
+        { source: 'compute',      target: 'lookup_prior' },
+        { source: 'lookup_prior', target: 'record' },
+        { source: 'record',       target: 'drop_check' },
+        { source: 'drop_check',   target: 'tier_router', label: 'true' },
+        { source: 'drop_check',   target: 'no_drop',     label: 'false' },
+        { source: 'tier_router',  target: 'enterprise',  label: 'enterprise' },
+        { source: 'tier_router',  target: 'midmarket',   label: 'midmarket' },
+        { source: 'tier_router',  target: 'smb',         label: 'smb' },
+      ],
+    },
   },
   {
     slug: 'brand-namespaced-reporting',
@@ -146,6 +271,31 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Fail-closed on missing config (ops alert, no silent skip)',
       'Brand-specific Slack notifications only',
     ],
+    graph: {
+      nodes: [
+        { id: 'schedule',      label: 'Weekly Schedule',           kind: 'trigger',  hint: 'Mon 6am' },
+        { id: 'fetch_brands',  label: 'Fetch Brand Configs',       kind: 'http' },
+        { id: 'loop',          label: 'Per Brand',                 kind: 'loop' },
+        { id: 'check',         label: 'Brand Namespace Valid?',    kind: 'if' },
+        { id: 'fetch_metrics', label: 'Fetch Brand Metrics',       kind: 'http',     hint: 'Per brand_id' },
+        { id: 'compose',       label: 'Compose Namespaced Row',    kind: 'set' },
+        { id: 'write',         label: 'Write to Brand Table',      kind: 'postgres' },
+        { id: 'render',        label: 'Render Branded PDF',        kind: 'http',     hint: 'Logo + color' },
+        { id: 'notify',        label: 'Notify Brand Channel',      kind: 'slack' },
+        { id: 'alert_missing', label: 'Alert Missing Brand Config', kind: 'slack' },
+      ],
+      edges: [
+        { source: 'schedule',      target: 'fetch_brands' },
+        { source: 'fetch_brands',  target: 'loop' },
+        { source: 'loop',          target: 'check' },
+        { source: 'check',         target: 'fetch_metrics', label: 'true' },
+        { source: 'check',         target: 'alert_missing', label: 'false' },
+        { source: 'fetch_metrics', target: 'compose' },
+        { source: 'compose',       target: 'write' },
+        { source: 'write',         target: 'render' },
+        { source: 'render',        target: 'notify' },
+      ],
+    },
   },
   {
     slug: 'lead-attribution-commission',
@@ -171,6 +321,50 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Partner config endpoint',
       'Point your form / CRM lead webhook + Stripe / QB invoice.paid webhook at the two trigger URLs',
     ],
+    graph: {
+      nodes: [
+        { id: 'lead_webhook',     label: 'Lead Captured',          kind: 'trigger',  hint: 'Webhook A' },
+        { id: 'parse_utm',        label: 'Parse UTM',              kind: 'set' },
+        { id: 'lookup_partner',   label: 'Lookup Partner Config',  kind: 'http' },
+        { id: 'partner_check',    label: 'Partner Active?',        kind: 'if' },
+        { id: 'stamp',            label: 'Stamp Attribution',      kind: 'postgres', hint: 'eligible_until' },
+        { id: 'notify_ops_a',     label: 'Notify Partner Ops',     kind: 'slack' },
+        { id: 'log_unattributed', label: 'Log Unattributed',       kind: 'set' },
+
+        { id: 'invoice_webhook',  label: 'Invoice Paid',           kind: 'trigger',  hint: 'Webhook B' },
+        { id: 'find_attribution', label: 'Find Active Attribution', kind: 'postgres' },
+        { id: 'match_check',      label: 'Attribution Match?',     kind: 'if' },
+        { id: 'compute_commission', label: 'Compute Commission',   kind: 'set' },
+        { id: 'finance_approval', label: 'Finance Approval',       kind: 'approval', hint: '24h, money-touching' },
+        { id: 'approved',         label: 'Approved?',              kind: 'if' },
+        { id: 'mark_paid',        label: 'Mark Paid',              kind: 'postgres' },
+        { id: 'record_payout',    label: 'Record Payout',          kind: 'postgres' },
+        { id: 'notify_paid',      label: 'Notify: Approved',       kind: 'slack' },
+        { id: 'mark_disputed',    label: 'Mark Disputed',          kind: 'postgres' },
+        { id: 'notify_disputed',  label: 'Notify: Rejected',       kind: 'slack' },
+        { id: 'no_match',         label: 'No Attribution',         kind: 'set' },
+      ],
+      edges: [
+        { source: 'lead_webhook',    target: 'parse_utm' },
+        { source: 'parse_utm',       target: 'lookup_partner' },
+        { source: 'lookup_partner',  target: 'partner_check' },
+        { source: 'partner_check',   target: 'stamp',           label: 'true' },
+        { source: 'partner_check',   target: 'log_unattributed', label: 'false' },
+        { source: 'stamp',           target: 'notify_ops_a' },
+
+        { source: 'invoice_webhook', target: 'find_attribution' },
+        { source: 'find_attribution', target: 'match_check' },
+        { source: 'match_check',     target: 'compute_commission', label: 'true' },
+        { source: 'match_check',     target: 'no_match',           label: 'false' },
+        { source: 'compute_commission', target: 'finance_approval' },
+        { source: 'finance_approval', target: 'approved' },
+        { source: 'approved',        target: 'mark_paid',       label: 'true' },
+        { source: 'approved',        target: 'mark_disputed',   label: 'false' },
+        { source: 'mark_paid',       target: 'record_payout' },
+        { source: 'record_payout',   target: 'notify_paid' },
+        { source: 'mark_disputed',   target: 'notify_disputed' },
+      ],
+    },
   },
   {
     slug: 'performance-billing-reconciliation',
@@ -205,6 +399,41 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Evidence renderer',
       'Accounting create-invoice endpoint',
     ],
+    graph: {
+      nodes: [
+        { id: 'schedule',         label: 'Monthly Schedule',       kind: 'trigger',  hint: '2nd @ 9am' },
+        { id: 'fetch_contracts',  label: 'Fetch Contracts',        kind: 'http' },
+        { id: 'loop',             label: 'Per Contract',           kind: 'loop' },
+        { id: 'fetch_metrics',    label: 'Fetch Platform Metrics', kind: 'http',     hint: 'Google + Meta + …' },
+        { id: 'compute',          label: 'Compute Invoice',        kind: 'code',     hint: 'Base + capped bonus' },
+        { id: 'evidence',         label: 'Generate Evidence',      kind: 'http',     hint: 'PDF + screenshots' },
+        { id: 'am_approval',      label: 'Stage 1: AM Approval',   kind: 'approval', hint: '24h' },
+        { id: 'am_check',         label: 'AM Approved?',           kind: 'if' },
+        { id: 'finance_approval', label: 'Stage 2: Finance',       kind: 'approval', hint: '8h' },
+        { id: 'finance_check',    label: 'Finance Approved?',      kind: 'if' },
+        { id: 'create_invoice',   label: 'Create Invoice',         kind: 'http',     hint: 'QB / Xero / Stripe' },
+        { id: 'send_email',       label: 'Send Invoice + Evidence', kind: 'gmail' },
+        { id: 'audit',            label: 'Write Audit Trail',      kind: 'postgres' },
+        { id: 'am_reject',        label: 'AM Revision Requested',  kind: 'slack' },
+        { id: 'finance_reject',   label: 'Escalate to Director',   kind: 'slack' },
+      ],
+      edges: [
+        { source: 'schedule',         target: 'fetch_contracts' },
+        { source: 'fetch_contracts',  target: 'loop' },
+        { source: 'loop',             target: 'fetch_metrics' },
+        { source: 'fetch_metrics',    target: 'compute' },
+        { source: 'compute',          target: 'evidence' },
+        { source: 'evidence',         target: 'am_approval' },
+        { source: 'am_approval',      target: 'am_check' },
+        { source: 'am_check',         target: 'finance_approval', label: 'approved' },
+        { source: 'am_check',         target: 'am_reject',        label: 'revision' },
+        { source: 'finance_approval', target: 'finance_check' },
+        { source: 'finance_check',    target: 'create_invoice',   label: 'approved' },
+        { source: 'finance_check',    target: 'finance_reject',   label: 'rejected' },
+        { source: 'create_invoice',   target: 'send_email' },
+        { source: 'send_email',       target: 'audit' },
+      ],
+    },
   },
   {
     slug: 'project-status-clean-closure',
@@ -233,6 +462,48 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Automation-disabler endpoint (n8n public API or your control plane)',
       'Access-revocation endpoint',
     ],
+    graph: {
+      nodes: [
+        { id: 'weekly',           label: 'Weekly Status',          kind: 'trigger',  hint: 'Fri 4pm' },
+        { id: 'fetch_active',     label: 'Fetch Active Projects',  kind: 'http' },
+        { id: 'loop_active',      label: 'Per Project',            kind: 'loop' },
+        { id: 'fetch_metrics',    label: 'Tasks + Hours + Milestones', kind: 'http' },
+        { id: 'compose',          label: 'Compose Status Narrative', kind: 'set' },
+        { id: 'am_review',        label: 'AM Review',              kind: 'approval', hint: '4h, client-facing' },
+        { id: 'am_check',         label: 'Approved?',              kind: 'if' },
+        { id: 'post_portal',      label: 'Post to Client Portal',  kind: 'http' },
+        { id: 'email_client',     label: 'Email Client Status',    kind: 'gmail' },
+        { id: 'audit_status',     label: 'Write Status Audit',     kind: 'postgres' },
+        { id: 'hold',             label: 'Hold for Edits',         kind: 'slack' },
+
+        { id: 'daily',            label: 'Daily Closure Watcher',  kind: 'trigger',  hint: 'Daily 8am' },
+        { id: 'fetch_expired',    label: 'Fetch Expired Projects', kind: 'http',     hint: 'end_date ≤ today' },
+        { id: 'loop_expired',     label: 'Per Expired Project',    kind: 'loop' },
+        { id: 'disable',          label: 'Disable Automations',    kind: 'http',     hint: 'Kill zombies' },
+        { id: 'revoke',           label: 'Revoke Access',          kind: 'http' },
+        { id: 'notify_closure',   label: 'Notify AM: Closed',      kind: 'slack' },
+        { id: 'audit_closure',    label: 'Write Closure Audit',    kind: 'postgres' },
+      ],
+      edges: [
+        { source: 'weekly',         target: 'fetch_active' },
+        { source: 'fetch_active',   target: 'loop_active' },
+        { source: 'loop_active',    target: 'fetch_metrics' },
+        { source: 'fetch_metrics',  target: 'compose' },
+        { source: 'compose',        target: 'am_review' },
+        { source: 'am_review',      target: 'am_check' },
+        { source: 'am_check',       target: 'post_portal',   label: 'approved' },
+        { source: 'am_check',       target: 'hold',          label: 'hold' },
+        { source: 'post_portal',    target: 'email_client' },
+        { source: 'email_client',   target: 'audit_status' },
+
+        { source: 'daily',          target: 'fetch_expired' },
+        { source: 'fetch_expired',  target: 'loop_expired' },
+        { source: 'loop_expired',   target: 'disable' },
+        { source: 'disable',        target: 'revoke' },
+        { source: 'revoke',         target: 'notify_closure' },
+        { source: 'notify_closure', target: 'audit_closure' },
+      ],
+    },
   },
   {
     slug: 'white-label-report-generator',
@@ -269,6 +540,39 @@ export const WORKFLOWS: WorkflowEntry[] = [
       'Automated leakage check: Code node greps PDF metadata + URL for forbidden strings; halts before send if found',
       "Reseller-specific approval gate: posts to the reseller's Slack channel, not a global one",
     ],
+    graph: {
+      nodes: [
+        { id: 'schedule',         label: 'Monthly Schedule',         kind: 'trigger',  hint: '1st @ 7am' },
+        { id: 'fetch_engagements', label: 'Fetch White-Label Engagements', kind: 'http' },
+        { id: 'loop',             label: 'Per Engagement',           kind: 'loop' },
+        { id: 'fetch_metrics',    label: 'Fetch End-Client Metrics', kind: 'http' },
+        { id: 'strip',            label: 'Strip Delivery Metadata',  kind: 'set',      hint: 'Reseller branding only' },
+        { id: 'render',           label: 'Render White-Label PDF',   kind: 'http',     hint: 'Reseller logo + color' },
+        { id: 'verify',           label: 'Verify No Leakage',        kind: 'code',     hint: 'Grep PDF metadata' },
+        { id: 'leakage_check',    label: 'Clean (No Leakage)?',      kind: 'if' },
+        { id: 'reseller_approval', label: 'Reseller AM Approval',    kind: 'approval', hint: '24h, client-facing' },
+        { id: 'approved',         label: 'Approved?',                kind: 'if' },
+        { id: 'send_as_reseller', label: 'Send As Reseller',         kind: 'gmail' },
+        { id: 'audit',            label: 'Write White-Label Audit',  kind: 'postgres' },
+        { id: 'reseller_reject',  label: 'Reseller Rejected — Halt', kind: 'slack' },
+        { id: 'leakage_halt',     label: 'LEAKAGE — Halt + Page Ops', kind: 'slack',   hint: 'Hard fail' },
+      ],
+      edges: [
+        { source: 'schedule',          target: 'fetch_engagements' },
+        { source: 'fetch_engagements', target: 'loop' },
+        { source: 'loop',              target: 'fetch_metrics' },
+        { source: 'fetch_metrics',     target: 'strip' },
+        { source: 'strip',             target: 'render' },
+        { source: 'render',            target: 'verify' },
+        { source: 'verify',            target: 'leakage_check' },
+        { source: 'leakage_check',     target: 'reseller_approval', label: 'clean' },
+        { source: 'leakage_check',     target: 'leakage_halt',      label: 'leaked' },
+        { source: 'reseller_approval', target: 'approved' },
+        { source: 'approved',          target: 'send_as_reseller',  label: 'true' },
+        { source: 'approved',          target: 'reseller_reject',   label: 'false' },
+        { source: 'send_as_reseller',  target: 'audit' },
+      ],
+    },
   },
 ]
 

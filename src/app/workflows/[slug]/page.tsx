@@ -7,6 +7,7 @@ import SiteHeader from '<npm>/components/ui/site-header'
 import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
+import WorkflowGraph from '<npm>/components/WorkflowGraph'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { WORKFLOWS, getWorkflowBySlug } from '<npm>/lib/workflows-catalog'
 
@@ -130,7 +131,11 @@ export default async function WorkflowDetailPage({
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/45 mb-5">
               The flow
             </p>
-            <WorkflowDiagram technicalFlow={wf.techFlow} />
+            {wf.graph ? (
+              <WorkflowGraph graph={wf.graph} height={500} />
+            ) : (
+              <WorkflowDiagram technicalFlow={wf.techFlow} />
+            )}
           </div>
         </section>
       </FadeInOnScroll>
