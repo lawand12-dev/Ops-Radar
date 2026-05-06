@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ArrowUpRight, Menu, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 import { cn } from "<npm>/lib/utils"
@@ -28,180 +28,165 @@ interface SiteHeaderProps {
 
 const DEFAULT_NAV_LINKS: SiteNavLink[] = [
   { label: "Home", href: "/" },
-  { label: "AIOS", href: "/#architecture" },
+  { label: "AIOS", href: "/aios" },
   { label: "About", href: "/about" },
 ]
-
-function withArchitectureLink(navLinks: SiteNavLink[], pathname: string): SiteNavLink[] {
-  const hasArchitectureLink = navLinks.some(
-    (link) => link.label === "AIOS" || link.href === "#architecture" || link.href === "/#architecture"
-  )
-
-  if (hasArchitectureLink) {
-    return navLinks
-  }
-
-  const architectureLink: SiteNavLink = {
-    label: "AIOS",
-    href: pathname === "/" ? "#architecture" : "/#architecture",
-  }
-  const homeIndex = navLinks.findIndex((link) => link.href === "/")
-
-  if (homeIndex !== -1) {
-    return [
-      ...navLinks.slice(0, homeIndex + 1),
-      architectureLink,
-      ...navLinks.slice(homeIndex + 1),
-    ]
-  }
-
-  return [...navLinks, architectureLink]
-}
 
 export default function SiteHeader({
   logoSrc = "/logo.png",
   logoAlt = "OpsRadar",
   logoHref = "/",
   navLinks = DEFAULT_NAV_LINKS,
-  ctaLabel = "Book a free 20-min call",
+  ctaLabel = "Book a Call",
   ctaHref = CALENDLY_STRATEGY_CALL_URL,
-  sticky = false,
+  sticky = true,
   className,
 }: SiteHeaderProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const ctaIsExternal = /^https?:\/\//i.test(ctaHref)
-  const renderedNavLinks = withArchitectureLink(navLinks, pathname)
 
   const isActiveLink = (link: SiteNavLink) => {
     if (typeof link.isActive === "boolean") {
       return link.isActive
     }
-
     if (link.href === "/") {
       return pathname === "/"
     }
-
     if (link.href.startsWith("/#")) {
       return pathname === "/"
     }
-
-    return pathname === link.href
+    return pathname === link.href || pathname.startsWith(link.href + "/")
   }
 
   return (
     <header
       className={cn(
-        "z-50 px-4 pt-3 sm:px-6",
+        "z-50 w-full border-b border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-md",
         sticky && "sticky top-0",
         className
       )}
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="header-shell rounded-[28px] p-2 shadow-[0_24px_90px_rgba(2,6,23,0.16)]">
-          <div className="flex items-center justify-between gap-4 px-2 py-1 sm:px-3">
-            <Link
-              href={logoHref}
-              className="flex items-center gap-3 rounded-full px-2 py-1 text-on-surface transition-opacity hover:opacity-90"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Image
-                src={logoSrc}
-                alt={logoAlt}
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-xl object-cover"
-              />
-              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
-                OpsRadar
-              </span>
-            </Link>
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Desktop: 3-column grid (logo | nav | ctas), Mobile: flex with hamburger */}
+        <div className="flex h-16 items-center justify-between gap-6 lg:grid lg:grid-cols-[auto_1fr_auto]">
+          {/* Logo — left column */}
+          <Link
+            href={logoHref}
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-md object-cover"
+            />
+            <span className="font-headline text-base font-bold tracking-tight text-white">
+              OpsRadar
+            </span>
+          </Link>
 
-            <nav className="hidden lg:flex items-center gap-2">
-              <div className="header-nav-pill flex items-center gap-1 rounded-full px-1 py-1">
-                {renderedNavLinks.map((link) => {
-                  const isActive = isActiveLink(link)
-
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "header-link rounded-full px-3 py-2 text-sm font-medium tracking-[0.01em] transition-colors",
-                        isActive
-                          ? "header-link-active"
-                          : ""
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  )
-                })}
-
+          {/* Centered nav — middle column (only desktop) */}
+          <nav className="hidden lg:flex items-center justify-center gap-1">
+            {navLinks.map((link) => {
+              const isActive = isActiveLink(link)
+              return (
                 <Link
-                  href={ctaHref}
-                  target={ctaIsExternal ? "_blank" : undefined}
-                  rel={ctaIsExternal ? "noopener noreferrer" : undefined}
-                  className="header-cta ml-1 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "relative rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
+                    isActive
+                      ? "text-white"
+                      : "text-white/60 hover:text-white"
+                  )}
                 >
-                  {ctaLabel}
-                  <ArrowUpRight className="h-4 w-4" />
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute inset-x-3 -bottom-[1px] h-px bg-white" aria-hidden="true" />
+                  )}
                 </Link>
-              </div>
-            </nav>
+              )
+            })}
+          </nav>
 
-            <div className="flex items-center gap-2 lg:hidden">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen((open) => !open)}
-                className="header-menu-button inline-flex h-11 w-11 items-center justify-center rounded-full"
-                aria-expanded={mobileMenuOpen}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
+          {/* Right CTAs — right column (only desktop) */}
+          <div className="hidden lg:flex items-center justify-end gap-2">
+            <Link
+              href="/audit"
+              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
+            >
+              Run Free Audit
+            </Link>
+            <Link
+              href={ctaHref}
+              target={ctaIsExternal ? "_blank" : undefined}
+              rel={ctaIsExternal ? "noopener noreferrer" : undefined}
+              className="inline-flex items-center rounded-md bg-[#0066FF] px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#0052CC]"
+            >
+              {ctaLabel}
+            </Link>
           </div>
 
-          {mobileMenuOpen ? (
-            <div className="header-mobile-panel px-3 pb-3 pt-3 lg:hidden">
-              <nav className="flex flex-col gap-2">
-                {renderedNavLinks.map((link) => {
-                  const isActive = isActiveLink(link)
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
 
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "header-mobile-link rounded-2xl px-4 py-3 text-sm font-medium tracking-[0.01em] transition-colors",
-                        isActive
-                          ? "header-mobile-link-active"
-                          : ""
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  )
-                })}
-
+        {/* Mobile panel */}
+        {mobileMenuOpen ? (
+          <div className="lg:hidden border-t border-white/[0.06] py-3">
+            <nav className="flex flex-col gap-1">
+              {navLinks.map((link) => {
+                const isActive = isActiveLink(link)
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-white/[0.06] text-white"
+                        : "text-white/70 hover:bg-white/[0.04] hover:text-white"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+              <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                <Link
+                  href="/audit"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/[0.04] hover:text-white transition-colors"
+                >
+                  Run Free Audit
+                </Link>
                 <Link
                   href={ctaHref}
                   target={ctaIsExternal ? "_blank" : undefined}
                   rel={ctaIsExternal ? "noopener noreferrer" : undefined}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="header-cta mt-2 inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors"
+                  className="rounded-md bg-[#0066FF] px-3 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#0052CC]"
                 >
                   {ctaLabel}
-                  <ArrowUpRight className="h-4 w-4" />
                 </Link>
-              </nav>
-            </div>
-          ) : null}
-        </div>
+              </div>
+            </nav>
+          </div>
+        ) : null}
       </div>
     </header>
   )

@@ -45,7 +45,7 @@ const PRICING_PAGE_VISIBLE = process.env.NEXT_PUBLIC_SHOW_PRICING_PAGE === 'true
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'AIOS', href: '/#architecture' },
+  { label: 'AIOS', href: '/aios' },
   { label: 'Pricing', href: '/pricing', isActive: true },
   { label: 'About', href: '/about' },
 ]
