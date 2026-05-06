@@ -18,6 +18,7 @@ import TypewriterText from '<npm>/components/animations/TypewriterText'
 import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import Footer from '<npm>/components/Footer'
+import { WORKFLOWS, type WorkflowEntry } from '<npm>/lib/workflows-catalog'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 import { track } from '@vercel/analytics'
@@ -300,6 +301,56 @@ function parseWebsiteEvidence(value?: string): WebsiteEvidenceCard[] {
   } catch {
     return []
   }
+}
+
+const WORKFLOW_KEYWORD_MAP: ReadonlyArray<{ keyword: string; pain: string; slug: string }> = [
+  { keyword: 'reporting',  pain: 'reporting',  slug: 'brand-namespaced-reporting' },
+  { keyword: 'leads',      pain: 'leads',      slug: 'lead-attribution-commission' },
+  { keyword: 'onboarding', pain: 'onboarding', slug: 'cross-agency-handoff-router' },
+  { keyword: 'invoicing',  pain: 'invoicing',  slug: 'retainer-invoicing-dunning' },
+  { keyword: 'campaigns',  pain: 'campaigns',  slug: 'performance-billing-reconciliation' },
+  { keyword: 'handoff',    pain: 'handoff',    slug: 'cross-agency-handoff-router' },
+]
+
+function findWorkflowMatches(
+  audit: AuditResult | null
+): Array<{ pain: string; workflow: WorkflowEntry }> {
+  if (!audit) return []
+  const parts: Array<string | undefined | null> = [
+    audit.verdict?.headline,
+    audit.verdict?.subline,
+    audit.verdict?.stakes,
+    audit.verdict?.identity_line,
+    audit.executive_summary,
+    audit.polished_pain_statement,
+    audit.polished_business_consequence,
+    ...(audit.opportunities ?? []).flatMap((o) => [
+      o.title,
+      o.hard_truth,
+      o.urgency_reason,
+      o.current_process,
+      o.automated_process,
+      o.problem,
+      o.solution,
+    ]),
+  ]
+  const haystack = parts
+    .filter((s): s is string => typeof s === 'string')
+    .join(' ')
+    .toLowerCase()
+  if (!haystack) return []
+  const seenSlugs = new Set<string>()
+  const matches: Array<{ pain: string; workflow: WorkflowEntry }> = []
+  for (const { keyword, pain, slug } of WORKFLOW_KEYWORD_MAP) {
+    const re = new RegExp(`\\b${keyword}\\b`)
+    if (!re.test(haystack)) continue
+    if (seenSlugs.has(slug)) continue
+    const wf = WORKFLOWS.find((w) => w.slug === slug)
+    if (!wf) continue
+    seenSlugs.add(slug)
+    matches.push({ pain, workflow: wf })
+  }
+  return matches
 }
 
 function wait(ms: number): Promise<void> {
@@ -3333,6 +3384,49 @@ function ResultsContent() {
             </RevealSection>
           </div>
         )}
+
+        {/* Related workflow blueprints — keyword-matched from audit output */}
+        {(() => {
+          const workflowMatches = findWorkflowMatches(audit)
+          if (workflowMatches.length === 0) return null
+          return (
+            <RevealSection>
+              <section className="mb-10 sm:mb-12" data-report-section>
+                <div className="mb-6 sm:mb-8">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-on-surface-variant/45 mb-3">
+                    Related blueprints
+                  </p>
+                  <h2 className="font-headline font-extrabold text-[clamp(22px,3vw,32px)] tracking-[-0.03em] text-on-surface leading-tight">
+                    From your audit, these workflows are likely to fit.
+                  </h2>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {workflowMatches.map(({ pain, workflow }) => (
+                    <Link
+                      key={workflow.slug}
+                      href={`/workflows/${workflow.slug}`}
+                      onClick={() => track('audit_workflow_link_click', { slug: workflow.slug, pain })}
+                      className="group relative rounded-[16px] border border-outline-variant/20 bg-surface-container-low/50 p-6 transition-all hover:border-outline-variant/45 hover:bg-surface-container-low"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary/85 mb-2">
+                        You mentioned {pain}
+                      </p>
+                      <h3 className="font-headline text-[18px] font-bold tracking-[-0.01em] text-on-surface mb-2 leading-tight">
+                        {workflow.title}
+                      </h3>
+                      <p className="text-[13.5px] leading-relaxed text-on-surface-variant/80 mb-4 line-clamp-3">
+                        {workflow.shortPain}
+                      </p>
+                      <span className="text-[12px] font-semibold text-primary group-hover:underline underline-offset-4">
+                        See how we automate it →
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            </RevealSection>
+          )
+        })()}
 
         {/* Final CTA */}
         <div id="aios-build" data-report-section>
