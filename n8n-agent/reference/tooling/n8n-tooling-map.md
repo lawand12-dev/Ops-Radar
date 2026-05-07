@@ -4,6 +4,8 @@
 
 Use this file when the task involves building, validating, modifying, deploying, or deeply debugging n8n workflows or runtime tool implementations.
 
+For reviewing whether new cases, evals, policies, or workflow-generation changes are strong enough, use `reference/tooling/n8n-agent-quality-gates.md`.
+
 ---
 
 ## Source Priority
