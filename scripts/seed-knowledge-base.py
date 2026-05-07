@@ -37,6 +37,68 @@ def chunk_text(text, max_chars, overlap):
     return chunks
 
 
+def title_from_markdown(content, fallback):
+    match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+    return match.group(1).strip() if match else fallback.replace(".md", "")
+
+
+def markdown_sections(content):
+    lines = content.replace("\r\n", "\n").split("\n")
+    sections = []
+    heading_stack = []
+    current_lines = []
+    current_path = []
+
+    def flush():
+        body = "\n".join(current_lines).strip()
+        if body:
+            sections.append({
+                "heading_path": list(current_path),
+                "content": body,
+            })
+
+    for line in lines:
+        heading = re.match(r"^(#{1,4})\s+(.+?)\s*$", line)
+        if heading:
+            flush()
+            level = len(heading.group(1))
+            text = heading.group(2).strip()
+            while heading_stack and heading_stack[-1]["level"] >= level:
+                heading_stack.pop()
+            heading_stack.append({"level": level, "text": text})
+            current_path = [item["text"] for item in heading_stack]
+            current_lines = [line]
+            continue
+
+        current_lines.append(line)
+
+    flush()
+    return sections or [{"heading_path": [], "content": content}]
+
+
+def chunk_markdown(content, category, filename, max_chars, overlap):
+    title = title_from_markdown(content, filename)
+    chunks = []
+
+    for section in markdown_sections(content):
+        heading_path = section["heading_path"] or [title]
+        prefix = "\n".join([
+            f"Title: {title}",
+            f"Category: {category}",
+            f"Source file: {filename}",
+            f"Heading path: {' > '.join(heading_path)}",
+        ])
+        body_limit = max(1000, max_chars - len(prefix) - 2)
+
+        for part in chunk_text(section["content"], body_limit, overlap):
+            chunks.append({
+                "content": f"{prefix}\n\n{part}",
+                "heading_path": heading_path,
+            })
+
+    return chunks
+
+
 def slug_from_filename(filename):
     return filename.replace(".md", "").lower()
 
@@ -115,11 +177,11 @@ def main():
 
             slug_base = slug_from_filename(filename)
             links = extract_links(content)
+            title = title_from_markdown(content, filename)
 
-            research_id_match = re.match(r"^(research-\d+)", slug_base)
             source_file = filename  # the .md file itself
 
-            chunks = chunk_text(content, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
+            chunks = chunk_markdown(content, category, filename, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
 
             for chunk_idx, chunk in enumerate(chunks):
                 chunk_slug = slug_base if len(chunks) == 1 else f"{slug_base}--chunk-{chunk_idx + 1}"
@@ -127,7 +189,7 @@ def main():
                 sys.stdout.flush()
 
                 try:
-                    embedding = get_embedding(chunk, openai_key)
+                    embedding = get_embedding(chunk["content"], openai_key)
                 except urllib.error.URLError as e:
                     print(f"\n  ✗ Embedding failed: {e}")
                     continue
@@ -140,14 +202,19 @@ def main():
                     "slug": chunk_slug,
                     "source_file": source_file,
                     "category": category,
-                    "content": chunk,
+                    "content": chunk["content"],
                     "links": links,
                     "embedding": embedding,
-                    "metadata": json.dumps({
+                    "metadata": {
                         "file": filename,
+                        "title": title,
+                        "category": category,
+                        "heading_path": chunk["heading_path"],
                         "chunk_index": chunk_idx,
                         "total_chunks": len(chunks),
-                    }),
+                        "chunk_strategy": "markdown-heading-v2",
+                        "embedding_model": EMBEDDING_MODEL,
+                    },
                     "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 }
 
