@@ -14,6 +14,11 @@ const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_CHUNK_CHARS = 4000
 const CHUNK_OVERLAP_CHARS = 200
 
+type MarkdownChunk = {
+  content: string
+  headingPath: string[]
+}
+
 function chunkText(text: string, maxChars: number, overlap: number): string[] {
   if (text.length <= maxChars) return [text]
   const chunks: string[] = []
@@ -24,6 +29,83 @@ function chunkText(text: string, maxChars: number, overlap: number): string[] {
     start = end - overlap
     if (start >= text.length) break
   }
+  return chunks
+}
+
+function titleFromMarkdown(content: string, fallback: string): string {
+  const match = content.match(/^#\s+(.+)$/m)
+  return match?.[1]?.trim() || fallback.replace(/\.md$/, '')
+}
+
+function markdownSections(content: string): Array<{ headingPath: string[]; content: string }> {
+  const lines = content.replace(/\r\n/g, '\n').split('\n')
+  const sections: Array<{ headingPath: string[]; content: string }> = []
+  const headingStack: Array<{ level: number; text: string }> = []
+  let currentLines: string[] = []
+  let currentPath: string[] = []
+
+  function flush() {
+    const body = currentLines.join('\n').trim()
+    if (body) {
+      sections.push({
+        headingPath: currentPath,
+        content: body,
+      })
+    }
+  }
+
+  for (const line of lines) {
+    const heading = /^(#{1,4})\s+(.+?)\s*$/.exec(line)
+    if (heading) {
+      flush()
+      const level = heading[1].length
+      const text = heading[2].trim()
+      while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= level) {
+        headingStack.pop()
+      }
+      headingStack.push({ level, text })
+      currentPath = headingStack.map((item) => item.text)
+      currentLines = [line]
+      continue
+    }
+
+    currentLines.push(line)
+  }
+
+  flush()
+  return sections.length > 0
+    ? sections
+    : [{ headingPath: [], content }]
+}
+
+function chunkMarkdown(
+  content: string,
+  category: string,
+  file: string,
+  maxChars: number,
+  overlap: number,
+): MarkdownChunk[] {
+  const title = titleFromMarkdown(content, file)
+  const chunks: MarkdownChunk[] = []
+
+  for (const section of markdownSections(content)) {
+    const headingPath = section.headingPath.length > 0 ? section.headingPath : [title]
+    const prefix = [
+      `Title: ${title}`,
+      `Category: ${category}`,
+      `Source file: ${file}`,
+      `Heading path: ${headingPath.join(' > ')}`,
+    ].join('\n')
+    const bodyLimit = Math.max(1000, maxChars - prefix.length - 2)
+
+    for (const part of chunkText(section.content, bodyLimit, overlap)) {
+      chunks.push({
+        content: `${prefix}\n\n${part}`,
+        headingPath,
+      })
+    }
+  }
+
   return chunks
 }
 
@@ -69,11 +151,11 @@ async function main() {
       const content = fs.readFileSync(filePath, 'utf-8')
       const slug = slugFromFilename(file)
       const links = extractLinks(content)
-
+      const title = titleFromMarkdown(content, file)
 
       const sourceFile = file // the .md file itself
 
-      const chunks = chunkText(content, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
+      const chunks = chunkMarkdown(content, category, file, MAX_CHUNK_CHARS, CHUNK_OVERLAP_CHARS)
 
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
         const chunk = chunks[chunkIndex]
@@ -83,7 +165,7 @@ async function main() {
 
         const embeddingResponse = await openai.embeddings.create({
           model: EMBEDDING_MODEL,
-          input: chunk.slice(0, 8000),
+          input: chunk.content.slice(0, 8000),
         })
 
         const embedding = embeddingResponse.data[0]?.embedding
@@ -99,10 +181,19 @@ async function main() {
               slug: chunkSlug,
               source_file: sourceFile,
               category,
-              content: chunk,
+              content: chunk.content,
               links,
               embedding: embedding as unknown as string,
-              metadata: { file, chunk_index: chunkIndex, total_chunks: chunks.length },
+              metadata: {
+                file,
+                title,
+                category,
+                heading_path: chunk.headingPath,
+                chunk_index: chunkIndex,
+                total_chunks: chunks.length,
+                chunk_strategy: 'markdown-heading-v2',
+                embedding_model: EMBEDDING_MODEL,
+              },
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'slug' },

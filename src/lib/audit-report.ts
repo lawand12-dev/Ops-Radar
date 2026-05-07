@@ -1,4 +1,5 @@
 import { openai } from './openai'
+import { getAuditResponseFormat } from './audit-response-format'
 import { PREVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildAuditRepairPrompt, buildUserPrompt, type AuditInput } from './prompts'
 import {
   applyDefensivePostProcessing,
@@ -120,7 +121,7 @@ async function requestAuditDraft(
         content: userPrompt,
       },
     ],
-    response_format: { type: 'json_object' },
+    response_format: getAuditResponseFormat(stage),
     temperature: getTemperature(stage),
     max_tokens: getMaxTokens(stage),
   })
