@@ -22,6 +22,8 @@ The agent loads this file as compact in-context reference, traverses it determin
 | `error.httpCode` | `data.resultData.error.httpCode` | string/number |
 | `error.node` | `data.resultData.error.node` | string |
 | `last_node` | `data.resultData.lastNodeExecuted` | string |
+| `n8n_upgraded_at` | `external_signals.n8n_upgraded_at` | timestamp or null |
+| `workflow_last_successful_at` | `external_signals.workflow_last_successful_at` | timestamp or null |
 
 ## Tree
 
@@ -59,16 +61,39 @@ ROOT
 │   │   │   └── DEFAULT
 │   │   │       → label: auth.unauthorized
 │   │   │       → next:  decision-trees/error-classification
+│   │   │
+│   │   ├── error.httpCode = 402
+│   │   │   ├── error.node CONTAINS "stripe"  AND  error.message MATCHES /card_declined|insufficient_funds|do_not_honor/i
+│   │   │   │   → label: data.stripe-card-declined
+│   │   │   │   → next:  cases/stripe-errors
+│   │   │   └── DEFAULT
+│   │   │       → label: upstream.payment-error
+│   │   │       → next:  decision-trees/error-classification
+│   │   │
 │   │   ├── error.httpCode = 429
 │   │   │   ├── error.node CONTAINS "facebook"|"meta"
 │   │   │   │   → label: ratelimit.meta-buc
 │   │   │   │   → next:  cases/meta-api-rate-limit
+│   │   │   ├── error.node CONTAINS "google sheets"|"googlesheets"
+│   │   │   │   → label: ratelimit.google-sheets-quota
+│   │   │   │   → next:  cases/google-sheets-errors
+│   │   │   ├── error.node CONTAINS "airtable"
+│   │   │   │   → label: ratelimit.airtable
+│   │   │   │   → next:  cases/airtable-errors
+│   │   │   ├── error.node CONTAINS "shopify"
+│   │   │   │   → label: ratelimit.shopify-leaky-bucket
+│   │   │   │   → next:  cases/shopify-errors
+│   │   │   ├── error.node CONTAINS "stripe"
+│   │   │   │   → label: ratelimit.stripe
+│   │   │   │   → next:  cases/stripe-errors
 │   │   │   └── DEFAULT
 │   │   │       → label: ratelimit.generic
 │   │   │       → next:  playbooks/recover-from-api-error
+│   │   │
 │   │   ├── error.httpCode IN {408, 504, 524}
 │   │   │   → label: timeout.upstream
 │   │   │   → next:  cases/webhook-timeout
+│   │   │
 │   │   ├── error.httpCode = 409
 │   │   │   ├── error.node CONTAINS "hubspot"
 │   │   │   │   → label: data.duplicate-hubspot
@@ -76,24 +101,53 @@ ROOT
 │   │   │   └── DEFAULT
 │   │   │       → label: data.conflict
 │   │   │       → next:  decision-trees/recovery-routing
+│   │   │
 │   │   ├── error.httpCode = 422
-│   │   │   → label: data.validation-failed
-│   │   │   → next:  decision-trees/recovery-routing
+│   │   │   ├── error.node CONTAINS "airtable"
+│   │   │   │   AND error.message MATCHES /cannot accept|field.*value|typecast/i
+│   │   │   │   → label: data.airtable-field-type-mismatch
+│   │   │   │   → next:  cases/airtable-errors
+│   │   │   └── DEFAULT
+│   │   │       → label: data.validation-failed
+│   │   │       → next:  decision-trees/recovery-routing
+│   │   │
+│   │   ├── error.httpCode = 404
+│   │   │   ├── error.node CONTAINS "shopify"
+│   │   │   │   AND error.message MATCHES /api.*version|deprecated|not found/i
+│   │   │   │   → label: infra.shopify-api-deprecated
+│   │   │   │   → next:  cases/shopify-errors
+│   │   │   └── DEFAULT
+│   │   │       → label: upstream.not-found
+│   │   │       → next:  decision-trees/error-classification
+│   │   │
 │   │   ├── error.httpCode IN {500, 502, 503}
 │   │   │   → label: upstream.server-error
 │   │   │   → next:  playbooks/recover-from-api-error
+│   │   │
 │   │   └── DEFAULT
 │   │       → label: api.uncategorized
 │   │       → next:  decision-trees/error-classification
 │   │
 │   ├── error.name = "ExpressionError"
-│   │   → label: expression.error
-│   │   → next:  cases/n8n-expression-error
+│   │   ├── n8n_upgraded_at IS NOT NULL
+│   │   │   AND (error_first_occurred_at − n8n_upgraded_at) < 48h
+│   │   │   AND workflow_last_successful_at < n8n_upgraded_at
+│   │   │   → label: infra.version-breaking-change
+│   │   │   → next:  cases/n8n-version-breaking-change
+│   │   └── DEFAULT
+│   │       → label: expression.error
+│   │       → next:  cases/n8n-expression-error
 │   │
 │   ├── error.name = "NodeOperationError"
 │   │   ├── error.message MATCHES /\$json\.|Cannot read prop|undefined is not|null is not|not a function|is not defined|\$node\[/i
-│   │   │   → label: expression.null-ref
-│   │   │   → next:  cases/n8n-expression-error
+│   │   │   ├── n8n_upgraded_at IS NOT NULL
+│   │   │   │   AND (error_first_occurred_at − n8n_upgraded_at) < 48h
+│   │   │   │   AND workflow_last_successful_at < n8n_upgraded_at
+│   │   │   │   → label: infra.version-breaking-change
+│   │   │   │   → next:  cases/n8n-version-breaking-change
+│   │   │   └── DEFAULT
+│   │   │       → label: expression.null-ref
+│   │   │       → next:  cases/n8n-expression-error
 │   │   ├── error.message MATCHES /Binary data|ENOENT.*n8n-binary-data|binary.*not found/i
 │   │   │   → label: infra.binary-data-failure
 │   │   │   → next:  cases/binary-data-failure
@@ -103,6 +157,10 @@ ROOT
 │   │   ├── error.message MATCHES /pool.*exhausted|connection.*pool|too many connections|remaining connection slots/i
 │   │   │   → label: infra.db-connections-exhausted
 │   │   │   → next:  cases/postgres-connections-exhausted
+│   │   ├── error.message MATCHES /Field cannot accept|cannot accept the provided value/i
+│   │   │   AND error.node CONTAINS "airtable"
+│   │   │   → label: data.airtable-field-type-mismatch
+│   │   │   → next:  cases/airtable-errors
 │   │   └── DEFAULT
 │   │       → label: workflow.logic-error
 │   │       → next:  decision-trees/error-classification
@@ -175,9 +233,15 @@ For quick lookup — the runtime uses this to resolve `next: cases/<name>`:
 | `auth.refresh-expired` | `cases/google-oauth-expired.md` |
 | `auth.scope-insufficient` | `cases/google-oauth-expired.md` |
 | `ratelimit.meta-buc` | `cases/meta-api-rate-limit.md` |
+| `ratelimit.google-sheets-quota` | `cases/google-sheets-errors.md` |
+| `ratelimit.airtable` | `cases/airtable-errors.md` |
+| `ratelimit.shopify-leaky-bucket` | `cases/shopify-errors.md` |
+| `ratelimit.stripe` | `cases/stripe-errors.md` |
 | `ratelimit.generic` | (playbook, no case) |
 | `timeout.upstream` | `cases/webhook-timeout.md` |
 | `data.duplicate-hubspot` | `cases/hubspot-duplicate-contact.md` |
+| `data.stripe-card-declined` | `cases/stripe-errors.md` |
+| `data.airtable-field-type-mismatch` | `cases/airtable-errors.md` |
 | `data.concurrent-write-conflict` | `cases/concurrent-execution-conflict.md` |
 | `data.pagination-silent-truncation` | `cases/pagination-cursor-expired.md` |
 | `expression.error` | `cases/n8n-expression-error.md` |
@@ -187,6 +251,8 @@ For quick lookup — the runtime uses this to resolve `next: cases/<name>`:
 | `infra.worker-died` | `cases/stuck-execution.md` |
 | `infra.binary-data-failure` | `cases/binary-data-failure.md` |
 | `infra.db-connections-exhausted` | `cases/postgres-connections-exhausted.md` |
+| `infra.shopify-api-deprecated` | `cases/shopify-errors.md` |
+| `infra.version-breaking-change` | `cases/n8n-version-breaking-change.md` |
 | `stuck.zombie-suspected` | `cases/stuck-execution.md` |
 | `stuck.timeout-exceeded` | `cases/stuck-execution.md` |
 | `stuck.resume-failed` | `cases/stuck-execution.md` |
