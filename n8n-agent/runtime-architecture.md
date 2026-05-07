@@ -18,6 +18,31 @@ A server-side process (Node.js or Python) that runs a **tick loop** every 60 sec
 
 The LLM agent is **not autonomous** — it produces a diagnosis + action recommendation. The runtime's safety layer validates the recommendation before executing any write tool. The LLM cannot call tools directly; the runtime calls them on its behalf after checking safety rules.
 
+### System Boundary
+
+The agent does not live inside a customer's n8n instance. It runs in OpsRadar infrastructure and reaches each customer instance through customer-scoped REST API credentials, read-only database credentials, and metrics endpoints.
+
+The LLM is one component of the runtime, not the whole system. The runtime owns:
+
+- customer config and credential lookup
+- scheduling and per-customer tick isolation
+- KB context loading
+- tool execution
+- safety enforcement
+- incident and audit persistence
+- alerts and digests
+
+### Four Layers
+
+| Layer | What it is | Where it lives |
+|---|---|---|
+| Knowledge | Models, decision trees, cases, playbooks, tool contracts, reference, evals | `n8n-agent/` |
+| Reasoning | LLM calls that read selected KB context and emit structured decisions | Hosted model API |
+| Action | Tool implementations that talk to n8n, DB, metrics, Slack/email, and incident storage | Runtime code |
+| Audit | Safety guards, incident timeline, attempts, refused calls, alerts, digests | Runtime + Postgres |
+
+The KB is loaded at runtime, not training time. Adding a case, playbook, or reference file can improve behavior without retraining the model, as long as the runtime's context loading and case maps know how to reach it.
+
 ---
 
 ## 2. Folder Structure of the KB
@@ -851,3 +876,6 @@ LLM call failures are also non-fatal. If the diagnosis agent fails (token limit,
 `models/n8n-execution-schema.md` — n8n DB schema (what `query_n8n_db` can see)  
 `models/n8n-api-reference.md` — all REST endpoints used by the read tools  
 `evals/eval-harness.md` — how to verify the agent loop with the three scenario files  
+`reference/tooling/n8n-tooling-map.md` — routing map for n8n-MCP tools, sibling n8n skills, workflow authoring rules, and implementation source files  
+`../n8n-mcp-main/` — sibling MCP/tool implementation reference; use when building runtime tool execution  
+`../n8n-skills-main/skills/` — sibling n8n authoring skills; use selectively for code nodes, expressions, node configuration, workflow patterns, validation, and MCP tool usage  
