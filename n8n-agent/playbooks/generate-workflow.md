@@ -77,10 +77,17 @@ For complex workflows, split into subflows or use `Execute Workflow` instead of 
 
 ## Step 4 — Prefer Templates and Real Examples
 
-When n8n-MCP is available:
+**Always check the local workflow library first:**
+
+1. `ls ../n8n-workflows-main/workflows/` — see all available service folders.
+2. `ls ../n8n-workflows-main/workflows/<ServiceName>/` — find examples for the target service (Airtable, Stripe, Shopify, Slack, Gmail, Notion, etc.).
+3. Load the closest matching workflow JSON as a structural starting point.
+4. Strip production-specific values before using: node IDs, credential IDs, webhook IDs, and customer-specific URLs.
+
+When n8n-MCP is also available:
 
 1. Call `tools_documentation()` if tool behavior is not already known.
-2. Search templates first:
+2. Search MCP templates after checking the local library:
    - by task
    - by nodes
    - by keyword
@@ -88,7 +95,9 @@ When n8n-MCP is available:
 3. If a template is used, preserve attribution in the final notes.
 4. If no template fits, use examples from `search_nodes(..., includeExamples: true)` and `get_node(..., includeExamples: true)`.
 
-Without n8n-MCP, use local references under `reference/n8n-nodes/`, `reference/patterns/`, and the matching sibling skill.
+Without n8n-MCP and no local match, use `reference/n8n-nodes/`, `reference/patterns/`, and the matching sibling skill.
+
+**Template priority:** local n8n-workflows-main → n8n-MCP templates → node examples → build from scratch.
 
 ## Step 5 — Discover and Configure Nodes
 
