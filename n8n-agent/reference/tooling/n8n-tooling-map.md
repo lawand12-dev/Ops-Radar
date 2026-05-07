@@ -17,6 +17,7 @@ Use these sources in this order:
 3. `reference/n8n-nodes/`, `reference/n8n-production/`, and `reference/api/` for local n8n and external API reference.
 4. `../n8n-skills-main/skills/<matching-skill>/` for authoring-specific n8n guidance.
 5. `../n8n-mcp-main/` for MCP server behavior, workflow validation internals, node metadata, and n8n API implementation patterns.
+6. `../n8n-workflows-main/workflows/<ServiceName>/` for real-world workflow JSON examples organized by service (Airtable, Stripe, Shopify, Slack, etc.). Use as template source before building from scratch.
 
 Do not copy the full sibling repositories into `n8n-agent/`. Load only the specific file needed.
 
@@ -121,6 +122,22 @@ Always apply these when creating or repairing workflows:
 - Validate node configs before workflow validation.
 - Validate deployed workflow again after n8n assigns IDs and versions.
 - Add error handling for API, auth, rate limit, timeout, empty data, duplicate data, and pagination paths.
+
+---
+
+## n8n-workflows-main Source Map
+
+`../n8n-workflows-main/` contains 2,061 real n8n workflow JSON files organized by service. Use them as templates before building from scratch.
+
+| Need | Source |
+|---|---|
+| Service-specific workflow examples | `workflows/<ServiceName>/` (e.g., `workflows/Airtable/`, `workflows/Stripe/`, `workflows/Shopify/`) |
+| Ready-to-import webhook/trigger templates | `templates/communication/` and `templates/data-processing/` |
+| AI/LLM stack workflows | `ai-stack/workflows/` |
+| Workflow search index | `docs/api/search-index.json` |
+| Category index | `docs/api/categories.json`, `context/def_categories.json` |
+
+**Usage pattern:** When generating a workflow, `ls workflows/<ServiceName>/` to see what examples exist, then load the closest match as a structural starting point. Strip production-specific IDs, credential IDs, and webhook URLs before modifying.
 
 ---
 
