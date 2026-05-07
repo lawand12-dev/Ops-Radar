@@ -93,6 +93,16 @@ Use the runtime architecture as the source of truth for:
 - runtime safety enforcement
 - incident/audit record shape
 
+## Improvement Loop
+
+Use `playbooks/improve-from-feedback.md` after an engineer correction, eval failure, bad workflow-generation output, customer report, or runtime safety block. The improvement loop is:
+
+```text
+bad result or correction -> eval -> smallest case/tree/playbook/policy/tooling fix -> quality gates -> runtime contract update if needed
+```
+
+Do not make the agent "smarter" by dumping unrelated docs into `reference/`. Promote repeated real patterns into evals and cases.
+
 ## Safety Rules
 
 Never bypass `tools/safety-rules.md`.
@@ -112,22 +122,30 @@ The runtime must verify all customer policy limits before any soft-write or hard
 Use `decision-trees/` first. Load only the one matching case file unless the evidence clearly spans multiple failure types.
 
 Known case files cover:
-- OAuth expiry
-- API rate limits
-- stuck or zombie executions
-- webhook timeouts
-- duplicate external records
-- worker memory pressure
-- cursor/pagination expiry
-- concurrent execution conflicts
-- Postgres connection exhaustion
-- binary data failures
-- timezone mismatches
+- OAuth expiry and scope issues (`google-oauth-expired`)
+- Meta/Google Sheets/Airtable/Shopify/Stripe API rate limits (`meta-api-rate-limit`, `google-sheets-errors`, `airtable-errors`, `shopify-errors`, `stripe-errors`)
+- Stripe card declines and idempotency conflicts (`stripe-errors`)
+- Shopify API version deprecations and leaky-bucket throttling (`shopify-errors`)
+- Airtable field type mismatches and record conflicts (`airtable-errors`)
+- Stuck, zombie, and resume-failed executions (`stuck-execution`)
+- Webhook timeouts and caller timeout mismatches (`webhook-timeout`)
+- Webhook signature validation failures (`webhook-signature-validation`)
+- Duplicate external records (`hubspot-duplicate-contact`)
+- Worker OOM and node memory pressure (`n8n-worker-oom`)
+- Cursor and pagination expiry, silent truncation (`pagination-cursor-expired`)
+- Concurrent execution write conflicts (`concurrent-execution-conflict`)
+- Postgres connection pool exhaustion (`postgres-connections-exhausted`)
+- Binary data failures in queue mode (`binary-data-failure`)
+- Timezone and DST mismatches (`timezone-mismatch`)
+- n8n expression errors: null-ref, undefined-field, type-coercion, node-ref-broken (`n8n-expression-error`)
+- n8n version upgrade breaking changes (`n8n-version-breaking-change`)
+- Unknown failures requiring safe escalation (`unknown-failure`)
 
 ## Playbook Selection
 
 Use:
 - `playbooks/generate-workflow.md` for creating, modifying, repairing, validating, or deploying n8n workflows.
+- `playbooks/improve-from-feedback.md` for turning engineer corrections, eval failures, or bad workflow outputs into durable agent improvements.
 - `playbooks/diagnose-workflow-failure.md` for normal failed/crashed executions.
 - `playbooks/detect-stuck-execution.md` for running/waiting executions past safe thresholds.
 - `playbooks/recover-from-api-error.md` for external API failures.
