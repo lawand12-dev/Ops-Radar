@@ -214,6 +214,29 @@ The evidence object for this case must contain:
 
 ---
 
+## External References (Authoritative Sources)
+
+When the Known Breaking Changes table above does not cover the version delta, go to these sources in order:
+
+| Need | URL |
+|---|---|
+| Full release notes for a specific version | `https://github.com/n8n-io/n8n/releases/tag/n8n@{version_after}` |
+| All releases (scan visually for the version range) | `https://github.com/n8n-io/n8n/releases` |
+| Raw CHANGELOG (all versions in one file) | `https://github.com/n8n-io/n8n/blob/master/CHANGELOG.md` |
+| Source code for a specific built-in node | `https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/nodes/{NodeName}/` |
+| Node output type definitions | `https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/nodes/{NodeName}/{NodeName}.node.ts` |
+
+**How to use the node source URL:** When the error mentions a field name that no longer exists, load the `.node.ts` file for that node at the `n8n@{version_after}` tag. Search for `execute()` → look at what keys the node returns in its output items. That tells you the exact new field names to use in the patched expression.
+
+Example:
+```
+https://github.com/n8n-io/n8n/blob/n8n@1.35.0/packages/nodes-base/nodes/HubSpot/HubSpot.node.ts
+```
+
+Do not clone the full n8n repository. Fetch only the specific file needed.
+
+---
+
 ## Cross-References
 
 `cases/n8n-expression-error.md` — for expression errors that are genuine bugs, not version changes  
