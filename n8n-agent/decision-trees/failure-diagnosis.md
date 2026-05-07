@@ -8,7 +8,7 @@
 
 ## How to walk this tree
 
-The agent loads this file as compact in-context reference, traverses it deterministically with the inputs in hand, and emits a single label (e.g. `auth.refresh-expired`) plus the next handler. **Stop at the first match.** If no leaf matches, route to `escalate.unknown`.
+The agent loads this file as compact in-context reference, traverses it deterministically with the inputs in hand, and emits a single label (e.g. `auth.refresh-expired`) plus the next handler. **Stop at the first match.** If no leaf matches, route to `cases/unknown-failure` with confidence=low.
 
 ## Inputs (variables used below)
 
@@ -53,6 +53,9 @@ ROOT
 │   │   │   ├── error.message MATCHES /scope|insufficient.*permission/i
 │   │   │   │   → label: auth.scope-insufficient
 │   │   │   │   → next:  decision-trees/recovery-routing  (no auto-fix)
+│   │   │   ├── error.message MATCHES /signature|hmac|webhook.secret|invalid.payload/i
+│   │   │   │   → label: webhook.signature-invalid
+│   │   │   │   → next:  cases/webhook-signature-validation
 │   │   │   └── DEFAULT
 │   │   │       → label: auth.unauthorized
 │   │   │       → next:  decision-trees/error-classification
@@ -83,9 +86,26 @@ ROOT
 │   │       → label: api.uncategorized
 │   │       → next:  decision-trees/error-classification
 │   │
+│   ├── error.name = "ExpressionError"
+│   │   → label: expression.error
+│   │   → next:  cases/n8n-expression-error
+│   │
 │   ├── error.name = "NodeOperationError"
-│   │   → label: workflow.logic-error
-│   │   → next:  decision-trees/error-classification
+│   │   ├── error.message MATCHES /\$json\.|Cannot read prop|undefined is not|null is not|not a function|is not defined|\$node\[/i
+│   │   │   → label: expression.null-ref
+│   │   │   → next:  cases/n8n-expression-error
+│   │   ├── error.message MATCHES /Binary data|ENOENT.*n8n-binary-data|binary.*not found/i
+│   │   │   → label: infra.binary-data-failure
+│   │   │   → next:  cases/binary-data-failure
+│   │   ├── error.message MATCHES /signature|hmac|Webhook Error|WebhookAuthorizationError/i
+│   │   │   → label: webhook.signature-invalid
+│   │   │   → next:  cases/webhook-signature-validation
+│   │   ├── error.message MATCHES /pool.*exhausted|connection.*pool|too many connections|remaining connection slots/i
+│   │   │   → label: infra.db-connections-exhausted
+│   │   │   → next:  cases/postgres-connections-exhausted
+│   │   └── DEFAULT
+│   │       → label: workflow.logic-error
+│   │       → next:  decision-trees/error-classification
 │   │
 │   ├── error.name = "WorkflowOperationError"
 │   │   → label: workflow.config-or-expression
@@ -97,15 +117,34 @@ ROOT
 │   │
 │   ├── error.message MATCHES /ENOMEM|out of memory|JavaScript heap/
 │   │   → label: infra.worker-oom
-│   │   → next:  playbooks/detect-stuck-execution
+│   │   → next:  cases/n8n-worker-oom
 │   │
-│   └── DEFAULT
-│       → label: error.unclassified
-│       → next:  escalate.unknown
+│   ├── error.message MATCHES /ENOENT.*n8n-binary-data|Binary data.*not found/i
+│   │   → label: infra.binary-data-failure
+│   │   → next:  cases/binary-data-failure
+│   │
+│   ├── error.message MATCHES /pool.*exhausted|connection.*pool|too many connections|remaining connection slots/i
+│   │   → label: infra.db-connections-exhausted
+│   │   → next:  cases/postgres-connections-exhausted
+│   │
+│   └── DEFAULT  (confidence: low — no pattern matched)
+│       → label: error.unknown
+│       → next:  cases/unknown-failure
 │
-└── status = "success"  AND  data.resultData.runData.<any-node>.error IS NOT NULL
-    → label: silent.partial-failure
-    → next:  decision-trees/error-classification  (then human review)
+└── status = "success"
+    ├── data.resultData.runData.<any-node>.error IS NOT NULL
+    │   → label: silent.partial-failure
+    │   → next:  decision-trees/error-classification  (then human review)
+    │
+    └── external_signals.data_quality_anomaly IS NOT NULL
+        │   (triggered by proactive data-quality sweep, not error-watcher)
+        ├── external_signals.data_quality_anomaly.type = "count-truncation"
+        │   AND external_signals.n8n_getall_hard_cap IS NOT NULL
+        │   → label: data.pagination-silent-truncation
+        │   → next:  cases/pagination-cursor-expired
+        └── DEFAULT
+            → label: data.quality-anomaly
+            → next:  decision-trees/error-classification
 ```
 
 ## Routing semantics
@@ -126,6 +165,33 @@ Every leaf carries an implicit confidence. The agent reports:
 - **Low** — `DEFAULT` leaves. Always escalate; never auto-handle.
 
 The `cases/<name>` files declare their `Fix` safety in the `Fix` section. The agent must respect that declaration, not infer.
+
+## Label → Case File Map
+
+For quick lookup — the runtime uses this to resolve `next: cases/<name>`:
+
+| Label | Case File |
+|---|---|
+| `auth.refresh-expired` | `cases/google-oauth-expired.md` |
+| `auth.scope-insufficient` | `cases/google-oauth-expired.md` |
+| `ratelimit.meta-buc` | `cases/meta-api-rate-limit.md` |
+| `ratelimit.generic` | (playbook, no case) |
+| `timeout.upstream` | `cases/webhook-timeout.md` |
+| `data.duplicate-hubspot` | `cases/hubspot-duplicate-contact.md` |
+| `data.concurrent-write-conflict` | `cases/concurrent-execution-conflict.md` |
+| `data.pagination-silent-truncation` | `cases/pagination-cursor-expired.md` |
+| `expression.error` | `cases/n8n-expression-error.md` |
+| `expression.null-ref` | `cases/n8n-expression-error.md` |
+| `webhook.signature-invalid` | `cases/webhook-signature-validation.md` |
+| `infra.worker-oom` | `cases/n8n-worker-oom.md` |
+| `infra.worker-died` | `cases/stuck-execution.md` |
+| `infra.binary-data-failure` | `cases/binary-data-failure.md` |
+| `infra.db-connections-exhausted` | `cases/postgres-connections-exhausted.md` |
+| `stuck.zombie-suspected` | `cases/stuck-execution.md` |
+| `stuck.timeout-exceeded` | `cases/stuck-execution.md` |
+| `stuck.resume-failed` | `cases/stuck-execution.md` |
+| `data.timezone-mismatch` | `cases/timezone-mismatch.md` |
+| `error.unknown` | `cases/unknown-failure.md` |
 
 ## Cross-references
 
