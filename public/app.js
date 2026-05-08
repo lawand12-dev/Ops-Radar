@@ -1,1273 +1,3932 @@
-const state = {
-  health: {
-    api: false,
-    n8n: false,
-    monitoring: false
-  },
-  projects: [],
-  report: null,
-  analytics: null,
-  selectedProjectId: null,
-  selectedProjectSnapshot: null,
-  preflightByProject: {},
-  credentialBindingsByProject: {},
-  healthByProject: {},
-  executionsByProject: {},
-  activityByProject: {},
-  executionDetailByProject: {},
-  chatStream: [],
-  builderTimelineState: "workflow_generated",
-  deletingProjectId: null
-};
+/* ============================================================
+   OpsRadar — frontend application
+   Vanilla JS, zero dependencies, hash-routed SPA.
+   ============================================================ */
 
-const DEBUG_UI = (() => {
-  const host = String(window.location.hostname || "").toLowerCase();
-  return host === "localhost" || host === "127.0.0.1" || host === "::1";
-})();
+/* ============================================================
+   1) DOM helpers
+   ============================================================ */
 
-const el = {
-  apiStatusPill: document.getElementById("apiStatusPill"),
-  n8nStatusPill: document.getElementById("n8nStatusPill"),
-  monitorStatusPill: document.getElementById("monitorStatusPill"),
-  refreshAllBtn: document.getElementById("refreshAllBtn"),
-  toggleSidebarBtn: document.getElementById("toggleSidebarBtn"),
-  projectsSidebar: document.getElementById("projectsSidebar"),
-  mainCenter: document.getElementById("mainCenter"),
-  detailPanel: document.getElementById("detailPanel"),
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  projectSearchInput: document.getElementById("projectSearchInput"),
-  newReportBtn: document.getElementById("newReportBtn"),
-  projectStatsCards: document.getElementById("projectStatsCards"),
-  projectsList: document.getElementById("projectsList"),
+function h(tag, props, ...children) {
+  // Component support: when `tag` is a function, treat it as a component constructor
+  // that returns a Node. Lets us write `h(Skeleton, { variant: "block" })` like JSX.
+  if (typeof tag === "function") {
+    return tag(props || {}, ...children);
+  }
+  const el = document.createElement(tag);
+  if (props) {
+    for (const [key, value] of Object.entries(props)) {
+      if (value === null || value === undefined || value === false) continue;
+      if (key === "class" || key === "className") {
+        el.className = Array.isArray(value) ? value.filter(Boolean).join(" ") : String(value);
+      } else if (key === "style" && typeof value === "object") {
+        Object.assign(el.style, value);
+      } else if (key === "dataset" && typeof value === "object") {
+        Object.assign(el.dataset, value);
+      } else if (key.startsWith("on") && typeof value === "function") {
+        el.addEventListener(key.slice(2).toLowerCase(), value);
+      } else if (key === "html") {
+        el.innerHTML = String(value);
+      } else if (typeof value === "boolean") {
+        if (value) el.setAttribute(key, "");
+      } else {
+        el.setAttribute(key, String(value));
+      }
+    }
+  }
+  appendChildren(el, children);
+  return el;
+}
+function appendChildren(parent, children) {
+  for (const child of children.flat(Infinity)) {
+    if (child === null || child === undefined || child === false) continue;
+    if (child instanceof Node) parent.appendChild(child);
+    else parent.appendChild(document.createTextNode(String(child)));
+  }
+}
 
-  chatForm: document.getElementById("chatForm"),
-  chatInput: document.getElementById("chatInput"),
-  generateBtn: document.getElementById("generateBtn"),
-  retryFixBtn: document.getElementById("retryFixBtn"),
-  chatStream: document.getElementById("chatStream"),
-  builderTimeline: document.getElementById("builderTimeline"),
-
-  reportSearchInput: document.getElementById("reportSearchInput"),
-  reportFilterSelect: document.getElementById("reportFilterSelect"),
-  refreshReportBtn: document.getElementById("refreshReportBtn"),
-  reportTotalsCards: document.getElementById("reportTotalsCards"),
-  reportTableBody: document.getElementById("reportTableBody"),
-
-  detailProjectTitle: document.getElementById("detailProjectTitle"),
-  detailLifecycleBadge: document.getElementById("detailLifecycleBadge"),
-  tabButtons: Array.from(document.querySelectorAll(".tab-btn")),
-  tabPanels: Array.from(document.querySelectorAll(".tab-panel")),
-
-  overviewCards: document.getElementById("overviewCards"),
-  deployInactiveBtn: document.getElementById("deployInactiveBtn"),
-  activateBtn: document.getElementById("activateBtn"),
-  redeployBtn: document.getElementById("redeployBtn"),
-  deactivateBtn: document.getElementById("deactivateBtn"),
-  openN8nWorkflowBtn: document.getElementById("openN8nWorkflowBtn"),
-  refreshHealthBtn: document.getElementById("refreshHealthBtn"),
-  workflowJsonBox: document.getElementById("workflowJsonBox"),
-
-  credentialsSummary: document.getElementById("credentialsSummary"),
-  credentialsCards: document.getElementById("credentialsCards"),
-  checkRequirementsBtn: document.getElementById("checkRequirementsBtn"),
-  saveBindingsBtn: document.getElementById("saveBindingsBtn"),
-  openN8nCredentialsBtn: document.getElementById("openN8nCredentialsBtn"),
-
-  monitoringSummary: document.getElementById("monitoringSummary"),
-  loadExecutionsBtn: document.getElementById("loadExecutionsBtn"),
-  executionsTableBody: document.getElementById("executionsTableBody"),
-  executionDetailBox: document.getElementById("executionDetailBox"),
-
-  refreshActivityBtn: document.getElementById("refreshActivityBtn"),
-  activityFeed: document.getElementById("activityFeed"),
-
-  deleteAutomationBtn: document.getElementById("deleteAutomationBtn"),
-  deleteWarningsBox: document.getElementById("deleteWarningsBox"),
-  deleteModal: document.getElementById("deleteModal"),
-  cancelDeleteBtn: document.getElementById("cancelDeleteBtn"),
-  confirmDeleteBtn: document.getElementById("confirmDeleteBtn"),
-
-  mobileNavButtons: Array.from(document.querySelectorAll(".mobile-nav button")),
-  toast: document.getElementById("toast")
-};
+function clear(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+function mount(root, ...children) {
+  clear(root);
+  appendChildren(root, children);
+}
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-function formatDate(value) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleString("ar-IQ");
-}
+/* ============================================================
+   2) Icons (inline SVG, currentColor)
+   ============================================================ */
 
-function toNumber(value, fallback = 0) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
-}
-
-function isFailureStatus(status) {
-  const normalized = String(status || "").toLowerCase();
-  return ["failing", "failure", "failed", "error", "crashed"].includes(normalized);
-}
-
-function lifecycleLabel(value) {
-  const normalized = String(value || "unknown").toLowerCase();
+function icon(name, size = 18) {
+  const svg = (paths) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
   const map = {
-    draft: "draft",
-    validated: "validated",
-    rejected: "rejected",
-    deployed_inactive: "deployed inactive",
-    deployed_active: "active",
-    failed: "failed",
-    missing_in_n8n: "missing in n8n",
-    n8n_check_failed: "n8n check failed",
-    no_workflow: "no workflow"
+    home: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
+    builder: svg('<path d="M12 3v18"/><path d="M3 12h18"/><circle cx="12" cy="12" r="9"/>'),
+    projects: svg('<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/>'),
+    workflows: svg('<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M6 9v3h12v3"/>'),
+    events: svg('<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'),
+    analytics: svg('<path d="M3 21V3"/><path d="M21 21H3"/><path d="M7 17l4-6 4 3 4-7"/>'),
+    refresh: svg('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'),
+    plus: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+    search: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
+    chevronRight: svg('<path d="M9 18l6-6-6-6"/>'),
+    chevronDown: svg('<path d="M6 9l6 6 6-6"/>'),
+    sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'),
+    moon: svg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
+    menu: svg('<path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/>'),
+    close: svg('<path d="M18 6L6 18"/><path d="M6 6l12 12"/>'),
+    inbox: svg('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'),
+    info: svg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".5" fill="currentColor"/>'),
+    play: svg('<path d="M5 3l14 9-14 9V3z" fill="currentColor"/>'),
+    stop: svg('<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>'),
+    trash: svg('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>'),
+    external: svg('<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>'),
+    check: svg('<path d="M20 6L9 17l-5-5"/>'),
+    alert: svg('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>'),
+    settings: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+    deploy: svg('<path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/><path d="M12 4v12"/><path d="M7 9l5-5 5 5"/>'),
+    list: svg('<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/>')
   };
-  return map[normalized] || normalized;
+  const wrap = document.createElement("span");
+  wrap.className = "icon-wrap";
+  wrap.style.display = "inline-flex";
+  wrap.innerHTML = map[name] || "";
+  return wrap;
 }
 
-function healthLabel(value) {
-  const normalized = String(value || "unknown").toLowerCase();
-  return ["healthy", "warning", "failing", "unknown", "inactive"].includes(normalized)
-    ? normalized
-    : "unknown";
+/* ============================================================
+   3) Store (subscribers)
+   ============================================================ */
+
+function createStore(initial) {
+  let state = initial;
+  const subs = new Set();
+  return {
+    get: () => state,
+    set(patch) {
+      const next = typeof patch === "function" ? patch(state) : { ...state, ...patch };
+      state = next;
+      subs.forEach((fn) => {
+        try { fn(state); } catch (err) { console.error(err); }
+      });
+    },
+    subscribe(fn) {
+      subs.add(fn);
+      return () => subs.delete(fn);
+    }
+  };
 }
 
-function badgeClassForLifecycle(lifecycle) {
-  const normalized = String(lifecycle || "").toLowerCase();
-  if (normalized === "deployed_active") return "status-ok";
-  if (normalized === "validated" || normalized === "deployed_inactive") return "status-warn";
-  if (normalized === "rejected" || normalized === "failed" || normalized === "missing_in_n8n") {
-    return "status-bad";
+const store = createStore({
+  theme: localStorage.getItem("opsradar.theme") || "dark",
+  sidebar: localStorage.getItem("opsradar.sidebar") === "collapsed" ? "collapsed" : "open",
+  health: { api: "checking", n8n: "checking", monitoring: "checking", monitoring_enabled: false },
+  projects: { items: null, loading: false, error: null, lastFetched: 0 },
+  report: { data: null, loading: false, error: null, lastFetched: 0 },
+  analytics: { data: null, loading: false, error: null, lastFetched: 0 },
+  events: {
+    items: [], // aggregated event list (newest first)
+    byProject: {}, // projectId -> { items, etag }
+    filters: { projectId: "all", severity: "all", q: "", eventType: "all" },
+    selectedId: null,
+    paused: false,
+    lastTick: 0
+  },
+  chat: {
+    messages: [], // { role, content, ts }
+    generating: false,
+    progressText: "",
+    lastResult: null, // ChatResult
+    error: null
+  },
+  detail: {
+    projectId: null,
+    snapshot: null, // { project, workflow, health }
+    bindings: null, // /credential-bindings response
+    preflight: null, // /deploy-check response
+    health: null, // /health response
+    activity: null, // /events response
+    executions: null, // /executions response
+    executionDetail: null, // /executions/:id response
+    loading: false,
+    error: null
+  },
+  ui: {
+    page: location.hash || "#/",
+    mobileSidebar: false,
+    modal: null,
+    toasts: []
   }
-  return "status-neutral";
+});
+
+const subscribe = store.subscribe.bind(store);
+const setState = store.set.bind(store);
+const getState = store.get.bind(store);
+
+/* ============================================================
+   4) Toast + Modal helpers
+   ============================================================ */
+
+let toastSeq = 0;
+function toast(message, tone = "info", { duration = 4000 } = {}) {
+  const id = ++toastSeq;
+  const next = [...getState().ui.toasts, { id, message, tone, duration }];
+  setState((s) => ({ ...s, ui: { ...s.ui, toasts: next } }));
+  if (duration > 0) setTimeout(() => dismissToast(id), duration);
+  return id;
+}
+function dismissToast(id) {
+  setState((s) => ({ ...s, ui: { ...s.ui, toasts: s.ui.toasts.filter((t) => t.id !== id) } }));
 }
 
-function badgeClassForHealth(status) {
-  const normalized = healthLabel(status);
-  if (normalized === "healthy") return "status-ok";
-  if (normalized === "warning" || normalized === "inactive") return "status-warn";
-  if (normalized === "failing") return "status-bad";
-  return "status-neutral";
+function openModal(modal) {
+  setState((s) => ({ ...s, ui: { ...s.ui, modal } }));
+}
+function closeModal() {
+  setState((s) => ({ ...s, ui: { ...s.ui, modal: null } }));
 }
 
-function setToast(message, tone = "neutral") {
-  if (!el.toast) return;
-  el.toast.textContent = message;
-  el.toast.className = "toast show";
-  if (tone === "error") {
-    el.toast.style.borderColor = "rgba(255, 92, 122, 0.45)";
-    el.toast.style.color = "#ffd6df";
-  } else if (tone === "success") {
-    el.toast.style.borderColor = "rgba(92, 255, 177, 0.45)";
-    el.toast.style.color = "#c9ffe6";
-  } else {
-    el.toast.style.borderColor = "rgba(255,255,255,0.16)";
-    el.toast.style.color = "#e5ecf6";
+/* ============================================================
+   5) API client
+   ============================================================ */
+
+class ApiError extends Error {
+  constructor(message, code, status, details) {
+    super(message);
+    this.code = code || "UNKNOWN";
+    this.status = status || 0;
+    this.details = details || null;
   }
-  clearTimeout(setToast.timer);
-  setToast.timer = setTimeout(() => {
-    el.toast.className = "toast";
-  }, 3600);
 }
 
-async function apiFetch(path, options = {}) {
-  const response = await fetch(path, options);
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const code = payload?.error?.code ? `[${payload.error.code}] ` : "";
-    const message = payload?.error?.message || `Request failed (${response.status})`;
-    throw new Error(`${code}${message}`);
+async function request(path, { method = "GET", body, signal, headers } = {}) {
+  const init = { method, signal, headers: { ...(headers || {}) } };
+  if (body !== undefined) {
+    init.headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(body);
+  }
+  let res;
+  try {
+    res = await fetch(path, init);
+  } catch (err) {
+    if (err && err.name === "AbortError") throw err;
+    throw new ApiError(`Network error contacting backend (${err.message || err}).`, "NETWORK", 0);
+  }
+  let payload = null;
+  const text = await res.text();
+  if (text) {
+    try { payload = JSON.parse(text); } catch { payload = { raw: text }; }
+  }
+  if (!res.ok) {
+    const errBody = payload?.error || {};
+    throw new ApiError(
+      errBody.message || `Request failed (${res.status})`,
+      errBody.code || `HTTP_${res.status}`,
+      res.status,
+      errBody.details ?? null
+    );
   }
   return payload;
 }
 
-function getReportItems() {
-  return Array.isArray(state.report?.items) ? state.report.items : [];
-}
+const api = {
+  health: () => request("/health"),
+  analytics: () => request("/analytics"),
 
-function getReportItem(projectId) {
-  return getReportItems().find((item) => item.project_id === projectId) || null;
-}
+  projects: {
+    list: ({ limit = 200, verifyN8n = true } = {}) =>
+      request(`/projects?limit=${limit}&offset=0&verify_n8n=${verifyN8n ? 1 : 0}`),
+    report: ({ limit = 500, verifyN8n = true } = {}) =>
+      request(`/projects/report?limit=${limit}&offset=0&verify_n8n=${verifyN8n ? 1 : 0}`),
+    get: (id) => request(`/projects/${encodeURIComponent(id)}`),
+    workflow: (id) => request(`/projects/${encodeURIComponent(id)}/workflow`),
+    messages: (id) => request(`/projects/${encodeURIComponent(id)}/messages`),
+    events: (id, { limit = 100 } = {}) =>
+      request(`/projects/${encodeURIComponent(id)}/events?limit=${limit}`),
+    health: (id) => request(`/projects/${encodeURIComponent(id)}/health`),
+    refreshHealth: (id) =>
+      request(`/projects/${encodeURIComponent(id)}/health/refresh`, { method: "POST", body: {} }),
+    executions: (id, { limit = 20, status } = {}) => {
+      const q = new URLSearchParams({ limit: String(limit) });
+      if (status) q.set("status", status);
+      return request(`/projects/${encodeURIComponent(id)}/executions?${q.toString()}`);
+    },
+    execution: (id, executionId) =>
+      request(`/projects/${encodeURIComponent(id)}/executions/${encodeURIComponent(executionId)}`),
+    bindings: {
+      get: (id) => request(`/projects/${encodeURIComponent(id)}/credential-bindings`),
+      save: (id, bindings) =>
+        request(`/projects/${encodeURIComponent(id)}/credential-bindings`, {
+          method: "PUT",
+          body: { bindings }
+        })
+    },
+    deployCheck: (id, body = {}) =>
+      request(`/projects/${encodeURIComponent(id)}/deploy-check`, { method: "POST", body }),
+    deploy: (id, body) =>
+      request(`/projects/${encodeURIComponent(id)}/deploy`, { method: "POST", body }),
+    fix: (id) => request(`/projects/${encodeURIComponent(id)}/fix-workflow`, { method: "POST", body: {} }),
+    delete: (id) => request(`/projects/${encodeURIComponent(id)}`, { method: "DELETE" })
+  },
 
-function uiDebug(step, meta = {}) {
-  if (!DEBUG_UI) return;
-  const stamp = new Date().toISOString();
-  console.info(`[ops-radar-ui] ${stamp} ${step}`, meta);
-}
+  workflows: {
+    status: (workflowId) => request(`/workflows/${encodeURIComponent(workflowId)}/status`)
+  },
 
-function debugWorkflowLinkContext(stage) {
-  if (!DEBUG_UI) return;
+  n8n: {
+    credentials: () => request("/n8n/credentials"),
+    credentialSchema: (type) =>
+      request(`/n8n/credentials/schema/${encodeURIComponent(type)}`),
+    createCredential: (body) => request("/n8n/credentials", { method: "POST", body })
+  },
 
-  const projectId = state.selectedProjectId;
-  const snapshot = projectId ? getProjectSnapshot(projectId) : null;
-  const reportItem = projectId ? getReportItem(projectId) : null;
+  chat: {
+    send: (message, signal) => request("/chat", { method: "POST", body: { message }, signal })
+  },
 
-  console.info("[ops-radar-debug] workflow-link", {
-    stage,
-    project_id: projectId || null,
-    workflow_id: snapshot?.workflow?.id || null,
-    n8n_workflow_id: snapshot?.workflow?.n8n_workflow_id || null,
-    n8n_workflow_url: reportItem?.n8n_workflow_url || null
-  });
-}
+  events: {
+    // External ingest endpoint. Token (if any) is sent via x-event-token header so we can
+    // call it from a "send test event" debug widget without leaking the token via Bearer.
+    ingest: (body, token) =>
+      request("/event", {
+        method: "POST",
+        body,
+        ...(token ? { headers: { "x-event-token": token } } : {})
+      })
+  },
 
-function getProjectSnapshot(projectId) {
-  return state.selectedProjectId === projectId ? state.selectedProjectSnapshot : null;
-}
-
-function getPreflight(projectId) {
-  return state.preflightByProject[projectId] || null;
-}
-
-function getBindings(projectId) {
-  if (!state.credentialBindingsByProject[projectId]) {
-    state.credentialBindingsByProject[projectId] = [];
+  debug: {
+    knowledgeBase: (query) =>
+      request(`/debug/knowledge-base?query=${encodeURIComponent(query || "")}`),
+    workflow: (projectId, { verifyN8n = true } = {}) =>
+      request(`/debug/workflow/${encodeURIComponent(projectId)}?verify_n8n=${verifyN8n ? 1 : 0}`),
+    nodeVersions: (projectId, { verifyN8n = true } = {}) =>
+      request(`/debug/workflow/${encodeURIComponent(projectId)}/node-versions?verify_n8n=${verifyN8n ? 1 : 0}`)
   }
-  return state.credentialBindingsByProject[projectId];
-}
+};
 
-function bindingKey(binding) {
-  return `${binding.node_id || ""}|${binding.credential_type}`;
-}
+/* ============================================================
+   6) Realtime abstraction (polling, SSE-ready)
+   ============================================================ */
 
-function findBindingForRequirement(projectId, requirement) {
-  const list = getBindings(projectId);
-  return (
-    list.find(
-      (binding) =>
-        String(binding.node_id || "") === String(requirement.node_id || "") &&
-        String(binding.credential_type || "") === String(requirement.credential_type || "")
-    ) || null
-  );
-}
+function createPoller({ key, intervalMs, fn, onResult, onError }) {
+  let stopped = false;
+  let timer = null;
+  let inFlight = false;
 
-function upsertBinding(projectId, nextBinding) {
-  const list = getBindings(projectId);
-  const key = bindingKey(nextBinding);
-  const existingIndex = list.findIndex((item) => bindingKey(item) === key);
-  if (existingIndex === -1) {
-    list.push(nextBinding);
-  } else {
-    list[existingIndex] = nextBinding;
-  }
-}
-
-function cleanupBindings(projectId) {
-  const list = getBindings(projectId).filter((binding) => {
-    const id = String(binding.id || "").trim();
-    const name = String(binding.name || "").trim();
-    return id.length > 0 || name.length > 0;
-  });
-  state.credentialBindingsByProject[projectId] = list;
-  return list;
-}
-
-function updateStatusPill(node, label, className) {
-  node.textContent = label;
-  node.className = `status-pill ${className}`;
-}
-
-async function refreshSystemHealth() {
-  try {
-    const health = await apiFetch("/health");
-    state.health.api = true;
-    state.health.monitoring = Boolean(health.monitoring_enabled);
-    updateStatusPill(el.apiStatusPill, "API healthy", "status-ok");
-    updateStatusPill(
-      el.monitorStatusPill,
-      state.health.monitoring ? "monitoring active" : "monitoring off",
-      state.health.monitoring ? "status-ok" : "status-warn"
-    );
-  } catch {
-    state.health.api = false;
-    updateStatusPill(el.apiStatusPill, "API down", "status-bad");
-    updateStatusPill(el.monitorStatusPill, "monitoring unknown", "status-neutral");
-  }
-
-  try {
-    await apiFetch("/n8n/credentials");
-    state.health.n8n = true;
-    updateStatusPill(el.n8nStatusPill, "n8n connected", "status-ok");
-  } catch {
-    state.health.n8n = false;
-    updateStatusPill(el.n8nStatusPill, "n8n unavailable", "status-bad");
-  }
-}
-
-async function loadProjects() {
-  uiDebug("loadProjects:start");
-  const payload = await apiFetch("/projects?limit=200&offset=0&verify_n8n=1");
-  state.projects = Array.isArray(payload.items) ? payload.items : [];
-  uiDebug("loadProjects:done", { count: state.projects.length });
-}
-
-async function loadReport() {
-  uiDebug("loadReport:start");
-  state.report = await apiFetch("/projects/report?limit=500&offset=0&verify_n8n=1");
-  uiDebug("loadReport:done", { count: Array.isArray(state.report?.items) ? state.report.items.length : 0 });
-}
-
-async function loadAnalytics() {
-  try {
-    state.analytics = await apiFetch("/analytics");
-  } catch {
-    state.analytics = null;
-  }
-}
-
-function renderBuilderTimeline() {
-  const steps = Array.from(el.builderTimeline?.querySelectorAll("span") || []);
-  steps.forEach((step) => step.classList.remove("active"));
-
-  const stateValue = String(state.builderTimelineState || "");
-  const isRejected = stateValue === "rejected";
-  const order = ["workflow_generated", "validated", "deployed_inactive", "deployed_active"];
-  const targetIndex = order.indexOf(stateValue);
-
-  if (isRejected) {
-    steps.forEach((step) => {
-      if (step.dataset.step === "workflow_generated" || step.dataset.step === "rejected") {
-        step.classList.add("active");
-      }
-    });
-    return;
-  }
-
-  steps.forEach((step) => {
-    const index = order.indexOf(step.dataset.step || "");
-    if (index !== -1 && targetIndex !== -1 && index <= targetIndex) {
-      step.classList.add("active");
+  const tick = async () => {
+    if (stopped || inFlight) return;
+    inFlight = true;
+    try {
+      const result = await fn();
+      if (!stopped) onResult?.(result);
+    } catch (err) {
+      if (!stopped) onError?.(err);
+    } finally {
+      inFlight = false;
+      if (!stopped) timer = setTimeout(tick, intervalMs);
     }
-  });
-}
-
-function pushChatItem(kind, payload) {
-  state.chatStream.push({
-    kind,
-    payload,
-    created_at: new Date().toISOString()
-  });
-  if (state.chatStream.length > 30) {
-    state.chatStream = state.chatStream.slice(-30);
-  }
-}
-
-function renderChatStream() {
-  if (!el.chatStream) return;
-  if (state.chatStream.length === 0) {
-    el.chatStream.innerHTML = `<div class="card-message"><h5>Ready</h5><p>ابدأ بطلب automation عام وسيقوم النظام ببناء workflow قابل للنشر على n8n.</p></div>`;
-    return;
-  }
-
-  el.chatStream.innerHTML = state.chatStream
-    .map((entry) => {
-      if (entry.kind === "user") {
-        return `<div class="bubble user">${escapeHtml(entry.payload.message)}</div>`;
-      }
-      if (entry.kind === "ai-summary") {
-        return `
-          <div class="bubble ai">
-            <div class="card-message">
-              <h5>Workflow Summary</h5>
-              <p>${escapeHtml(entry.payload.summary)}</p>
-            </div>
-          </div>
-        `;
-      }
-      if (entry.kind === "validation") {
-        return `
-          <div class="bubble ai">
-            <div class="card-message">
-              <h5>Validation</h5>
-              <p>${escapeHtml(entry.payload.message)}</p>
-            </div>
-          </div>
-        `;
-      }
-      if (entry.kind === "next-action") {
-        return `
-          <div class="bubble ai">
-            <div class="card-message">
-              <h5>Next Action</h5>
-              <p>${escapeHtml(entry.payload.message)}</p>
-            </div>
-          </div>
-        `;
-      }
-      if (entry.kind === "loading") {
-        return `<div class="bubble ai">Generating workflow...</div>`;
-      }
-      return "";
-    })
-    .join("");
-  el.chatStream.scrollTop = el.chatStream.scrollHeight;
-}
-
-function buildSidebarStats() {
-  const report = state.report;
-  const totals = report?.totals || {};
-  const overview = state.analytics?.overview || {};
-  const cards = [
-    ["Total", toNumber(totals.projects)],
-    ["Active", toNumber(totals.deployed_active)],
-    ["Inactive", toNumber(totals.deployed_inactive)],
-    ["Failing", toNumber(totals.failing)],
-    ["Warning", toNumber(totals.warnings)],
-    ["Success Exec", toNumber(overview.total_runs) - toNumber(overview.failed_runs)],
-    ["Failed Exec", toNumber(overview.failed_runs)],
-    ["Open Alerts", toNumber(overview.unresolved_alerts)],
-    ["Last Check", formatDate(report?.generated_at)]
-  ];
-
-  return cards
-    .map(
-      ([label, value]) => `
-        <div class="stat">
-          <div class="label">${escapeHtml(label)}</div>
-          <div class="value">${escapeHtml(value)}</div>
-        </div>
-      `
-    )
-    .join("");
-}
-
-function renderSidebar() {
-  el.projectStatsCards.innerHTML = buildSidebarStats();
-  const search = String(el.projectSearchInput.value || "").trim().toLowerCase();
-  const reportMap = new Map(getReportItems().map((item) => [item.project_id, item]));
-
-  const rows = state.projects.filter((item) => {
-    const name = String(item.project?.name || "").toLowerCase();
-    return !search || name.includes(search);
-  });
-
-  if (rows.length === 0) {
-    el.projectsList.innerHTML = `<div class="summary-strip">No projects found.</div>`;
-    return;
-  }
-
-  el.projectsList.innerHTML = rows
-    .map((row) => {
-      const project = row.project || {};
-      const workflow = row.workflow || {};
-      const lifecycle = reportMap.get(project.id)?.lifecycle_state || row.lifecycle_state || "unknown";
-      const active = state.selectedProjectId === project.id;
-      return `
-        <article class="project-card ${active ? "active" : ""}" data-project-id="${escapeHtml(project.id)}">
-          <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
-          <div class="project-meta">
-            lifecycle: ${escapeHtml(lifecycleLabel(lifecycle))}
-          </div>
-          <div class="project-meta">
-            workflow: ${escapeHtml(workflow.id || "-")}
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function filterReportItems() {
-  const search = String(el.reportSearchInput.value || "").trim().toLowerCase();
-  const filter = String(el.reportFilterSelect.value || "all");
-  return getReportItems().filter((item) => {
-    const nameMatches = String(item.project_name || "").toLowerCase().includes(search);
-    if (!nameMatches) return false;
-
-    if (filter === "all") return true;
-    if (filter === "failing") return item.health_status === "failing";
-    if (filter === "warning") return item.health_status === "warning";
-    return String(item.lifecycle_state || "") === filter;
-  });
-}
-
-function renderReport() {
-  const totals = state.report?.totals || {};
-  const cards = [
-    ["Total Projects", toNumber(totals.projects)],
-    ["Validated", toNumber(totals.validated)],
-    ["Rejected", toNumber(totals.rejected)],
-    ["Deployed Active", toNumber(totals.deployed_active)],
-    ["Deployed Inactive", toNumber(totals.deployed_inactive)],
-    ["Failing", toNumber(totals.failing)],
-    ["Warning", toNumber(totals.warnings)],
-    ["Generated At", formatDate(state.report?.generated_at)]
-  ];
-  el.reportTotalsCards.innerHTML = cards
-    .map(
-      ([label, value]) => `
-        <div class="stat-card">
-          <div class="label">${escapeHtml(label)}</div>
-          <div class="value">${escapeHtml(value)}</div>
-        </div>
-      `
-    )
-    .join("");
-
-  const rows = filterReportItems();
-  if (rows.length === 0) {
-    el.reportTableBody.innerHTML = `<tr><td colspan="7">No items.</td></tr>`;
-    return;
-  }
-
-  el.reportTableBody.innerHTML = rows
-    .map((item) => {
-      const lifecycle = lifecycleLabel(item.lifecycle_state);
-      const health = healthLabel(item.health_status);
-      return `
-        <tr>
-          <td>${escapeHtml(item.project_name)}</td>
-          <td><span class="status-pill ${badgeClassForLifecycle(item.lifecycle_state)}">${escapeHtml(lifecycle)}</span></td>
-          <td><span class="status-pill ${badgeClassForHealth(item.health_status)}">${escapeHtml(health)}</span></td>
-          <td>${toNumber(item.missing_credentials_count)} / ${toNumber(item.required_credentials_count)}</td>
-          <td>${item.n8n_exists === null ? "-" : item.n8n_exists ? "exists" : "missing"}</td>
-          <td>${escapeHtml(item.recommended_action || "-")}</td>
-          <td><button class="btn btn-ghost btn-sm open-project-btn" data-project-id="${escapeHtml(item.project_id)}">Open</button></td>
-        </tr>
-      `;
-    })
-    .join("");
-}
-
-function renderOverview() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) {
-    el.detailProjectTitle.textContent = "Project Details";
-    el.detailLifecycleBadge.className = "status-pill status-neutral";
-    el.detailLifecycleBadge.textContent = "-";
-    el.overviewCards.innerHTML = `<div class="summary-strip">Select a project.</div>`;
-    el.workflowJsonBox.textContent = "Select a project.";
-    return;
-  }
-
-  const snapshot = state.selectedProjectSnapshot;
-  const reportItem = getReportItem(projectId);
-  const preflight = getPreflight(projectId);
-  const health = state.healthByProject[projectId] || null;
-
-  const lifecycleState = reportItem?.lifecycle_state || snapshot?.workflow?.status || "unknown";
-  debugWorkflowLinkContext("before_render_overview");
-  el.detailProjectTitle.textContent = snapshot?.project?.name || "Project";
-  el.detailLifecycleBadge.className = `status-pill ${badgeClassForLifecycle(lifecycleState)}`;
-  el.detailLifecycleBadge.textContent = lifecycleLabel(lifecycleState);
-
-  const cards = [
-    ["Workflow Status", snapshot?.workflow?.status || "-"],
-    ["n8n Workflow ID", snapshot?.workflow?.n8n_workflow_id || "-"],
-    ["n8n Exists", reportItem?.n8n_exists === null ? "-" : reportItem?.n8n_exists ? "yes" : "no"],
-    ["n8n Active", reportItem?.n8n_active === null ? "-" : reportItem?.n8n_active ? "yes" : "no"],
-    ["Can Deploy", reportItem?.can_deploy_inactive ? "yes" : "no"],
-    ["Can Activate", reportItem?.can_activate ? "yes" : "no"],
-    ["Can Redeploy", reportItem?.can_redeploy ? "yes" : "no"],
-    ["Health", healthLabel(reportItem?.health_status || health?.health_status)],
-    ["Last Run", formatDate(snapshot?.health?.last_run_at)],
-    ["Last Success", formatDate(health?.last_success_at)],
-    ["Last Failure", formatDate(health?.last_failure_at)],
-    ["Missing Credentials", toNumber(reportItem?.missing_credentials_count)],
-    ["Manual Credentials", toNumber(reportItem?.manual_credentials_count)],
-    ["Recommended", reportItem?.recommended_action || "-"]
-  ];
-
-  el.overviewCards.innerHTML = cards
-    .map(
-      ([label, value]) => `
-        <div class="stat-card">
-          <div class="label">${escapeHtml(label)}</div>
-          <div class="value">${escapeHtml(value)}</div>
-        </div>
-      `
-    )
-    .join("");
-
-  el.workflowJsonBox.textContent = JSON.stringify(snapshot?.workflow?.json || {}, null, 2);
-}
-
-function setOverviewButtonsState() {
-  const projectId = state.selectedProjectId;
-  const reportItem = projectId ? getReportItem(projectId) : null;
-  const lifecycle = String(reportItem?.lifecycle_state || "");
-  const hasProject = Boolean(projectId);
-
-  el.deployInactiveBtn.disabled = !hasProject || !reportItem?.can_deploy_inactive;
-  el.activateBtn.disabled = !hasProject || !reportItem?.can_activate;
-  el.redeployBtn.disabled = !hasProject || !reportItem?.can_redeploy;
-  el.deactivateBtn.disabled = !(hasProject && lifecycle === "deployed_active");
-  el.openN8nWorkflowBtn.disabled = !(hasProject && reportItem?.n8n_workflow_url);
-  el.refreshHealthBtn.disabled = !hasProject;
-  el.retryFixBtn.disabled = !(hasProject && lifecycle === "rejected");
-  el.deleteAutomationBtn.disabled = !hasProject;
-}
-
-function renderCredentials() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) {
-    el.credentialsSummary.textContent = "Select a project.";
-    el.credentialsCards.innerHTML = "";
-    el.checkRequirementsBtn.disabled = true;
-    el.saveBindingsBtn.disabled = true;
-    el.openN8nCredentialsBtn.disabled = true;
-    return;
-  }
-
-  const preflight = getPreflight(projectId);
-  el.checkRequirementsBtn.disabled = false;
-  el.saveBindingsBtn.disabled = false;
-  el.openN8nCredentialsBtn.disabled = !(preflight && preflight.n8n_credentials_url);
-
-  if (!preflight) {
-    el.credentialsSummary.textContent = "No deploy-check data. Click Check Requirements.";
-    el.credentialsCards.innerHTML = "";
-    return;
-  }
-
-  const required = Array.isArray(preflight.requirements) ? preflight.requirements : [];
-  const missingCount = Array.isArray(preflight.missing_credentials)
-    ? preflight.missing_credentials.length
-    : 0;
-  el.credentialsSummary.textContent = `required: ${required.length} | missing: ${missingCount} | manual: ${preflight.manual_credentials?.length || 0}`;
-
-  if (required.length === 0) {
-    el.credentialsCards.innerHTML = `<div class="summary-strip">No credentials required by this workflow.</div>`;
-    return;
-  }
-
-  el.credentialsCards.innerHTML = required
-    .map((item) => {
-      const binding = findBindingForRequirement(projectId, item) || {};
-      const resolved = Boolean(item.resolved);
-      return `
-        <article class="credential-card">
-          <h4>${escapeHtml(item.node_name)} · ${escapeHtml(item.credential_type)}</h4>
-          <div class="meta">placeholder: ${escapeHtml(item.placeholder_credential_name)}</div>
-          <div class="meta">status: <span class="status-pill ${resolved ? "status-ok" : "status-warn"}">${resolved ? "resolved" : "unresolved"}</span></div>
-          <div class="meta">Create or complete this credential inside n8n, then bind it here.</div>
-          <div class="bind-row">
-            <input class="input bind-id-input" data-node-id="${escapeHtml(item.node_id)}" data-credential-type="${escapeHtml(item.credential_type)}" placeholder="credential id" value="${escapeHtml(binding.id || "")}" />
-            <input class="input bind-name-input" data-node-id="${escapeHtml(item.node_id)}" data-credential-type="${escapeHtml(item.credential_type)}" placeholder="credential name" value="${escapeHtml(binding.name || "")}" />
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-
-  bindCredentialInputs();
-}
-
-function bindCredentialInputs() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-
-  const handle = (target, field) => {
-    const nodeId = target.dataset.nodeId || null;
-    const credentialType = target.dataset.credentialType || "";
-    const value = String(target.value || "").trim();
-    const existing = getBindings(projectId).find(
-      (item) => String(item.node_id || "") === String(nodeId || "") && item.credential_type === credentialType
-    ) || {
-      node_id: nodeId,
-      node_name: null,
-      credential_type: credentialType,
-      id: "",
-      name: ""
-    };
-    const next = { ...existing, [field]: value };
-    upsertBinding(projectId, next);
   };
 
-  document.querySelectorAll(".bind-id-input").forEach((input) => {
-    input.addEventListener("input", (event) => handle(event.target, "id"));
-  });
-  document.querySelectorAll(".bind-name-input").forEach((input) => {
-    input.addEventListener("input", (event) => handle(event.target, "name"));
-  });
+  tick();
+  return {
+    stop() {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    },
+    triggerNow() {
+      if (timer) clearTimeout(timer);
+      tick();
+    }
+  };
 }
 
-function renderMonitoring() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) {
-    el.monitoringSummary.textContent = "Select a project.";
-    el.executionsTableBody.innerHTML = `<tr><td colspan="7">-</td></tr>`;
-    el.executionDetailBox.textContent = "-";
-    el.loadExecutionsBtn.disabled = true;
-    return;
+// Each tab maintains its own active pollers.
+const pollers = new Map();
+function startPoller(key, options) {
+  stopPoller(key);
+  pollers.set(key, createPoller(options));
+}
+function stopPoller(key) {
+  const p = pollers.get(key);
+  if (p) { p.stop(); pollers.delete(key); }
+}
+function stopAllPollers() {
+  for (const p of pollers.values()) p.stop();
+  pollers.clear();
+}
+
+/* ============================================================
+   7) Theme + Sidebar
+   ============================================================ */
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("opsradar.theme", theme);
+}
+function applySidebar(mode) {
+  document.getElementById("app").dataset.sidebar = mode;
+  localStorage.setItem("opsradar.sidebar", mode);
+}
+function toggleTheme() {
+  const next = getState().theme === "dark" ? "light" : "dark";
+  setState({ theme: next });
+  applyTheme(next);
+}
+function toggleSidebar() {
+  const next = getState().sidebar === "open" ? "collapsed" : "open";
+  setState({ sidebar: next });
+  applySidebar(next);
+}
+
+/* ============================================================
+   8) Format / utility helpers
+   ============================================================ */
+
+function fmtDate(value, options = {}) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, {
+    year: "numeric", month: "short", day: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+    ...options
+  });
+}
+function fmtRelative(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const diff = Date.now() - d.getTime();
+  const abs = Math.abs(diff);
+  const future = diff < 0;
+  const seconds = Math.round(abs / 1000);
+  if (seconds < 60) return future ? `in ${seconds}s` : `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return future ? `in ${minutes}m` : `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return future ? `in ${hours}h` : `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return future ? `in ${days}d` : `${days}d ago`;
+  return fmtDate(value, { hour: undefined, minute: undefined });
+}
+function fmtDuration(ms) {
+  if (ms === null || ms === undefined || !Number.isFinite(Number(ms))) return "—";
+  const n = Number(ms);
+  if (n < 1000) return `${n} ms`;
+  if (n < 60000) return `${(n / 1000).toFixed(1)} s`;
+  return `${(n / 60000).toFixed(1)} min`;
+}
+function fmtPct(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
+  return `${Number(n).toFixed(1)}%`;
+}
+
+function lifecycleLabel(value) {
+  const map = {
+    draft: "Draft",
+    validated: "Validated",
+    rejected: "Rejected",
+    deployed_inactive: "Deployed inactive",
+    deployed_active: "Active",
+    failed: "Failed",
+    missing_in_n8n: "Missing in n8n",
+    n8n_check_failed: "n8n check failed",
+    no_workflow: "No workflow"
+  };
+  const k = String(value || "unknown").toLowerCase();
+  return map[k] || k;
+}
+function lifecycleTone(v) {
+  const k = String(v || "").toLowerCase();
+  if (k === "deployed_active") return "ok";
+  if (k === "validated" || k === "deployed_inactive") return "warn";
+  if (k === "rejected" || k === "failed" || k === "missing_in_n8n") return "bad";
+  return "neutral";
+}
+function healthTone(v) {
+  const k = String(v || "").toLowerCase();
+  if (k === "healthy") return "ok";
+  if (k === "warning" || k === "inactive") return "warn";
+  if (k === "failing") return "bad";
+  return "neutral";
+}
+function severityTone(v) {
+  const k = String(v || "").toLowerCase();
+  if (k === "high") return "bad";
+  if (k === "medium") return "warn";
+  if (k === "low") return "info";
+  return "neutral";
+}
+function isFailureExecutionStatus(s) {
+  return ["error", "failed", "crashed", "failure"].includes(String(s || "").toLowerCase());
+}
+function isSuccessExecutionStatus(s) {
+  return ["success", "succeeded"].includes(String(s || "").toLowerCase());
+}
+
+/* ============================================================
+   9) Shared components
+   ============================================================ */
+
+function Badge({ tone = "neutral", text, dot = false, pulse = false }) {
+  const cls = ["badge", tone && `badge--${tone}`, pulse && "badge--pulse"].filter(Boolean).join(" ");
+  return h("span", { class: cls }, dot && h("span", { class: "badge__dot" }), text);
+}
+
+function Skeleton({ variant = "text", style }) {
+  return h("span", { class: `skeleton skeleton--${variant}`, style });
+}
+
+function Empty({ icon: ic = "inbox", title, hint, action }) {
+  return h(
+    "div",
+    { class: "empty" },
+    h("div", { class: "empty__icon" }, icon(ic, 22)),
+    h("div", { class: "empty__title" }, title || "Nothing here yet"),
+    hint && h("div", { class: "empty__hint" }, hint),
+    action && h("div", { class: "row" }, action)
+  );
+}
+
+function ErrorBanner({ error, onRetry }) {
+  const msg = error instanceof Error ? error.message : String(error || "Unknown error");
+  return h(
+    "div",
+    { class: "error-banner" },
+    icon("alert", 16),
+    h("span", { class: "flex-1" }, msg),
+    onRetry &&
+      h("button", { class: "btn btn--sm btn--ghost", onclick: onRetry }, icon("refresh", 14), "Retry")
+  );
+}
+
+/**
+ * n8n's run-time errors land in our DB as JSON-serialized NodeApiError payloads
+ * (description, message, httpCode, node, messages, stack, ...). Surfacing the raw
+ * blob is unreadable — extract the human parts and tuck the rest behind a toggle.
+ *
+ * Returns: { summary, httpCode, nodeName, nodeType, details }
+ *   - summary:  short human one-liner (description ?? message ?? name)
+ *   - details:  sanitized object — only the fields users can act on; `stack` is
+ *               truncated to first 6 lines so a misclick doesn't dump 4 KB.
+ *               `null` if the input wasn't structured.
+ */
+function parseN8nError(raw) {
+  if (raw === null || raw === undefined || raw === "") {
+    return { summary: "—", httpCode: null, nodeName: null, nodeType: null, details: null };
   }
 
-  const health = state.healthByProject[projectId] || null;
-  const executions = state.executionsByProject[projectId] || [];
-  el.loadExecutionsBtn.disabled = false;
-
-  if (!health) {
-    el.monitoringSummary.textContent = "Health data not loaded yet.";
-  } else {
-    el.monitoringSummary.textContent =
-      `health: ${healthLabel(health.health_status)} | last success: ${formatDate(health.last_success_at)} | last failure: ${formatDate(health.last_failure_at)}`;
+  let parsed = null;
+  if (typeof raw === "object") {
+    parsed = raw;
+  } else if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try { parsed = JSON.parse(trimmed); } catch { /* keep as string */ }
+    }
   }
 
-  if (!Array.isArray(executions) || executions.length === 0) {
-    el.executionsTableBody.innerHTML = `<tr><td colspan="7">No executions.</td></tr>`;
-    return;
+  if (!parsed || typeof parsed !== "object") {
+    // Plain text — collapse to first non-empty line, cap at 240 chars.
+    const oneLine = String(raw).split(/\r?\n/).find((l) => l.trim().length > 0) || String(raw);
+    return {
+      summary: oneLine.slice(0, 240),
+      httpCode: null,
+      nodeName: null,
+      nodeType: null,
+      details: null
+    };
   }
 
-  el.executionsTableBody.innerHTML = executions
-    .map((item) => `
-      <tr>
-        <td>${escapeHtml(formatDate(item.started_at || item.stopped_at))}</td>
-        <td><span class="status-pill ${isFailureStatus(item.status) ? "status-bad" : "status-ok"}">${escapeHtml(item.status || "-")}</span></td>
-        <td>${escapeHtml(item.duration_ms ?? "-")}</td>
-        <td>${escapeHtml(item.mode || "-")}</td>
-        <td>${escapeHtml(item.failed_node || "-")}</td>
-        <td>${escapeHtml(item.error_type || "-")}</td>
-        <td><button class="btn btn-ghost btn-sm execution-detail-btn" data-execution-id="${escapeHtml(item.id)}">Details</button></td>
-      </tr>
-    `)
-    .join("");
+  const description =
+    typeof parsed.description === "string" ? parsed.description.trim() : null;
+  const message = typeof parsed.message === "string" ? parsed.message.trim() : null;
+  const httpCode =
+    parsed.httpCode != null ? String(parsed.httpCode) : null;
+  const name = typeof parsed.name === "string" ? parsed.name : null;
+  const nodeName =
+    parsed.node && typeof parsed.node === "object" && typeof parsed.node.name === "string"
+      ? parsed.node.name
+      : null;
+  const nodeType =
+    parsed.node && typeof parsed.node === "object" && typeof parsed.node.type === "string"
+      ? parsed.node.type
+      : null;
 
-  document.querySelectorAll(".execution-detail-btn").forEach((button) => {
-    button.addEventListener("click", async () => {
-      try {
-        const details = await apiFetch(`/projects/${projectId}/executions/${encodeURIComponent(button.dataset.executionId)}`);
-        state.executionDetailByProject[projectId] = details;
-        el.executionDetailBox.textContent = JSON.stringify(details, null, 2);
-      } catch (error) {
-        setToast(error.message, "error");
+  // Pick the most informative line. Description is usually the upstream API's text
+  // ("Forbidden: bot was blocked by the user"); fall back to message/name.
+  let summary = description || message || name || "Unknown error";
+  if (httpCode) summary += ` (HTTP ${httpCode})`;
+
+  // Sanitized details for the collapsible viewer — drop the noisiest fields.
+  const details = {};
+  if (name) details.name = name;
+  if (description) details.description = description;
+  if (message && message !== description) details.message = message;
+  if (httpCode) details.httpCode = httpCode;
+  if (nodeName || nodeType) details.node = { name: nodeName, type: nodeType };
+  if (Array.isArray(parsed.messages) && parsed.messages.length > 0) {
+    details.messages = parsed.messages.slice(0, 5).map((m) => String(m).slice(0, 400));
+  }
+  if (typeof parsed.stack === "string") {
+    details.stack_preview = parsed.stack.split(/\r?\n/).slice(0, 6).join("\n");
+  }
+
+  return { summary, httpCode, nodeName, nodeType, details };
+}
+
+/**
+ * Renders a parsed error inline: summary line + a collapsed `<details>` with the
+ * sanitized object. Use this anywhere we previously dumped `raw_message` / `e.message`
+ * directly to the DOM.
+ */
+function ErrorDetail({ raw, label = "Show error details" }) {
+  const parsed = parseN8nError(raw);
+  return h(
+    "div",
+    { class: "col col--gap-2" },
+    h("div", { class: "text-sm" }, parsed.summary),
+    parsed.details
+      ? h(
+          "details",
+          { style: { marginTop: 4 } },
+          h(
+            "summary",
+            { style: { cursor: "pointer", color: "var(--fg-muted)", fontSize: "var(--fs-xs)" } },
+            label
+          ),
+          jsonHighlight(parsed.details)
+        )
+      : null
+  );
+}
+
+function Kpi({ label, value, hint, tone, sparkline }) {
+  return h(
+    "div",
+    { class: "kpi" },
+    h("div", { class: "kpi__label" }, label),
+    h("div", { class: ["kpi__value", tone === "small" && "kpi__value--small"] }, value),
+    hint && h("div", { class: ["kpi__delta", tone === "up" && "kpi__delta--up", tone === "down" && "kpi__delta--down"] }, hint),
+    sparkline && h("div", { class: "kpi__sparkline" }, sparkline)
+  );
+}
+
+function Sparkline(values, { stroke = "currentColor", height = 32, width = 80 } = {}) {
+  if (!values || values.length === 0) return null;
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 1);
+  const range = max - min || 1;
+  const stepX = width / Math.max(values.length - 1, 1);
+  const points = values
+    .map((v, i) => `${(i * stepX).toFixed(1)},${(height - ((v - min) / range) * height).toFixed(1)}`)
+    .join(" ");
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+  const polyline = document.createElementNS(ns, "polyline");
+  polyline.setAttribute("fill", "none");
+  polyline.setAttribute("stroke", stroke);
+  polyline.setAttribute("stroke-width", "1.5");
+  polyline.setAttribute("points", points);
+  svg.appendChild(polyline);
+  return svg;
+}
+
+function BarChart(values, labels, { height = 220 } = {}) {
+  const ns = "http://www.w3.org/2000/svg";
+  const max = Math.max(...values, 1);
+  const w = 720;
+  const h = height;
+  const padX = 32, padY = 28;
+  const innerW = w - padX * 2;
+  const innerH = h - padY * 2;
+  const barW = innerW / Math.max(values.length, 1);
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.classList.add("chart-svg");
+
+  // axis baseline
+  const baseline = document.createElementNS(ns, "line");
+  baseline.setAttribute("x1", padX);
+  baseline.setAttribute("x2", w - padX);
+  baseline.setAttribute("y1", h - padY);
+  baseline.setAttribute("y2", h - padY);
+  baseline.setAttribute("stroke", "var(--border)");
+  baseline.setAttribute("stroke-dasharray", "2,3");
+  svg.appendChild(baseline);
+
+  values.forEach((v, i) => {
+    const bh = (v / max) * innerH;
+    const bx = padX + i * barW + barW * 0.15;
+    const by = h - padY - bh;
+    const rect = document.createElementNS(ns, "rect");
+    rect.setAttribute("x", bx);
+    rect.setAttribute("y", by);
+    rect.setAttribute("width", barW * 0.7);
+    rect.setAttribute("height", Math.max(bh, 1));
+    rect.setAttribute("rx", 3);
+    rect.setAttribute("fill", "var(--accent)");
+    rect.setAttribute("opacity", v === 0 ? 0.25 : 0.85);
+    svg.appendChild(rect);
+
+    if (labels && labels[i]) {
+      const t = document.createElementNS(ns, "text");
+      t.setAttribute("x", bx + barW * 0.35);
+      t.setAttribute("y", h - padY + 16);
+      t.setAttribute("font-size", "10");
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("fill", "var(--fg-subtle)");
+      t.textContent = labels[i];
+      svg.appendChild(t);
+    }
+
+    const valueText = document.createElementNS(ns, "text");
+    valueText.setAttribute("x", bx + barW * 0.35);
+    valueText.setAttribute("y", by - 6);
+    valueText.setAttribute("font-size", "10");
+    valueText.setAttribute("text-anchor", "middle");
+    valueText.setAttribute("fill", "var(--fg-muted)");
+    valueText.textContent = String(v);
+    svg.appendChild(valueText);
+  });
+
+  return svg;
+}
+
+function jsonHighlight(value) {
+  let pretty;
+  try {
+    pretty = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  } catch {
+    pretty = String(value);
+  }
+  if (typeof pretty !== "string") pretty = JSON.stringify(pretty, null, 2);
+  const escaped = escapeHtml(pretty);
+  const html = escaped
+    .replace(/(&quot;[^&]*?&quot;)\s*:/g, '<span class="json-key">$1</span>:')
+    .replace(/:\s*(&quot;.*?&quot;)/g, ': <span class="json-string">$1</span>')
+    .replace(/:\s*(true|false)\b/g, ': <span class="json-bool">$1</span>')
+    .replace(/:\s*null\b/g, ': <span class="json-null">null</span>')
+    .replace(/:\s*(-?\d+(?:\.\d+)?)/g, ': <span class="json-number">$1</span>');
+  return h("pre", { class: "code-block", html });
+}
+
+function ConfirmDialog({ title, message, confirmLabel = "Confirm", danger, onConfirm }) {
+  return {
+    title,
+    body: h("p", null, message),
+    actions: [
+      h("button", { class: "btn btn--ghost", onclick: closeModal }, "Cancel"),
+      h(
+        "button",
+        {
+          class: ["btn", danger ? "btn--danger" : "btn--primary"],
+          onclick: async () => {
+            try {
+              await onConfirm();
+              closeModal();
+            } catch (err) {
+              toast(err.message || "Action failed", "error");
+            }
+          }
+        },
+        confirmLabel
+      )
+    ]
+  };
+}
+
+/* ============================================================
+   10) Sidebar + Topbar render
+   ============================================================ */
+
+const NAV_ITEMS = [
+  { path: "#/", label: "Dashboard", icon: "home" },
+  { path: "#/builder", label: "AI Builder", icon: "builder" },
+  { path: "#/projects", label: "Projects", icon: "projects" },
+  { path: "#/workflows", label: "Workflows", icon: "workflows" },
+  { path: "#/events", label: "Events", icon: "events" },
+  { path: "#/analytics", label: "Analytics", icon: "analytics" },
+  { path: "#/credentials", label: "Credentials", icon: "settings" },
+  { path: "#/diagnostics", label: "Diagnostics", icon: "info" }
+];
+
+function renderSidebar() {
+  const s = getState();
+  const root = $("#sidebar");
+  if (!root) return;
+  const currentPath = normalizePath(s.ui.page);
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "sidebar__brand" },
+      h("div", { class: "sidebar__brand-mark" }, "OR"),
+      h(
+        "div",
+        { class: "sidebar__brand-text" },
+        h("div", { class: "sidebar__brand-title" }, "OpsRadar"),
+        h("div", { class: "sidebar__brand-sub" }, "n8n + AI control center")
+      )
+    ),
+    h(
+      "nav",
+      { class: "sidebar__nav" },
+      h("div", { class: "sidebar__section-label" }, "Workspace"),
+      ...NAV_ITEMS.map((it) =>
+        h(
+          "a",
+          {
+            class: "nav-link",
+            href: it.path,
+            "aria-current": isActiveRoute(currentPath, it.path) ? "page" : null,
+            onclick: () => closeMobileSidebar()
+          },
+          h("span", { class: "nav-link__icon" }, icon(it.icon, 16)),
+          h("span", { class: "nav-link__label" }, it.label)
+        )
+      )
+    ),
+    h(
+      "div",
+      { class: "sidebar__footer" },
+      h(
+        "div",
+        { class: "sidebar__health" },
+        h("div", { class: "sidebar__health-row" }, "API", healthDot(s.health.api)),
+        h("div", { class: "sidebar__health-row" }, "n8n", healthDot(s.health.n8n)),
+        h(
+          "div",
+          { class: "sidebar__health-row" },
+          "Monitoring",
+          healthDot(s.health.monitoring_enabled ? "ok" : "off")
+        )
+      ),
+      h(
+        "button",
+        { class: "btn btn--ghost btn--block btn--sm", onclick: toggleTheme },
+        icon(s.theme === "dark" ? "sun" : "moon", 14),
+        h("span", { class: "sidebar__footer-toggle-label" }, s.theme === "dark" ? "Light" : "Dark")
+      ),
+      h(
+        "button",
+        { class: "btn btn--ghost btn--block btn--sm", onclick: toggleSidebar },
+        icon("settings", 14),
+        h("span", { class: "sidebar__footer-toggle-label" }, "Collapse")
+      )
+    )
+  );
+}
+
+function healthDot(status) {
+  const map = { ok: "ok", up: "ok", checking: "warn", off: "neutral", down: "bad", error: "bad" };
+  const tone = map[String(status || "").toLowerCase()] || "neutral";
+  return Badge({ tone, text: status, dot: true });
+}
+
+function renderTopbar(title, sub) {
+  const s = getState();
+  const root = $("#topbar");
+  if (!root) return;
+  mount(
+    root,
+    h(
+      "button",
+      { class: "menu-btn", "aria-label": "Toggle menu", onclick: openMobileSidebar },
+      icon("menu", 18)
+    ),
+    h(
+      "div",
+      null,
+      h("h1", { class: "topbar__title" }, title || "OpsRadar"),
+      sub ? h("div", { class: "topbar__crumbs" }, sub) : null
+    ),
+    h("div", { class: "topbar__spacer" }),
+    h(
+      "div",
+      { class: "topbar__actions" },
+      Badge({
+        tone: s.health.api === "ok" ? "ok" : s.health.api === "checking" ? "warn" : "bad",
+        text: `API ${s.health.api}`,
+        dot: true
+      }),
+      Badge({
+        tone: s.health.n8n === "ok" ? "ok" : s.health.n8n === "checking" ? "warn" : "bad",
+        text: `n8n ${s.health.n8n}`,
+        dot: true
+      }),
+      h(
+        "button",
+        {
+          class: "btn btn--ghost btn--sm",
+          onclick: () => {
+            refreshHealth();
+            // notify current page
+            window.dispatchEvent(new CustomEvent("opsradar:refresh"));
+          }
+        },
+        icon("refresh", 14),
+        "Refresh"
+      )
+    )
+  );
+}
+
+function openMobileSidebar() {
+  document.getElementById("app").dataset.mobileSidebar = "open";
+  $("#sidebar-scrim").hidden = false;
+}
+function closeMobileSidebar() {
+  document.getElementById("app").dataset.mobileSidebar = "closed";
+  $("#sidebar-scrim").hidden = true;
+}
+
+/* ============================================================
+   11) Health + bootstrap data
+   ============================================================ */
+
+async function refreshHealth() {
+  setState((s) => ({ ...s, health: { ...s.health, api: "checking", n8n: "checking" } }));
+  try {
+    const data = await api.health();
+    setState((s) => ({
+      ...s,
+      health: {
+        ...s.health,
+        api: "ok",
+        monitoring_enabled: Boolean(data?.monitoring_enabled),
+        monitoring: data?.monitoring_enabled ? "ok" : "off"
       }
-    });
+    }));
+  } catch (err) {
+    setState((s) => ({ ...s, health: { ...s.health, api: "down" } }));
+  }
+  // n8n probe
+  try {
+    await api.n8n.credentials();
+    setState((s) => ({ ...s, health: { ...s.health, n8n: "ok" } }));
+  } catch {
+    setState((s) => ({ ...s, health: { ...s.health, n8n: "down" } }));
+  }
+}
+
+/* ============================================================
+   12) Router (hash-based)
+   ============================================================ */
+
+function normalizePath(hash) {
+  let h = String(hash || "").trim();
+  if (!h.startsWith("#")) h = "#" + h;
+  if (!h.startsWith("#/")) h = "#/";
+  return h;
+}
+function isActiveRoute(current, target) {
+  if (target === "#/") return current === "#/" || current === "" || current === "#";
+  if (target === "#/projects") return current === "#/projects" || current.startsWith("#/projects/");
+  return current === target;
+}
+
+const ROUTE_TABLE = [
+  { path: /^#\/$/, render: pageDashboard, title: "Dashboard", sub: "System overview" },
+  { path: /^#\/builder\/?$/, render: pageBuilder, title: "AI Builder", sub: "Generate workflows from chat" },
+  { path: /^#\/projects\/?$/, render: pageProjects, title: "Projects", sub: "All automations and their status" },
+  { path: /^#\/projects\/([^/]+)\/?$/, render: pageProjectDetail, title: "Project" },
+  { path: /^#\/workflows\/?$/, render: pageWorkflows, title: "Workflows", sub: "All workflows by lifecycle" },
+  { path: /^#\/events\/?$/, render: pageEvents, title: "Events", sub: "Live activity feed" },
+  { path: /^#\/analytics\/?$/, render: pageAnalytics, title: "Analytics", sub: "Metrics and trends" },
+  { path: /^#\/credentials\/?$/, render: pageCredentials, title: "Credentials", sub: "n8n credential inventory and provisioning" },
+  { path: /^#\/diagnostics\/?$/, render: pageDiagnostics, title: "Diagnostics", sub: "Developer-facing introspection tools" }
+];
+
+async function router() {
+  const hash = normalizePath(location.hash);
+  setState((s) => ({ ...s, ui: { ...s.ui, page: hash } }));
+  stopAllPollers(); // every page is responsible for restarting its own pollers
+
+  for (const route of ROUTE_TABLE) {
+    const match = hash.match(route.path);
+    if (match) {
+      const params = match.slice(1);
+      renderTopbar(route.title, route.sub);
+      const root = $("#page-root");
+      mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+      try {
+        await route.render(root, ...params);
+      } catch (err) {
+        mount(root, ErrorBanner({ error: err }));
+      }
+      renderSidebar();
+      return;
+    }
+  }
+  // Not found
+  renderTopbar("Not found");
+  mount(
+    $("#page-root"),
+    h("div", { class: "page" }, Empty({ title: "Route not found", hint: "The page you tried to open does not exist.", action: h("a", { class: "btn btn--primary", href: "#/" }, "Back to dashboard") }))
+  );
+}
+
+/* ============================================================
+   13) PAGE: Dashboard
+   ============================================================ */
+
+async function pageDashboard(root) {
+  // skeleton
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("h1", { class: "page-header__title" }, "Dashboard"),
+          h("p", { class: "page-header__sub" }, "System overview · live operational metrics")
+        ),
+        h(
+          "div",
+          { class: "page-header__actions" },
+          h(
+            "a",
+            { class: "btn btn--primary", href: "#/builder" },
+            icon("plus", 14),
+            "Generate workflow"
+          )
+        )
+      ),
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Array.from({ length: 4 }).map(() => h("div", { class: "kpi" }, h(Skeleton, { variant: "title" }), h(Skeleton, { variant: "block" })))
+      )
+    )
+  );
+
+  let analytics = null, report = null, projectError = null;
+  try {
+    [analytics, report] = await Promise.all([api.analytics(), api.projects.report({ limit: 200 })]);
+    setState((s) => ({
+      ...s,
+      analytics: { data: analytics, loading: false, error: null, lastFetched: Date.now() },
+      report: { data: report, loading: false, error: null, lastFetched: Date.now() }
+    }));
+  } catch (err) {
+    projectError = err;
+  }
+
+  if (projectError) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: projectError, onRetry: () => router() })));
+    return;
+  }
+
+  const overview = analytics?.overview || {};
+  const items = report?.items || [];
+  const workflowsHealth = Array.isArray(analytics?.workflows_health) ? analytics.workflows_health : [];
+
+  // Merge per-project lifecycle data (from /projects/report) with the per-workflow run
+  // health data (from /analytics.workflows_health) so we can render one unified row
+  // per project that answers the question "is this project actually working right now?".
+  const projectsHealth = items.map((it) => {
+    const wh = workflowsHealth.find((w) => w.project_id === it.project_id) || null;
+    const isWorking =
+      wh
+        ? wh.is_working === true
+        : it.health_status === "healthy" && (it.missing_credentials_count || 0) === 0;
+    return {
+      project_id: it.project_id,
+      project_name: it.project_name,
+      lifecycle: it.lifecycle_state,
+      health: it.health_status,
+      missing_credentials: it.missing_credentials_count || 0,
+      n8n_active: it.n8n_active,
+      recommended_action: it.recommended_action,
+      total_runs: wh?.total_runs ?? 0,
+      failed_runs: wh?.failed_runs ?? 0,
+      unresolved_alerts: wh?.unresolved_alerts ?? 0,
+      last_run_status: wh?.last_run_status ?? "unknown",
+      is_working: Boolean(isWorking)
+    };
+  });
+
+  // Sort: failing first, then warnings, then healthy.
+  projectsHealth.sort((a, b) => {
+    const score = (p) => (p.is_working ? 0 : (p.unresolved_alerts > 0 || p.failed_runs > 0 ? 2 : 1));
+    return score(b) - score(a);
+  });
+
+  const recentActivity = (items.flatMap((it) => it.recommended_action ? [{
+    project: it.project_name, projectId: it.project_id, action: it.recommended_action,
+    health: it.health_status, lifecycle: it.lifecycle_state
+  }] : [])).slice(0, 8);
+
+  // sparkline data: synthesize a stable trend from totals (no time-series endpoint exists)
+  const successSeries = items
+    .slice(0, 12)
+    .map((it) => Math.max(0, Math.round((it.required_credentials_count - it.missing_credentials_count) * 10)));
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("h1", { class: "page-header__title" }, "Dashboard"),
+          h(
+            "p",
+            { class: "page-header__sub" },
+            "System overview · ",
+            h("span", { class: "muted" }, fmtRelative(report?.generated_at))
+          )
+        ),
+        h(
+          "div",
+          { class: "page-header__actions" },
+          h("a", { class: "btn btn--ghost", href: "#/events" }, icon("events", 14), "Live events"),
+          h("a", { class: "btn btn--primary", href: "#/builder" }, icon("plus", 14), "New automation")
+        )
+      ),
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({
+          label: "Total projects",
+          value: overview.total_projects ?? "—",
+          hint: `${overview.total_workflows ?? 0} workflows`,
+          sparkline: successSeries.length ? Sparkline(successSeries, { stroke: "var(--accent)" }) : null
+        }),
+        Kpi({
+          label: "Success rate",
+          value: fmtPct(overview.success_rate),
+          hint: `${overview.total_runs ?? 0} runs · ${overview.failed_runs ?? 0} failed`,
+          tone: overview.success_rate >= 95 ? "up" : overview.success_rate < 80 ? "down" : null
+        }),
+        Kpi({
+          label: "Healthy workflows",
+          value: overview.healthy_workflows ?? "—",
+          hint: `${overview.unhealthy_workflows ?? 0} unhealthy`
+        }),
+        Kpi({
+          label: "Open alerts",
+          value: overview.unresolved_alerts ?? 0,
+          hint: overview.unresolved_alerts > 0 ? "Investigate failing workflows" : "All clear",
+          tone: overview.unresolved_alerts > 0 ? "down" : "up"
+        })
+      ),
+      h(
+        "div",
+        { class: "split-2" },
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h("div", null,
+              h("h2", { class: "card__title" }, "Recent activity"),
+              h("p", { class: "card__subtitle" }, "Recommended actions across all projects")
+            ),
+            h("a", { class: "btn btn--ghost btn--sm", href: "#/projects" }, "View all", icon("chevronRight", 14))
+          ),
+          recentActivity.length === 0
+            ? h("div", { class: "card__body" }, Empty({ title: "Nothing to act on", hint: "All projects are in a healthy state. Recommended actions appear here when something needs attention." }))
+            : h(
+                "ul",
+                { class: "col" },
+                recentActivity.map((a) =>
+                  h(
+                    "li",
+                    {
+                      class: "card",
+                      style: { borderRadius: 0, borderLeft: 0, borderRight: 0, borderTop: 0, padding: "12px 20px" }
+                    },
+                    h(
+                      "div",
+                      { class: "row row--gap-3" },
+                      Badge({ tone: healthTone(a.health), text: a.health, dot: true }),
+                      h(
+                        "a",
+                        { class: "flex-1 truncate", href: `#/projects/${encodeURIComponent(a.projectId)}` },
+                        a.project
+                      ),
+                      Badge({ tone: lifecycleTone(a.lifecycle), text: lifecycleLabel(a.lifecycle) })
+                    ),
+                    h("div", { class: "text-sm muted", style: { marginTop: 4 } }, a.action)
+                  )
+                )
+              )
+        ),
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h(
+              "div",
+              null,
+              h("h3", { class: "card__title" }, "Workflow health"),
+              h("p", { class: "card__subtitle" }, "Working / not-working, surfaced from runs + alerts")
+            ),
+            h("a", { class: "btn btn--ghost btn--sm", href: "#/projects" }, "All projects", icon("chevronRight", 14))
+          ),
+          projectsHealth.length === 0
+            ? h("div", { class: "card__body" }, h("div", { class: "muted text-sm" }, "No projects yet."))
+            : h(
+                "ul",
+                null,
+                projectsHealth.slice(0, 8).map((p) => {
+                  const tone = p.is_working ? "ok" : (p.unresolved_alerts > 0 || p.failed_runs > 0 ? "bad" : "warn");
+                  const label = p.is_working
+                    ? "working"
+                    : (p.unresolved_alerts > 0 || p.failed_runs > 0 ? "failing" : "needs attention");
+                  return h(
+                    "li",
+                    { style: { padding: "12px 20px", borderTop: "1px solid var(--border)" } },
+                    h(
+                      "div",
+                      { class: "row row--gap-3" },
+                      Badge({ tone, text: label, dot: true }),
+                      h(
+                        "a",
+                        { href: `#/projects/${encodeURIComponent(p.project_id)}`, class: "flex-1 truncate" },
+                        p.project_name
+                      ),
+                      p.unresolved_alerts > 0
+                        ? Badge({ tone: "bad", text: `${p.unresolved_alerts} alert${p.unresolved_alerts === 1 ? "" : "s"}` })
+                        : null,
+                      p.failed_runs > 0
+                        ? Badge({ tone: "warn", text: `${p.failed_runs}/${p.total_runs} failed` })
+                        : null,
+                      p.missing_credentials > 0
+                        ? Badge({ tone: "warn", text: `${p.missing_credentials} cred missing` })
+                        : null
+                    ),
+                    !p.is_working && p.recommended_action
+                      ? h("p", { class: "muted text-sm", style: { margin: "6px 0 0" } }, p.recommended_action)
+                      : null
+                  );
+                })
+              )
+        )
+      )
+    )
+  );
+
+  // periodic refresh
+  startPoller("dashboard", {
+    intervalMs: 15000,
+    fn: () => Promise.all([api.analytics(), api.projects.report({ limit: 200 })]),
+    onResult: ([a, r]) => {
+      setState((s) => ({
+        ...s,
+        analytics: { ...s.analytics, data: a, lastFetched: Date.now() },
+        report: { ...s.report, data: r, lastFetched: Date.now() }
+      }));
+      // re-render only if still on dashboard
+      if (normalizePath(location.hash) === "#/") pageDashboard(root);
+    },
+    onError: () => {}
   });
 }
 
-function renderActivity() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) {
-    el.activityFeed.innerHTML = `<div class="summary-strip">Select a project.</div>`;
-    el.refreshActivityBtn.disabled = true;
-    return;
+/* ============================================================
+   14) PAGE: AI Builder
+   ============================================================ */
+
+let chatAbortController = null;
+
+async function pageBuilder(root) {
+  function render() {
+    const s = getState();
+    const chat = s.chat;
+
+    const messagesEl = h(
+      "div",
+      { class: "chat-stream" },
+      chat.messages.length === 0 && !chat.generating
+        ? Empty({
+            icon: "builder",
+            title: "Describe the automation you need",
+            hint: "Tell me what should trigger it, what it should do, and where the data should go. The AI generates a validated n8n workflow."
+          })
+        : chat.messages.map((m) =>
+            h(
+              "div",
+              { class: ["chat-message", m.role === "ai" && "chat-message--ai"] },
+              h("div", { class: "chat-message__avatar" }, m.role === "user" ? "U" : "AI"),
+              h(
+                "div",
+                { class: "chat-message__body" },
+                h("div", { class: "chat-message__role" }, `${m.role} · ${fmtRelative(m.ts)}`),
+                h("div", { class: "chat-message__content" }, m.content)
+              )
+            )
+          )
+    );
+
+    if (chat.generating) {
+      messagesEl.appendChild(
+        h(
+          "div",
+          { class: "chat-progress" },
+          h("span", { class: "spinner" }),
+          h("span", null, chat.progressText || "Generating workflow…")
+        )
+      );
+    }
+
+    if (chat.error) {
+      messagesEl.appendChild(ErrorBanner({ error: chat.error }));
+    }
+
+    const composer = h(
+      "form",
+      {
+        class: "chat-composer",
+        onsubmit: (e) => {
+          e.preventDefault();
+          const input = composer.querySelector("textarea");
+          const value = input.value.trim();
+          if (!value) return;
+          submitChat(value);
+        }
+      },
+      h("textarea", {
+        class: "textarea",
+        rows: 4,
+        placeholder: "Example: Every Monday at 9am, fetch new Stripe charges from the last 7 days, summarize them with the AI, and post to Slack.",
+        disabled: chat.generating,
+        oninput: (e) => {
+          if (e.target.value.length > 8000) e.target.value = e.target.value.slice(0, 8000);
+        }
+      }),
+      h(
+        "div",
+        { class: "chat-composer__row" },
+        h(
+          "div",
+          { class: "chat-composer__hint" },
+          "Tip: include the trigger, the actions, and the destination. Avoid pasting credentials."
+        ),
+        h(
+          "div",
+          { class: "row" },
+          chat.generating
+            ? h(
+                "button",
+                {
+                  type: "button",
+                  class: "btn btn--ghost",
+                  onclick: () => chatAbortController?.abort()
+                },
+                icon("stop", 14),
+                "Cancel"
+              )
+            : null,
+          h(
+            "button",
+            { type: "submit", class: "btn btn--primary", disabled: chat.generating },
+            icon("play", 14),
+            chat.generating ? "Generating…" : "Generate workflow"
+          )
+        )
+      )
+    );
+
+    const left = h("section", { class: "chat-panel" }, messagesEl, composer);
+
+    const result = chat.lastResult;
+    const previewBody = !result
+      ? Empty({
+          title: "Workflow preview",
+          hint: "Once you generate a workflow, you'll see its name, description, validation status, and node list here."
+        })
+      : h(
+          "div",
+          { class: "col col--gap-4" },
+          h(
+            "div",
+            { class: "row row--gap-3" },
+            Badge({
+              tone: result.validation?.valid ? "ok" : "bad",
+              text: result.validation?.valid ? "validated" : "rejected",
+              dot: true
+            }),
+            h(
+              "a",
+              { class: "btn btn--ghost btn--sm", href: `#/projects/${encodeURIComponent(result.project_id)}` },
+              "Open project ",
+              icon("chevronRight", 14)
+            )
+          ),
+          h("h3", { style: { margin: 0 } }, result.project_name || "Generated workflow"),
+          h("p", { class: "muted text-sm" }, result.description),
+          !result.validation?.valid && Array.isArray(result.validation?.errors)
+            ? h(
+                "div",
+                null,
+                h("h4", { class: "text-sm" }, "Validation errors"),
+                h(
+                  "ul",
+                  { class: "col" },
+                  result.validation.errors.map((e) => h("li", { class: "error-banner text-xs" }, escapeHtml(e)))
+                )
+              )
+            : null,
+          h(
+            "div",
+            null,
+            h("h4", { class: "text-sm", style: { marginTop: 12 } }, "Nodes"),
+            result.workflow?.nodes?.length
+              ? h(
+                  "div",
+                  { class: "node-list" },
+                  result.workflow.nodes.map((node, idx) =>
+                    h(
+                      "div",
+                      { class: "node-card" },
+                      h("div", { class: "node-card__index" }, idx + 1),
+                      h(
+                        "div",
+                        { class: "node-card__main" },
+                        h("div", { class: "node-card__name" }, node.name),
+                        h("div", { class: "node-card__type" }, `${node.type}@${node.typeVersion ?? "?"}`)
+                      ),
+                      Array.isArray(result.required_credentials) && node.credentials
+                        ? Badge({ tone: "warn", text: "credentials", dot: true })
+                        : null
+                    )
+                  )
+                )
+              : h("div", { class: "muted text-sm" }, "No nodes returned.")
+          ),
+          h(
+            "details",
+            null,
+            h("summary", { style: { cursor: "pointer", color: "var(--fg-muted)" } }, "View raw workflow JSON"),
+            jsonHighlight(result.workflow)
+          )
+        );
+
+    const right = h(
+      "section",
+      { class: "preview-panel" },
+      h(
+        "div",
+        { class: "preview-panel__head" },
+        h("h2", { style: { margin: 0, fontSize: "var(--fs-lg)" } }, "Workflow preview")
+      ),
+      h("div", { class: "preview-panel__body" }, previewBody)
+    );
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "AI Builder"),
+            h("p", { class: "page-header__sub" }, "Describe the workflow and I'll generate it for you")
+          )
+        ),
+        h("div", { class: "builder" }, left, right)
+      )
+    );
   }
 
-  el.refreshActivityBtn.disabled = false;
-  const payload = state.activityByProject[projectId];
-  const items = Array.isArray(payload?.items) ? payload.items : [];
-  if (items.length === 0) {
-    el.activityFeed.innerHTML = `<div class="summary-strip">No activity events.</div>`;
-    return;
-  }
+  const unsub = subscribe((s) => {
+    if (normalizePath(location.hash) === "#/builder") render();
+  });
+  // re-render on route change to remove subscription
+  window.addEventListener("hashchange", () => unsub(), { once: true });
 
-  el.activityFeed.innerHTML = items
-    .map((item) => {
-      const severityClass =
-        item.severity === "high" ? "status-bad" : item.severity === "medium" ? "status-warn" : "status-ok";
-      return `
-        <article class="activity-item">
-          <div class="head">
-            <span>${escapeHtml(formatDate(item.event_time))}</span>
-            <span class="status-pill ${severityClass}">${escapeHtml(item.severity)}</span>
-          </div>
-          <div class="msg"><strong>${escapeHtml(item.event_type)}</strong> · ${escapeHtml(item.message || "-")}</div>
-          <div class="meta">
-            n8n: ${escapeHtml(item.n8n_workflow_id || "-")} |
-            execution: ${escapeHtml(item.execution_id || "-")} |
-            failed node: ${escapeHtml(item.failed_node || "-")}
-          </div>
-          <div class="meta">recommended: ${escapeHtml(item.recommended_action || "-")}</div>
-        </article>
-      `;
-    })
-    .join("");
+  render();
 }
 
-function renderDeleteWarnings() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) {
-    el.deleteWarningsBox.textContent = "";
-    return;
-  }
-  const warnings = state.deleteWarningsByProject?.[projectId] || [];
-  if (warnings.length === 0) {
-    el.deleteWarningsBox.textContent = "";
-    return;
-  }
-  el.deleteWarningsBox.textContent = `Cleanup warnings: ${warnings
-    .map((item) => `${item.operation}:${item.n8n_workflow_id}`)
-    .join(", ")}`;
-}
+async function submitChat(message) {
+  setState((s) => ({
+    ...s,
+    chat: {
+      ...s.chat,
+      messages: [...s.chat.messages, { role: "user", content: message, ts: new Date().toISOString() }],
+      generating: true,
+      progressText: "Sending request to AI…",
+      error: null
+    }
+  }));
 
-function renderAll() {
-  renderBuilderTimeline();
-  renderChatStream();
-  renderSidebar();
-  renderReport();
-  renderOverview();
-  renderCredentials();
-  renderMonitoring();
-  renderActivity();
-  renderDeleteWarnings();
-  setOverviewButtonsState();
-}
-
-async function loadProjectRelatedData(projectId) {
-  uiDebug("loadProjectRelatedData:start", { project_id: projectId });
-  const snapshot = await apiFetch(`/projects/${projectId}`);
-  state.selectedProjectSnapshot = snapshot;
-  uiDebug("loadProjectRelatedData:snapshot", {
-    project_id: projectId,
-    workflow_id: snapshot?.workflow?.id || null,
-    workflow_status: snapshot?.workflow?.status || null,
-    n8n_workflow_id: snapshot?.workflow?.n8n_workflow_id || null
+  // simulate progress phases (UI feedback) — backend is single-shot
+  const phaseTimer = startPhaseTimer((label) => {
+    setState((s) => ({ ...s, chat: { ...s.chat, progressText: label } }));
   });
 
-  const bindingsPayload = await apiFetch(`/projects/${projectId}/credential-bindings`);
-  const bindings = Array.isArray(bindingsPayload.credential_bindings)
-    ? bindingsPayload.credential_bindings
-    : [];
-  state.credentialBindingsByProject[projectId] = bindings;
+  chatAbortController = new AbortController();
+  try {
+    const result = await api.chat.send(message, chatAbortController.signal);
+    phaseTimer.stop();
+    setState((s) => ({
+      ...s,
+      chat: {
+        ...s.chat,
+        messages: [
+          ...s.chat.messages,
+          {
+            role: "ai",
+            content: result.validation?.valid
+              ? `Workflow “${result.project_name}” generated successfully (${result.workflow?.nodes?.length ?? 0} nodes).`
+              : `Workflow generated but rejected by validation (${result.validation?.errors?.length ?? 0} errors).`,
+            ts: new Date().toISOString()
+          }
+        ],
+        generating: false,
+        progressText: "",
+        lastResult: result,
+        error: null
+      }
+    }));
+    toast(result.validation?.valid ? "Workflow generated" : "Workflow rejected by validator", result.validation?.valid ? "success" : "warning");
+  } catch (err) {
+    phaseTimer.stop();
+    if (err?.name === "AbortError") {
+      setState((s) => ({ ...s, chat: { ...s.chat, generating: false, progressText: "", error: null } }));
+      toast("Generation cancelled", "info");
+      return;
+    }
+    setState((s) => ({ ...s, chat: { ...s.chat, generating: false, progressText: "", error: err } }));
+    toast(err.message || "Workflow generation failed", "error");
+  } finally {
+    chatAbortController = null;
+  }
+}
 
-  if (snapshot.workflow && snapshot.workflow.status !== "rejected") {
+function startPhaseTimer(onPhase) {
+  const phases = [
+    [0, "Sending request to AI…"],
+    [3000, "AI is selecting nodes…"],
+    [9000, "Building workflow JSON…"],
+    [18000, "Validating security and structure…"],
+    [30000, "Still working — large workflows can take ~45s…"]
+  ];
+  const timers = phases.map(([delay, label]) => setTimeout(() => onPhase(label), delay));
+  return { stop: () => timers.forEach(clearTimeout) };
+}
+
+/* ============================================================
+   15) PAGE: Projects (list)
+   ============================================================ */
+
+async function pageProjects(root) {
+  let q = "";
+  let lifecycleFilter = "all";
+  let report;
+
+  async function load() {
+    setState((s) => ({ ...s, report: { ...s.report, loading: true, error: null } }));
     try {
-      state.preflightByProject[projectId] = await apiFetch(`/projects/${projectId}/deploy-check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential_bindings: bindings })
+      report = await api.projects.report({ limit: 500 });
+      setState((s) => ({ ...s, report: { data: report, loading: false, error: null, lastFetched: Date.now() } }));
+      render();
+    } catch (err) {
+      setState((s) => ({ ...s, report: { ...s.report, loading: false, error: err } }));
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  function filtered() {
+    const items = report?.items || [];
+    return items.filter((it) => {
+      if (q) {
+        const needle = q.toLowerCase();
+        if (!it.project_name?.toLowerCase().includes(needle) && !it.project_id?.toLowerCase().includes(needle)) return false;
+      }
+      if (lifecycleFilter !== "all") {
+        if (lifecycleFilter === "failing" && it.health_status !== "failing") return false;
+        if (lifecycleFilter === "warning" && it.health_status !== "warning") return false;
+        if (
+          lifecycleFilter !== "failing" &&
+          lifecycleFilter !== "warning" &&
+          it.lifecycle_state !== lifecycleFilter
+        ) return false;
+      }
+      return true;
+    });
+  }
+
+  function render() {
+    const items = filtered();
+    const totals = report?.totals || {};
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Projects"),
+            h(
+              "p",
+              { class: "page-header__sub" },
+              `${items.length} of ${totals.projects ?? 0} · last refresh ${fmtRelative(report?.generated_at)}`
+            )
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h("a", { class: "btn btn--primary", href: "#/builder" }, icon("plus", 14), "New automation"),
+            h("button", { class: "btn btn--ghost", onclick: load }, icon("refresh", 14), "Refresh")
+          )
+        ),
+        h(
+          "div",
+          { class: "kpi-grid" },
+          Kpi({ label: "Active", value: totals.deployed_active ?? 0, tone: "small" }),
+          Kpi({ label: "Inactive", value: totals.deployed_inactive ?? 0, tone: "small" }),
+          Kpi({ label: "Validated", value: totals.validated ?? 0, tone: "small" }),
+          Kpi({ label: "Rejected", value: totals.rejected ?? 0, tone: "small" }),
+          Kpi({ label: "Failing", value: totals.failing ?? 0, tone: "small" }),
+          Kpi({ label: "Warnings", value: totals.warnings ?? 0, tone: "small" })
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h(
+            "div",
+            { class: "input-wrap", style: { width: 320 } },
+            h("span", { class: "input-wrap__icon" }, icon("search", 14)),
+            h("input", {
+              class: "input input--with-icon",
+              placeholder: "Search projects…",
+              value: q,
+              oninput: (e) => { q = e.target.value; render(); }
+            })
+          ),
+          h(
+            "select",
+            {
+              class: "select",
+              style: { width: 200 },
+              onchange: (e) => { lifecycleFilter = e.target.value; render(); }
+            },
+            [
+              ["all", "All states"],
+              ["deployed_active", "Active"],
+              ["deployed_inactive", "Inactive"],
+              ["validated", "Validated"],
+              ["rejected", "Rejected"],
+              ["missing_in_n8n", "Missing in n8n"],
+              ["failing", "Failing"],
+              ["warning", "With warnings"]
+            ].map(([v, l]) => h("option", { value: v, selected: v === lifecycleFilter }, l))
+          ),
+          h("div", { class: "toolbar__spacer" })
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          items.length === 0
+            ? Empty({
+                title: q || lifecycleFilter !== "all" ? "No matching projects" : "No projects yet",
+                hint: "Generate your first automation from the AI Builder.",
+                action: h("a", { class: "btn btn--primary", href: "#/builder" }, "Generate workflow")
+              })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table table--row-actions" },
+                  h(
+                    "thead",
+                    null,
+                    h(
+                      "tr",
+                      null,
+                      h("th", null, "Project"),
+                      h("th", null, "Lifecycle"),
+                      h("th", null, "Health"),
+                      h("th", null, "n8n"),
+                      h("th", null, "Credentials"),
+                      h("th", null, "Recommended"),
+                      h("th", { style: { width: 1 } }, "")
+                    )
+                  ),
+                  h(
+                    "tbody",
+                    null,
+                    items.map((it) =>
+                      h(
+                        "tr",
+                        {
+                          onclick: () => { location.hash = `#/projects/${encodeURIComponent(it.project_id)}`; }
+                        },
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "div",
+                            { class: "cell-stack" },
+                            h("span", { class: "cell-stack__primary" }, it.project_name),
+                            h("span", { class: "cell-stack__secondary mono" }, it.project_id.slice(0, 8))
+                          )
+                        ),
+                        h("td", null, Badge({ tone: lifecycleTone(it.lifecycle_state), text: lifecycleLabel(it.lifecycle_state) })),
+                        h("td", null, Badge({ tone: healthTone(it.health_status), text: it.health_status, dot: true })),
+                        h(
+                          "td",
+                          null,
+                          it.n8n_workflow_id
+                            ? it.n8n_active
+                              ? Badge({ tone: "ok", text: "active" })
+                              : Badge({ tone: "warn", text: "inactive" })
+                            : Badge({ tone: "neutral", text: "—" })
+                        ),
+                        h(
+                          "td",
+                          null,
+                          it.missing_credentials_count > 0
+                            ? Badge({ tone: "bad", text: `${it.missing_credentials_count} missing` })
+                            : it.required_credentials_count > 0
+                              ? Badge({ tone: "ok", text: "ok" })
+                              : Badge({ tone: "neutral", text: "—" })
+                        ),
+                        h("td", null, h("span", { class: "muted text-sm truncate" }, it.recommended_action || "—")),
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "a",
+                            {
+                              class: "btn btn--ghost btn--sm btn--icon",
+                              href: `#/projects/${encodeURIComponent(it.project_id)}`,
+                              onclick: (e) => e.stopPropagation()
+                            },
+                            icon("chevronRight", 14)
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  await load();
+  startPoller("projects-list", {
+    intervalMs: 20000,
+    fn: () => api.projects.report({ limit: 500 }),
+    onResult: (data) => { report = data; if (normalizePath(location.hash) === "#/projects") render(); },
+    onError: () => {}
+  });
+}
+
+/* ============================================================
+   16) PAGE: Project detail (tabs)
+   ============================================================ */
+
+async function pageProjectDetail(root, projectId) {
+  let activeTab = (location.hash.split("?")[1] && new URLSearchParams(location.hash.split("?")[1]).get("tab")) || "overview";
+  let snapshot = null, bindings = null, preflight = null, healthData = null, activity = null, executions = null, executionDetail = null;
+  let messages = null;          // /projects/:id/messages
+  let workflowStatus = null;    // /workflows/:workflowId/status
+  let workflowRaw = null;       // /projects/:id/workflow
+  let loadingTab = false;
+
+  function setTab(tab) {
+    activeTab = tab;
+    const sp = new URLSearchParams({ tab });
+    history.replaceState(null, "", `#/projects/${encodeURIComponent(projectId)}?${sp.toString()}`);
+    render();
+    loadTab(tab);
+  }
+
+  async function loadAll() {
+    try {
+      [snapshot, bindings] = await Promise.all([
+        api.projects.get(projectId),
+        api.projects.bindings.get(projectId).catch(() => null)
+      ]);
+      setState((s) => ({ ...s, detail: { ...s.detail, projectId, snapshot, bindings } }));
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: loadAll })));
+      return;
+    }
+    render();
+    loadTab(activeTab);
+  }
+
+  async function loadTab(tab) {
+    if (loadingTab) return;
+    loadingTab = true;
+    try {
+      if (tab === "overview" && snapshot?.workflow) {
+        try {
+          preflight = await api.projects.deployCheck(projectId);
+        } catch (err) {
+          if (err.code !== "WORKFLOW_REJECTED") throw err;
+          preflight = null;
+        }
+      } else if (tab === "executions") {
+        executions = await api.projects.executions(projectId, { limit: 30 });
+      } else if (tab === "events") {
+        activity = await api.projects.events(projectId, { limit: 100 });
+      } else if (tab === "monitoring") {
+        const tasks = [api.projects.health(projectId)];
+        if (snapshot?.workflow?.id) tasks.push(api.workflows.status(snapshot.workflow.id).catch(() => null));
+        const [hd, ws] = await Promise.all(tasks);
+        healthData = hd;
+        if (snapshot?.workflow?.id) workflowStatus = ws;
+      } else if (tab === "chat") {
+        messages = await api.projects.messages(projectId);
+      } else if (tab === "logs") {
+        if (snapshot?.workflow) {
+          workflowRaw = await api.projects.workflow(projectId).catch(() => null);
+        }
+      } else if (tab === "credentials") {
+        // bindings already loaded; preflight gives requirements
+        if (snapshot?.workflow && snapshot.workflow.status !== "rejected") {
+          preflight = await api.projects.deployCheck(projectId).catch(() => null);
+        }
+      }
+    } catch (err) {
+      toast(err.message || "Failed to load tab", "error");
+    } finally {
+      loadingTab = false;
+      render();
+    }
+    // Set up polling for the executions/events/monitoring tabs
+    if (tab === "events") {
+      startPoller(`pd:${projectId}:events`, {
+        intervalMs: 8000,
+        fn: () => api.projects.events(projectId, { limit: 100 }),
+        onResult: (d) => { activity = d; if (activeTab === "events") render(); },
+        onError: () => {}
       });
+    } else stopPoller(`pd:${projectId}:events`);
+    if (tab === "executions") {
+      startPoller(`pd:${projectId}:exec`, {
+        intervalMs: 15000,
+        fn: () => api.projects.executions(projectId, { limit: 30 }),
+        onResult: (d) => { executions = d; if (activeTab === "executions") render(); },
+        onError: () => {}
+      });
+    } else stopPoller(`pd:${projectId}:exec`);
+    if (tab === "monitoring") {
+      startPoller(`pd:${projectId}:health`, {
+        intervalMs: 20000,
+        fn: () => api.projects.health(projectId),
+        onResult: (d) => { healthData = d; if (activeTab === "monitoring") render(); },
+        onError: () => {}
+      });
+    } else stopPoller(`pd:${projectId}:health`);
+  }
+
+  function render() {
+    if (!snapshot) {
+      mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" }), h(Skeleton, { variant: "block" })));
+      return;
+    }
+    const project = snapshot.project;
+    const workflow = snapshot.workflow;
+    const tabs = ["overview", "executions", "events", "credentials", "monitoring", "chat", "logs"];
+    renderTopbar(project.name, "Project detail");
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              h("a", { class: "muted text-sm", href: "#/projects" }, "Projects"),
+              icon("chevronRight", 12),
+              h("span", null, project.name)
+            ),
+            h("h1", { class: "page-header__title", style: { marginTop: 6 } }, project.name),
+            h("p", { class: "page-header__sub" }, project.description || "—")
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            workflow
+              ? Badge({
+                  tone: lifecycleTone(workflow.status),
+                  text: lifecycleLabel(workflow.status),
+                  dot: true
+                })
+              : Badge({ tone: "neutral", text: "no workflow" }),
+            workflow?.n8n_workflow_id && (preflight?.n8n_workflow_url || healthData?.n8n_workflow_url)
+              ? h(
+                  "a",
+                  {
+                    class: "btn btn--ghost btn--sm",
+                    href: preflight?.n8n_workflow_url || healthData?.n8n_workflow_url,
+                    target: "_blank",
+                    rel: "noopener"
+                  },
+                  icon("external", 14),
+                  "Open in n8n"
+                )
+              : null,
+            h(
+              "button",
+              {
+                class: "btn btn--ghost btn--sm",
+                onclick: async () => {
+                  try {
+                    await api.projects.refreshHealth(projectId);
+                    toast("Health refreshed", "success");
+                    loadTab(activeTab);
+                  } catch (err) {
+                    toast(err.message, "error");
+                  }
+                }
+              },
+              icon("refresh", 14),
+              "Refresh health"
+            ),
+            h(
+              "button",
+              {
+                class: "btn btn--ghost btn--sm",
+                onclick: () =>
+                  openModal(
+                    ConfirmDialog({
+                      title: "Delete automation?",
+                      message:
+                        "This deletes the local project, workflow, chat history, health snapshots, alerts, events, and the linked n8n workflow (if any). This cannot be undone.",
+                      confirmLabel: "Delete",
+                      danger: true,
+                      onConfirm: async () => {
+                        const r = await api.projects.delete(projectId);
+                        toast("Project deleted", "success");
+                        location.hash = "#/projects";
+                        if (r.cleanup_warnings?.length) {
+                          toast(`${r.cleanup_warnings.length} cleanup warning(s) — see console`, "warning");
+                          console.warn("Cleanup warnings", r.cleanup_warnings);
+                        }
+                      }
+                    })
+                  )
+              },
+              icon("trash", 14),
+              "Delete"
+            )
+          )
+        ),
+        h(
+          "div",
+          { class: "tabs" },
+          ...tabs.map((t) =>
+            h(
+              "button",
+              {
+                class: "tab",
+                "aria-selected": activeTab === t ? "true" : "false",
+                onclick: () => setTab(t)
+              },
+              t.charAt(0).toUpperCase() + t.slice(1)
+            )
+          )
+        ),
+        renderTabBody()
+      )
+    );
+  }
+
+  function renderTabBody() {
+    const workflow = snapshot.workflow;
+    if (activeTab === "overview") return renderOverviewTab(workflow);
+    if (activeTab === "executions") return renderExecutionsTab();
+    if (activeTab === "events") return renderEventsTab();
+    if (activeTab === "credentials") return renderCredentialsTab();
+    if (activeTab === "monitoring") return renderMonitoringTab();
+    if (activeTab === "chat") return renderChatTab();
+    if (activeTab === "logs") return renderLogsTab(workflow);
+    return null;
+  }
+
+  function renderChatTab() {
+    if (!messages) return h(Skeleton, { variant: "block" });
+    const list = messages.messages || [];
+    if (list.length === 0) return Empty({ title: "No chat history", hint: "This project has no chat messages yet." });
+    return h(
+      "div",
+      { class: "chat-stream", style: { padding: 0, maxHeight: "70vh" } },
+      list.map((m) =>
+        h(
+          "div",
+          { class: ["chat-message", m.role === "ai" && "chat-message--ai"] },
+          h("div", { class: "chat-message__avatar" }, m.role === "user" ? "U" : "AI"),
+          h(
+            "div",
+            { class: "chat-message__body" },
+            h("div", { class: "chat-message__role" }, `${m.role} · ${fmtRelative(m.created_at)}`),
+            m.role === "ai"
+              ? renderAiMessageContent(m.content)
+              : h("div", { class: "chat-message__content" }, m.content)
+          )
+        )
+      )
+    );
+  }
+
+  function renderAiMessageContent(content) {
+    // AI messages are JSON-serialized payloads (project_name/description/workflow/validation).
+    // Show a compact summary by default, raw JSON in a collapsible details block.
+    let parsed = null;
+    try { parsed = JSON.parse(content); } catch { /* keep as plain text */ }
+    if (!parsed || typeof parsed !== "object") {
+      return h("div", { class: "chat-message__content" }, content);
+    }
+    const valid = parsed.validation?.valid;
+    const errs = parsed.validation?.errors || [];
+    return h(
+      "div",
+      { class: "chat-message__content col col--gap-3" },
+      h(
+        "div",
+        { class: "row row--gap-3" },
+        Badge({ tone: valid ? "ok" : "bad", text: valid ? "validated" : "rejected", dot: true }),
+        h("strong", null, parsed.project_name || "AI response")
+      ),
+      parsed.description ? h("div", { class: "muted text-sm" }, parsed.description) : null,
+      !valid && errs.length
+        ? h("ul", { class: "col" }, errs.slice(0, 5).map((e) => h("li", { class: "text-xs muted" }, "• ", String(e))))
+        : null,
+      parsed.workflow?.nodes
+        ? h("div", { class: "text-xs muted" }, `${parsed.workflow.nodes.length} node(s)`)
+        : null,
+      h(
+        "details",
+        null,
+        h("summary", { style: { cursor: "pointer", color: "var(--fg-muted)", fontSize: "var(--fs-xs)" } }, "Raw payload"),
+        jsonHighlight(parsed)
+      )
+    );
+  }
+
+  function renderOverviewTab(workflow) {
+    if (!workflow) {
+      return Empty({ title: "No workflow yet", hint: "This project has no workflow attached.", action: h("a", { class: "btn btn--primary", href: "#/builder" }, "Create one") });
+    }
+    const canDeployInactive = preflight?.can_deploy_inactive;
+    const canActivate = preflight?.can_activate;
+    const canRedeploy = preflight?.can_redeploy;
+    const missing = preflight?.missing_credentials || [];
+
+    return h(
+      "div",
+      { class: "col col--gap-4" },
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({ label: "Status", value: lifecycleLabel(workflow.status), tone: "small" }),
+        Kpi({
+          label: "Last deployed",
+          value: workflow.last_deployed_at ? fmtRelative(workflow.last_deployed_at) : "—",
+          hint: workflow.last_deployed_at ? fmtDate(workflow.last_deployed_at) : null,
+          tone: "small"
+        }),
+        Kpi({
+          label: "Last activated",
+          value: workflow.last_activated_at ? fmtRelative(workflow.last_activated_at) : "—",
+          hint: workflow.last_activated_at ? fmtDate(workflow.last_activated_at) : null,
+          tone: "small"
+        }),
+        Kpi({
+          label: "Nodes",
+          value: workflow.json?.nodes?.length ?? 0,
+          tone: "small"
+        })
+      ),
+      preflight ? null : h("div", { class: "muted text-sm" }, h(Skeleton, { variant: "text" })),
+      missing.length > 0
+        ? h(
+            "div",
+            { class: "error-banner" },
+            icon("alert", 16),
+            h("span", { class: "flex-1" }, `${missing.length} required credential(s) missing — bind them before activating.`),
+            h(
+              "a",
+              { class: "btn btn--ghost btn--sm", href: "javascript:void(0)", onclick: (e) => { e.preventDefault(); setTab("credentials"); } },
+              "Fix"
+            )
+          )
+        : null,
+      h(
+        "div",
+        { class: "row row--gap-3" },
+        h(
+          "button",
+          {
+            class: "btn btn--primary",
+            disabled: !canDeployInactive,
+            onclick: () => doDeploy({ activate: false })
+          },
+          icon("deploy", 14),
+          "Deploy as inactive"
+        ),
+        h(
+          "button",
+          {
+            class: "btn btn--success",
+            disabled: !canActivate,
+            onclick: () => doDeploy({ activate: true })
+          },
+          icon("play", 14),
+          "Deploy & activate"
+        ),
+        canRedeploy
+          ? h("button", { class: "btn btn--ghost", onclick: () => doDeploy({ activate: workflow.status === "deployed_active" }) }, icon("refresh", 14), "Redeploy")
+          : null,
+        workflow.status === "rejected"
+          ? h(
+              "button",
+              {
+                class: "btn btn--ghost",
+                onclick: async () => {
+                  try {
+                    await api.projects.fix(projectId);
+                    toast("Fix attempt completed", "success");
+                    await loadAll();
+                  } catch (err) { toast(err.message, "error"); }
+                }
+              },
+              icon("settings", 14),
+              "AI fix"
+            )
+          : null
+      ),
+      h(
+        "div",
+        { class: "card card--flush" },
+        h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Workflow nodes")),
+        h(
+          "div",
+          { class: "card__body" },
+          h(
+            "div",
+            { class: "node-list" },
+            (workflow.json?.nodes || []).map((node, idx) =>
+              h(
+                "div",
+                { class: "node-card" },
+                h("div", { class: "node-card__index" }, idx + 1),
+                h(
+                  "div",
+                  { class: "node-card__main" },
+                  h("div", { class: "node-card__name" }, node.name),
+                  h("div", { class: "node-card__type" }, `${node.type}@${node.typeVersion ?? "?"}`)
+                ),
+                node.credentials ? Badge({ tone: "warn", text: "credentials", dot: true }) : null
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  async function doDeploy({ activate }) {
+    try {
+      const result = await api.projects.deploy(projectId, { activate });
+      toast(`Deployed${activate ? " & activated" : " (inactive)"}`, "success");
+      await loadAll();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  function renderExecutionsTab() {
+    if (!executions) return h(Skeleton, { variant: "block" });
+    const items = executions.executions || [];
+    if (items.length === 0) return Empty({ title: "No executions yet", hint: "Once the workflow runs, results will appear here." });
+    return h(
+      "div",
+      { class: "card card--flush" },
+      h(
+        "div",
+        { class: "table-wrap" },
+        h(
+          "table",
+          { class: "table" },
+          h(
+            "thead",
+            null,
+            h(
+              "tr",
+              null,
+              h("th", null, "Time"),
+              h("th", null, "Status"),
+              h("th", null, "Duration"),
+              h("th", null, "Mode"),
+              h("th", null, "Failed node"),
+              h("th", null, "Error"),
+              h("th", { style: { width: 1 } }, "")
+            )
+          ),
+          h(
+            "tbody",
+            null,
+            items.map((ex) =>
+              h(
+                "tr",
+                null,
+                h(
+                  "td",
+                  null,
+                  h(
+                    "div",
+                    { class: "cell-stack" },
+                    h("span", { class: "cell-stack__primary" }, fmtDate(ex.started_at)),
+                    h("span", { class: "cell-stack__secondary" }, fmtRelative(ex.started_at))
+                  )
+                ),
+                h(
+                  "td",
+                  null,
+                  Badge({
+                    tone: isSuccessExecutionStatus(ex.status) ? "ok" : isFailureExecutionStatus(ex.status) ? "bad" : "neutral",
+                    text: ex.status,
+                    dot: true
+                  })
+                ),
+                h("td", null, fmtDuration(ex.duration_ms)),
+                h("td", null, h("span", { class: "mono text-xs" }, ex.mode || "—")),
+                h("td", null, h("span", { class: "truncate" }, ex.failed_node || "—")),
+                h("td", null, h("span", { class: "truncate muted text-sm", style: { maxWidth: 320, display: "inline-block" } }, parseN8nError(ex.error_message).summary)),
+                h(
+                  "td",
+                  null,
+                  h(
+                    "button",
+                    {
+                      class: "btn btn--ghost btn--sm",
+                      onclick: async () => {
+                        try {
+                          executionDetail = await api.projects.execution(projectId, ex.id);
+                          openModal({
+                            title: `Execution ${ex.id}`,
+                            body: jsonHighlight(executionDetail),
+                            actions: [h("button", { class: "btn btn--primary", onclick: closeModal }, "Close")]
+                          });
+                        } catch (err) { toast(err.message, "error"); }
+                      }
+                    },
+                    "Inspect"
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  function renderEventsTab() {
+    if (!activity) return h(Skeleton, { variant: "block" });
+    const items = activity.items || [];
+    if (items.length === 0) return Empty({ title: "No events yet", hint: "Workflow events arrive here as they happen." });
+    return renderEventsList(items, { selectable: true });
+  }
+
+  function renderCredentialsTab() {
+    const reqs = preflight?.requirements || [];
+    const stored = bindings?.bindings || [];
+    const storedByKey = new Map(stored.map((b) => [`${b.node_id || ""}|${b.credential_type}`, b]));
+
+    function setBinding(req, value) {
+      const key = `${req.node_id}|${req.credential_type}`;
+      const v = String(value || "").trim();
+      if (!v) {
+        storedByKey.delete(key);
+      } else {
+        const existing = storedByKey.get(key) || {};
+        storedByKey.set(key, {
+          ...existing,
+          node_id: req.node_id,
+          node_name: req.node_name,
+          credential_type: req.credential_type,
+          id: v.startsWith("id:") ? v.slice(3) : undefined,
+          name: !v.startsWith("id:") ? v : undefined
+        });
+      }
+    }
+
+    async function save() {
+      const payload = Array.from(storedByKey.values()).filter((b) => b.id || b.name);
+      try {
+        await api.projects.bindings.save(projectId, payload);
+        toast("Credential bindings saved", "success");
+        await loadAll();
+        await loadTab("credentials");
+      } catch (err) { toast(err.message, "error"); }
+    }
+
+    if (snapshot.workflow?.status === "rejected") {
+      return Empty({ title: "Workflow rejected", hint: "Fix validation errors first; credentials can't be bound on a rejected workflow." });
+    }
+
+    return h(
+      "div",
+      { class: "col col--gap-4" },
+      preflight?.credentials_source_ok === false
+        ? ErrorBanner({ error: "Could not reach n8n credentials API. Live binding suggestions unavailable." })
+        : null,
+      reqs.length === 0
+        ? Empty({ title: "No credentials required", hint: "This workflow doesn't need any credential bindings." })
+        : h(
+            "div",
+            { class: "col col--gap-3" },
+            reqs.map((req) => {
+              const existing = storedByKey.get(`${req.node_id}|${req.credential_type}`);
+              const initial = existing?.id ? `id:${existing.id}` : (existing?.name || "");
+              return h(
+                "div",
+                { class: "card" },
+                h(
+                  "div",
+                  { class: "row row--gap-3" },
+                  h("div", { class: "flex-1" },
+                    h("div", { style: { fontWeight: 500 } }, req.node_name),
+                    h("div", { class: "mono text-xs muted" }, req.credential_type)
+                  ),
+                  Badge({
+                    tone: req.resolved ? "ok" : "bad",
+                    text: req.resolved ? "resolved" : "missing",
+                    dot: true
+                  })
+                ),
+                h("p", { class: "muted text-sm", style: { marginTop: 8 } }, req.manual_message),
+                h(
+                  "div",
+                  { class: "row row--gap-3", style: { marginTop: 12 } },
+                  h(
+                    "select",
+                    {
+                      class: "select",
+                      style: { flex: 1 },
+                      onchange: (e) => setBinding(req, e.target.value)
+                    },
+                    h("option", { value: "" }, "— Pick from n8n —"),
+                    (req.available_credentials || []).map((c) =>
+                      h("option", { value: `id:${c.id}`, selected: existing?.id === c.id }, `${c.name} (${c.id.slice(0, 6)})`)
+                    )
+                  ),
+                  h("input", {
+                    class: "input",
+                    placeholder: "or type credential name",
+                    value: existing?.name || "",
+                    style: { flex: 1 },
+                    oninput: (e) => setBinding(req, e.target.value)
+                  })
+                )
+              );
+            })
+          ),
+      h(
+        "div",
+        { class: "row row--gap-3" },
+        h(
+          "a",
+          {
+            class: "btn btn--ghost",
+            href: preflight?.n8n_credentials_url || "#",
+            target: "_blank",
+            rel: "noopener"
+          },
+          icon("external", 14),
+          "Open n8n credentials"
+        ),
+        reqs.length > 0
+          ? h("button", { class: "btn btn--primary", onclick: save }, icon("check", 14), "Save bindings")
+          : null
+      )
+    );
+  }
+
+  function renderMonitoringTab() {
+    if (!healthData) return h(Skeleton, { variant: "block" });
+    return h(
+      "div",
+      { class: "col col--gap-4" },
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({ label: "Health", value: healthData.health_status || "unknown", tone: "small" }),
+        Kpi({ label: "Recent successes", value: healthData.recent_success_count ?? 0, tone: "small" }),
+        Kpi({ label: "Recent failures", value: healthData.recent_failure_count ?? 0, tone: "small" }),
+        Kpi({
+          label: "Last success",
+          value: healthData.last_success_at ? fmtRelative(healthData.last_success_at) : "—",
+          tone: "small"
+        })
+      ),
+      healthData.last_error
+        ? h(
+            "div",
+            { class: "card" },
+            h("h3", { style: { marginTop: 0 } }, "Last error"),
+            healthData.last_error.error_type
+              ? Badge({ tone: severityTone(healthData.last_error.severity), text: healthData.last_error.error_type })
+              : null,
+            healthData.last_error.failed_node ? h("p", null, h("strong", null, "Failed node: "), healthData.last_error.failed_node) : null,
+            healthData.last_error.human_message ? h("p", { class: "muted" }, healthData.last_error.human_message) : null,
+            healthData.last_error.raw_message ? ErrorDetail({ raw: healthData.last_error.raw_message }) : null
+          )
+        : null,
+      healthData.recommended_action
+        ? h("div", { class: "error-banner", style: { background: "var(--accent-soft)", color: "var(--fg)", borderColor: "var(--border)" } }, icon("info", 16), h("span", { class: "flex-1" }, healthData.recommended_action))
+        : null,
+      // Workflow run stats + alerts + AI suggestion (from /workflows/:id/status)
+      workflowStatus
+        ? h(
+            "div",
+            { class: "col col--gap-4" },
+            h(
+              "div",
+              { class: "kpi-grid" },
+              Kpi({ label: "Total runs", value: workflowStatus.metrics?.total_runs ?? 0, tone: "small" }),
+              Kpi({ label: "Failed runs", value: workflowStatus.metrics?.failed_runs ?? 0, tone: "small" }),
+              Kpi({ label: "Success rate", value: fmtPct(workflowStatus.metrics?.success_rate), tone: "small" }),
+              Kpi({ label: "Avg duration", value: fmtDuration(workflowStatus.metrics?.average_duration_ms), tone: "small" })
+            ),
+            (workflowStatus.alerts || []).length
+              ? h(
+                  "div",
+                  { class: "card card--flush" },
+                  h(
+                    "div",
+                    { class: "card__head" },
+                    h("h3", { class: "card__title" }, "Open alerts"),
+                    Badge({ tone: "bad", text: workflowStatus.alerts.length })
+                  ),
+                  h(
+                    "ul",
+                    null,
+                    workflowStatus.alerts.map((a) =>
+                      h(
+                        "li",
+                        { style: { padding: "10px 20px", borderTop: "1px solid var(--border)" } },
+                        h(
+                          "div",
+                          { class: "row row--gap-3" },
+                          Badge({ tone: severityTone(a.severity), text: a.severity }),
+                          h("span", { class: "flex-1" }, a.alert_type),
+                          h("span", { class: "text-xs muted" }, fmtRelative(a.last_seen_at))
+                        ),
+                        h("div", { style: { margin: "4px 0 0" } }, ErrorDetail({ raw: a.message })),
+                        a.recommended_action
+                          ? h("p", { class: "text-xs", style: { margin: "4px 0 0" } }, h("strong", null, "Action: "), a.recommended_action)
+                          : null,
+                        a.failed_node ? h("div", { class: "text-xs muted" }, h("strong", null, "Failed node: "), a.failed_node) : null
+                      )
+                    )
+                  )
+                )
+              : null,
+            (workflowStatus.recent_errors || []).length
+              ? h(
+                  "div",
+                  { class: "card card--flush" },
+                  h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Recent errors")),
+                  h(
+                    "ul",
+                    null,
+                    workflowStatus.recent_errors.map((e) =>
+                      h(
+                        "li",
+                        { style: { padding: "10px 20px", borderTop: "1px solid var(--border)" } },
+                        h("div", { class: "text-xs muted" }, fmtDate(e.created_at), e.node_name ? ` · ${e.node_name}` : ""),
+                        ErrorDetail({ raw: e.error_message })
+                      )
+                    )
+                  )
+                )
+              : null,
+            workflowStatus.ai_suggestion
+              ? h(
+                  "div",
+                  { class: "card" },
+                  h(
+                    "div",
+                    { class: "row row--gap-3" },
+                    Badge({ tone: "accent", text: "AI suggestion", dot: true }),
+                    h("span", { class: "text-xs muted" }, fmtRelative(workflowStatus.ai_suggestion.created_at))
+                  ),
+                  h("h4", { style: { margin: "8px 0" } }, workflowStatus.ai_suggestion.issue),
+                  h("p", { class: "muted" }, workflowStatus.ai_suggestion.reason),
+                  h(
+                    "div",
+                    { class: "code-block", style: { whiteSpace: "pre-wrap" } },
+                    workflowStatus.ai_suggestion.solution
+                  )
+                )
+              : null
+          )
+        : null
+    );
+  }
+
+  function renderLogsTab(workflow) {
+    if (!workflow) return Empty({ title: "No workflow", hint: "Logs are available once a workflow exists." });
+    const downloadFromRaw = () => {
+      const data = workflowRaw?.json ?? workflow.json;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(snapshot.project.name || "workflow").replace(/\s+/g, "_")}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+    return h(
+      "div",
+      { class: "col col--gap-4" },
+      h(
+        "div",
+        { class: "row row--gap-3" },
+        h(
+          "button",
+          { class: "btn btn--ghost btn--sm", onclick: downloadFromRaw },
+          icon("external", 14),
+          "Download workflow JSON"
+        ),
+        workflowRaw === null
+          ? h("span", { class: "text-xs muted" }, "Latest workflow record fetched")
+          : h("span", { class: "text-xs muted" }, "From /projects/:id/workflow")
+      ),
+      h(
+        "div",
+        { class: "card" },
+        h("h3", { style: { marginTop: 0 } }, "Workflow JSON"),
+        jsonHighlight(workflowRaw?.json ?? workflow.json)
+      ),
+      workflow.validation_errors?.length
+        ? h(
+            "div",
+            { class: "card" },
+            h("h3", { style: { marginTop: 0 } }, "Validation errors"),
+            h(
+              "ul",
+              { class: "col" },
+              workflow.validation_errors.map((e) => h("li", { class: "error-banner" }, escapeHtml(e)))
+            )
+          )
+        : null
+    );
+  }
+
+  await loadAll();
+}
+
+
+/* ============================================================
+   17) PAGE: Workflows (filtered view of report)
+   ============================================================ */
+
+async function pageWorkflows(root) {
+  let report;
+  let q = "";
+  let status = "all";
+
+  async function load() {
+    try {
+      report = await api.projects.report({ limit: 500 });
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  function items() {
+    const all = (report?.items || []).filter((it) => it.workflow_id);
+    return all.filter((it) => {
+      if (status !== "all" && it.workflow_status !== status) return false;
+      if (q) {
+        const needle = q.toLowerCase();
+        if (!it.project_name.toLowerCase().includes(needle) && !(it.workflow_id || "").includes(needle)) return false;
+      }
+      return true;
+    });
+  }
+
+  function render() {
+    if (!report) {
+      mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "block" })));
+      return;
+    }
+    const list = items();
+    const totals = report.totals || {};
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Workflows"),
+            h(
+              "p",
+              { class: "page-header__sub" },
+              `${list.length} workflow(s) · ${totals.deployed_active || 0} active · ${totals.failing || 0} failing`
+            )
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h("button", { class: "btn btn--ghost", onclick: load }, icon("refresh", 14), "Refresh")
+          )
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h(
+            "div",
+            { class: "input-wrap", style: { width: 320 } },
+            h("span", { class: "input-wrap__icon" }, icon("search", 14)),
+            h("input", { class: "input input--with-icon", placeholder: "Search…", value: q, oninput: (e) => { q = e.target.value; render(); } })
+          ),
+          h(
+            "select",
+            { class: "select", style: { width: 200 }, onchange: (e) => { status = e.target.value; render(); } },
+            ...["all", "draft", "validated", "rejected", "deployed_inactive", "deployed_active", "failed"].map((v) =>
+              h("option", { value: v, selected: v === status }, v === "all" ? "All workflows" : lifecycleLabel(v))
+            )
+          )
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          list.length === 0
+            ? Empty({ title: "No workflows match", hint: "Try changing the filters or generate a new automation." })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table table--row-actions" },
+                  h(
+                    "thead",
+                    null,
+                    h(
+                      "tr",
+                      null,
+                      h("th", null, "Workflow"),
+                      h("th", null, "Status"),
+                      h("th", null, "Health"),
+                      h("th", null, "n8n"),
+                      h("th", null, "Recommended"),
+                      h("th", { style: { width: 1 } }, "")
+                    )
+                  ),
+                  h(
+                    "tbody",
+                    null,
+                    list.map((it) =>
+                      h(
+                        "tr",
+                        { onclick: () => { location.hash = `#/projects/${encodeURIComponent(it.project_id)}`; } },
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "div",
+                            { class: "cell-stack" },
+                            h("span", { class: "cell-stack__primary" }, it.project_name),
+                            h("span", { class: "cell-stack__secondary mono" }, (it.workflow_id || "").slice(0, 8))
+                          )
+                        ),
+                        h("td", null, Badge({ tone: lifecycleTone(it.workflow_status), text: lifecycleLabel(it.workflow_status) })),
+                        h("td", null, Badge({ tone: healthTone(it.health_status), text: it.health_status, dot: true })),
+                        h("td", null, it.n8n_workflow_id ? Badge({ tone: it.n8n_active ? "ok" : "warn", text: it.n8n_active ? "active" : "inactive" }) : Badge({ tone: "neutral", text: "—" })),
+                        h("td", null, h("span", { class: "muted text-sm truncate" }, it.recommended_action || "—")),
+                        h("td", null, icon("chevronRight", 14))
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  await load();
+  startPoller("workflows", {
+    intervalMs: 20000,
+    fn: () => api.projects.report({ limit: 500 }),
+    onResult: (d) => { report = d; if (normalizePath(location.hash) === "#/workflows") render(); },
+    onError: () => {}
+  });
+}
+
+/* ============================================================
+   18) PAGE: Events (live feed)
+   ============================================================ */
+
+async function pageEvents(root) {
+  let projects = [];
+  let projectId = "all";
+  let severity = "all";
+  let eventType = "all";
+  let q = "";
+  let paused = false;
+  let aggregate = []; // newest first
+  let selectedId = null;
+  let inflight = false;
+
+  async function bootstrapProjects() {
+    try {
+      const r = await api.projects.report({ limit: 500 });
+      projects = (r.items || []).filter((it) => it.workflow_id);
     } catch {
-      state.preflightByProject[projectId] = null;
+      projects = [];
     }
-  } else {
-    state.preflightByProject[projectId] = null;
   }
 
-  try {
-    state.healthByProject[projectId] = await apiFetch(`/projects/${projectId}/health`);
-  } catch {
-    state.healthByProject[projectId] = null;
+  async function tick() {
+    if (paused || inflight) return;
+    inflight = true;
+    try {
+      let merged;
+      if (projectId === "all") {
+        // Fetch a small window per project that has a workflow.
+        const slice = projects.slice(0, 20); // cap to 20 to keep it cheap
+        const responses = await Promise.all(
+          slice.map((p) =>
+            api.projects.events(p.project_id, { limit: 25 }).catch(() => null)
+          )
+        );
+        merged = [];
+        responses.forEach((r, idx) => {
+          const items = r?.items || [];
+          for (const it of items) merged.push({ ...it, _project_id: slice[idx].project_id, _project_name: slice[idx].project_name });
+        });
+        merged.sort((a, b) => new Date(b.event_time) - new Date(a.event_time));
+      } else {
+        const r = await api.projects.events(projectId, { limit: 100 });
+        const proj = projects.find((p) => p.project_id === projectId);
+        merged = (r.items || []).map((it) => ({ ...it, _project_id: projectId, _project_name: proj?.project_name || projectId }));
+      }
+      aggregate = merged.slice(0, 250);
+      render();
+    } catch {
+      // ignore polling errors
+    } finally {
+      inflight = false;
+    }
   }
 
-  try {
-    state.activityByProject[projectId] = await apiFetch(`/projects/${projectId}/events?limit=100`);
-  } catch {
-    state.activityByProject[projectId] = { items: [] };
-  }
-  uiDebug("loadProjectRelatedData:done", { project_id: projectId });
-}
-
-async function selectProject(projectId) {
-  uiDebug("selectProject:start", { project_id: projectId });
-  state.selectedProjectId = projectId;
-  await loadProjectRelatedData(projectId);
-  const reportItem = getReportItem(projectId);
-  state.builderTimelineState = reportItem?.lifecycle_state || "workflow_generated";
-  uiDebug("selectProject:done", {
-    project_id: projectId,
-    lifecycle_state: state.builderTimelineState,
-    report_n8n_workflow_id: reportItem?.n8n_workflow_id || null,
-    report_n8n_workflow_url: reportItem?.n8n_workflow_url || null
-  });
-  renderAll();
-}
-
-async function saveCredentialBindings() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  const payload = cleanupBindings(projectId);
-  await apiFetch(`/projects/${projectId}/credential-bindings`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential_bindings: payload })
-  });
-}
-
-async function loadPreflight() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  const payload = cleanupBindings(projectId);
-  state.preflightByProject[projectId] = await apiFetch(`/projects/${projectId}/deploy-check`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential_bindings: payload })
-  });
-}
-
-async function deploySelected(activate) {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-
-  // Disable deploy buttons to prevent double-click race conditions
-  const deployButtons = [el.deployInactiveBtn, el.activateBtn, el.redeployBtn];
-  deployButtons.forEach((btn) => { if (btn) btn.disabled = true; });
-
-  const bindings = cleanupBindings(projectId);
-  uiDebug("deploySelected:start", {
-    project_id: projectId,
-    activate,
-    credential_bindings_count: bindings.length
-  });
-  try {
-    await apiFetch(`/projects/${projectId}/deploy`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        activate,
-        credential_bindings: bindings
-      })
+  function filtered() {
+    return aggregate.filter((it) => {
+      if (severity !== "all") {
+        const sev = it.severity || (it.event_type?.includes("fail") ? "high" : "low");
+        if (sev !== severity) return false;
+      }
+      if (eventType !== "all" && it.event_type !== eventType) return false;
+      if (q) {
+        const needle = q.toLowerCase();
+        const haystack = `${it.event_type} ${it.message || ""} ${it._project_name || ""}`.toLowerCase();
+        if (!haystack.includes(needle)) return false;
+      }
+      return true;
     });
-    uiDebug("deploySelected:done", { project_id: projectId, activate });
-  } finally {
-    // Re-enable buttons (renderAll will set the correct disabled state anyway)
-    deployButtons.forEach((btn) => { if (btn) btn.disabled = false; });
   }
+
+  function eventTone(it) {
+    const t = (it.event_type || "").toLowerCase();
+    if (t.includes("fail") || t.includes("rejected") || t.includes("alert_created")) return "failure";
+    if (t.includes("succeeded") || t.includes("validated") || t.includes("alert_resolved") || t.includes("activated") || t.includes("execution_success")) return "success";
+    if (t.includes("warning")) return "warning";
+    return "info";
+  }
+
+  function uniqueEventTypes() {
+    return Array.from(new Set(aggregate.map((it) => it.event_type))).sort();
+  }
+
+  function selectedEvent() {
+    return filtered().find((it) => it.id === selectedId) || filtered()[0] || null;
+  }
+
+  function render() {
+    const list = filtered();
+    const sel = selectedEvent();
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Events"),
+            h(
+              "p",
+              { class: "page-header__sub" },
+              `Live feed · ${list.length} of ${aggregate.length} shown · refreshes every 6s`
+            )
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h(
+              "span",
+              { class: ["live-pill", paused && "live-pill--paused"] },
+              h("span", { class: "live-pill__dot" }),
+              paused ? "Paused" : "Live"
+            ),
+            h(
+              "button",
+              { class: "btn btn--ghost btn--sm", onclick: () => { paused = !paused; render(); if (!paused) tick(); } },
+              icon(paused ? "play" : "stop", 14),
+              paused ? "Resume" : "Pause"
+            ),
+            h("button", { class: "btn btn--ghost btn--sm", onclick: tick }, icon("refresh", 14), "Refresh")
+          )
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h(
+            "select",
+            { class: "select", style: { width: 240 }, onchange: (e) => { projectId = e.target.value; selectedId = null; aggregate = []; tick(); } },
+            h("option", { value: "all" }, "All projects"),
+            ...projects.map((p) => h("option", { value: p.project_id, selected: projectId === p.project_id }, p.project_name))
+          ),
+          h(
+            "select",
+            { class: "select", style: { width: 160 }, onchange: (e) => { severity = e.target.value; render(); } },
+            ...["all", "high", "medium", "low"].map((v) => h("option", { value: v, selected: severity === v }, v === "all" ? "All severities" : v))
+          ),
+          h(
+            "select",
+            { class: "select", style: { width: 240 }, onchange: (e) => { eventType = e.target.value; render(); } },
+            h("option", { value: "all" }, "All event types"),
+            ...uniqueEventTypes().map((t) => h("option", { value: t, selected: eventType === t }, t))
+          ),
+          h(
+            "div",
+            { class: "input-wrap flex-1", style: { minWidth: 240 } },
+            h("span", { class: "input-wrap__icon" }, icon("search", 14)),
+            h("input", { class: "input input--with-icon", placeholder: "Search events…", value: q, oninput: (e) => { q = e.target.value; render(); } })
+          )
+        ),
+        list.length === 0
+          ? Empty({ title: "No events yet", hint: "Events appear here as workflows run, deploy, fail, or recover. Try generating a workflow first." })
+          : h(
+              "div",
+              { class: "events-grid" },
+              h(
+                "div",
+                { class: "events-list scrollbar-thin" },
+                list.map((ev) =>
+                  h(
+                    "div",
+                    {
+                      class: ["event-row", `event-row--${eventTone(ev)}`, sel?.id === ev.id && "is-selected"],
+                      onclick: () => { selectedId = ev.id; render(); }
+                    },
+                    h(
+                      "div",
+                      { class: "event-row__head" },
+                      h("span", { class: "event-row__type" }, ev.event_type),
+                      h("span", { class: "event-row__time" }, fmtRelative(ev.event_time))
+                    ),
+                    h("div", { class: "row row--gap-3" },
+                      Badge({ tone: severityTone(ev.severity), text: ev.severity || "info" }),
+                      ev._project_name ? h("span", { class: "muted text-xs truncate" }, ev._project_name) : null
+                    ),
+                    ev.message ? h("div", { class: "event-row__msg" }, parseN8nError(ev.message).summary) : null
+                  )
+                )
+              ),
+              sel
+                ? h(
+                    "div",
+                    { class: "card col col--gap-3" },
+                    h(
+                      "div",
+                      { class: "row row--gap-3" },
+                      Badge({ tone: severityTone(sel.severity), text: sel.severity || "info" }),
+                      h("h3", { style: { margin: 0, flex: 1 } }, sel.event_type),
+                      h("span", { class: "muted text-sm" }, fmtDate(sel.event_time))
+                    ),
+                    sel.message ? ErrorDetail({ raw: sel.message }) : null,
+                    sel.failed_node ? h("p", null, h("strong", null, "Failed node: "), sel.failed_node) : null,
+                    sel.recommended_action ? h("p", { class: "muted" }, h("strong", null, "Recommended: "), sel.recommended_action) : null,
+                    sel._project_id ? h("a", { class: "btn btn--ghost btn--sm", href: `#/projects/${encodeURIComponent(sel._project_id)}` }, "Open project ", icon("chevronRight", 14)) : null,
+                    h("h4", { class: "text-sm" }, "Metadata"),
+                    jsonHighlight(sel.metadata || {})
+                  )
+                : Empty({ title: "Select an event", hint: "Click a row on the left to inspect." })
+            )
+      )
+    );
+  }
+
+  render(); // initial skeleton
+  await bootstrapProjects();
+  await tick();
+  startPoller("events-page", {
+    intervalMs: 6000,
+    fn: tick,
+    onResult: () => {},
+    onError: () => {}
+  });
 }
 
-function openInNewTab(url) {
-  if (!url) return;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
+/* ============================================================
+   19) PAGE: Analytics
+   ============================================================ */
 
-async function refreshCurrentProjectAfterMutation() {
-  if (!state.selectedProjectId) return;
-  uiDebug("refreshCurrentProjectAfterMutation:start", { project_id: state.selectedProjectId });
-  await loadProjects();
-  await loadReport();
-  await loadAnalytics();
-  await selectProject(state.selectedProjectId);
-  uiDebug("refreshCurrentProjectAfterMutation:done", { project_id: state.selectedProjectId });
-}
-
-async function handleChatSubmit(event) {
-  event.preventDefault();
-  const message = String(el.chatInput.value || "").trim();
-  if (!message) {
-    setToast("اكتب طلب automation أولًا.", "error");
+async function pageAnalytics(root) {
+  let analytics, report;
+  try {
+    [analytics, report] = await Promise.all([api.analytics(), api.projects.report({ limit: 500 })]);
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: () => router() })));
     return;
   }
 
-  el.generateBtn.disabled = true;
-  pushChatItem("user", { message });
-  pushChatItem("loading", {});
-  renderAll();
-
-  try {
-    uiDebug("chatSubmit:start", { message_length: message.length });
-    const payload = await apiFetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    state.chatStream = state.chatStream.filter((entry) => entry.kind !== "loading");
-    const workflowStatus = payload?.validation?.valid ? "validated" : "rejected";
-    state.builderTimelineState = workflowStatus;
-
-    pushChatItem("ai-summary", {
-      summary: `Project: ${payload.project_name || "-"} | nodes: ${payload.workflow?.nodes?.length || 0}`
-    });
-    pushChatItem("validation", {
-      message: payload?.validation?.valid
-        ? "Workflow validated and ready for deploy as inactive."
-        : `Workflow rejected: ${(payload?.validation?.errors || []).join(" | ") || "validation failed"}`
-    });
-    pushChatItem("next-action", {
-      message: payload?.validation?.valid
-        ? "Select project and click Deploy to n8n as Inactive."
-        : "Use Fix Workflow to regenerate a valid workflow."
-    });
-
-    el.chatInput.value = "";
-    await loadProjects();
-    await loadReport();
-    await loadAnalytics();
-    if (payload.project_id) {
-      await selectProject(payload.project_id);
-    }
-    uiDebug("chatSubmit:done", {
-      project_id: payload.project_id || null,
-      node_count: payload?.workflow?.nodes?.length || 0
-    });
-    setToast("Workflow generated.", "success");
-  } catch (error) {
-    uiDebug("chatSubmit:error", { error: error?.message || String(error) });
-    state.chatStream = state.chatStream.filter((entry) => entry.kind !== "loading");
-    setToast(error.message, "error");
-  } finally {
-    el.generateBtn.disabled = false;
-    renderAll();
-  }
-}
-
-async function handleFixWorkflow() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  try {
-    await apiFetch(`/projects/${projectId}/fix-workflow`, { method: "POST" });
-    await refreshCurrentProjectAfterMutation();
-    setToast("Workflow fix attempt completed.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleDeployInactive() {
-  try {
-    await deploySelected(false);
-    await refreshCurrentProjectAfterMutation();
-    setToast("Deployed as inactive.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleActivate() {
-  try {
-    await deploySelected(true);
-    await refreshCurrentProjectAfterMutation();
-    setToast("Workflow activated.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleRedeploy() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  const lifecycle = String(getReportItem(projectId)?.lifecycle_state || "");
-  const activate = lifecycle === "deployed_active";
-  try {
-    await deploySelected(activate);
-    await refreshCurrentProjectAfterMutation();
-    setToast("Workflow redeployed.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleRefreshHealth() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  try {
-    state.healthByProject[projectId] = await apiFetch(`/projects/${projectId}/health/refresh`, {
-      method: "POST"
-    });
-    await loadReport();
-    renderAll();
-    setToast("Health refreshed.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleLoadExecutions() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  try {
-    const payload = await apiFetch(`/projects/${projectId}/executions?limit=20`);
-    state.executionsByProject[projectId] = Array.isArray(payload.executions)
-      ? payload.executions
-      : [];
-    renderMonitoring();
-    setToast("Executions loaded.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-async function handleRefreshActivity() {
-  const projectId = state.selectedProjectId;
-  if (!projectId) return;
-  try {
-    state.activityByProject[projectId] = await apiFetch(`/projects/${projectId}/events?limit=120`);
-    renderActivity();
-    setToast("Activity refreshed.", "success");
-  } catch (error) {
-    setToast(error.message, "error");
-  }
-}
-
-function openDeleteModal() {
-  state.deletingProjectId = state.selectedProjectId;
-  el.deleteModal.classList.remove("hidden");
-}
-
-function closeDeleteModal() {
-  state.deletingProjectId = null;
-  el.deleteModal.classList.add("hidden");
-}
-
-async function confirmDeleteAutomation() {
-  const projectId = state.deletingProjectId;
-  if (!projectId) return;
-  el.confirmDeleteBtn.disabled = true;
-  try {
-    const payload = await apiFetch(`/projects/${projectId}`, { method: "DELETE" });
-    state.deleteWarningsByProject = state.deleteWarningsByProject || {};
-    state.deleteWarningsByProject[projectId] = Array.isArray(payload.cleanup_warnings)
-      ? payload.cleanup_warnings
-      : [];
-
-    await loadProjects();
-    await loadReport();
-    await loadAnalytics();
-
-    if (state.selectedProjectId === projectId) {
-      state.selectedProjectId = null;
-      state.selectedProjectSnapshot = null;
-    }
-    closeDeleteModal();
-    renderAll();
-    if (state.deleteWarningsByProject[projectId].length > 0) {
-      setToast("Deleted with cleanup warnings.", "neutral");
-    } else {
-      setToast("Automation deleted.", "success");
-    }
-  } catch (error) {
-    setToast(error.message, "error");
-  } finally {
-    el.confirmDeleteBtn.disabled = false;
-  }
-}
-
-function switchTab(tab) {
-  el.tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
-  el.tabPanels.forEach((panel) => panel.classList.toggle("active", panel.id === `tab-${tab}`));
-}
-
-function applyMobileLayout(view) {
-  const mobile = window.matchMedia("(max-width: 1060px)").matches;
-  if (!mobile) {
-    el.projectsSidebar.style.display = "";
-    el.mainCenter.style.display = "";
-    el.detailPanel.style.display = "";
-    return;
-  }
-
-  el.projectsSidebar.style.display = view === "projects" ? "" : "none";
-  el.mainCenter.style.display = view === "builder" ? "" : "none";
-  el.detailPanel.style.display = view === "details" ? "" : "none";
-}
-
-async function refreshEverything() {
-  await Promise.all([refreshSystemHealth(), loadProjects(), loadReport(), loadAnalytics()]);
-  if (state.selectedProjectId) {
-    await loadProjectRelatedData(state.selectedProjectId);
-  }
-  renderAll();
-}
-
-function bindEvents() {
-  el.chatForm.addEventListener("submit", handleChatSubmit);
-  el.retryFixBtn.addEventListener("click", handleFixWorkflow);
-  el.refreshAllBtn.addEventListener("click", () =>
-    refreshEverything().catch((error) => setToast(error.message, "error"))
+  const overview = analytics.overview || {};
+  const wh = analytics.workflows_health || [];
+  const items = report.items || [];
+  const lifecycleCounts = items.reduce(
+    (acc, it) => {
+      acc[it.lifecycle_state] = (acc[it.lifecycle_state] || 0) + 1;
+      return acc;
+    },
+    {}
   );
-  el.refreshReportBtn.addEventListener("click", () =>
-    loadReport()
-      .then(() => renderReport())
-      .catch((error) => setToast(error.message, "error"))
+  const lifecycleLabels = ["validated", "deployed_inactive", "deployed_active", "rejected", "missing_in_n8n", "no_workflow"];
+  const lifecycleValues = lifecycleLabels.map((l) => lifecycleCounts[l] || 0);
+
+  const failingTop = wh
+    .filter((w) => w.failed_runs > 0)
+    .sort((a, b) => b.failed_runs - a.failed_runs)
+    .slice(0, 8);
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("h1", { class: "page-header__title" }, "Analytics"),
+          h("p", { class: "page-header__sub" }, "Aggregate metrics across all workflows")
+        ),
+        h("div", { class: "page-header__actions" }, h("button", { class: "btn btn--ghost", onclick: () => router() }, icon("refresh", 14), "Refresh"))
+      ),
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({ label: "Success rate", value: fmtPct(overview.success_rate), hint: `${overview.total_runs ?? 0} runs total` }),
+        Kpi({ label: "Avg duration", value: fmtDuration(overview.average_duration_ms), hint: "across run_succeeded and run_failed" }),
+        Kpi({ label: "Failed runs", value: overview.failed_runs ?? 0, tone: overview.failed_runs > 0 ? "down" : "up" }),
+        Kpi({ label: "Open alerts", value: overview.unresolved_alerts ?? 0, tone: overview.unresolved_alerts > 0 ? "down" : "up" })
+      ),
+      h(
+        "div",
+        { class: "split-2" },
+        h(
+          "div",
+          { class: "chart-card" },
+          h("h3", { class: "chart-card__title" }, "Lifecycle distribution"),
+          BarChart(lifecycleValues, lifecycleLabels.map((l) => lifecycleLabel(l)))
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Top failing workflows")),
+          failingTop.length === 0
+            ? h("div", { class: "card__body" }, h("div", { class: "muted text-sm" }, "No failing workflows in the last window."))
+            : h(
+                "ul",
+                null,
+                failingTop.map((w) =>
+                  h(
+                    "li",
+                    { style: { padding: "10px 20px", borderTop: "1px solid var(--border)" } },
+                    h(
+                      "a",
+                      { href: `#/projects/${encodeURIComponent(w.project_id)}`, class: "row row--gap-3" },
+                      h("span", { class: "flex-1 truncate" }, w.project_name),
+                      Badge({ tone: "bad", text: `${w.failed_runs} failed` }),
+                      w.unresolved_alerts > 0 ? Badge({ tone: "warn", text: `${w.unresolved_alerts} alerts` }) : null
+                    )
+                  )
+                )
+              )
+        )
+      ),
+      h(
+        "div",
+        { class: "card card--flush" },
+        h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Run breakdown by workflow")),
+        h(
+          "div",
+          { class: "table-wrap" },
+          h(
+            "table",
+            { class: "table" },
+            h(
+              "thead",
+              null,
+              h("tr", null,
+                h("th", null, "Workflow"),
+                h("th", null, "Status"),
+                h("th", null, "Total runs"),
+                h("th", null, "Failed"),
+                h("th", null, "Alerts")
+              )
+            ),
+            h(
+              "tbody",
+              null,
+              wh.map((w) =>
+                h(
+                  "tr",
+                  { onclick: () => { location.hash = `#/projects/${encodeURIComponent(w.project_id)}`; }, style: { cursor: "pointer" } },
+                  h("td", null, w.project_name),
+                  h("td", null, Badge({ tone: w.is_working ? "ok" : "bad", text: w.last_run_status || "unknown", dot: true })),
+                  h("td", null, w.total_runs),
+                  h("td", null, w.failed_runs),
+                  h("td", null, w.unresolved_alerts > 0 ? Badge({ tone: "warn", text: w.unresolved_alerts }) : "—")
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   );
-  el.reportSearchInput.addEventListener("input", renderReport);
-  el.reportFilterSelect.addEventListener("change", renderReport);
-  el.projectSearchInput.addEventListener("input", renderSidebar);
-  el.newReportBtn.addEventListener("click", () => {
-    el.mainCenter.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
 
-  el.toggleSidebarBtn.addEventListener("click", () => {
-    el.projectsSidebar.classList.toggle("collapsed");
+  startPoller("analytics", {
+    intervalMs: 20000,
+    fn: () => api.analytics(),
+    onResult: () => { if (normalizePath(location.hash) === "#/analytics") pageAnalytics(root); },
+    onError: () => {}
   });
-
-  el.tabButtons.forEach((button) => {
-    button.addEventListener("click", () => switchTab(button.dataset.tab));
-  });
-
-  el.projectsList.addEventListener("click", (event) => {
-    const card = event.target.closest(".project-card");
-    if (!card) return;
-    const projectId = card.dataset.projectId;
-    if (!projectId) return;
-    selectProject(projectId).catch((error) => setToast(error.message, "error"));
-  });
-
-  el.reportTableBody.addEventListener("click", (event) => {
-    const button = event.target.closest(".open-project-btn");
-    if (!button) return;
-    const projectId = button.dataset.projectId;
-    if (!projectId) return;
-    selectProject(projectId).catch((error) => setToast(error.message, "error"));
-  });
-
-  el.checkRequirementsBtn.addEventListener("click", async () => {
-    try {
-      await loadPreflight();
-      renderCredentials();
-      renderOverview();
-      setOverviewButtonsState();
-      setToast("Requirements updated.", "success");
-    } catch (error) {
-      setToast(error.message, "error");
-    }
-  });
-
-  el.saveBindingsBtn.addEventListener("click", async () => {
-    try {
-      await saveCredentialBindings();
-      await loadPreflight();
-      await loadReport();
-      renderAll();
-      setToast("Credential bindings saved.", "success");
-    } catch (error) {
-      setToast(error.message, "error");
-    }
-  });
-
-  el.openN8nWorkflowBtn.addEventListener("click", () => {
-    const item = getReportItem(state.selectedProjectId);
-    debugWorkflowLinkContext("before_open_n8n_workflow");
-    openInNewTab(item?.n8n_workflow_url);
-  });
-  el.openN8nCredentialsBtn.addEventListener("click", () => {
-    const preflight = getPreflight(state.selectedProjectId);
-    openInNewTab(preflight?.n8n_credentials_url);
-  });
-
-  el.deployInactiveBtn.addEventListener("click", handleDeployInactive);
-  el.activateBtn.addEventListener("click", handleActivate);
-  el.redeployBtn.addEventListener("click", handleRedeploy);
-  el.deactivateBtn.addEventListener("click", handleDeployInactive);
-  el.refreshHealthBtn.addEventListener("click", handleRefreshHealth);
-  el.loadExecutionsBtn.addEventListener("click", handleLoadExecutions);
-  el.refreshActivityBtn.addEventListener("click", handleRefreshActivity);
-
-  el.deleteAutomationBtn.addEventListener("click", openDeleteModal);
-  el.cancelDeleteBtn.addEventListener("click", closeDeleteModal);
-  el.confirmDeleteBtn.addEventListener("click", confirmDeleteAutomation);
-  el.deleteModal.addEventListener("click", (event) => {
-    if (event.target === el.deleteModal) {
-      closeDeleteModal();
-    }
-  });
-
-  el.mobileNavButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      applyMobileLayout(button.dataset.mobileView);
-    });
-  });
-
-  window.addEventListener("resize", () => applyMobileLayout("builder"));
 }
 
-async function boot() {
-  bindEvents();
-  applyMobileLayout("builder");
-  await refreshEverything();
-  if (state.projects[0]?.project?.id) {
-    await selectProject(state.projects[0].project.id);
+/* ============================================================
+   20) Generic events list (used by detail tab)
+   ============================================================ */
+
+function renderEventsList(items, { selectable = false } = {}) {
+  return h(
+    "div",
+    { class: "events-list scrollbar-thin", style: { maxHeight: "60vh" } },
+    items.map((ev) => {
+      const tone = (ev.event_type || "").toLowerCase().includes("fail")
+        ? "failure"
+        : (ev.event_type || "").toLowerCase().includes("succeed") || (ev.event_type || "").toLowerCase().includes("validated") || (ev.event_type || "").toLowerCase().includes("execution_success")
+          ? "success"
+          : (ev.event_type || "").toLowerCase().includes("warning")
+            ? "warning"
+            : "info";
+      const node = h(
+        "details",
+        { class: ["event-row", `event-row--${tone}`] },
+        h(
+          "summary",
+          { style: { cursor: "pointer", listStyle: "none" } },
+          h(
+            "div",
+            { class: "event-row__head" },
+            h("span", { class: "event-row__type" }, ev.event_type),
+            h("span", { class: "event-row__time" }, fmtRelative(ev.event_time))
+          ),
+          ev.message ? h("div", { class: "event-row__msg" }, parseN8nError(ev.message).summary) : null
+        ),
+        ev.message ? h("div", { style: { marginTop: 8 } }, ErrorDetail({ raw: ev.message, label: "Show error details" })) : null,
+        ev.recommended_action ? h("p", { class: "muted text-sm", style: { marginTop: 8 } }, h("strong", null, "Recommended: "), ev.recommended_action) : null,
+        ev.failed_node ? h("p", { class: "text-sm" }, h("strong", null, "Failed node: "), ev.failed_node) : null,
+        h("h4", { class: "text-xs muted", style: { textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 12 } }, "Metadata"),
+        jsonHighlight(ev.metadata || {})
+      );
+      return node;
+    })
+  );
+}
+
+/* ============================================================
+   20a) PAGE: Credentials (n8n credential inventory + provisioning)
+   ============================================================ */
+
+async function pageCredentials(root) {
+  let credentials = null;
+  let credentialsError = null;
+  let projects = [];
+  let q = "";
+  let typeFilter = "all";
+  let policyMode = null;
+  let n8nCredentialsUrl = null;
+
+  async function load() {
+    try {
+      [credentials, projects] = await Promise.all([
+        api.n8n.credentials(),
+        api.projects.report({ limit: 500 }).then((r) => (r.items || []).filter((it) => it.workflow_id))
+      ]);
+      // try to derive n8n_credentials_url from any project's report row
+      const sampleProject = projects.find((p) => p.n8n_credentials_url);
+      n8nCredentialsUrl = sampleProject?.n8n_credentials_url ?? null;
+      // Detect provisioning mode by attempting a no-op create call? Avoided — read via /health was empty.
+      // Use a heuristic: read the page's deploy-check on first project to surface n8n_credentials_url.
+      render();
+    } catch (err) {
+      credentialsError = err;
+      render();
+    }
+  }
+
+  function uniqueTypes() {
+    return Array.from(new Set((credentials?.items || []).map((c) => c.type))).sort();
+  }
+  function filtered() {
+    return (credentials?.items || []).filter((c) => {
+      if (typeFilter !== "all" && c.type !== typeFilter) return false;
+      if (q) {
+        const needle = q.toLowerCase();
+        const haystack = `${c.name} ${c.type} ${c.id}`.toLowerCase();
+        if (!haystack.includes(needle)) return false;
+      }
+      return true;
+    });
+  }
+
+  async function showSchema(type) {
+    let schema;
+    try {
+      schema = await api.n8n.credentialSchema(type);
+    } catch (err) {
+      toast(err.message, "error");
+      return;
+    }
+    openModal({
+      title: `Credential schema · ${schema.label || type}`,
+      body: h(
+        "div",
+        { class: "col col--gap-3" },
+        h(
+          "div",
+          { class: "row row--gap-3" },
+          Badge({ tone: "accent", text: type }),
+          Badge({
+            tone: schema.provisioning_mode === "manual" ? "warn" : "ok",
+            text: `${schema.provisioning_mode} provisioning`,
+            dot: true
+          })
+        ),
+        schema.manual_message
+          ? h("p", { class: "muted text-sm" }, schema.manual_message)
+          : null,
+        Array.isArray(schema.fields) && schema.fields.length
+          ? h(
+              "div",
+              null,
+              h("h4", { class: "text-sm" }, "Fields"),
+              h(
+                "ul",
+                null,
+                schema.fields.map((f) =>
+                  h(
+                    "li",
+                    { class: "text-sm", style: { padding: "4px 0" } },
+                    h("strong", null, f.label || f.name),
+                    " · ",
+                    h("span", { class: "mono text-xs" }, `${f.type}${f.required ? " (required)" : ""}`)
+                  )
+                )
+              )
+            )
+          : h("p", { class: "muted text-sm" }, "No fields published — provision in n8n directly."),
+        h("h4", { class: "text-sm" }, "Raw"),
+        jsonHighlight(schema)
+      ),
+      actions: [h("button", { class: "btn btn--primary", onclick: closeModal }, "Close")]
+    });
+  }
+
+  function openCreateForm() {
+    if (projects.length === 0) {
+      toast("Create a project first — credential creation requires an associated workflow.", "warning");
+      return;
+    }
+    let formProjectId = projects[0].project_id;
+    let formType = uniqueTypes()[0] || "";
+    let formName = "";
+    let formData = "{\n}";
+
+    const renderForm = () =>
+      h(
+        "div",
+        { class: "col col--gap-3" },
+        h("p", { class: "muted text-sm" },
+          "Backend supports two modes: ",
+          h("code", null, "manual_only"),
+          " (default — returns 409 with link to n8n) and ",
+          h("code", null, "hybrid"),
+          ". This form posts to /n8n/credentials and surfaces whatever the backend returns."
+        ),
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Project (must already have a workflow)"),
+          h(
+            "select",
+            { class: "select", onchange: (e) => (formProjectId = e.target.value) },
+            ...projects.map((p) =>
+              h("option", { value: p.project_id, selected: p.project_id === formProjectId }, p.project_name)
+            )
+          )
+        ),
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Credential type"),
+          h("input", {
+            class: "input",
+            placeholder: "e.g. telegramApi, gmailOAuth2Api",
+            value: formType,
+            oninput: (e) => (formType = e.target.value)
+          })
+        ),
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Credential name"),
+          h("input", {
+            class: "input",
+            placeholder: "Display name for this credential in n8n",
+            value: formName,
+            oninput: (e) => (formName = e.target.value)
+          })
+        ),
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Credential data (JSON)"),
+          h("textarea", {
+            class: "textarea",
+            rows: 6,
+            value: formData,
+            oninput: (e) => (formData = e.target.value)
+          })
+        )
+      );
+
+    openModal({
+      title: "Create n8n credential",
+      body: renderForm(),
+      actions: [
+        h("button", { class: "btn btn--ghost", onclick: closeModal }, "Cancel"),
+        h(
+          "button",
+          {
+            class: "btn btn--primary",
+            onclick: async () => {
+              let parsed;
+              try {
+                parsed = JSON.parse(formData || "{}");
+                if (typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("data must be an object");
+              } catch (err) {
+                toast("Credential data must be valid JSON object: " + err.message, "error");
+                return;
+              }
+              try {
+                await api.n8n.createCredential({
+                  project_id: formProjectId,
+                  type: formType.trim(),
+                  name: formName.trim(),
+                  data: parsed
+                });
+                toast("Credential created", "success");
+                closeModal();
+                load();
+              } catch (err) {
+                if (err.code === "CREDENTIAL_MANUAL_ONLY") {
+                  policyMode = "manual_only";
+                  const dashUrl = err.details?.n8n_credentials_url;
+                  toast("Backend is manual-only — open n8n to create the credential.", "warning");
+                  closeModal();
+                  openModal({
+                    title: "Manual provisioning required",
+                    body: h(
+                      "div",
+                      { class: "col col--gap-3" },
+                      h("p", null, "Credential provisioning is set to ", h("code", null, "manual_only"), " on the backend. Create or complete the credential inside n8n, then bind it from the project's Credentials tab."),
+                      dashUrl ? h("a", { class: "btn btn--primary", href: dashUrl, target: "_blank", rel: "noopener" }, icon("external", 14), "Open n8n credentials") : null
+                    ),
+                    actions: [h("button", { class: "btn btn--ghost", onclick: closeModal }, "Close")]
+                  });
+                  return;
+                }
+                if (err.code === "CREDENTIAL_TYPE_NOT_REQUIRED") {
+                  toast("That type isn't required by the selected workflow.", "error");
+                  return;
+                }
+                toast(err.message, "error");
+              }
+            }
+          },
+          "Create"
+        )
+      ]
+    });
+  }
+
+  function render() {
+    if (credentialsError) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: credentialsError, onRetry: load })));
+      return;
+    }
+    if (!credentials) {
+      mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" }), h(Skeleton, { variant: "block" })));
+      return;
+    }
+    const items = filtered();
+
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Credentials"),
+            h(
+              "p",
+              { class: "page-header__sub" },
+              `${credentials.count} credential(s) registered in n8n${policyMode ? ` · provisioning: ${policyMode}` : ""}`
+            )
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            n8nCredentialsUrl
+              ? h(
+                  "a",
+                  { class: "btn btn--ghost", href: n8nCredentialsUrl, target: "_blank", rel: "noopener" },
+                  icon("external", 14),
+                  "Open in n8n"
+                )
+              : null,
+            h("button", { class: "btn btn--ghost", onclick: load }, icon("refresh", 14), "Refresh"),
+            h("button", { class: "btn btn--primary", onclick: openCreateForm }, icon("plus", 14), "Create")
+          )
+        ),
+        h(
+          "div",
+          { class: "kpi-grid" },
+          Kpi({ label: "Total", value: credentials.count ?? 0, tone: "small" }),
+          Kpi({ label: "Unique types", value: uniqueTypes().length, tone: "small" })
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h(
+            "div",
+            { class: "input-wrap", style: { width: 320 } },
+            h("span", { class: "input-wrap__icon" }, icon("search", 14)),
+            h("input", {
+              class: "input input--with-icon",
+              placeholder: "Search by name, type, id…",
+              value: q,
+              oninput: (e) => { q = e.target.value; render(); }
+            })
+          ),
+          h(
+            "select",
+            {
+              class: "select",
+              style: { width: 220 },
+              onchange: (e) => { typeFilter = e.target.value; render(); }
+            },
+            h("option", { value: "all" }, "All types"),
+            ...uniqueTypes().map((t) => h("option", { value: t, selected: typeFilter === t }, t))
+          )
+        ),
+        items.length === 0
+          ? Empty({
+              title: "No credentials in n8n",
+              hint: "Create credentials in your n8n instance, then bind them from the project's Credentials tab.",
+              action: n8nCredentialsUrl ? h("a", { class: "btn btn--primary", href: n8nCredentialsUrl, target: "_blank", rel: "noopener" }, icon("external", 14), "Open n8n") : null
+            })
+          : h(
+              "div",
+              { class: "card card--flush" },
+              h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table" },
+                  h(
+                    "thead",
+                    null,
+                    h(
+                      "tr",
+                      null,
+                      h("th", null, "Name"),
+                      h("th", null, "Type"),
+                      h("th", null, "n8n ID"),
+                      h("th", { style: { width: 1 } }, "")
+                    )
+                  ),
+                  h(
+                    "tbody",
+                    null,
+                    items.map((c) =>
+                      h(
+                        "tr",
+                        null,
+                        h("td", null, h("strong", null, c.name)),
+                        h("td", null, Badge({ tone: "accent", text: c.type })),
+                        h("td", null, h("span", { class: "mono text-xs" }, c.id)),
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "button",
+                            { class: "btn btn--ghost btn--sm", onclick: () => showSchema(c.type) },
+                            "Schema"
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+      )
+    );
+  }
+
+  render();
+  await load();
+}
+
+/* ============================================================
+   20b) PAGE: Diagnostics (debug routes + event ingest test)
+   ============================================================ */
+
+async function pageDiagnostics(root) {
+  let projects = [];
+  let kbResult = null;
+  let kbQuery = "";
+  let kbError = null;
+  let snapshotResult = null;
+  let snapshotError = null;
+  let snapshotProjectId = "";
+  let nodeVersionsResult = null;
+  let nodeVersionsError = null;
+  let nodeVersionsProjectId = "";
+
+  // Test event form state
+  let evToken = localStorage.getItem("opsradar.eventToken") || "";
+  let evProjectId = "";
+  let evN8nWorkflowId = "";
+  let evType = "run_failed";
+  let evMessage = "Test event from diagnostics panel";
+  let evSeverity = "medium";
+
+  async function bootstrapProjects() {
+    try {
+      const r = await api.projects.report({ limit: 500 });
+      projects = (r.items || []).filter((it) => it.workflow_id);
+      if (projects.length) {
+        snapshotProjectId = projects[0].project_id;
+        nodeVersionsProjectId = projects[0].project_id;
+        evProjectId = projects[0].project_id;
+        evN8nWorkflowId = projects[0].n8n_workflow_id || "";
+      }
+    } catch {}
+  }
+
+  async function runKb() {
+    kbError = null;
+    kbResult = null;
+    render();
+    try {
+      kbResult = await api.debug.knowledgeBase(kbQuery);
+    } catch (err) {
+      kbError = err;
+    }
+    render();
+  }
+
+  async function runSnapshot() {
+    snapshotError = null;
+    snapshotResult = null;
+    render();
+    if (!snapshotProjectId) return;
+    try {
+      snapshotResult = await api.debug.workflow(snapshotProjectId, { verifyN8n: true });
+    } catch (err) {
+      snapshotError = err;
+    }
+    render();
+  }
+
+  async function runNodeVersions() {
+    nodeVersionsError = null;
+    nodeVersionsResult = null;
+    render();
+    if (!nodeVersionsProjectId) return;
+    try {
+      nodeVersionsResult = await api.debug.nodeVersions(nodeVersionsProjectId, { verifyN8n: true });
+    } catch (err) {
+      nodeVersionsError = err;
+    }
+    render();
+  }
+
+  async function sendTestEvent() {
+    if (!evProjectId && !evN8nWorkflowId) {
+      toast("Pick a project or specify an n8n workflow id.", "error");
+      return;
+    }
+    const body = {
+      project_id: evProjectId || undefined,
+      n8n_workflow_id: evN8nWorkflowId || undefined,
+      event_type: evType,
+      severity: evSeverity,
+      message: evMessage
+    };
+    try {
+      const result = await api.events.ingest(body, evToken || undefined);
+      toast(`Event accepted · id=${result.event_id?.slice?.(0, 8) || "?"}`, "success");
+    } catch (err) {
+      if (err.code === "UNAUTHORIZED_EVENT") {
+        toast("Event ingest requires EVENT_INGEST_TOKEN. Set it below and retry.", "error");
+        return;
+      }
+      toast(err.message, "error");
+    }
+  }
+
+  function devNotice() {
+    return h(
+      "div",
+      { class: "error-banner", style: { background: "var(--accent-soft)", color: "var(--fg)", borderColor: "var(--border)" } },
+      icon("info", 16),
+      h("span", { class: "flex-1" },
+        "Some endpoints on this page (knowledge base, workflow snapshot, node versions) only respond when the backend runs with ",
+        h("code", null, "NODE_ENV=development"),
+        ". 404s on those panels are expected in production."
+      )
+    );
+  }
+
+  function projectSelect(selected, onChange) {
+    return h(
+      "select",
+      { class: "select", style: { flex: 1 }, onchange: (e) => onChange(e.target.value) },
+      h("option", { value: "" }, "— pick project —"),
+      ...projects.map((p) => h("option", { value: p.project_id, selected: p.project_id === selected }, p.project_name))
+    );
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Diagnostics"),
+            h("p", { class: "page-header__sub" }, "Introspection & test utilities — exercises every backend route not surfaced elsewhere.")
+          )
+        ),
+        devNotice(),
+
+        // Knowledge base selector
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h(
+              "div",
+              null,
+              h("h2", { class: "card__title" }, "Knowledge base selector"),
+              h("p", { class: "card__subtitle mono text-xs" }, "GET /debug/knowledge-base")
+            )
+          ),
+          h(
+            "div",
+            { class: "card__body col col--gap-3" },
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              h("input", {
+                class: "input flex-1",
+                placeholder: "Sample query — e.g. 'Send Slack message every Monday'",
+                value: kbQuery,
+                oninput: (e) => (kbQuery = e.target.value)
+              }),
+              h("button", { class: "btn btn--primary", onclick: runKb }, icon("search", 14), "Inspect")
+            ),
+            kbError ? ErrorBanner({ error: kbError }) : null,
+            kbResult
+              ? h(
+                  "div",
+                  { class: "col col--gap-3" },
+                  h(
+                    "div",
+                    { class: "row row--gap-3" },
+                    Badge({ tone: kbResult.enabled ? "ok" : "neutral", text: kbResult.enabled ? "enabled" : "disabled", dot: true }),
+                    h("span", { class: "muted text-sm" }, `${kbResult.selected?.length ?? 0} selected snippet(s)`)
+                  ),
+                  jsonHighlight(kbResult)
+                )
+              : null
+          )
+        ),
+
+        // Workflow snapshot
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h(
+              "div",
+              null,
+              h("h2", { class: "card__title" }, "Workflow snapshot (DB ↔ n8n diff)"),
+              h("p", { class: "card__subtitle mono text-xs" }, "GET /debug/workflow/:projectId")
+            )
+          ),
+          h(
+            "div",
+            { class: "card__body col col--gap-3" },
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              projectSelect(snapshotProjectId, (v) => { snapshotProjectId = v; }),
+              h("button", { class: "btn btn--primary", onclick: runSnapshot, disabled: !snapshotProjectId }, "Run snapshot")
+            ),
+            snapshotError ? ErrorBanner({ error: snapshotError }) : null,
+            snapshotResult
+              ? h(
+                  "div",
+                  { class: "col col--gap-3" },
+                  h(
+                    "div",
+                    { class: "row row--gap-3" },
+                    Badge({ tone: snapshotResult.same ? "ok" : "warn", text: snapshotResult.same ? "in sync" : "drift detected", dot: true }),
+                    Badge({ tone: snapshotResult.same_counts ? "ok" : "warn", text: `counts: ${snapshotResult.db_node_count} db / ${snapshotResult.n8n_node_count ?? "—"} n8n` }),
+                    Badge({ tone: snapshotResult.same_connections ? "ok" : "warn", text: snapshotResult.same_connections ? "connections match" : "connections differ" })
+                  ),
+                  jsonHighlight(snapshotResult)
+                )
+              : null
+          )
+        ),
+
+        // Node versions
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h(
+              "div",
+              null,
+              h("h2", { class: "card__title" }, "Node version compatibility"),
+              h("p", { class: "card__subtitle mono text-xs" }, "GET /debug/workflow/:projectId/node-versions")
+            )
+          ),
+          h(
+            "div",
+            { class: "card__body col col--gap-3" },
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              projectSelect(nodeVersionsProjectId, (v) => { nodeVersionsProjectId = v; }),
+              h("button", { class: "btn btn--primary", onclick: runNodeVersions, disabled: !nodeVersionsProjectId }, "Check versions")
+            ),
+            nodeVersionsError ? ErrorBanner({ error: nodeVersionsError }) : null,
+            nodeVersionsResult
+              ? h(
+                  "div",
+                  { class: "col col--gap-3" },
+                  (nodeVersionsResult.incompatible_nodes?.db?.length || 0) +
+                  (nodeVersionsResult.incompatible_nodes?.n8n?.length || 0) === 0
+                    ? Badge({ tone: "ok", text: "all node versions compatible", dot: true })
+                    : Badge({ tone: "bad", text: "incompatible nodes detected", dot: true }),
+                  jsonHighlight(nodeVersionsResult)
+                )
+              : null
+          )
+        ),
+
+        // Test event sender
+        h(
+          "section",
+          { class: "card card--flush" },
+          h(
+            "div",
+            { class: "card__head" },
+            h(
+              "div",
+              null,
+              h("h2", { class: "card__title" }, "Send test event"),
+              h("p", { class: "card__subtitle mono text-xs" }, "POST /event")
+            ),
+            Badge({ tone: "warn", text: "destructive — triggers AI failure analysis on run_failed", dot: true })
+          ),
+          h(
+            "div",
+            { class: "card__body col col--gap-3" },
+            h(
+              "div",
+              { class: "field" },
+              h("label", { class: "field__label" }, "EVENT_INGEST_TOKEN (sent as x-event-token)"),
+              h("input", {
+                class: "input",
+                placeholder: "Leave empty if backend has no token configured",
+                type: "password",
+                value: evToken,
+                oninput: (e) => {
+                  evToken = e.target.value;
+                  if (evToken) localStorage.setItem("opsradar.eventToken", evToken);
+                  else localStorage.removeItem("opsradar.eventToken");
+                }
+              })
+            ),
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              h(
+                "div",
+                { class: "field flex-1" },
+                h("label", { class: "field__label" }, "Project"),
+                projectSelect(evProjectId, (v) => {
+                  evProjectId = v;
+                  const p = projects.find((x) => x.project_id === v);
+                  evN8nWorkflowId = p?.n8n_workflow_id || "";
+                  render();
+                })
+              ),
+              h(
+                "div",
+                { class: "field flex-1" },
+                h("label", { class: "field__label" }, "n8n_workflow_id (optional)"),
+                h("input", {
+                  class: "input",
+                  value: evN8nWorkflowId,
+                  oninput: (e) => (evN8nWorkflowId = e.target.value)
+                })
+              )
+            ),
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              h(
+                "div",
+                { class: "field flex-1" },
+                h("label", { class: "field__label" }, "Event type"),
+                h(
+                  "select",
+                  { class: "select", onchange: (e) => (evType = e.target.value) },
+                  ...[
+                    "run_started", "run_succeeded", "run_failed",
+                    "node_started", "node_succeeded", "node_failed",
+                    "workflow_created", "workflow_validated", "workflow_rejected",
+                    "workflow_deployed", "workflow_activated", "workflow_deactivated", "workflow_deleted",
+                    "workflow_execution_success", "workflow_execution_failed",
+                    "workflow_health_warning", "workflow_health_failing",
+                    "workflow_alert_created", "workflow_alert_resolved"
+                  ].map((t) => h("option", { value: t, selected: t === evType }, t))
+                )
+              ),
+              h(
+                "div",
+                { class: "field", style: { width: 160 } },
+                h("label", { class: "field__label" }, "Severity"),
+                h(
+                  "select",
+                  { class: "select", onchange: (e) => (evSeverity = e.target.value) },
+                  ...["low", "medium", "high"].map((s) =>
+                    h("option", { value: s, selected: s === evSeverity }, s)
+                  )
+                )
+              )
+            ),
+            h(
+              "div",
+              { class: "field" },
+              h("label", { class: "field__label" }, "Message"),
+              h("input", { class: "input", value: evMessage, oninput: (e) => (evMessage = e.target.value) })
+            ),
+            h(
+              "div",
+              { class: "row row--gap-3" },
+              h("button", { class: "btn btn--primary", onclick: sendTestEvent }, icon("play", 14), "Send event"),
+              h("span", { class: "muted text-xs" }, "Tip: pick run_failed to exercise the AI failure-analysis pipeline.")
+            )
+          )
+        )
+      )
+    );
+  }
+
+  render();
+  await bootstrapProjects();
+  render();
+}
+
+/* ============================================================
+   21) Modal + Toast renderers (subscribe to state)
+   ============================================================ */
+
+function renderModalRoot() {
+  const root = $("#modal-root");
+  const m = getState().ui.modal;
+  clear(root);
+  if (!m) return;
+  const card = h(
+    "div",
+    { class: "modal" },
+    h("div", { class: "modal__head" }, h("h2", { class: "modal__title" }, m.title)),
+    h("div", { class: "modal__body" }, m.body),
+    m.actions ? h("div", { class: "modal__foot" }, ...m.actions) : null
+  );
+  const backdrop = h(
+    "div",
+    { class: "modal-backdrop", onclick: (e) => { if (e.target === backdrop) closeModal(); } },
+    card
+  );
+  root.appendChild(backdrop);
+}
+
+function renderToastRoot() {
+  const root = $("#toast-root");
+  clear(root);
+  for (const t of getState().ui.toasts) {
+    root.appendChild(
+      h(
+        "div",
+        { class: ["toast", `toast--${t.tone}`] },
+        icon(t.tone === "success" ? "check" : t.tone === "error" ? "alert" : t.tone === "warning" ? "alert" : "info", 16),
+        h("div", { class: "flex-1" }, t.message),
+        h(
+          "button",
+          { class: "toast__close", "aria-label": "Dismiss", onclick: () => dismissToast(t.id) },
+          icon("close", 14)
+        )
+      )
+    );
   }
 }
 
-boot().catch((error) => {
-  setToast(error.message || "Failed to boot application.", "error");
-});
+/* ============================================================
+   22) Bootstrap
+   ============================================================ */
+
+function bindGlobalEvents() {
+  window.addEventListener("hashchange", router);
+  $("#sidebar-scrim").addEventListener("click", closeMobileSidebar);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (getState().ui.modal) closeModal();
+    }
+  });
+}
+
+function init() {
+  applyTheme(getState().theme);
+  applySidebar(getState().sidebar);
+  bindGlobalEvents();
+  // re-render shells on relevant state changes
+  subscribe((s) => {
+    renderSidebar();
+  });
+  subscribe(() => renderModalRoot());
+  subscribe(() => renderToastRoot());
+  refreshHealth();
+  // periodic health check
+  setInterval(refreshHealth, 30000);
+  router();
+}
+
+init();

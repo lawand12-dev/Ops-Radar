@@ -36,7 +36,10 @@ export async function getAnalyticsSnapshot() {
         SELECT we.event_type
         FROM workflow_events we
         WHERE we.workflow_id = w.id
-          AND we.event_type IN ('run_failed', 'run_succeeded')
+          AND we.event_type IN (
+            'run_failed','run_succeeded',
+            'workflow_execution_failed','workflow_execution_success'
+          )
         ORDER BY we.created_at DESC
         LIMIT 1
       ) AS last_event_type,
@@ -44,13 +47,16 @@ export async function getAnalyticsSnapshot() {
         SELECT COUNT(*)
         FROM workflow_events we
         WHERE we.workflow_id = w.id
-          AND we.event_type = 'run_failed'
+          AND we.event_type IN ('run_failed','workflow_execution_failed')
       ) AS failed_runs,
       (
         SELECT COUNT(*)
         FROM workflow_events we
         WHERE we.workflow_id = w.id
-          AND we.event_type IN ('run_failed', 'run_succeeded')
+          AND we.event_type IN (
+            'run_failed','run_succeeded',
+            'workflow_execution_failed','workflow_execution_success'
+          )
       ) AS total_runs,
       (
         SELECT COUNT(*)
@@ -91,11 +97,14 @@ export async function getAnalyticsSnapshot() {
       workflow_id: row.workflow_id,
       project_id: row.project_id,
       project_name: row.project_name,
-      is_working: row.last_event_type !== "run_failed" && Number(row.unresolved_alerts) === 0,
+      is_working:
+        row.last_event_type !== "run_failed" &&
+        row.last_event_type !== "workflow_execution_failed" &&
+        Number(row.unresolved_alerts) === 0,
       last_run_status:
-        row.last_event_type === "run_failed"
+        row.last_event_type === "run_failed" || row.last_event_type === "workflow_execution_failed"
           ? "failure"
-          : row.last_event_type === "run_succeeded"
+          : row.last_event_type === "run_succeeded" || row.last_event_type === "workflow_execution_success"
             ? "success"
             : "unknown",
       failed_runs: Number(row.failed_runs),

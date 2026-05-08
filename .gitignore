@@ -4,3 +4,5 @@ dist
 .gitignore
 .cline
 tmp-kb-tests
+.next
+.claude

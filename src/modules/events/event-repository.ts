@@ -4,6 +4,18 @@ import { dbQuery, getDb } from "../../lib/db";
 import { AppError } from "../../lib/errors";
 import type { EventType, WorkflowEventRecord } from "../../types/workflow";
 
+// Two parallel event-type families coexist in `workflow_events`:
+//   • `run_succeeded` / `run_failed`            — emitted by external runners via /event ingest
+//   • `workflow_execution_success` / `_failed`  — emitted by the monitoring scheduler
+//
+// Run-stat queries used to look at the first family only, which made dashboards
+// show 0 runs for projects whose only signals come from the monitoring scheduler.
+// All terminal-run aggregations should consider both families.
+const TERMINAL_RUN_TYPES_SQL =
+  "'run_succeeded','run_failed','workflow_execution_success','workflow_execution_failed'";
+const TERMINAL_RUN_FAILURE_TYPES_SQL = "'run_failed','workflow_execution_failed'";
+const TERMINAL_RUN_SUCCESS_TYPES_SQL = "'run_succeeded','workflow_execution_success'";
+
 type WorkflowEventRow = RowDataPacket & {
   id: string;
   workflow_id: string;
@@ -141,7 +153,7 @@ export async function countWorkflowFailures(workflowId: string): Promise<number>
     `SELECT COUNT(*) AS failures
      FROM workflow_events
      WHERE workflow_id = ?
-       AND event_type = 'run_failed'`,
+       AND event_type IN (${TERMINAL_RUN_FAILURE_TYPES_SQL})`,
     [workflowId]
   );
 
@@ -155,7 +167,7 @@ export async function countConsecutiveWorkflowFailures(workflowId: string, take 
     `SELECT event_type
      FROM workflow_events
      WHERE workflow_id = ?
-       AND event_type IN ('run_failed', 'run_succeeded')
+       AND event_type IN (${TERMINAL_RUN_TYPES_SQL})
      ORDER BY created_at DESC
      LIMIT ?`,
     [workflowId, Math.max(take, 1)]
@@ -163,7 +175,7 @@ export async function countConsecutiveWorkflowFailures(workflowId: string, take 
 
   let consecutive = 0;
   for (const row of rows) {
-    if (row.event_type === "run_failed") {
+    if (row.event_type === "run_failed" || row.event_type === "workflow_execution_failed") {
       consecutive += 1;
       continue;
     }
@@ -194,12 +206,12 @@ export async function getWorkflowRunStats(workflowId: string): Promise<{
     db,
     `SELECT
       COUNT(*) AS total_runs,
-      SUM(CASE WHEN event_type = 'run_failed' THEN 1 ELSE 0 END) AS failed_runs,
-      SUM(CASE WHEN event_type = 'run_succeeded' THEN 1 ELSE 0 END) AS success_runs,
+      SUM(CASE WHEN event_type IN (${TERMINAL_RUN_FAILURE_TYPES_SQL}) THEN 1 ELSE 0 END) AS failed_runs,
+      SUM(CASE WHEN event_type IN (${TERMINAL_RUN_SUCCESS_TYPES_SQL}) THEN 1 ELSE 0 END) AS success_runs,
       AVG(duration_ms) AS avg_duration
     FROM workflow_events
     WHERE workflow_id = ?
-      AND event_type IN ('run_succeeded', 'run_failed')`,
+      AND event_type IN (${TERMINAL_RUN_TYPES_SQL})`,
     [workflowId]
   );
 
@@ -231,7 +243,7 @@ export async function getWorkflowLastTerminalRun(workflowId: string): Promise<{
     `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
      FROM workflow_events
      WHERE workflow_id = ?
-       AND event_type IN ('run_succeeded', 'run_failed')
+       AND event_type IN (${TERMINAL_RUN_TYPES_SQL})
      ORDER BY created_at DESC
      LIMIT 1`,
     [workflowId]
@@ -276,11 +288,11 @@ export async function getGlobalRunStats(): Promise<{
     db,
     `SELECT
       COUNT(*) AS total_runs,
-      SUM(CASE WHEN event_type = 'run_failed' THEN 1 ELSE 0 END) AS failed_runs,
-      SUM(CASE WHEN event_type = 'run_succeeded' THEN 1 ELSE 0 END) AS success_runs,
+      SUM(CASE WHEN event_type IN (${TERMINAL_RUN_FAILURE_TYPES_SQL}) THEN 1 ELSE 0 END) AS failed_runs,
+      SUM(CASE WHEN event_type IN (${TERMINAL_RUN_SUCCESS_TYPES_SQL}) THEN 1 ELSE 0 END) AS success_runs,
       AVG(duration_ms) AS avg_duration
     FROM workflow_events
-    WHERE event_type IN ('run_succeeded', 'run_failed')`
+    WHERE event_type IN (${TERMINAL_RUN_TYPES_SQL})`
   );
 
   const row = rows[0];
@@ -313,10 +325,30 @@ export async function getGlobalHealthBreakdown(): Promise<{
     >
   >(
     db,
+    // "Healthy" means: lifecycle status not failed/rejected AND no open alerts.
+    // Lifecycle status alone over-reports healthy because a `deployed_inactive` workflow
+    // with 20 failed executions and 2 open alerts would otherwise count as healthy.
     `SELECT
-      SUM(CASE WHEN w.status IN ('validated', 'deployed_inactive', 'deployed_active') THEN 1 ELSE 0 END) AS healthy_workflows,
-      SUM(CASE WHEN w.status IN ('failed', 'rejected') THEN 1 ELSE 0 END) AS unhealthy_workflows
-    FROM workflows w`
+      SUM(
+        CASE
+          WHEN w.status IN ('validated', 'deployed_inactive', 'deployed_active')
+            AND COALESCE(open_alerts.cnt, 0) = 0
+          THEN 1 ELSE 0
+        END
+      ) AS healthy_workflows,
+      SUM(
+        CASE
+          WHEN w.status IN ('failed', 'rejected') OR COALESCE(open_alerts.cnt, 0) > 0
+          THEN 1 ELSE 0
+        END
+      ) AS unhealthy_workflows
+    FROM workflows w
+    LEFT JOIN (
+      SELECT workflow_id, COUNT(*) AS cnt
+      FROM workflow_alerts
+      WHERE status = 'open'
+      GROUP BY workflow_id
+    ) open_alerts ON open_alerts.workflow_id = w.id`
   );
 
   return {

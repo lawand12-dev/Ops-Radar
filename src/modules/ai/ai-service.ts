@@ -24,6 +24,7 @@ import {
   buildKnowledgeBaseSelectionLogMeta,
   selectKnowledgeForRequest
 } from "./knowledge-base-loader";
+import { persistAIInteraction } from "./ai-interaction-repository";
 
 const BLOCKED_NODE_TYPES = [
   "n8n-nodes-base.function",
@@ -186,11 +187,47 @@ const failureAnalysisSchema = z.object({
   solution: z.string().min(3)
 });
 
+type AIProvider = "openai" | "digitalocean" | "anthropic" | "mock";
+type RemoteAIProvider = Exclude<AIProvider, "mock">;
+
+export interface AIResponse {
+  text: string;
+  raw?: unknown;
+}
+
+export interface AIRequestInput {
+  model: string;
+  systemPrompt: string;
+  userPrompt: string;
+  jsonSchema?: { name: string; schema: Record<string, unknown> };
+  timeoutMs: number;
+  context?: AiRequestContext;
+}
+
+interface ProviderAdapter {
+  name: RemoteAIProvider;
+  call(input: AIRequestInput): Promise<AIResponse>;
+}
+
+// Keyed by `${provider}:${model}` so a model rejected by one provider can still
+// be tried on another (the same logical Anthropic model is referenced by
+// different IDs on DigitalOcean's gateway vs Anthropic's native API).
 const unsupportedModelsCache = new Set<string>();
 const MAX_WORKFLOW_ATTEMPTS_PER_MODEL = 2;
 
+function unsupportedKey(provider: AIProvider, model: string): string {
+  return `${provider}:${model}`;
+}
+
 export interface AiRequestContext {
   traceId?: string;
+  /**
+   * Optional caller identity for AI interaction logging. Plumbed through
+   * `persistAIInteraction` into `ai_interactions.user_id`. Currently unused
+   * by upstream routes (no auth surface), included for forward-compat so
+   * adding auth later doesn't require schema changes.
+   */
+  userId?: string;
 }
 
 export interface FixWorkflowInput {
@@ -242,7 +279,11 @@ function isAuthAiRequestError(error: unknown): boolean {
   return status === 401 || status === 403;
 }
 
-function markUnsupportedModelIfNeeded(model: string, error: unknown): boolean {
+function markUnsupportedModelIfNeeded(
+  provider: AIProvider,
+  model: string,
+  error: unknown
+): boolean {
   if (!(error instanceof AppError)) {
     return false;
   }
@@ -256,7 +297,7 @@ function markUnsupportedModelIfNeeded(model: string, error: unknown): boolean {
     return false;
   }
 
-  unsupportedModelsCache.add(model);
+  unsupportedModelsCache.add(unsupportedKey(provider, model));
   return true;
 }
 
@@ -303,7 +344,7 @@ function toAttemptErrorDetails(error: unknown): unknown {
 
 async function withAiRetry<T>(
   input: {
-    provider: "openai" | "digitalocean";
+    provider: RemoteAIProvider;
     model: string;
     operation: () => Promise<T>;
   },
@@ -642,134 +683,435 @@ function extractMessageText(payload: unknown): string {
   throw new AppError(502, "AI_EMPTY_OUTPUT", "AI returned no text output.");
 }
 
-async function callOpenAIResponses(
-  input: {
-    model: string;
-    systemPrompt: string;
-    userPrompt: string;
-    jsonSchema?: { name: string; schema: Record<string, unknown> };
-    timeoutMs?: number;
-  },
-  context?: AiRequestContext
-): Promise<string> {
-  logInfo("ai", "Calling OpenAI responses API", { model: input.model }, context?.traceId);
-  const startedAt = Date.now();
-  const response = await fetchWithTimeout({
-    url: `${env.AI_BASE_URL}/responses`,
-    timeoutMs: input.timeoutMs ?? env.AI_REQUEST_TIMEOUT_MS,
-    requestName: `openai.responses:${input.model}`,
-    errorCode: "AI_REQUEST_TIMEOUT",
-    init: {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.AI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: input.model,
-        input: [
-          { role: "system", content: input.systemPrompt },
-          { role: "user", content: input.userPrompt }
-        ],
-        ...(input.jsonSchema
-          ? {
-              text: {
-                format: {
-                  type: "json_schema",
-                  name: input.jsonSchema.name,
-                  strict: true,
-                  schema: input.jsonSchema.schema
-                }
-              }
-            }
-          : {})
-      })
-    }
-  });
+function extractAnthropicText(payload: unknown): string {
+  const data = payload as {
+    content?: Array<{ type?: string; text?: string }>;
+  };
 
-  logInfo(
-    "ai",
-    "OpenAI responses API call completed",
-    { model: input.model, status: response.status, duration_ms: Date.now() - startedAt },
-    context?.traceId
-  );
+  const text = data.content
+    ?.filter((part) => part?.type === "text" && typeof part.text === "string")
+    .map((part) => part.text)
+    .join("")
+    .trim();
 
-  if (!response.ok) {
-    const details = await response.text();
-    throw new AppError(502, "AI_REQUEST_FAILED", "AI request failed.", {
-      provider: "openai",
-      model: input.model,
-      status: response.status,
-      response_body: truncateForError(details)
-    });
+  if (text && text.length > 0) {
+    return text;
   }
 
-  const payload = await response.json();
-  if (env.LOG_AI_RAW_RESPONSE) {
-    logDebug("ai", "Raw AI payload (OpenAI responses)", payload, context?.traceId);
-  }
-  return extractMessageText(payload);
+  throw new AppError(502, "AI_EMPTY_OUTPUT", "AI returned no text output.");
 }
 
-async function callDigitalOceanChatCompletions(
-  input: {
-    model: string;
-    systemPrompt: string;
-    userPrompt: string;
-    temperature?: number;
-    timeoutMs?: number;
-  },
-  context?: AiRequestContext
-): Promise<string> {
-  logInfo("ai", "Calling DigitalOcean chat/completions API", { model: input.model }, context?.traceId);
-  const startedAt = Date.now();
-  const response = await fetchWithTimeout({
-    url: `${env.AI_BASE_URL}/chat/completions`,
-    timeoutMs: input.timeoutMs ?? env.AI_REQUEST_TIMEOUT_MS,
-    requestName: `digitalocean.chat.completions:${input.model}`,
-    errorCode: "AI_REQUEST_TIMEOUT",
-    init: {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.AI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: input.model,
-        messages: [
-          { role: "system", content: input.systemPrompt },
-          { role: "user", content: input.userPrompt }
-        ],
-        max_completion_tokens: 3000,
-        temperature: input.temperature ?? 0.2
-      })
-    }
-  });
-console.log(input.systemPrompt);
-console.log(input.userPrompt);
+function requireKey(value: string | undefined, varName: string): string {
+  if (!value || value.trim().length === 0) {
+    throw new AppError(500, "AI_CONFIG_ERROR", `${varName} is required.`);
+  }
+  return value;
+}
 
-  logInfo(
-    "ai",
-    "DigitalOcean chat/completions API call completed",
-    { model: input.model, status: response.status, duration_ms: Date.now() - startedAt },
-    context?.traceId
-  );
-
-  if (!response.ok) {
-    const details = await response.text();
-    throw new AppError(502, "AI_REQUEST_FAILED", "AI request failed.", {
-      provider: "digitalocean",
-      model: input.model,
-      status: response.status,
-      response_body: truncateForError(details)
+const openaiAdapter: ProviderAdapter = {
+  name: "openai",
+  async call(input: AIRequestInput): Promise<AIResponse> {
+    const apiKey = requireKey(env.AI_API_KEY, "AI_API_KEY");
+    logInfo("ai", "Calling OpenAI responses API", { model: input.model }, input.context?.traceId);
+    const startedAt = Date.now();
+    const response = await fetchWithTimeout({
+      url: `${env.AI_BASE_URL}/responses`,
+      timeoutMs: input.timeoutMs,
+      requestName: `openai.responses:${input.model}`,
+      errorCode: "AI_REQUEST_TIMEOUT",
+      init: {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: input.model,
+          input: [
+            { role: "system", content: input.systemPrompt },
+            { role: "user", content: input.userPrompt }
+          ],
+          ...(input.jsonSchema
+            ? {
+                text: {
+                  format: {
+                    type: "json_schema",
+                    name: input.jsonSchema.name,
+                    strict: true,
+                    schema: input.jsonSchema.schema
+                  }
+                }
+              }
+            : {})
+        })
+      }
     });
+
+    logInfo(
+      "ai",
+      "OpenAI responses API call completed",
+      { model: input.model, status: response.status, duration_ms: Date.now() - startedAt },
+      input.context?.traceId
+    );
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new AppError(502, "AI_REQUEST_FAILED", "AI request failed.", {
+        provider: "openai",
+        model: input.model,
+        status: response.status,
+        response_body: truncateForError(details)
+      });
+    }
+
+    const payload = await response.json();
+    if (env.LOG_AI_RAW_RESPONSE) {
+      logDebug("ai", "Raw AI payload (OpenAI responses)", payload, input.context?.traceId);
+    }
+    return { text: extractMessageText(payload), raw: payload };
+  }
+};
+
+const digitalOceanAdapter: ProviderAdapter = {
+  name: "digitalocean",
+  async call(input: AIRequestInput): Promise<AIResponse> {
+    const apiKey = requireKey(env.AI_API_KEY, "AI_API_KEY");
+    logInfo(
+      "ai",
+      "Calling DigitalOcean chat/completions API",
+      { model: input.model },
+      input.context?.traceId
+    );
+    const startedAt = Date.now();
+    const response = await fetchWithTimeout({
+      url: `${env.AI_BASE_URL}/chat/completions`,
+      timeoutMs: input.timeoutMs,
+      requestName: `digitalocean.chat.completions:${input.model}`,
+      errorCode: "AI_REQUEST_TIMEOUT",
+      init: {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: input.model,
+          messages: [
+            { role: "system", content: input.systemPrompt },
+            { role: "user", content: input.userPrompt }
+          ],
+          max_completion_tokens: 3000,
+          temperature: 0.2
+        })
+      }
+    });
+
+    logInfo(
+      "ai",
+      "DigitalOcean chat/completions API call completed",
+      { model: input.model, status: response.status, duration_ms: Date.now() - startedAt },
+      input.context?.traceId
+    );
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new AppError(502, "AI_REQUEST_FAILED", "AI request failed.", {
+        provider: "digitalocean",
+        model: input.model,
+        status: response.status,
+        response_body: truncateForError(details)
+      });
+    }
+
+    const payload = await response.json();
+    if (env.LOG_AI_RAW_RESPONSE) {
+      logDebug(
+        "ai",
+        "Raw AI payload (DigitalOcean chat/completions)",
+        payload,
+        input.context?.traceId
+      );
+    }
+    return { text: extractMessageText(payload), raw: payload };
+  }
+};
+
+const anthropicAdapter: ProviderAdapter = {
+  name: "anthropic",
+  async call(input: AIRequestInput): Promise<AIResponse> {
+    const apiKey = requireKey(env.ANTHROPIC_API_KEY, "ANTHROPIC_API_KEY");
+    logInfo(
+      "ai",
+      "Calling Anthropic messages API",
+      { model: input.model },
+      input.context?.traceId
+    );
+    const startedAt = Date.now();
+    const response = await fetchWithTimeout({
+      url: `${env.ANTHROPIC_BASE_URL}/messages`,
+      timeoutMs: input.timeoutMs,
+      requestName: `anthropic.messages:${input.model}`,
+      errorCode: "AI_REQUEST_TIMEOUT",
+      init: {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": env.ANTHROPIC_VERSION
+        },
+        body: JSON.stringify({
+          model: input.model,
+          max_tokens: env.ANTHROPIC_MAX_TOKENS,
+          system: input.systemPrompt,
+          messages: [{ role: "user", content: input.userPrompt }]
+          // Anthropic does not support OpenAI-style json_schema; we rely on
+          // prompt instructions + parseJsonFromText. (Tool-use enforcement
+          // could be added later as an opt-in.)
+        })
+      }
+    });
+
+    logInfo(
+      "ai",
+      "Anthropic messages API call completed",
+      { model: input.model, status: response.status, duration_ms: Date.now() - startedAt },
+      input.context?.traceId
+    );
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new AppError(502, "AI_REQUEST_FAILED", "AI request failed.", {
+        provider: "anthropic",
+        model: input.model,
+        status: response.status,
+        response_body: truncateForError(details)
+      });
+    }
+
+    const payload = await response.json();
+    if (env.LOG_AI_RAW_RESPONSE) {
+      logDebug("ai", "Raw AI payload (Anthropic messages)", payload, input.context?.traceId);
+    }
+    return { text: extractAnthropicText(payload), raw: payload };
+  }
+};
+
+const PROVIDER_REGISTRY: Record<RemoteAIProvider, ProviderAdapter> = {
+  openai: openaiAdapter,
+  digitalocean: digitalOceanAdapter,
+  anthropic: anthropicAdapter
+};
+
+function callProvider(provider: RemoteAIProvider, input: AIRequestInput): Promise<AIResponse> {
+  const adapter = PROVIDER_REGISTRY[provider];
+  if (!adapter) {
+    return Promise.reject(
+      new AppError(500, "AI_PROVIDER_UNSUPPORTED", `Unsupported provider: ${provider}`)
+    );
+  }
+  return adapter.call(input);
+}
+
+/**
+ * Best-effort token-count extraction across provider response shapes.
+ * Returns null if no usage data is present — never throws.
+ */
+function extractTokenCount(raw: unknown): number | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const usage = (raw as { usage?: unknown }).usage;
+  if (!usage || typeof usage !== "object") {
+    return null;
+  }
+  const u = usage as {
+    total_tokens?: unknown;
+    input_tokens?: unknown;
+    output_tokens?: unknown;
+    prompt_tokens?: unknown;
+    completion_tokens?: unknown;
+  };
+
+  if (typeof u.total_tokens === "number" && Number.isFinite(u.total_tokens)) {
+    return u.total_tokens;
+  }
+  const input =
+    (typeof u.input_tokens === "number" ? u.input_tokens : 0) +
+    (typeof u.prompt_tokens === "number" ? u.prompt_tokens : 0);
+  const output =
+    (typeof u.output_tokens === "number" ? u.output_tokens : 0) +
+    (typeof u.completion_tokens === "number" ? u.completion_tokens : 0);
+  const sum = input + output;
+  return sum > 0 ? sum : null;
+}
+
+/**
+ * Wraps `callProvider` with non-blocking persistence of the interaction.
+ * Latency is measured at the wrapper boundary, so retry attempts via
+ * `withAiRetry` each produce their own row (one per real HTTP call) and
+ * fallback rows are emitted from the same code path with no duplication.
+ *
+ * Contract:
+ *  - Errors from `callProvider` are re-thrown unchanged so retry/fallback
+ *    semantics in `withAiRetry` and `callWithFallback` are unaffected.
+ *  - Persistence is fire-and-forget; a DB outage cannot fail an AI request.
+ */
+async function instrumentedCall(
+  provider: RemoteAIProvider,
+  input: AIRequestInput
+): Promise<AIResponse> {
+  const startedAt = Date.now();
+  try {
+    const response = await callProvider(provider, input);
+    persistAIInteraction({
+      userId: input.context?.userId ?? null,
+      provider,
+      model: input.model,
+      systemPrompt: input.systemPrompt,
+      userPrompt: input.userPrompt,
+      response: response.text,
+      rawResponse: response.raw,
+      status: "success",
+      errorMessage: null,
+      tokensUsed: extractTokenCount(response.raw),
+      latencyMs: Date.now() - startedAt
+    });
+    return response;
+  } catch (error) {
+    persistAIInteraction({
+      userId: input.context?.userId ?? null,
+      provider,
+      model: input.model,
+      systemPrompt: input.systemPrompt,
+      userPrompt: input.userPrompt,
+      response: "",
+      rawResponse: null,
+      status: "error",
+      errorMessage: error instanceof Error ? error.message : String(error),
+      tokensUsed: null,
+      latencyMs: Date.now() - startedAt
+    });
+    throw error;
+  }
+}
+
+function resolveBackupModel(backup: RemoteAIProvider, primaryModel: string): string {
+  if (env.AI_BACKUP_MODEL && env.AI_BACKUP_MODEL.trim().length > 0) {
+    return env.AI_BACKUP_MODEL.trim();
+  }
+  if (backup === "anthropic") {
+    return env.ANTHROPIC_MODEL;
+  }
+  // For openai/digitalocean we don't have a guaranteed-good default that
+  // differs from the primary model, so reuse the primary model name. If it
+  // doesn't exist on the backup, the request will fail and surface clearly.
+  return primaryModel;
+}
+
+async function callWithFallback(input: AIRequestInput): Promise<AIResponse> {
+  const primary = env.AI_PROVIDER as RemoteAIProvider;
+  const backup =
+    env.AI_BACKUP_PROVIDER && env.AI_BACKUP_PROVIDER !== "mock"
+      ? (env.AI_BACKUP_PROVIDER as RemoteAIProvider)
+      : null;
+
+  // Skip primary entirely if we already know this (provider, model) pair fails.
+  const primaryUnsupported = unsupportedModelsCache.has(unsupportedKey(primary, input.model));
+
+  if (!primaryUnsupported) {
+    try {
+      return await withAiRetry(
+        {
+          provider: primary,
+          model: input.model,
+          operation: () => instrumentedCall(primary, input)
+        },
+        input.context
+      );
+    } catch (primaryError) {
+      markUnsupportedModelIfNeeded(primary, input.model, primaryError);
+
+      if (!backup || backup === primary) {
+        throw primaryError;
+      }
+
+      logWarn(
+        "ai",
+        "Primary AI provider failed; falling back to backup",
+        {
+          primary,
+          backup,
+          model: input.model,
+          // Intentionally NOT logging systemPrompt/userPrompt to avoid leaking
+          // user input or knowledge-base content.
+          error: toAttemptErrorDetails(primaryError)
+        },
+        input.context?.traceId
+      );
+
+      const backupModel = resolveBackupModel(backup, input.model);
+      try {
+        return await withAiRetry(
+          {
+            provider: backup,
+            model: backupModel,
+            operation: () =>
+              instrumentedCall(backup, {
+                ...input,
+                model: backupModel,
+                // Anthropic ignores jsonSchema; safe to forward — adapters
+                // strip what they don't support.
+                jsonSchema: backup === "openai" ? input.jsonSchema : undefined
+              })
+          },
+          input.context
+        );
+      } catch (backupError) {
+        markUnsupportedModelIfNeeded(backup, backupModel, backupError);
+        throw new AppError(
+          502,
+          "AI_PROVIDERS_EXHAUSTED",
+          "Both primary and backup AI providers failed.",
+          {
+            primary: {
+              provider: primary,
+              model: input.model,
+              error: toAttemptErrorDetails(primaryError)
+            },
+            backup: {
+              provider: backup,
+              model: backupModel,
+              error: toAttemptErrorDetails(backupError)
+            }
+          }
+        );
+      }
+    }
   }
 
-  const payload = await response.json();
-  if (env.LOG_AI_RAW_RESPONSE) {
-    logDebug("ai", "Raw AI payload (DigitalOcean chat/completions)", payload, context?.traceId);
+  // Primary skipped due to cached unsupported flag — go straight to backup if any.
+  if (!backup || backup === primary) {
+    throw new AppError(
+      502,
+      "AI_PROVIDER_UNAVAILABLE",
+      `Primary provider ${primary} is marked unsupported for model ${input.model} and no backup is configured.`
+    );
   }
-  return extractMessageText(payload);
+
+  const backupModel = resolveBackupModel(backup, input.model);
+  return withAiRetry(
+    {
+      provider: backup,
+      model: backupModel,
+      operation: () =>
+        instrumentedCall(backup, {
+          ...input,
+          model: backupModel,
+          jsonSchema: backup === "openai" ? input.jsonSchema : undefined
+        })
+    },
+    input.context
+  );
 }
 
 async function callAiForJson(input: {
@@ -780,70 +1122,25 @@ async function callAiForJson(input: {
   requestTimeoutMs?: number;
   context?: AiRequestContext;
 }): Promise<unknown> {
-  if (!env.AI_API_KEY) {
-    throw new AppError(500, "AI_CONFIG_ERROR", "AI_API_KEY is required.");
-  }
+  const response = await callWithFallback({
+    model: input.model,
+    systemPrompt: input.systemPrompt,
+    userPrompt: input.userPrompt,
+    jsonSchema: input.jsonSchema,
+    timeoutMs: input.requestTimeoutMs ?? env.AI_REQUEST_TIMEOUT_MS,
+    context: input.context
+  });
 
-  if (env.AI_PROVIDER === "openai") {
-    const text = await withAiRetry(
-      {
-        provider: "openai",
-        model: input.model,
-        operation: () =>
-          callOpenAIResponses(
-            {
-              model: input.model,
-              systemPrompt: input.systemPrompt,
-              userPrompt: input.userPrompt,
-              jsonSchema: input.jsonSchema,
-              timeoutMs: input.requestTimeoutMs
-            },
-            input.context
-          )
-      },
-      input.context
+  if (env.LOG_AI_OUTPUT_TEXT) {
+    logDebug(
+      "ai",
+      "AI output_text",
+      { text: redactJsonTextIfPossible(response.text) },
+      input.context?.traceId
     );
-    if (env.LOG_AI_OUTPUT_TEXT) {
-      logDebug(
-        "ai",
-        "AI output_text",
-        { text: redactJsonTextIfPossible(text) },
-        input.context?.traceId
-      );
-    }
-    return parseJsonFromText(text);
   }
 
-  if (env.AI_PROVIDER === "digitalocean") {
-    const text = await withAiRetry(
-      {
-        provider: "digitalocean",
-        model: input.model,
-        operation: () =>
-          callDigitalOceanChatCompletions(
-            {
-              model: input.model,
-              systemPrompt: input.systemPrompt,
-              userPrompt: input.userPrompt,
-              timeoutMs: input.requestTimeoutMs
-            },
-            input.context
-          )
-      },
-      input.context
-    );
-    if (env.LOG_AI_OUTPUT_TEXT) {
-      logDebug(
-        "ai",
-        "AI output_text",
-        { text: redactJsonTextIfPossible(text) },
-        input.context?.traceId
-      );
-    }
-    return parseJsonFromText(text);
-  }
-
-  throw new AppError(500, "AI_PROVIDER_UNSUPPORTED", `Unsupported provider: ${env.AI_PROVIDER}`);
+  return parseJsonFromText(response.text);
 }
 
 function buildMockWorkflow(message: string): AiWorkflowOutput {
@@ -963,7 +1260,9 @@ export async function generateWorkflowFromMessage(
     env.AI_MODEL_FAST,
     env.AI_MODEL_COMPLEX
   ].filter((value): value is string => Boolean(value)));
-  const modelPlan = allModels.filter((model) => !unsupportedModelsCache.has(model));
+  const modelPlan = allModels.filter(
+    (model) => !unsupportedModelsCache.has(unsupportedKey(env.AI_PROVIDER, model))
+  );
   const effectivePlan = modelPlan.length > 0 ? modelPlan : allModels;
   const workflowSystemPrompt = buildWorkflowGenerationSystemPrompt(message, context?.traceId);
 
@@ -1051,7 +1350,7 @@ export async function generateWorkflowFromMessage(
           required_credentials: extractRequiredCredentialTypesFromWorkflow(parsed.parsed.workflow)
         };
       } catch (error) {
-        const modelMarkedUnsupported = markUnsupportedModelIfNeeded(model, error);
+        const modelMarkedUnsupported = markUnsupportedModelIfNeeded(env.AI_PROVIDER, model, error);
         if (modelMarkedUnsupported) {
           logWarn(
             "ai",
@@ -1144,7 +1443,9 @@ export async function fixRejectedWorkflow(
       env.AI_MODEL_COMPLEX
     ].filter((value): value is string => Boolean(value))
   );
-  const modelPlan = allModels.filter((model) => !unsupportedModelsCache.has(model));
+  const modelPlan = allModels.filter(
+    (model) => !unsupportedModelsCache.has(unsupportedKey(env.AI_PROVIDER, model))
+  );
   const effectivePlan = modelPlan.length > 0 ? modelPlan : allModels;
   const fixSystemPrompt = buildWorkflowFixSystemPrompt(
     input.originalRequest,
@@ -1245,7 +1546,7 @@ export async function fixRejectedWorkflow(
           validation
         };
       } catch (error) {
-        const modelMarkedUnsupported = markUnsupportedModelIfNeeded(model, error);
+        const modelMarkedUnsupported = markUnsupportedModelIfNeeded(env.AI_PROVIDER, model, error);
         if (modelMarkedUnsupported) {
           logWarn(
             "ai",

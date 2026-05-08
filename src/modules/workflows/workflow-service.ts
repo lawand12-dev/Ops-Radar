@@ -26,10 +26,19 @@ export async function getWorkflowStatus(workflowId: string) {
     getLatestAuditLog(workflowId)
   ]);
 
+  // A workflow is "working" only if its lifecycle status is healthy AND there are no
+  // open alerts AND the most-recent terminal run wasn't a failure. Without the alert
+  // and unified-event-type check, a workflow with 20 monitoring-scheduler failures
+  // but no `run_failed` event would falsely report as working.
+  const lastIsFailure =
+    lastRun.eventType === "run_failed" || lastRun.eventType === "workflow_execution_failed";
+  const lastIsSuccess =
+    lastRun.eventType === "run_succeeded" || lastRun.eventType === "workflow_execution_success";
   const isWorking =
     workflow.status !== "failed" &&
     workflow.status !== "rejected" &&
-    (lastRun.eventType === null || lastRun.eventType === "run_succeeded");
+    unresolvedAlerts === 0 &&
+    (lastRun.eventType === null || lastIsSuccess);
 
   return {
     workflow: {
@@ -42,12 +51,7 @@ export async function getWorkflowStatus(workflowId: string) {
     },
     health: {
       is_working: isWorking,
-      last_run_status:
-        lastRun.eventType === "run_failed"
-          ? "failure"
-          : lastRun.eventType === "run_succeeded"
-            ? "success"
-            : "unknown",
+      last_run_status: lastIsFailure ? "failure" : lastIsSuccess ? "success" : "unknown",
       last_run_at: lastRun.createdAt,
       unresolved_alerts: unresolvedAlerts
     },
