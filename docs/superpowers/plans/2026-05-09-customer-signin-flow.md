@@ -77,7 +77,7 @@ Once a real session exists per request, we can:
 | Manual | Supabase dashboard | Configure Site URL + Redirect URLs |
 | Install | `package.json` | Add `@supabase/ssr` |
 | Create | `src/lib/supabase-ssr.ts` | SSR-aware client factories (browser + server + middleware variants) |
-| Create | `src/middleware.ts` | Refresh sessions + gate `/dashboard/*` |
+| Create | `src/proxy.ts` | Refresh sessions + gate `/dashboard/*` |
 | Create | `src/app/sign-in/page.tsx` | Email-input form + magic-link send |
 | Create | `src/app/auth/callback/route.ts` | OAuth/magic-link exchange handler |
 | Modify | `src/app/api/dashboard/sales/route.ts` | Use SSR client, drop DEV_CLIENT_ID fallback |
@@ -174,8 +174,8 @@ export async function createServerSupabase() {
   });
 }
 
-/** For middleware. Refreshes the session and updates response cookies. */
-export function createMiddlewareSupabase(req: NextRequest, res: NextResponse) {
+/** For Next 16 proxy.ts. Refreshes the session and updates response cookies. */
+export function createProxySupabase(req: NextRequest, res: NextResponse) {
   return createSsrServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
@@ -210,28 +210,28 @@ git commit -m "feat(auth): add SSR Supabase client factories"
 
 ---
 
-## Task 3: Auth middleware
+## Task 3: Auth proxy (Next 16's renamed middleware)
 
 **Files:**
-- Create: `src/middleware.ts`
+- Create: `src/proxy.ts`
 
-- [ ] **Step 1: Check whether middleware.ts already exists**
+- [ ] **Step 1: Check whether proxy.ts already exists**
 
 ```bash
-cd /home/lawand/Desktop/my-startup/opsradar && ls src/middleware.ts 2>&1
+cd /home/lawand/Desktop/my-startup/opsradar && ls src/proxy.ts 2>&1
 ```
 
-If it exists: STOP and report BLOCKED. The plan assumed no existing middleware — adapting an existing one needs human review.
+If it exists: STOP and report BLOCKED. The plan assumed no existing proxy — adapting an existing one needs human review.
 
-- [ ] **Step 2: Create `src/middleware.ts`**
+- [ ] **Step 2: Create `src/proxy.ts`**
 
 ```ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { createMiddlewareSupabase } from '<npm>/lib/supabase-ssr';
+import { createProxySupabase } from '<npm>/lib/supabase-ssr';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const res = NextResponse.next({ request: req });
-  const supabase = createMiddlewareSupabase(req, res);
+  const supabase = createProxySupabase(req, res);
 
   // Refreshes the session cookie if the access token is expired.
   const { data: { user } } = await supabase.auth.getUser();
@@ -272,8 +272,8 @@ Expected: zero errors.
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add src/middleware.ts
-git commit -m "feat(auth): add middleware that gates /dashboard and refreshes sessions"
+git add src/proxy.ts
+git commit -m "feat(auth): add proxy that gates /dashboard and refreshes sessions"
 ```
 
 ---
