@@ -28,6 +28,8 @@ import { StatCard } from './_components/stat-card';
 import { Card } from './_components/card';
 import { PrimaryButton, SecondaryButton } from './_components/buttons';
 import { SalesCard } from '<npm>/components/dashboard/sales-card';
+import { HeroRoiBlock } from '<npm>/components/dashboard/hero-roi-block';
+import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-strip';
 
 Chart.register(
   LineController,
@@ -391,6 +393,9 @@ export default function DashboardPage() {
           </>
         }
       />
+
+      <HeroRoiBlock />
+      <WorkflowHealthStrip />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
         {metrics.map((m) => <StatCard key={m.label} {...m} />)}
