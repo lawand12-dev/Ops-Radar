@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ConnectApolloModal } from './connect-apollo-modal';
-import { ConnectCalendlyModal } from './connect-calendly-modal';
 
 type WidgetData = {
   emails_sent: number | null;
@@ -18,7 +16,6 @@ type WidgetData = {
 
 type ApiResponse =
   | { status: 'ok'; data: WidgetData; fromCache: boolean }
-  | { status: 'not_connected'; apollo_connected: false; calendly_connected: false }
   | { status: 'error'; message: string; staleData?: WidgetData; staleAgeMs?: number }
   | { error: string };
 
@@ -31,6 +28,8 @@ const C = {
   red: '#FF4D4D',
 };
 
+const N8N_MANAGE_URL = 'https://opsradar.app.n8n.cloud/home/credentials';
+
 const fmtNumber = (n: number | null) =>
   n == null ? '—' : n.toLocaleString('en-US', { maximumFractionDigits: 0 });
 
@@ -39,8 +38,6 @@ const fmtPct = (n: number | null) =>
 
 export function MarketingCard() {
   const [response, setResponse] = useState<ApiResponse | null>(null);
-  const [apolloOpen, setApolloOpen] = useState(false);
-  const [calendlyOpen, setCalendlyOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -63,6 +60,12 @@ export function MarketingCard() {
     load();
   }, []);
 
+  const okData =
+    response && 'status' in response && response.status === 'ok' ? response.data : undefined;
+
+  const neitherConnected =
+    okData && !okData.apollo_connected && !okData.calendly_connected;
+
   return (
     <div
       style={{
@@ -75,44 +78,26 @@ export function MarketingCard() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Marketing / Outreach</div>
-        {response && 'status' in response && response.status === 'ok' && (
-          <span style={{ fontSize: 11, color: C.muted }}>{response.data.period_label}</span>
-        )}
+        {okData && <span style={{ fontSize: 11, color: C.muted }}>{okData.period_label}</span>}
       </div>
 
       {loading && <Skeleton />}
 
-      {!loading && response && 'status' in response && response.status === 'ok' && (
-        <Content
-          data={response.data}
-          onConnectApollo={() => setApolloOpen(true)}
-          onConnectCalendly={() => setCalendlyOpen(true)}
-        />
-      )}
+      {!loading && okData && !neitherConnected && <Content data={okData} />}
 
-      {!loading && response && 'status' in response && response.status === 'not_connected' && (
-        <NeitherConnected
-          onConnectApollo={() => setApolloOpen(true)}
-          onConnectCalendly={() => setCalendlyOpen(true)}
-        />
-      )}
+      {!loading && neitherConnected && <NeitherConnected />}
 
       {!loading && response && 'status' in response && response.status === 'error' && (
         <ErrorState
           staleData={response.staleData}
           staleAgeMs={response.staleAgeMs}
           onRetry={load}
-          onConnectApollo={() => setApolloOpen(true)}
-          onConnectCalendly={() => setCalendlyOpen(true)}
         />
       )}
 
       {!loading && response && 'error' in response && response.error === 'unauthorized' && (
         <div style={{ fontSize: 12, color: C.muted }}>Sign in to see marketing data.</div>
       )}
-
-      <ConnectApolloModal open={apolloOpen} onOpenChange={setApolloOpen} onConnected={load} />
-      <ConnectCalendlyModal open={calendlyOpen} onOpenChange={setCalendlyOpen} onConnected={load} />
     </div>
   );
 }
@@ -128,15 +113,7 @@ function Skeleton() {
   );
 }
 
-function Content({
-  data,
-  onConnectApollo,
-  onConnectCalendly,
-}: {
-  data: WidgetData;
-  onConnectApollo: () => void;
-  onConnectCalendly: () => void;
-}) {
+function Content({ data }: { data: WidgetData }) {
   const allEmpty =
     (data.emails_sent ?? 0) === 0 &&
     (data.meetings_booked ?? 0) === 0 &&
@@ -153,7 +130,7 @@ function Content({
         {fmtNumber(data.meetings_booked)} meetings booked
       </div>
       <div style={{ fontSize: 13, color: C.muted, marginBottom: 6 }}>
-        {data.calendly_connected ? 'via Calendly' : 'Connect Calendly to see meetings →'}
+        {data.calendly_connected ? 'via Calendly' : 'Calendly not connected — set it up in n8n'}
       </div>
       <Row label="Emails sent" value={fmtNumber(data.emails_sent)} fade={!data.apollo_connected} />
       <Row label="Open rate" value={fmtPct(data.open_rate_pct)} fade={!data.apollo_connected} />
@@ -163,9 +140,11 @@ function Content({
         value={fmtPct(data.meeting_conversion_pct)}
         fade={!(data.apollo_connected && data.calendly_connected)}
       />
-      {!data.apollo_connected && (
-        <button
-          onClick={onConnectApollo}
+      {(!data.apollo_connected || !data.calendly_connected) && (
+        <a
+          href={N8N_MANAGE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
             alignSelf: 'flex-start',
             background: C.accent,
@@ -177,29 +156,15 @@ function Content({
             fontWeight: 600,
             cursor: 'pointer',
             marginTop: 4,
+            textDecoration: 'none',
           }}
         >
-          Connect Apollo →
-        </button>
-      )}
-      {!data.calendly_connected && data.apollo_connected && (
-        <button
-          onClick={onConnectCalendly}
-          style={{
-            alignSelf: 'flex-start',
-            background: C.accent,
-            color: '#0D1117',
-            border: 'none',
-            borderRadius: 8,
-            padding: '6px 12px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: 'pointer',
-            marginTop: 4,
-          }}
-        >
-          Connect Calendly →
-        </button>
+          {!data.apollo_connected && !data.calendly_connected
+            ? 'Manage in n8n →'
+            : !data.apollo_connected
+              ? 'Connect Apollo in n8n →'
+              : 'Connect Calendly in n8n →'}
+        </a>
       )}
       {data.apollo_connected && data.reply_sparkline && data.reply_sparkline.length > 0 && (
         <Sparkline values={data.reply_sparkline} />
@@ -245,50 +210,31 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-function NeitherConnected({
-  onConnectApollo,
-  onConnectCalendly,
-}: {
-  onConnectApollo: () => void;
-  onConnectCalendly: () => void;
-}) {
+function NeitherConnected() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
       <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>
-        Connect Apollo and Calendly to see your outreach funnel — emails sent, replies, and meetings booked.
+        Apollo and Calendly aren&apos;t connected to your automations yet. Set them up in n8n
+        to see your outreach funnel — emails sent, replies, and meetings booked.
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          onClick={onConnectApollo}
-          style={{
-            background: C.accent,
-            color: '#0D1117',
-            border: 'none',
-            borderRadius: 8,
-            padding: '8px 14px',
-            fontSize: 12.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Connect Apollo →
-        </button>
-        <button
-          onClick={onConnectCalendly}
-          style={{
-            background: 'transparent',
-            color: C.accent,
-            border: `1px solid ${C.accent}`,
-            borderRadius: 8,
-            padding: '8px 14px',
-            fontSize: 12.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Connect Calendly →
-        </button>
-      </div>
+      <a
+        href={N8N_MANAGE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          background: C.accent,
+          color: '#0D1117',
+          border: 'none',
+          borderRadius: 8,
+          padding: '8px 14px',
+          fontSize: 12.5,
+          fontWeight: 600,
+          cursor: 'pointer',
+          textDecoration: 'none',
+        }}
+      >
+        Manage in n8n →
+      </a>
     </div>
   );
 }
@@ -297,14 +243,10 @@ function ErrorState({
   staleData,
   staleAgeMs,
   onRetry,
-  onConnectApollo,
-  onConnectCalendly,
 }: {
   staleData?: WidgetData;
   staleAgeMs?: number;
   onRetry: () => void;
-  onConnectApollo: () => void;
-  onConnectCalendly: () => void;
 }) {
   const minutes = staleAgeMs ? Math.round(staleAgeMs / 60_000) : null;
   return (
@@ -326,13 +268,7 @@ function ErrorState({
           </span>
         )}
       </div>
-      {staleData && (
-        <Content
-          data={staleData}
-          onConnectApollo={onConnectApollo}
-          onConnectCalendly={onConnectCalendly}
-        />
-      )}
+      {staleData && <Content data={staleData} />}
       <button
         onClick={onRetry}
         style={{

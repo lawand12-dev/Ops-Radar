@@ -1,19 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ConnectHubSpotModal } from './connect-hubspot-modal';
 
 type SalesData = {
-  pipeline_value: number;
-  new_leads: number;
-  auto_leads: number;
-  sparkline: number[];
+  hubspot_connected: boolean;
+  pipeline_value: number | null;
+  new_leads: number | null;
+  auto_leads: number | null;
+  sparkline: number[] | null;
   period_label: string;
 };
 
 type ApiResponse =
   | { status: 'ok'; data: SalesData; fromCache: boolean }
-  | { status: 'not_connected'; tool: 'hubspot' }
   | { status: 'error'; message: string; staleData?: SalesData; staleAgeMs?: number }
   | { error: string };
 
@@ -26,9 +25,10 @@ const C = {
   red: '#FF4D4D',
 };
 
+const N8N_MANAGE_URL = 'https://opsradar.app.n8n.cloud/home/credentials';
+
 export function SalesCard() {
   const [response, setResponse] = useState<ApiResponse | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -51,6 +51,9 @@ export function SalesCard() {
     load();
   }, []);
 
+  const okData =
+    response && 'status' in response && response.status === 'ok' ? response.data : undefined;
+
   return (
     <div
       style={{
@@ -66,20 +69,14 @@ export function SalesCard() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Sales / CRM</div>
-        {response && 'status' in response && response.status === 'ok' && (
-          <span style={{ fontSize: 11, color: C.muted }}>{response.data.period_label}</span>
-        )}
+        {okData && <span style={{ fontSize: 11, color: C.muted }}>{okData.period_label}</span>}
       </div>
 
       {loading && <SkeletonState />}
 
-      {!loading && response && 'status' in response && response.status === 'ok' && (
-        <DataState data={response.data} />
-      )}
+      {!loading && okData && okData.hubspot_connected && <DataState data={okData} />}
 
-      {!loading && response && 'status' in response && response.status === 'not_connected' && (
-        <NotConnectedState onConnect={() => setModalOpen(true)} />
-      )}
+      {!loading && okData && !okData.hubspot_connected && <NotConnectedState />}
 
       {!loading && response && 'status' in response && response.status === 'error' && (
         <ErrorState
@@ -92,12 +89,6 @@ export function SalesCard() {
       {!loading && response && 'error' in response && response.error === 'unauthorized' && (
         <div style={{ fontSize: 12, color: C.muted }}>Sign in to see sales data.</div>
       )}
-
-      <ConnectHubSpotModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        onConnected={load}
-      />
     </div>
   );
 }
@@ -116,7 +107,13 @@ function SkeletonState() {
 function DataState({ data }: { data: SalesData }) {
   const fmtCurrency = (n: number) =>
     n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-  const allEmpty = data.pipeline_value === 0 && data.new_leads === 0;
+
+  const pipeline = data.pipeline_value ?? 0;
+  const newLeads = data.new_leads ?? 0;
+  const autoLeads = data.auto_leads ?? 0;
+  const sparkline = data.sparkline ?? [];
+
+  const allEmpty = pipeline === 0 && newLeads === 0;
 
   if (allEmpty) {
     return (
@@ -126,14 +123,14 @@ function DataState({ data }: { data: SalesData }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-      <Row label="Pipeline" value={fmtCurrency(data.pipeline_value)} color={C.text} />
-      <Row label="New leads" value={data.new_leads.toString()} color={C.accent} />
+      <Row label="Pipeline" value={fmtCurrency(pipeline)} color={C.text} />
+      <Row label="New leads" value={newLeads.toString()} color={C.accent} />
       <Row
         label="Auto-created"
-        value={`${data.auto_leads} of ${data.new_leads}`}
+        value={`${autoLeads} of ${newLeads}`}
         color={C.muted}
       />
-      <Sparkline values={data.sparkline} />
+      <Sparkline values={sparkline} />
     </div>
   );
 }
@@ -169,14 +166,17 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-function NotConnectedState({ onConnect }: { onConnect: () => void }) {
+function NotConnectedState() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
       <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>
-        Connect HubSpot to see your pipeline value, new leads, and which were auto-created by your workflows.
+        HubSpot isn&apos;t connected to your automations yet. Set it up in n8n to see your pipeline,
+        new leads, and which were auto-created by your workflows.
       </div>
-      <button
-        onClick={onConnect}
+      <a
+        href={N8N_MANAGE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         style={{
           background: C.accent,
           color: '#0D1117',
@@ -186,10 +186,11 @@ function NotConnectedState({ onConnect }: { onConnect: () => void }) {
           fontSize: 12.5,
           fontWeight: 600,
           cursor: 'pointer',
+          textDecoration: 'none',
         }}
       >
-        Connect HubSpot →
-      </button>
+        Manage in n8n →
+      </a>
     </div>
   );
 }
@@ -223,7 +224,7 @@ function ErrorState({
           </span>
         )}
       </div>
-      {staleData && <DataState data={staleData} />}
+      {staleData && staleData.hubspot_connected && <DataState data={staleData} />}
       <button
         onClick={onRetry}
         style={{

@@ -24,6 +24,8 @@
       "parameters": {
         "method": "GET",
         "url": "https://api.hubapi.com/crm/v3/objects/deals",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -32,14 +34,14 @@
             { "name": "archived", "value": "false" }
           ]
         },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Webhook').item.json.body.hubspot_token }}" }
-          ]
-        },
         "options": {
-          "response": { "response": { "responseFormat": "json" } }
+          "response": { "response": { "responseFormat": "json", "neverError": true } }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oMUZ4U1LbEQj5jB9",
+          "name": "OpsRadar HubSpot"
         }
       }
     },
@@ -52,18 +54,19 @@
       "parameters": {
         "method": "POST",
         "url": "https://api.hubapi.com/crm/v3/objects/contacts/search",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Webhook').item.json.body.hubspot_token }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"filterGroups\": [{\n    \"filters\": [{\n      \"propertyName\": \"createdate\",\n      \"operator\": \"GTE\",\n      \"value\": \"{{ Date.now() - 14 * 24 * 60 * 60 * 1000 }}\"\n    }]\n  }],\n  \"properties\": [\"createdate\", \"hs_analytics_source\", \"hs_analytics_source_data_1\"],\n  \"limit\": 100\n}",
         "options": {
-          "response": { "response": { "responseFormat": "json" } }
+          "response": { "response": { "responseFormat": "json", "neverError": true } }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oMUZ4U1LbEQj5jB9",
+          "name": "OpsRadar HubSpot"
         }
       }
     },
@@ -76,7 +79,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const dealsItems = $('OpenDeals').first().json.results ?? [];\nconst contactsItems = $('RecentContacts').first().json.results ?? [];\n\nconst closedStages = new Set(['closedwon', 'closedlost']);\nconst pipelineValue = dealsItems\n  .filter(d => !closedStages.has((d.properties.dealstage || '').toLowerCase()))\n  .reduce((s, d) => s + (parseFloat(d.properties.amount) || 0), 0);\n\nconst newLeads = contactsItems.length;\n\nconst autoLeads = contactsItems.filter(c => {\n  const src = (c.properties.hs_analytics_source || '').toUpperCase();\n  return src === 'INTEGRATION' || src === 'API';\n}).length;\n\nconst sparkline = [];\nconst now = Date.now();\nfor (let d = 13; d >= 0; d--) {\n  const dayStart = now - (d + 1) * 86400000;\n  const dayEnd = now - d * 86400000;\n  const dayCount = contactsItems.filter(c => {\n    const t = parseInt(c.properties.createdate, 10);\n    return t >= dayStart && t < dayEnd;\n  }).length;\n  sparkline.push(dayCount);\n}\n\nreturn [{\n  json: {\n    pipeline_value: pipelineValue,\n    new_leads: newLeads,\n    auto_leads: autoLeads,\n    sparkline,\n    period_label: 'Last 14 days'\n  }\n}];\n"
+        "jsCode": "const deals = $('OpenDeals').first()?.json;\nconst contacts = $('RecentContacts').first()?.json;\n\n// Detect connection state from upstream HTTP success (credentials live in n8n now)\nconst dealsOk = !!deals && Array.isArray(deals.results);\nconst contactsOk = !!contacts && Array.isArray(contacts.results);\nconst hubspotConnected = dealsOk || contactsOk;\n\nconst dealsItems = dealsOk ? deals.results : [];\nconst contactsItems = contactsOk ? contacts.results : [];\n\nconst closedStages = new Set(['closedwon', 'closedlost']);\nconst pipelineValue = dealsItems\n  .filter(d => !closedStages.has((d.properties.dealstage || '').toLowerCase()))\n  .reduce((s, d) => s + (parseFloat(d.properties.amount) || 0), 0);\n\nconst newLeads = contactsItems.length;\n\nconst autoLeads = contactsItems.filter(c => {\n  const src = (c.properties.hs_analytics_source || '').toUpperCase();\n  return src === 'INTEGRATION' || src === 'API';\n}).length;\n\nconst sparkline = [];\nconst now = Date.now();\nfor (let d = 13; d >= 0; d--) {\n  const dayStart = now - (d + 1) * 86400000;\n  const dayEnd = now - d * 86400000;\n  const dayCount = contactsItems.filter(c => {\n    const t = parseInt(c.properties.createdate, 10);\n    return t >= dayStart && t < dayEnd;\n  }).length;\n  sparkline.push(dayCount);\n}\n\nreturn [{\n  json: {\n    hubspot_connected: hubspotConnected,\n    pipeline_value: hubspotConnected ? pipelineValue : null,\n    new_leads: hubspotConnected ? newLeads : null,\n    auto_leads: hubspotConnected ? autoLeads : null,\n    sparkline: hubspotConnected ? sparkline : null,\n    period_label: 'Last 14 days'\n  }\n}];\n"
       }
     },
     {
