@@ -47,15 +47,15 @@ export function ConnectHubSpotModal({ open, onOpenChange, onConnected }: Props) 
         </DialogHeader>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 8 }}>
           <p style={{ fontSize: 13, color: '#4A6280', lineHeight: 1.5 }}>
-            Paste a HubSpot <strong>Private App access token</strong> (starts with <code>pat-</code>) with read access
-            to <em>Deals</em> and <em>Contacts</em>. Create one at{' '}
-            <strong>HubSpot Settings → Integrations → Private Apps</strong>.
+            Paste a HubSpot <strong>Service Key</strong> (recommended) or Private App access token with
+            read access to <em>Deals</em> and <em>Contacts</em>. Create one in{' '}
+            <strong>HubSpot Settings → Integrations</strong>.
           </p>
           <input
             type="password"
             value={accessToken}
             onChange={(e) => setAccessToken(e.target.value)}
-            placeholder="pat-na1-..."
+            placeholder="paste your HubSpot key here"
             style={{
               padding: '10px 12px',
               borderRadius: 8,

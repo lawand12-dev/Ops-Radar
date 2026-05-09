@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const accessToken = typeof body?.access_token === 'string' ? body.access_token.trim() : '';
 
-  if (!accessToken.startsWith('pat-')) {
+  if (accessToken.length < 8) {
     return NextResponse.json(
-      { error: 'invalid HubSpot Private App token — expected pat-...' },
+      { error: 'access token is required' },
       { status: 400 }
     );
   }
