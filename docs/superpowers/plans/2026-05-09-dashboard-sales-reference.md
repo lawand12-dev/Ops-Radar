@@ -1,21 +1,23 @@
-# Dashboard Live-Data Foundation + Finance Reference Widget Implementation Plan
+# Dashboard Live-Data Foundation + Sales/HubSpot Reference Widget Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the data-fetching foundation (token storage, encryption, cache helper) and the Finance widget end-to-end as the reference implementation. Once shipped, every subsequent dashboard widget is a mechanical copy of the same pattern.
+**Goal:** Build the data-fetching foundation (token storage, encryption, cache helper) and the Sales widget (HubSpot CRM) end-to-end as the reference implementation. Once shipped, every subsequent dashboard widget is a mechanical copy of the same pattern.
 
-**Architecture:** Browser → Next.js API route → Upstash Redis cache (180s TTL) → n8n webhook → Stripe API → response. Tokens stored encrypted (AES-256-GCM) in Supabase, never in app source. Agency role only — end-client portal is a future plan.
+**Reference-widget choice:** Originally Stripe Finance, swapped to HubSpot Sales because Stripe isn't available in the user's country. Architecture is unchanged — same n8n + cache + integrations table — only the specific tool, endpoints, and widget shape differ.
 
-**Tech Stack:** Next.js 16, React 19, TypeScript, Supabase (Postgres + Auth), Upstash Redis (already in stack), n8n (centralized OpsRadar instance), Stripe API, Node crypto.
+**Architecture:** Browser → Next.js API route → Upstash Redis cache (180s TTL) → n8n webhook → HubSpot API → response. Tokens stored encrypted (AES-256-GCM) in Supabase, never in app source. Agency role only — end-client portal is a future plan.
+
+**Tech Stack:** Next.js 16, React 19, TypeScript, Supabase (Postgres + Auth), Upstash Redis (already in stack), n8n (hosted externally), HubSpot CRM API (Private App auth), Node crypto.
 
 **Source spec:** [docs/superpowers/specs/2026-05-09-dashboard-live-data-design.md](../specs/2026-05-09-dashboard-live-data-design.md)
 
 **Out of scope for this plan (handled in later plans):**
 - Hero block ($ saved this month)
 - Workflow Health strip
-- Marketing/Sales/Delivery widgets
+- Marketing/Delivery/Finance widgets
 - End-client role / portal
-- OAuth Connect for Stripe (v1 uses pasted Restricted API Key)
+- OAuth Connect for HubSpot (v1 uses Private App access token)
 - Per-workflow ROI config
 
 ---
@@ -28,13 +30,13 @@
 | Create | `src/lib/encryption.ts` | AES-256-GCM encrypt/decrypt of tokens |
 | Create | `src/lib/integrations.ts` | Read/write encrypted tokens by `client_id` + `tool` |
 | Create | `src/lib/dashboard-fetch.ts` | Shared helper: cache check → n8n call → cache write |
-| Create | `src/app/api/dashboard/finance/route.ts` | Finance widget API endpoint |
-| Create | `src/app/api/integrations/stripe/route.ts` | POST (connect) / DELETE (disconnect) Stripe |
-| Create | `src/components/dashboard/finance-card.tsx` | Finance widget UI, all 5 states |
-| Create | `src/components/dashboard/connect-stripe-modal.tsx` | API-key entry modal |
-| Modify | `src/app/dashboard/page.tsx` | Replace static finance section with `<FinanceCard />` |
+| Create | `src/app/api/dashboard/sales/route.ts` | Sales widget API endpoint |
+| Create | `src/app/api/integrations/hubspot/route.ts` | POST (connect) / DELETE (disconnect) HubSpot |
+| Create | `src/components/dashboard/sales-card.tsx` | Sales widget UI, all 5 states |
+| Create | `src/components/dashboard/connect-hubspot-modal.tsx` | Private-App-token entry modal |
+| Modify | `src/app/dashboard/page.tsx` | Replace static sales section with `<SalesCard />` |
 | Modify | `.env.local` (gitignored) | Add `OPSRADAR_TOKEN_KEY`, `N8N_BASE_URL`, `N8N_WEBHOOK_SECRET` |
-| External | n8n instance | New workflow `dashboard-finance-stripe` |
+| External | n8n instance | New workflow `dashboard-sales-hubspot` |
 
 ---
 
@@ -168,34 +170,26 @@ export function decryptToken(blob: EncryptedBlob): string {
 
 - [ ] **Step 3: Smoke test the helper**
 
-```bash
-cd /home/lawand/Desktop/my-startup/opsradar && node -e "
-require('dotenv').config({ path: '.env.local' });
-const { encryptToken, decryptToken } = require('./src/lib/encryption.ts');
-" 2>&1 | head -5
-```
-
-This will fail because Node can't import .ts directly. Instead, write an inline test in a temp file:
+Inline test using Node's crypto directly to confirm the env key is valid:
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar && cat > /tmp/enc-test.mjs << 'EOF'
 import { config } from 'dotenv';
 config({ path: '.env.local' });
-process.env.OPSRADAR_TOKEN_KEY = process.env.OPSRADAR_TOKEN_KEY;
 
 const { createCipheriv, createDecipheriv, randomBytes } = await import('crypto');
 
 const key = Buffer.from(process.env.OPSRADAR_TOKEN_KEY, 'hex');
 const iv = randomBytes(12);
 const cipher = createCipheriv('aes-256-gcm', key, iv);
-const ct = Buffer.concat([cipher.update('sk_test_secret', 'utf8'), cipher.final()]);
+const ct = Buffer.concat([cipher.update('pat-na1-secret', 'utf8'), cipher.final()]);
 const tag = cipher.getAuthTag();
 
 const decipher = createDecipheriv('aes-256-gcm', key, iv);
 decipher.setAuthTag(tag);
 const pt = Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf8');
 
-console.log(pt === 'sk_test_secret' ? 'OK' : 'FAIL');
+console.log(pt === 'pat-na1-secret' ? 'OK' : 'FAIL');
 EOF
 node /tmp/enc-test.mjs
 ```
@@ -313,10 +307,10 @@ export async function isIntegrationConnected(
 - [ ] **Step 2: Verify the supabase-server import path matches existing convention**
 
 ```bash
-cd /home/lawand/Desktop/my-startup/opsradar && grep -r "createServerClient" src/lib/supabase-server.ts | head -3
+cd /home/lawand/Desktop/my-startup/opsradar && grep -E "^export" src/lib/supabase-server.ts | head -5
 ```
 
-If the export name differs (e.g. `createClient`), adjust the import on line 1 of `integrations.ts` to match.
+If the export name differs (e.g. `createClient` instead of `createServerClient`), adjust the import on line 1 of `integrations.ts` to match.
 
 - [ ] **Step 3: TypeScript check**
 
@@ -344,28 +338,28 @@ git commit -m "feat(integrations): add token storage CRUD with encryption"
 
 - [ ] **Step 1: Add n8n env vars to `.env.local`**
 
+Ask the user for the n8n hosted URL (they have it hosted externally). Then add to `/home/lawand/Desktop/my-startup/opsradar/.env.local`:
+
 ```
-N8N_BASE_URL=http://localhost:5678
+N8N_BASE_URL=<the n8n hosted URL, e.g. https://n8n.example.com>
 N8N_WEBHOOK_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
 ```
-
-(Replace `N8N_BASE_URL` with the production URL when deploying. Localhost is for dev.)
 
 - [ ] **Step 2: Verify Upstash Redis client is available**
 
 ```bash
-cd /home/lawand/Desktop/my-startup/opsradar && grep -r "@upstash/redis" package.json
+cd /home/lawand/Desktop/my-startup/opsradar && grep -E '"@upstash/redis"' package.json
 ```
 
-Expected: shows the dep. If missing, run `npm install @upstash/redis`.
+Expected: shows the dep with a version. If missing, run `npm install @upstash/redis`.
 
 - [ ] **Step 3: Verify rate-limit lib already imports redis (to follow same client pattern)**
 
 ```bash
-cd /home/lawand/Desktop/my-startup/opsradar && cat src/lib/rate-limit.ts | head -30
+cd /home/lawand/Desktop/my-startup/opsradar && head -30 src/lib/rate-limit.ts
 ```
 
-Note the import pattern (`Redis.fromEnv()` or explicit construction). Use the same in the new file.
+Note the import pattern (`Redis.fromEnv()` or explicit construction). Use the same pattern in the new file so we stay consistent with the existing Redis usage.
 
 - [ ] **Step 4: Create `src/lib/dashboard-fetch.ts`**
 
@@ -375,6 +369,7 @@ import { Redis } from '@upstash/redis';
 const redis = Redis.fromEnv();
 
 const CACHE_TTL_SECONDS = 180;
+const STALE_TTL_SECONDS = 60 * 60 * 24; // 24h backup for stale-while-error
 
 export type WidgetFetchOptions = {
   widget: string;
@@ -386,13 +381,13 @@ export type WidgetFetchOptions = {
 
 export type WidgetFetchResult<T> =
   | { status: 'ok'; data: T; fromCache: boolean }
-  | { status: 'not_connected'; tool: string }
   | { status: 'error'; message: string; staleData?: T; staleAgeMs?: number };
 
 export async function fetchDashboardWidget<T>(
   opts: WidgetFetchOptions
 ): Promise<WidgetFetchResult<T>> {
   const cacheKey = `dash:${opts.widget}:${opts.clientId}`;
+  const staleKey = `${cacheKey}:stale`;
 
   // 1. Try cache (unless fresh forced)
   if (!opts.fresh) {
@@ -421,7 +416,7 @@ export async function fetchDashboardWidget<T>(
       signal: AbortSignal.timeout(15_000),
     });
   } catch (err) {
-    const stale = await readStale<T>(cacheKey);
+    const stale = await redis.get<{ data: T; ts: number }>(staleKey);
     return {
       status: 'error',
       message: err instanceof Error ? err.message : 'n8n call failed',
@@ -430,7 +425,7 @@ export async function fetchDashboardWidget<T>(
   }
 
   if (!response.ok) {
-    const stale = await readStale<T>(cacheKey);
+    const stale = await redis.get<{ data: T; ts: number }>(staleKey);
     return {
       status: 'error',
       message: `n8n returned ${response.status}`,
@@ -440,16 +435,14 @@ export async function fetchDashboardWidget<T>(
 
   const data = (await response.json()) as T;
 
-  // 3. Write cache
-  await redis.set(cacheKey, { data, ts: Date.now() }, { ex: CACHE_TTL_SECONDS });
+  // 3. Write cache (fresh + long-lived stale backup)
+  const wrapped = { data, ts: Date.now() };
+  await Promise.all([
+    redis.set(cacheKey, wrapped, { ex: CACHE_TTL_SECONDS }),
+    redis.set(staleKey, wrapped, { ex: STALE_TTL_SECONDS }),
+  ]);
 
   return { status: 'ok', data, fromCache: false };
-}
-
-async function readStale<T>(cacheKey: string): Promise<{ data: T; ts: number } | null> {
-  // Stale-while-error: keep a long-lived backup key
-  const staleKey = `${cacheKey}:stale`;
-  return await redis.get<{ data: T; ts: number }>(staleKey);
 }
 ```
 
@@ -471,98 +464,123 @@ git commit -m "feat(dashboard): add shared widget fetch helper with cache + n8n 
 
 ---
 
-## Task 5: Set up n8n workflow `dashboard-finance-stripe`
+## Task 5: Set up n8n workflow `dashboard-sales-hubspot`
 
 **Files:**
 - External: n8n instance at `$N8N_BASE_URL`
+- Create: `docs/integrations/n8n-dashboard-sales-hubspot.md`
 
-This task is performed in the n8n UI, not in code. After completion, the workflow ID is `dashboard-finance-stripe`.
+This task is performed in the n8n UI by the user (Claude can't reach n8n). After completion, the workflow ID is `dashboard-sales-hubspot`.
 
-- [ ] **Step 1: Verify n8n is running**
+- [ ] **Step 1: Verify n8n is reachable**
 
 ```bash
-curl -s http://localhost:5678/healthz | head -3
+curl -s -o /dev/null -w "%{http_code}\n" "$N8N_BASE_URL/healthz"
 ```
 
-Expected: `{"status":"ok"}` or similar. If n8n isn't running, start it (e.g. `docker compose up n8n` from your n8n setup).
+(Substitute the actual N8N_BASE_URL.) Expected: `200`. If not, n8n needs to be started.
 
 - [ ] **Step 2: Create the workflow in n8n UI**
 
-In the n8n web UI at `http://localhost:5678`:
+In the n8n web UI:
 
-1. Click **+ New Workflow** → name it `dashboard-finance-stripe`
+1. Click **+ New Workflow** → name it `dashboard-sales-hubspot`
 2. Add a **Webhook** trigger node:
    - HTTP Method: `POST`
-   - Path: `dashboard-finance-stripe`
+   - Path: `dashboard-sales-hubspot`
    - Authentication: Header Auth → header name `x-opsradar-secret`, value = `$N8N_WEBHOOK_SECRET` from `.env.local`
    - Response Mode: `When last node finishes`
-3. Add an **HTTP Request** node:
+3. Add an **HTTP Request** node named `OpenDeals`:
    - Method: `GET`
-   - URL: `https://api.stripe.com/v1/balance_transactions?limit=100&type=charge`
-   - Authentication: Header Auth → name `Authorization`, value: `Bearer {{ $json.body.stripe_token }}`
+   - URL: `https://api.hubapi.com/crm/v3/objects/deals?properties=amount,dealstage,createdate&limit=100&archived=false`
+   - Authentication: Header Auth → name `Authorization`, value: `Bearer {{ $json.body.hubspot_token }}`
    - On error: `Continue (using error output)`
-4. Add a second **HTTP Request** node (in parallel):
-   - URL: `https://api.stripe.com/v1/invoices?limit=100&status=open`
+4. Add an **HTTP Request** node named `RecentContacts`:
+   - Method: `POST`
+   - URL: `https://api.hubapi.com/crm/v3/objects/contacts/search`
    - Same Authorization header
-5. Add a third **HTTP Request** node:
-   - URL: `https://api.stripe.com/v1/invoices?limit=100&status=paid&created[gte]={{ Math.floor((Date.now() - 30*24*60*60*1000) / 1000) }}`
-   - Same Authorization header
-6. Add a **Code (JavaScript)** node that aggregates all three into the widget contract:
+   - Body (JSON):
+     ```json
+     {
+       "filterGroups": [{
+         "filters": [{
+           "propertyName": "createdate",
+           "operator": "GTE",
+           "value": "{{ Date.now() - 14 * 24 * 60 * 60 * 1000 }}"
+         }]
+       }],
+       "properties": ["createdate", "hs_analytics_source", "hs_analytics_source_data_1"],
+       "limit": 100
+     }
+     ```
+5. Add a **Code (JavaScript)** node that aggregates into the widget contract:
 
 ```js
-// inputs: items[0] = balance txns, items[1] = open invoices, items[2] = paid invoices last 30d
-const balanceTxns = $('HTTP Request').all()[0]?.json?.data ?? [];
-const openInvoices = $('HTTP Request1').all()[0]?.json?.data ?? [];
-const paidLast30 = $('HTTP Request2').all()[0]?.json?.data ?? [];
+// inputs:
+// - OpenDeals: { results: [{ properties: { amount, dealstage } }, ...] }
+// - RecentContacts: { results: [{ properties: { createdate, hs_analytics_source, ... } }, ...] }
 
-const invoiced = paidLast30.reduce((s, inv) => s + (inv.amount_due ?? 0), 0) / 100;
-const paid = paidLast30.reduce((s, inv) => s + (inv.amount_paid ?? 0), 0) / 100;
-const overdue = openInvoices
-  .filter(inv => inv.due_date && inv.due_date * 1000 < Date.now())
-  .reduce((s, inv) => s + (inv.amount_remaining ?? 0), 0) / 100;
+const dealsItems = $('OpenDeals').all()[0]?.json?.results ?? [];
+const contactsItems = $('RecentContacts').all()[0]?.json?.results ?? [];
 
-// Build a 30-day sparkline of daily collected revenue
+// Pipeline value = sum of `amount` on deals NOT in closedwon/closedlost stages
+const closedStages = new Set(['closedwon', 'closedlost']);
+const pipelineValue = dealsItems
+  .filter(d => !closedStages.has((d.properties.dealstage || '').toLowerCase()))
+  .reduce((s, d) => s + (parseFloat(d.properties.amount) || 0), 0);
+
+// New leads = total contacts created in window
+const newLeads = contactsItems.length;
+
+// Auto-created leads = subset whose source indicates automation/integration
+// HubSpot source values include OFFLINE, DIRECT_TRAFFIC, ORGANIC_SEARCH, INTEGRATION, etc.
+// We treat 'INTEGRATION' as the automation signal.
+const autoLeads = contactsItems.filter(c => {
+  const src = (c.properties.hs_analytics_source || '').toUpperCase();
+  return src === 'INTEGRATION' || src === 'API';
+}).length;
+
+// 14-day sparkline of daily lead counts
 const sparkline = [];
 const now = Date.now();
-for (let d = 29; d >= 0; d--) {
+for (let d = 13; d >= 0; d--) {
   const dayStart = now - (d + 1) * 86400_000;
   const dayEnd = now - d * 86400_000;
-  const dayTotal = paidLast30
-    .filter(inv => inv.status_transitions?.paid_at)
-    .filter(inv => {
-      const t = inv.status_transitions.paid_at * 1000;
-      return t >= dayStart && t < dayEnd;
-    })
-    .reduce((s, inv) => s + (inv.amount_paid ?? 0), 0) / 100;
-  sparkline.push(dayTotal);
+  const dayCount = contactsItems.filter(c => {
+    const t = parseInt(c.properties.createdate, 10);
+    return t >= dayStart && t < dayEnd;
+  }).length;
+  sparkline.push(dayCount);
 }
 
 return [{
   json: {
-    invoiced,
-    paid,
-    overdue,
+    pipeline_value: pipelineValue,
+    new_leads: newLeads,
+    auto_leads: autoLeads,
     sparkline,
-    period_label: 'Last 30 days',
+    period_label: 'Last 14 days',
   },
 }];
 ```
 
-7. Add a **Respond to Webhook** node connected after the Code node, with the JSON from the previous node.
-8. **Save & Activate** the workflow.
+6. Add a **Respond to Webhook** node connected after the Code node, returning the JSON.
+7. **Save & Activate** the workflow.
 
 - [ ] **Step 3: Verify the webhook is reachable**
 
-Get a Stripe restricted test API key from `https://dashboard.stripe.com/test/apikeys` (read-only on Balance + Invoices). Then:
+Get a HubSpot Private App access token. In HubSpot: **Settings → Integrations → Private Apps → Create private app** with scopes `crm.objects.deals.read` and `crm.objects.contacts.read`. Token format: `pat-na1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
 
 ```bash
-curl -s -X POST http://localhost:5678/webhook/dashboard-finance-stripe \
-  -H "x-opsradar-secret: $(grep N8N_WEBHOOK_SECRET /home/lawand/Desktop/my-startup/opsradar/.env.local | cut -d= -f2)" \
+N8N_BASE_URL="<your n8n url>"
+SECRET=$(grep N8N_WEBHOOK_SECRET /home/lawand/Desktop/my-startup/opsradar/.env.local | cut -d= -f2)
+curl -s -X POST "$N8N_BASE_URL/webhook/dashboard-sales-hubspot" \
+  -H "x-opsradar-secret: $SECRET" \
   -H "content-type: application/json" \
-  -d '{"stripe_token": "rk_test_PASTE_KEY_HERE", "client_id": "fake-uuid"}'
+  -d '{"hubspot_token": "pat-na1-PASTE_TOKEN_HERE", "client_id": "fake-uuid"}'
 ```
 
-Expected: JSON response with `invoiced`, `paid`, `overdue`, `sparkline`, `period_label`. If 401: secret header mismatch. If 5xx: check n8n execution log.
+Expected: JSON with `pipeline_value`, `new_leads`, `auto_leads`, `sparkline`, `period_label`. If 401: secret header mismatch. If 5xx: check n8n execution log.
 
 - [ ] **Step 4: Document the workflow**
 
@@ -570,32 +588,32 @@ Expected: JSON response with `invoiced`, `paid`, `overdue`, `sparkline`, `period
 cd /home/lawand/Desktop/my-startup/opsradar && mkdir -p docs/integrations
 ```
 
-Create `docs/integrations/n8n-dashboard-finance-stripe.md` with the workflow steps above (so a future engineer can rebuild it).
+Create `docs/integrations/n8n-dashboard-sales-hubspot.md` with the workflow steps above (so a future engineer can rebuild it).
 
 - [ ] **Step 5: Commit**
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add docs/integrations/n8n-dashboard-finance-stripe.md
-git commit -m "docs(integrations): document n8n dashboard-finance-stripe workflow"
+git add docs/integrations/n8n-dashboard-sales-hubspot.md
+git commit -m "docs(integrations): document n8n dashboard-sales-hubspot workflow"
 ```
 
 ---
 
-## Task 6: Finance API route
+## Task 6: Sales API route
 
 **Files:**
-- Create: `src/app/api/dashboard/finance/route.ts`
+- Create: `src/app/api/dashboard/sales/route.ts`
 
 - [ ] **Step 1: Check the auth pattern used by existing API routes**
 
 ```bash
-cd /home/lawand/Desktop/my-startup/opsradar && grep -l "auth.getUser\|getSession\|getClaims" src/app/api/**/*.ts | head -3
+cd /home/lawand/Desktop/my-startup/opsradar && grep -l "auth.getUser\|getSession\|getClaims" src/app/api/**/*.ts 2>/dev/null | head -3
 ```
 
-Open one of those files (e.g. `src/app/api/admin/data/route.ts` if it exists, or whichever shows up first) and note the exact session/user retrieval pattern. Use the same pattern in the new route.
+Open one of those files and note the exact session/user retrieval pattern. Use the same pattern in the new route.
 
-- [ ] **Step 2: Create `src/app/api/dashboard/finance/route.ts`**
+- [ ] **Step 2: Create `src/app/api/dashboard/sales/route.ts`**
 
 ```ts
 import { NextRequest, NextResponse } from 'next/server';
@@ -606,10 +624,10 @@ import { getIntegrationToken, isIntegrationConnected } from '@/lib/integrations'
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-type FinanceWidgetData = {
-  invoiced: number;
-  paid: number;
-  overdue: number;
+type SalesWidgetData = {
+  pipeline_value: number;
+  new_leads: number;
+  auto_leads: number;
   sparkline: number[];
   period_label: string;
 };
@@ -625,23 +643,23 @@ export async function GET(req: NextRequest) {
   const clientId = userData.user.id;
 
   // Connection check first — distinguishes "not connected" from "errored"
-  const connected = await isIntegrationConnected(clientId, 'stripe');
+  const connected = await isIntegrationConnected(clientId, 'hubspot');
   if (!connected) {
-    return NextResponse.json({ status: 'not_connected', tool: 'stripe' });
+    return NextResponse.json({ status: 'not_connected', tool: 'hubspot' });
   }
 
-  const stripeToken = await getIntegrationToken(clientId, 'stripe');
-  if (!stripeToken) {
-    return NextResponse.json({ status: 'not_connected', tool: 'stripe' });
+  const hubspotToken = await getIntegrationToken(clientId, 'hubspot');
+  if (!hubspotToken) {
+    return NextResponse.json({ status: 'not_connected', tool: 'hubspot' });
   }
 
   const fresh = req.nextUrl.searchParams.get('fresh') === '1';
 
-  const result = await fetchDashboardWidget<FinanceWidgetData>({
-    widget: 'finance',
+  const result = await fetchDashboardWidget<SalesWidgetData>({
+    widget: 'sales',
     clientId,
-    n8nWorkflow: 'dashboard-finance-stripe',
-    payload: { stripe_token: stripeToken, client_id: clientId },
+    n8nWorkflow: 'dashboard-sales-hubspot',
+    payload: { hubspot_token: hubspotToken, client_id: clientId },
     fresh,
   });
 
@@ -657,12 +675,12 @@ cd /home/lawand/Desktop/my-startup/opsradar && npx tsc --noEmit 2>&1 | head -10
 
 Expected: zero errors.
 
-- [ ] **Step 4: Smoke-test the route (without a connected Stripe yet)**
+- [ ] **Step 4: Smoke-test the route (without a connected HubSpot yet)**
 
 Make sure dev server is running, then:
 
 ```bash
-curl -s http://localhost:3000/api/dashboard/finance
+curl -s http://localhost:3000/api/dashboard/sales
 ```
 
 Expected: `{"error":"unauthorized"}` (because no session cookie). That confirms the route loads and the auth check works.
@@ -671,18 +689,18 @@ Expected: `{"error":"unauthorized"}` (because no session cookie). That confirms 
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add src/app/api/dashboard/finance/route.ts
-git commit -m "feat(dashboard): add /api/dashboard/finance live-fetch route"
+git add src/app/api/dashboard/sales/route.ts
+git commit -m "feat(dashboard): add /api/dashboard/sales live-fetch route"
 ```
 
 ---
 
-## Task 7: Stripe connect flow API
+## Task 7: HubSpot connect flow API
 
 **Files:**
-- Create: `src/app/api/integrations/stripe/route.ts`
+- Create: `src/app/api/integrations/hubspot/route.ts`
 
-- [ ] **Step 1: Create `src/app/api/integrations/stripe/route.ts`**
+- [ ] **Step 1: Create `src/app/api/integrations/hubspot/route.ts`**
 
 ```ts
 import { NextRequest, NextResponse } from 'next/server';
@@ -700,38 +718,38 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  const apiKey = typeof body?.api_key === 'string' ? body.api_key.trim() : '';
+  const accessToken = typeof body?.access_token === 'string' ? body.access_token.trim() : '';
 
-  if (!apiKey.startsWith('rk_') && !apiKey.startsWith('sk_')) {
+  if (!accessToken.startsWith('pat-')) {
     return NextResponse.json(
-      { error: 'invalid Stripe key — expected rk_... (restricted) or sk_... (secret)' },
+      { error: 'invalid HubSpot Private App token — expected pat-...' },
       { status: 400 }
     );
   }
 
-  // Validate the key against Stripe before storing
-  const probe = await fetch('https://api.stripe.com/v1/balance', {
-    headers: { Authorization: `Bearer ${apiKey}` },
+  // Validate the token against HubSpot before storing
+  const probe = await fetch('https://api.hubapi.com/account-info/v3/details', {
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!probe.ok) {
     return NextResponse.json(
-      { error: `Stripe rejected the key (HTTP ${probe.status})` },
+      { error: `HubSpot rejected the token (HTTP ${probe.status})` },
       { status: 400 }
     );
   }
 
-  await setIntegrationToken(userData.user.id, 'stripe', apiKey);
+  await setIntegrationToken(userData.user.id, 'hubspot', accessToken);
   return NextResponse.json({ status: 'connected' });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   const supabase = await createServerClient();
   const { data: userData, error } = await supabase.auth.getUser();
   if (error || !userData.user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  await deleteIntegration(userData.user.id, 'stripe');
+  await deleteIntegration(userData.user.id, 'hubspot');
   return NextResponse.json({ status: 'disconnected' });
 }
 ```
@@ -748,16 +766,16 @@ Expected: zero errors.
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add src/app/api/integrations/stripe/route.ts
-git commit -m "feat(integrations): add Stripe connect/disconnect API"
+git add src/app/api/integrations/hubspot/route.ts
+git commit -m "feat(integrations): add HubSpot connect/disconnect API"
 ```
 
 ---
 
-## Task 8: Connect-Stripe modal UI
+## Task 8: Connect-HubSpot modal UI
 
 **Files:**
-- Create: `src/components/dashboard/connect-stripe-modal.tsx`
+- Create: `src/components/dashboard/connect-hubspot-modal.tsx`
 
 - [ ] **Step 1: Verify Dialog primitive exists**
 
@@ -765,9 +783,9 @@ git commit -m "feat(integrations): add Stripe connect/disconnect API"
 cd /home/lawand/Desktop/my-startup/opsradar && ls src/components/ui/dialog.tsx
 ```
 
-Expected: file exists. If not, the project uses a different dialog pattern — check `src/components/ui/` and use whatever's there.
+Expected: file exists. If not, check `src/components/ui/` and use whatever modal/dialog pattern is in place.
 
-- [ ] **Step 2: Create `src/components/dashboard/connect-stripe-modal.tsx`**
+- [ ] **Step 2: Create `src/components/dashboard/connect-hubspot-modal.tsx`**
 
 ```tsx
 'use client';
@@ -782,8 +800,8 @@ type Props = {
   onConnected: () => void;
 };
 
-export function ConnectStripeModal({ open, onOpenChange, onConnected }: Props) {
-  const [apiKey, setApiKey] = useState('');
+export function ConnectHubSpotModal({ open, onOpenChange, onConnected }: Props) {
+  const [accessToken, setAccessToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -791,10 +809,10 @@ export function ConnectStripeModal({ open, onOpenChange, onConnected }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch('/api/integrations/stripe', {
+      const res = await fetch('/api/integrations/hubspot', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ api_key: apiKey }),
+        body: JSON.stringify({ access_token: accessToken }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -803,7 +821,7 @@ export function ConnectStripeModal({ open, onOpenChange, onConnected }: Props) {
       }
       onConnected();
       onOpenChange(false);
-      setApiKey('');
+      setAccessToken('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error');
     } finally {
@@ -815,26 +833,19 @@ export function ConnectStripeModal({ open, onOpenChange, onConnected }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Connect Stripe</DialogTitle>
+          <DialogTitle>Connect HubSpot</DialogTitle>
         </DialogHeader>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 8 }}>
           <p style={{ fontSize: 13, color: '#4A6280', lineHeight: 1.5 }}>
-            Paste a Stripe <strong>restricted API key</strong> (starts with <code>rk_</code>) with read access
-            to <em>Balance</em> and <em>Invoices</em>. Get one at{' '}
-            <a
-              href="https://dashboard.stripe.com/apikeys"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#00C2FF' }}
-            >
-              dashboard.stripe.com/apikeys
-            </a>.
+            Paste a HubSpot <strong>Private App access token</strong> (starts with <code>pat-</code>) with read access
+            to <em>Deals</em> and <em>Contacts</em>. Create one at{' '}
+            <strong>HubSpot Settings → Integrations → Private Apps</strong>.
           </p>
           <input
             type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="rk_live_..."
+            value={accessToken}
+            onChange={(e) => setAccessToken(e.target.value)}
+            placeholder="pat-na1-..."
             style={{
               padding: '10px 12px',
               borderRadius: 8,
@@ -853,7 +864,7 @@ export function ConnectStripeModal({ open, onOpenChange, onConnected }: Props) {
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
               Cancel
             </Button>
-            <Button onClick={submit} disabled={submitting || apiKey.length < 8}>
+            <Button onClick={submit} disabled={submitting || accessToken.length < 8}>
               {submitting ? 'Connecting…' : 'Connect'}
             </Button>
           </div>
@@ -876,37 +887,37 @@ Expected: zero errors. If `@/components/ui/dialog` or `@/components/ui/button` e
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add src/components/dashboard/connect-stripe-modal.tsx
-git commit -m "feat(dashboard): add Stripe connect modal"
+git add src/components/dashboard/connect-hubspot-modal.tsx
+git commit -m "feat(dashboard): add HubSpot connect modal"
 ```
 
 ---
 
-## Task 9: Finance card UI component
+## Task 9: Sales card UI component
 
 **Files:**
-- Create: `src/components/dashboard/finance-card.tsx`
+- Create: `src/components/dashboard/sales-card.tsx`
 
-- [ ] **Step 1: Create `src/components/dashboard/finance-card.tsx`**
+- [ ] **Step 1: Create `src/components/dashboard/sales-card.tsx`**
 
 ```tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ConnectStripeModal } from './connect-stripe-modal';
+import { ConnectHubSpotModal } from './connect-hubspot-modal';
 
-type FinanceData = {
-  invoiced: number;
-  paid: number;
-  overdue: number;
+type SalesData = {
+  pipeline_value: number;
+  new_leads: number;
+  auto_leads: number;
   sparkline: number[];
   period_label: string;
 };
 
 type ApiResponse =
-  | { status: 'ok'; data: FinanceData; fromCache: boolean }
-  | { status: 'not_connected'; tool: 'stripe' }
-  | { status: 'error'; message: string; staleData?: FinanceData; staleAgeMs?: number }
+  | { status: 'ok'; data: SalesData; fromCache: boolean }
+  | { status: 'not_connected'; tool: 'hubspot' }
+  | { status: 'error'; message: string; staleData?: SalesData; staleAgeMs?: number }
   | { error: string };
 
 const C = {
@@ -916,10 +927,9 @@ const C = {
   text: '#E0F0FF',
   muted: '#4A6280',
   red: '#FF4D4D',
-  amber: '#FFB020',
 };
 
-export function FinanceCard() {
+export function SalesCard() {
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -927,7 +937,7 @@ export function FinanceCard() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch('/api/dashboard/finance', { cache: 'no-store' });
+      const res = await fetch('/api/dashboard/sales', { cache: 'no-store' });
       const data = (await res.json()) as ApiResponse;
       setResponse(data);
     } catch (err) {
@@ -958,7 +968,7 @@ export function FinanceCard() {
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Finance</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Sales / CRM</div>
         {response && 'status' in response && response.status === 'ok' && (
           <span style={{ fontSize: 11, color: C.muted }}>{response.data.period_label}</span>
         )}
@@ -984,10 +994,10 @@ export function FinanceCard() {
       )}
 
       {!loading && response && 'error' in response && response.error === 'unauthorized' && (
-        <div style={{ fontSize: 12, color: C.muted }}>Sign in to see finance data.</div>
+        <div style={{ fontSize: 12, color: C.muted }}>Sign in to see sales data.</div>
       )}
 
-      <ConnectStripeModal
+      <ConnectHubSpotModal
         open={modalOpen}
         onOpenChange={setModalOpen}
         onConnected={load}
@@ -1007,25 +1017,25 @@ function SkeletonState() {
   );
 }
 
-function DataState({ data }: { data: FinanceData }) {
-  const fmt = (n: number) =>
+function DataState({ data }: { data: SalesData }) {
+  const fmtCurrency = (n: number) =>
     n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-  const allZero = data.invoiced === 0 && data.paid === 0 && data.overdue === 0;
+  const allEmpty = data.pipeline_value === 0 && data.new_leads === 0;
 
-  if (allZero) {
+  if (allEmpty) {
     return (
-      <div style={{ fontSize: 12.5, color: C.muted }}>No invoices in the last 30 days.</div>
+      <div style={{ fontSize: 12.5, color: C.muted }}>No deals or new leads in the last 14 days.</div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-      <Row label="Invoiced" value={fmt(data.invoiced)} color={C.text} />
-      <Row label="Paid" value={fmt(data.paid)} color={C.accent} />
+      <Row label="Pipeline" value={fmtCurrency(data.pipeline_value)} color={C.text} />
+      <Row label="New leads" value={data.new_leads.toString()} color={C.accent} />
       <Row
-        label="Overdue"
-        value={fmt(data.overdue)}
-        color={data.overdue > 0 ? C.red : C.muted}
+        label="Auto-created"
+        value={`${data.auto_leads} of ${data.new_leads}`}
+        color={C.muted}
       />
       <Sparkline values={data.sparkline} />
     </div>
@@ -1067,7 +1077,7 @@ function NotConnectedState({ onConnect }: { onConnect: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
       <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>
-        Connect Stripe to see invoiced, paid, and overdue amounts.
+        Connect HubSpot to see your pipeline value, new leads, and which were auto-created by your workflows.
       </div>
       <button
         onClick={onConnect}
@@ -1082,7 +1092,7 @@ function NotConnectedState({ onConnect }: { onConnect: () => void }) {
           cursor: 'pointer',
         }}
       >
-        Connect Stripe →
+        Connect HubSpot →
       </button>
     </div>
   );
@@ -1095,7 +1105,7 @@ function ErrorState({
   onRetry,
 }: {
   message: string;
-  staleData?: FinanceData;
+  staleData?: SalesData;
   staleAgeMs?: number;
   onRetry: () => void;
 }) {
@@ -1112,7 +1122,7 @@ function ErrorState({
           color: C.red,
         }}
       >
-        Stripe is temporarily unreachable.
+        HubSpot is temporarily unreachable.
         {minutes !== null && (
           <span style={{ color: C.muted, marginLeft: 6 }}>
             Last good fetch: {minutes}m ago
@@ -1151,13 +1161,13 @@ Expected: zero errors.
 
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
-git add src/components/dashboard/finance-card.tsx
-git commit -m "feat(dashboard): add live Finance card with all 5 widget states"
+git add src/components/dashboard/sales-card.tsx
+git commit -m "feat(dashboard): add live Sales card with all 5 widget states"
 ```
 
 ---
 
-## Task 10: Wire FinanceCard into the overview page
+## Task 10: Wire SalesCard into the overview page
 
 **Files:**
 - Modify: `src/app/dashboard/page.tsx`
@@ -1168,23 +1178,23 @@ git commit -m "feat(dashboard): add live Finance card with all 5 widget states"
 cd /home/lawand/Desktop/my-startup/opsradar && wc -l src/app/dashboard/page.tsx
 ```
 
-Open the file and locate the section currently rendering the static finance card (likely a `<div>` or component with hardcoded `'$96k'` / `'Invoiced'` text).
+Open the file and locate the section currently rendering the static Sales / CRM card (likely a `<div>` or component with hardcoded `Pipeline`, `New leads` text).
 
-- [ ] **Step 2: Replace the static finance section**
+- [ ] **Step 2: Replace the static sales section**
 
 Add at top of `src/app/dashboard/page.tsx`:
 
 ```tsx
-import { FinanceCard } from '@/components/dashboard/finance-card';
+import { SalesCard } from '@/components/dashboard/sales-card';
 ```
 
-Find the static finance card markup (the block showing `'Invoiced'`, `'Paid'`, `'Overdue'` with hardcoded numbers) and replace it entirely with:
+Find the static sales/CRM card markup (the block showing `Pipeline`, `New leads` with hardcoded numbers) and replace it entirely with:
 
 ```tsx
-<FinanceCard />
+<SalesCard />
 ```
 
-Leave the other 3 supporting cards (Marketing, Sales, Delivery) static for now — they'll be replaced by future plans.
+Leave the other 3 supporting cards (Marketing, Delivery, Finance) static for now — they'll be replaced by future plans.
 
 - [ ] **Step 3: TypeScript check**
 
@@ -1215,7 +1225,7 @@ Expected: `✓ Compiled successfully`. If build fails, fix before committing.
 ```bash
 cd /home/lawand/Desktop/my-startup/opsradar
 git add src/app/dashboard/page.tsx
-git commit -m "feat(dashboard): wire live FinanceCard into overview page"
+git commit -m "feat(dashboard): wire live SalesCard into overview page"
 ```
 
 ---
@@ -1237,10 +1247,10 @@ Expected: `200`. If not, start `npm run dev` in another terminal.
 - [ ] **Step 2: Make sure n8n is running and the workflow is active**
 
 ```bash
-curl -s http://localhost:5678/healthz | head -3
+curl -s -o /dev/null -w "%{http_code}\n" "$N8N_BASE_URL/healthz"
 ```
 
-Expected: ok. Confirm in n8n UI that `dashboard-finance-stripe` workflow is **Active** (toggle on top right).
+Expected: ok. Confirm in n8n UI that `dashboard-sales-hubspot` workflow is **Active** (toggle on top right).
 
 - [ ] **Step 3: Sign in to OpsRadar**
 
@@ -1248,33 +1258,33 @@ Open `http://localhost:3000/dashboard` in a browser. If you're redirected to a s
 
 - [ ] **Step 4: Verify "Not connected" state shows**
 
-The Finance card should display:
+The Sales card should display:
 
-> Connect Stripe to see invoiced, paid, and overdue amounts.
-> [Connect Stripe →]
+> Connect HubSpot to see your pipeline value, new leads, and which were auto-created by your workflows.
+> [Connect HubSpot →]
 
-If you see a loading skeleton forever or an error, open browser devtools → Network tab, find the `GET /api/dashboard/finance` request, check the response. Common issues:
+If you see a loading skeleton forever or an error, open browser devtools → Network tab, find the `GET /api/dashboard/sales` request, check the response. Common issues:
 - 401 → not signed in / session cookie missing
 - 500 → check terminal for the dev server's error log
 - Other → fix before proceeding
 
-- [ ] **Step 5: Connect Stripe**
+- [ ] **Step 5: Connect HubSpot**
 
-Click **Connect Stripe →**. In the modal, paste a Stripe test restricted key (with read access to Balance and Invoices) from `https://dashboard.stripe.com/test/apikeys`. Click **Connect**.
+Click **Connect HubSpot →**. In the modal, paste a HubSpot Private App access token (with `crm.objects.deals.read` and `crm.objects.contacts.read` scopes). Click **Connect**.
 
-Expected: modal closes, card shows live data after a moment (or "No invoices in the last 30 days" if your test account is empty — populate it with `stripe trigger invoice.created` if so).
+Expected: modal closes, card shows live data after a moment (or "No deals or new leads in the last 14 days" if your test account is empty — create a deal and a contact in HubSpot UI if so).
 
 - [ ] **Step 6: Verify cache works**
 
-Reload the dashboard page. The Finance card should populate **instantly** (cache hit, <50ms).
+Reload the dashboard page. The Sales card should populate **instantly** (cache hit, <50ms).
 
 Inspect the response in devtools — `fromCache: true` should be set.
 
 - [ ] **Step 7: Verify error state**
 
-In a terminal, stop n8n (e.g. `docker stop n8n` or whatever you use). Hard-refresh `/dashboard` after the cache TTL (or wait 3 minutes, or change the cache key temporarily to bypass). Expected: red banner "Stripe is temporarily unreachable" with stale data still rendered.
+In a terminal, stop the n8n workflow (deactivate the toggle in the n8n UI). Hard-refresh `/dashboard` after the cache TTL (or wait 3 minutes, or change the cache key temporarily to bypass). Expected: red banner "HubSpot is temporarily unreachable" with stale data still rendered.
 
-Restart n8n, click **Retry →** on the card. Expected: returns to live data.
+Reactivate the workflow, click **Retry →** on the card. Expected: returns to live data.
 
 - [ ] **Step 8: Verify the token is stored encrypted**
 
@@ -1284,14 +1294,14 @@ Use Supabase MCP `execute_sql`:
 select tool, encrypted_token, iv, auth_tag from public.integrations limit 1;
 ```
 
-Expected: `encrypted_token` is base64 ciphertext, **not** the plaintext `rk_test_...` key. If you see the plaintext, the encryption helper isn't being used — fix before shipping.
+Expected: `encrypted_token` is base64 ciphertext, **not** the plaintext `pat-na1-...` token. If you see the plaintext, the encryption helper isn't being used — fix before shipping.
 
 - [ ] **Step 9: Verify disconnect works**
 
 In a browser devtools console:
 
 ```js
-await fetch('/api/integrations/stripe', { method: 'DELETE' })
+await fetch('/api/integrations/hubspot', { method: 'DELETE' })
 ```
 
 Reload `/dashboard`. Card should return to "Not connected" state.
@@ -1312,18 +1322,18 @@ If any verification step revealed a bug, fix it and commit. If everything passed
 | Cache TTL 180s | Task 4 | `CACHE_TTL_SECONDS` constant |
 | Cache key `dash:<widget>:<client_id>` | Task 4 | exact format used |
 | `?fresh=1` cache bypass | Tasks 4, 6 | implemented in helper and route |
-| Finance card 4 fields (invoiced/paid/overdue/sparkline) | Tasks 5, 9 | n8n shapes the data, card renders it |
+| Sales card 4 fields (pipeline/leads/auto/sparkline) | Tasks 5, 9 | n8n shapes the data, card renders it |
 | 5 widget UI states | Task 9 | loading, ok, empty, not-connected, error |
-| Never show misleading zero | Task 9 | `allZero` check renders "No invoices" rather than $0 |
-| Reference widget = Finance | Tasks 1–11 | this entire plan |
-| Drill-in to `/dashboard/financials` | Out of scope | the existing route stays static; future plan |
+| Never show misleading zero | Task 9 | `allEmpty` check renders "No deals/leads" rather than $0 |
+| Reference widget = Sales (HubSpot) | Tasks 1–11 | this entire plan |
+| Drill-in to `/dashboard/clients` | Out of scope | the existing route stays static; future plan |
 | Hero block | Out of scope | future plan |
 | Workflow Health strip | Out of scope | future plan |
-| Marketing/Sales/Delivery cards | Out of scope | future plan |
+| Marketing/Delivery/Finance cards | Out of scope | future plan |
 | End-client portal / role-based scoping | Out of scope | v2 |
 
 **Coverage:** Every v1 requirement that is *in scope for this plan* has a task. Out-of-scope items are explicitly listed at the top.
 
 **Placeholder scan:** No "TBD", no "implement later", no "similar to Task N" — every step has full code or full commands.
 
-**Type consistency:** `WidgetFetchResult<T>` shape in Task 4 matches the response shape consumed by `FinanceCard` in Task 9 (both use `status: 'ok' | 'not_connected' | 'error'`). `FinanceWidgetData` fields in Task 6 match `FinanceData` in Task 9 (invoiced, paid, overdue, sparkline, period_label). `setIntegrationToken(clientId, tool, plaintextToken)` signature in Task 3 matches its call sites in Task 7.
+**Type consistency:** `WidgetFetchResult<T>` shape in Task 4 matches the response shape consumed by `SalesCard` in Task 9 (both use `status: 'ok' | 'not_connected' | 'error'`). `SalesWidgetData` fields in Task 6 match `SalesData` in Task 9 (pipeline_value, new_leads, auto_leads, sparkline, period_label). `setIntegrationToken(clientId, tool, plaintextToken)` signature in Task 3 matches its call sites in Task 7.
