@@ -204,30 +204,221 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_interactions: {
+        Row: {
+          channel: string
+          created_at: string
+          direction: string
+          full_content: string | null
+          id: string
+          my_response: string | null
+          occurred_at: string
+          prospect_id: string
+          response_at: string | null
+          sentiment: string | null
+          signals: string[] | null
+          summary: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          direction: string
+          full_content?: string | null
+          id?: string
+          my_response?: string | null
+          occurred_at?: string
+          prospect_id: string
+          response_at?: string | null
+          sentiment?: string | null
+          signals?: string[] | null
+          summary: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          direction?: string
+          full_content?: string | null
+          id?: string
+          my_response?: string | null
+          occurred_at?: string
+          prospect_id?: string
+          response_at?: string | null
+          sentiment?: string | null
+          signals?: string[] | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interactions_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "crm_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_prospects: {
+        Row: {
+          actual_close_date: string | null
+          actual_deal_value: number | null
+          archived: boolean
+          audit_id: string | null
+          company_name: string | null
+          company_url: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          estimated_deal_value: number | null
+          first_source: string
+          first_source_detail: string | null
+          full_name: string | null
+          handle: string | null
+          id: string
+          location: string | null
+          next_action: string | null
+          next_action_date: string | null
+          notes: string | null
+          objections: string[] | null
+          predicted_close_date: string | null
+          primary_pain: string | null
+          segment: string | null
+          stage: string
+          stage_changed_at: string
+          tags: string[] | null
+          team_size: string | null
+          tool_stack: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          actual_close_date?: string | null
+          actual_deal_value?: number | null
+          archived?: boolean
+          audit_id?: string | null
+          company_name?: string | null
+          company_url?: string | null
+          created_at?: string
+          display_name: string
+          email?: string | null
+          estimated_deal_value?: number | null
+          first_source: string
+          first_source_detail?: string | null
+          full_name?: string | null
+          handle?: string | null
+          id?: string
+          location?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          objections?: string[] | null
+          predicted_close_date?: string | null
+          primary_pain?: string | null
+          segment?: string | null
+          stage?: string
+          stage_changed_at?: string
+          tags?: string[] | null
+          team_size?: string | null
+          tool_stack?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          actual_close_date?: string | null
+          actual_deal_value?: number | null
+          archived?: boolean
+          audit_id?: string | null
+          company_name?: string | null
+          company_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          estimated_deal_value?: number | null
+          first_source?: string
+          first_source_detail?: string | null
+          full_name?: string | null
+          handle?: string | null
+          id?: string
+          location?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          objections?: string[] | null
+          predicted_close_date?: string | null
+          primary_pain?: string | null
+          segment?: string | null
+          stage?: string
+          stage_changed_at?: string
+          tags?: string[] | null
+          team_size?: string | null
+          tool_stack?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integrations: {
+        Row: {
+          auth_tag: string
+          client_id: string
+          connected_at: string
+          encrypted_token: string
+          id: string
+          iv: string
+          tool: string
+        }
+        Insert: {
+          auth_tag: string
+          client_id: string
+          connected_at?: string
+          encrypted_token: string
+          id?: string
+          iv: string
+          tool: string
+        }
+        Update: {
+          auth_tag?: string
+          client_id?: string
+          connected_at?: string
+          encrypted_token?: string
+          id?: string
+          iv?: string
+          tool?: string
+        }
+        Relationships: []
+      }
       knowledge_base: {
         Row: {
+          category: string | null
           content: string
           created_at: string
           embedding: string | null
           id: string
+          links: string[] | null
           metadata: Json | null
+          slug: string | null
           source_file: string
+          updated_at: string
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string
           embedding?: string | null
           id?: string
+          links?: string[] | null
           metadata?: Json | null
+          slug?: string | null
           source_file: string
+          updated_at?: string
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string
           embedding?: string | null
           id?: string
+          links?: string[] | null
           metadata?: Json | null
+          slug?: string | null
           source_file?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -284,20 +475,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      match_knowledge_base: {
-        Args: {
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-        }
-        Returns: {
-          content: string
-          id: string
-          metadata: Json
-          similarity: number
-          source_file: string
-        }[]
-      }
+      match_knowledge_base:
+        | {
+            Args: {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+            }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+              source_file: string
+            }[]
+          }
+        | {
+            Args: {
+              filter_category?: string
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+            }
+            Returns: {
+              category: string
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+              slug: string
+              source_file: string
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never
