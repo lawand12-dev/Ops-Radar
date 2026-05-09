@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { fetchDashboardWidget } from '<npm>/lib/dashboard-fetch';
-import { getIntegrationToken, isIntegrationConnected } from '<npm>/lib/integrations';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -27,35 +26,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const [apolloConnected, calendlyConnected] = await Promise.all([
-    isIntegrationConnected(clientId, 'apollo'),
-    isIntegrationConnected(clientId, 'calendly'),
-  ]);
-
-  if (!apolloConnected && !calendlyConnected) {
-    return NextResponse.json({
-      status: 'not_connected',
-      apollo_connected: false,
-      calendly_connected: false,
-    });
-  }
-
-  const [apolloToken, calendlyToken] = await Promise.all([
-    apolloConnected ? getIntegrationToken(clientId, 'apollo') : Promise.resolve(null),
-    calendlyConnected ? getIntegrationToken(clientId, 'calendly') : Promise.resolve(null),
-  ]);
-
   const fresh = req.nextUrl.searchParams.get('fresh') === '1';
 
+  // Credentials live in n8n now — we pass only client_id.
+  // Per-tool connection state is derived from `apollo_connected` /
+  // `calendly_connected` in the n8n response.
   const result = await fetchDashboardWidget<MarketingWidgetData>({
     widget: 'marketing',
     clientId,
     n8nWorkflow: 'dashboard-marketing-apollo-calendly',
-    payload: {
-      apollo_token: apolloToken ?? '',
-      calendly_token: calendlyToken ?? '',
-      client_id: clientId,
-    },
+    payload: { client_id: clientId },
     fresh,
   });
 
