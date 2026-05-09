@@ -18,7 +18,7 @@ function getIntegrationsClient() {
 export type ToolName =
   | 'stripe' | 'hubspot' | 'clickup' | 'asana' | 'toggl' | 'harvest'
   | 'google_ads' | 'meta_ads' | 'calendly' | 'quickbooks' | 'pipedrive'
-  | 'salesforce' | 'monday';
+  | 'salesforce' | 'monday' | 'apollo';
 
 export async function getIntegrationToken(
   clientId: string,
