@@ -24,15 +24,22 @@
       "parameters": {
         "method": "GET",
         "url": "https://api.apollo.io/api/v1/emailer_campaigns/stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $('Webhook').item.json.body.apollo_token }}" },
             { "name": "Cache-Control", "value": "no-cache" }
           ]
         },
         "options": {
           "response": { "response": { "responseFormat": "json", "neverError": true } }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kgnaLRc9gmtlXxwc",
+          "name": "OpsRadar Apollo"
         }
       }
     },
@@ -45,14 +52,16 @@
       "parameters": {
         "method": "GET",
         "url": "https://api.calendly.com/users/me",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Webhook').item.json.body.calendly_token }}" }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {
           "response": { "response": { "responseFormat": "json", "neverError": true } }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nYUrudVAjnHUgbXr",
+          "name": "OpsRadar Calendly"
         }
       }
     },
@@ -65,14 +74,16 @@
       "parameters": {
         "method": "GET",
         "url": "=https://api.calendly.com/scheduled_events?user={{ encodeURIComponent($('CalendlyMe').item.json.resource?.uri || '') }}&min_start_time={{ new Date(Date.now() - 14*24*60*60*1000).toISOString() }}&count=100",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Webhook').item.json.body.calendly_token }}" }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {
           "response": { "response": { "responseFormat": "json", "neverError": true } }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nYUrudVAjnHUgbXr",
+          "name": "OpsRadar Calendly"
         }
       }
     },
@@ -85,7 +96,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const webhookBody = $('Webhook').first()?.json?.body || {};\nconst apolloToken = (webhookBody.apollo_token || '').trim();\nconst calendlyToken = (webhookBody.calendly_token || '').trim();\nconst apolloConnected = apolloToken.length >= 8;\nconst calendlyConnected = calendlyToken.length >= 8;\n\nconst apollo = $('ApolloStats').first()?.json;\nconst apolloOk = apolloConnected && apollo && !apollo.error && !apollo.errors;\nconst emailsSent = apolloOk ? (apollo.num_sent ?? apollo.emails_sent ?? null) : null;\nconst numOpens = apolloOk ? (apollo.num_opens ?? apollo.opens ?? null) : null;\nconst numReplies = apolloOk ? (apollo.num_replies ?? apollo.replies ?? null) : null;\n\nconst events = $('CalendlyEvents').first()?.json;\nconst eventsOk = calendlyConnected && events && Array.isArray(events.collection);\nconst meetingsBooked = eventsOk ? events.collection.length : null;\n\nconst openRate = (emailsSent && emailsSent > 0 && numOpens != null) ? (numOpens / emailsSent) * 100 : null;\nconst replyRate = (emailsSent && emailsSent > 0 && numReplies != null) ? (numReplies / emailsSent) * 100 : null;\nconst meetingConversion = (emailsSent && emailsSent > 0 && meetingsBooked != null) ? (meetingsBooked / emailsSent) * 100 : null;\n\n// Build 14-day reply sparkline from Apollo daily breakdowns if available, else null\nlet replySparkline = null;\nif (apolloOk && Array.isArray(apollo.daily_replies)) {\n  replySparkline = apollo.daily_replies.slice(-14);\n} else if (apolloOk && Array.isArray(apollo.daily_stats)) {\n  replySparkline = apollo.daily_stats.slice(-14).map(d => d.replies || 0);\n}\n\nreturn [{\n  json: {\n    emails_sent: emailsSent,\n    open_rate_pct: openRate,\n    reply_rate_pct: replyRate,\n    reply_sparkline: replySparkline,\n    meetings_booked: meetingsBooked,\n    meeting_conversion_pct: meetingConversion,\n    apollo_connected: apolloConnected,\n    calendly_connected: calendlyConnected,\n    period_label: 'Last 14 days'\n  }\n}];\n"
+        "jsCode": "// Credentials live in n8n now (no tokens in webhook body).\n// Connection state is derived from whether the upstream HTTP call succeeded.\n\nconst apollo = $('ApolloStats').first()?.json;\nconst apolloConnected = !!apollo && !apollo.error && !apollo.errors;\nconst emailsSent = apolloConnected ? (apollo.num_sent ?? apollo.emails_sent ?? null) : null;\nconst numOpens = apolloConnected ? (apollo.num_opens ?? apollo.opens ?? null) : null;\nconst numReplies = apolloConnected ? (apollo.num_replies ?? apollo.replies ?? null) : null;\n\nconst events = $('CalendlyEvents').first()?.json;\nconst calendlyConnected = !!events && Array.isArray(events.collection);\nconst meetingsBooked = calendlyConnected ? events.collection.length : null;\n\nconst openRate = (emailsSent && emailsSent > 0 && numOpens != null) ? (numOpens / emailsSent) * 100 : null;\nconst replyRate = (emailsSent && emailsSent > 0 && numReplies != null) ? (numReplies / emailsSent) * 100 : null;\nconst meetingConversion = (emailsSent && emailsSent > 0 && meetingsBooked != null) ? (meetingsBooked / emailsSent) * 100 : null;\n\nlet replySparkline = null;\nif (apolloConnected && Array.isArray(apollo.daily_replies)) {\n  replySparkline = apollo.daily_replies.slice(-14);\n} else if (apolloConnected && Array.isArray(apollo.daily_stats)) {\n  replySparkline = apollo.daily_stats.slice(-14).map(d => d.replies || 0);\n}\n\nreturn [{\n  json: {\n    emails_sent: emailsSent,\n    open_rate_pct: openRate,\n    reply_rate_pct: replyRate,\n    reply_sparkline: replySparkline,\n    meetings_booked: meetingsBooked,\n    meeting_conversion_pct: meetingConversion,\n    apollo_connected: apolloConnected,\n    calendly_connected: calendlyConnected,\n    period_label: 'Last 14 days'\n  }\n}];\n"
       }
     },
     {

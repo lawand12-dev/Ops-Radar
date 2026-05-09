@@ -1,9 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ConnectHubSpotModal } from '<npm>/components/dashboard/connect-hubspot-modal';
-import { ConnectApolloModal } from '<npm>/components/dashboard/connect-apollo-modal';
-import { ConnectCalendlyModal } from '<npm>/components/dashboard/connect-calendly-modal';
 
 type ConnectedTool = { tool: string; connected_at: string };
 
@@ -11,7 +8,7 @@ type ToolDef = {
   key: string;
   label: string;
   blurb: string;
-  cardKey: string; // which dashboard card consumes it
+  cardKey: string;
   status: 'available' | 'coming_soon';
 };
 
@@ -36,6 +33,8 @@ const C = {
   red: '#FF4D4D',
 };
 
+const N8N_MANAGE_URL = 'https://opsradar.app.n8n.cloud/home/credentials';
+
 const fmtDate = (iso: string) => {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -45,61 +44,62 @@ export default function IntegrationsSettingsPage() {
   const [connected, setConnected] = useState<ConnectedTool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hubspotOpen, setHubspotOpen] = useState(false);
-  const [apolloOpen, setApolloOpen] = useState(false);
-  const [calendlyOpen, setCalendlyOpen] = useState(false);
-  const [busyTool, setBusyTool] = useState<string | null>(null);
-
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/integrations', { cache: 'no-store' });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Failed to load');
-        setConnected([]);
-        return;
-      }
-      setConnected(data.connected ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/integrations', { cache: 'no-store' });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(data.error ?? 'Failed to load');
+          setConnected([]);
+          return;
+        }
+        setConnected(data.connected ?? []);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Network error');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function isConnected(tool: string): ConnectedTool | undefined {
     return connected.find((c) => c.tool === tool);
   }
 
-  async function disconnect(tool: string) {
-    setBusyTool(tool);
-    try {
-      await fetch(`/api/integrations/${tool}`, { method: 'DELETE' });
-      await load();
-    } finally {
-      setBusyTool(null);
-    }
-  }
-
-  function openConnect(tool: string) {
-    if (tool === 'hubspot') setHubspotOpen(true);
-    else if (tool === 'apollo') setApolloOpen(true);
-    else if (tool === 'calendly') setCalendlyOpen(true);
-  }
-
   return (
     <>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 6 }}>Integrations</h1>
-        <p style={{ fontSize: 13.5, color: C.muted }}>
-          Connect your tools so the dashboard can show live data. Tokens are encrypted at rest and never shared.
+        <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>
+          Tools are connected once in n8n (the workflow engine that runs your automations) and the
+          dashboard reads from them via webhooks. Use the button below to manage credentials in n8n.
         </p>
+        <a
+          href={N8N_MANAGE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            marginTop: 14,
+            background: C.accent,
+            color: '#0D1117',
+            border: 'none',
+            borderRadius: 8,
+            padding: '8px 14px',
+            fontSize: 12.5,
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          Manage credentials in n8n →
+        </a>
       </div>
 
       {error && (
@@ -122,7 +122,6 @@ export default function IntegrationsSettingsPage() {
         {TOOL_CATALOG.map((t) => {
           const conn = isConnected(t.key);
           const isAvailable = t.status === 'available';
-          const isBusy = busyTool === t.key;
 
           return (
             <div
@@ -181,41 +180,24 @@ export default function IntegrationsSettingsPage() {
                 {!isAvailable && (
                   <span style={{ fontSize: 12, color: C.muted, fontStyle: 'italic' }}>Coming soon</span>
                 )}
-                {isAvailable && !conn && !loading && (
-                  <button
-                    onClick={() => openConnect(t.key)}
-                    style={{
-                      background: C.accent,
-                      color: '#0D1117',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '8px 14px',
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Connect
-                  </button>
-                )}
-                {isAvailable && conn && !loading && (
-                  <button
-                    onClick={() => disconnect(t.key)}
-                    disabled={isBusy}
+                {isAvailable && !loading && (
+                  <a
+                    href={N8N_MANAGE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                       background: 'transparent',
-                      color: C.red,
-                      border: `1px solid rgba(255,77,77,0.4)`,
+                      color: C.accent,
+                      border: `1px solid ${C.accent}`,
                       borderRadius: 8,
                       padding: '8px 14px',
                       fontSize: 12.5,
                       fontWeight: 500,
-                      cursor: isBusy ? 'wait' : 'pointer',
-                      opacity: isBusy ? 0.6 : 1,
+                      textDecoration: 'none',
                     }}
                   >
-                    {isBusy ? 'Disconnecting…' : 'Disconnect'}
-                  </button>
+                    {conn ? 'Manage in n8n →' : 'Connect in n8n →'}
+                  </a>
                 )}
                 {loading && (
                   <span style={{ fontSize: 12, color: C.muted }}>Loading…</span>
@@ -225,10 +207,6 @@ export default function IntegrationsSettingsPage() {
           );
         })}
       </div>
-
-      <ConnectHubSpotModal  open={hubspotOpen}  onOpenChange={setHubspotOpen}  onConnected={load} />
-      <ConnectApolloModal   open={apolloOpen}   onOpenChange={setApolloOpen}   onConnected={load} />
-      <ConnectCalendlyModal open={calendlyOpen} onOpenChange={setCalendlyOpen} onConnected={load} />
     </>
   );
 }
