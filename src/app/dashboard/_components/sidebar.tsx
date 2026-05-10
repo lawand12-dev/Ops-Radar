@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { C } from '<npm>/app/dashboard/_lib/theme';
 import { EcgIcon } from './icons';
+import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
 
 const navItems = [
   { label: 'Dashboard',     href: '/dashboard',                icon: LayoutDashboard },
@@ -96,7 +97,7 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div style={{ padding: '12px 14px', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ padding: '12px 14px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div
           style={{
             display: 'flex',
@@ -134,6 +135,8 @@ export function Sidebar() {
           </div>
           <ChevronDown size={13} color={C.muted} />
         </div>
+
+        <SignOutButton />
       </div>
     </aside>
   );
