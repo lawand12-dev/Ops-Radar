@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '<npm>/lib/database.types';
 
 export default function SetPasswordPage() {
   const router = useRouter();
@@ -21,21 +19,22 @@ export default function SetPasswordPage() {
       return;
     }
     if (password !== confirm) {
-      setError('Passwords don\'t match.');
+      setError("Passwords don't match.");
       return;
     }
 
     setLoading(true);
 
-    const supabase = createBrowserClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const res = await fetch('/api/auth/set-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
 
-    const { error: updateError } = await supabase.auth.updateUser({ password });
+    const data = await res.json().catch(() => null);
 
-    if (updateError) {
-      setError(updateError.message ?? 'Failed to set password.');
+    if (!res.ok) {
+      setError(data?.error ?? 'Failed to set password.');
       setLoading(false);
       return;
     }
