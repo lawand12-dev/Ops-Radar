@@ -11,6 +11,8 @@ export type WidgetFetchOptions = {
   n8nWorkflow: string;
   payload: Record<string, unknown>;
   fresh?: boolean;
+  n8nBaseUrl?: string;
+  n8nWebhookSecret?: string;
 };
 
 export type WidgetFetchResult<T> =
@@ -32,8 +34,8 @@ export async function fetchDashboardWidget<T>(
   }
 
   // 2. Call n8n
-  const baseUrl = process.env.N8N_BASE_URL;
-  const secret = process.env.N8N_WEBHOOK_SECRET;
+  const baseUrl = opts.n8nBaseUrl ?? process.env.N8N_BASE_URL;
+  const secret = opts.n8nWebhookSecret ?? process.env.N8N_WEBHOOK_SECRET;
   if (!baseUrl || !secret || baseUrl === '__SET_BEFORE_USE__') {
     return { status: 'error', message: 'n8n is not configured (missing env vars)' };
   }

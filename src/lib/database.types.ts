@@ -204,6 +204,33 @@ export type Database = {
         }
         Relationships: []
       }
+      client_n8n_config: {
+        Row: {
+          backfill_completed_at: string | null
+          client_id: string
+          created_at: string
+          n8n_base_url: string
+          n8n_webhook_secret: string
+          updated_at: string
+        }
+        Insert: {
+          backfill_completed_at?: string | null
+          client_id: string
+          created_at?: string
+          n8n_base_url: string
+          n8n_webhook_secret: string
+          updated_at?: string
+        }
+        Update: {
+          backfill_completed_at?: string | null
+          client_id?: string
+          created_at?: string
+          n8n_base_url?: string
+          n8n_webhook_secret?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_interactions: {
         Row: {
           channel: string
@@ -253,6 +280,13 @@ export type Database = {
             columns: ["prospect_id"]
             isOneToOne: false
             referencedRelation: "crm_prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interactions_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "v_research_ready"
             referencedColumns: ["id"]
           },
         ]
@@ -472,7 +506,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_already_contacted: {
+        Row: {
+          company_name: string | null
+          display_name: string | null
+          email: string | null
+          email_lc: string | null
+          emails_sent: number | null
+          last_sent_at: string | null
+          stage: string | null
+        }
+        Relationships: []
+      }
+      v_research_ready: {
+        Row: {
+          company_name: string | null
+          company_url: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          location: string | null
+          notes: string | null
+          segment: string | null
+          tags: string[] | null
+          team_size: string | null
+          tier: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          location?: string | null
+          notes?: string | null
+          segment?: string | null
+          tags?: string[] | null
+          team_size?: string | null
+          tier?: never
+        }
+        Update: {
+          company_name?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          location?: string | null
+          notes?: string | null
+          segment?: string | null
+          tags?: string[] | null
+          team_size?: string | null
+          tier?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       match_knowledge_base:

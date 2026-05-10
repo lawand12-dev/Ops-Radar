@@ -102,6 +102,8 @@ export default function IntegrationsSettingsPage() {
         </a>
       </div>
 
+      <N8nConnectionSection />
+
       {error && (
         <div
           style={{
@@ -117,6 +119,8 @@ export default function IntegrationsSettingsPage() {
           {error}
         </div>
       )}
+
+      <h2 style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 10 }}>Tool catalog</h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {TOOL_CATALOG.map((t) => {
@@ -208,5 +212,267 @@ export default function IntegrationsSettingsPage() {
         })}
       </div>
     </>
+  );
+}
+
+type N8nConfigState =
+  | { status: 'loading' }
+  | { status: 'unconfigured' }
+  | { status: 'configured'; n8nBaseUrl: string; backfillCompletedAt: string | null; updatedAt: string }
+  | { status: 'error'; message: string };
+
+function N8nConnectionSection() {
+  const [state, setState] = useState<N8nConfigState>({ status: 'loading' });
+  const [editing, setEditing] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [secretInput, setSecretInput] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  async function load() {
+    setState({ status: 'loading' });
+    try {
+      const res = await fetch('/api/integrations/n8n-connection', { cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok) {
+        setState({ status: 'error', message: data.error ?? 'Failed to load' });
+        return;
+      }
+      if (!data.configured) {
+        setState({ status: 'unconfigured' });
+        setEditing(true);
+        return;
+      }
+      setState({
+        status: 'configured',
+        n8nBaseUrl: data.n8nBaseUrl,
+        backfillCompletedAt: data.backfillCompletedAt,
+        updatedAt: data.updatedAt,
+      });
+      setUrlInput(data.n8nBaseUrl);
+      setEditing(false);
+    } catch (err) {
+      setState({ status: 'error', message: err instanceof Error ? err.message : 'Network error' });
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/integrations/n8n-connection', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ n8nBaseUrl: urlInput, n8nWebhookSecret: secretInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSubmitError(data.error ?? 'Failed to save');
+        return;
+      }
+      setSecretInput('');
+      await load();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      style={{
+        background: C.card,
+        border: `1px solid ${C.border}`,
+        borderRadius: 12,
+        padding: '18px 20px',
+        marginBottom: 22,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: C.text, margin: 0 }}>Your n8n instance</h2>
+        {state.status === 'configured' && (
+          <span
+            style={{
+              fontSize: 10.5,
+              fontWeight: 600,
+              color: C.green,
+              background: 'rgba(34,197,94,0.12)',
+              borderRadius: 4,
+              padding: '2px 8px',
+            }}
+          >
+            Connected
+          </span>
+        )}
+      </div>
+      <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.5, margin: '0 0 14px' }}>
+        OpsRadar reads your live metrics by calling a webhook on your n8n instance. Provide the base URL
+        and the shared secret you set on the webhook node.
+      </p>
+
+      {state.status === 'loading' && (
+        <span style={{ fontSize: 12.5, color: C.muted }}>Loading…</span>
+      )}
+
+      {state.status === 'error' && (
+        <div
+          style={{
+            background: 'rgba(255,77,77,0.08)',
+            border: `1px solid rgba(255,77,77,0.3)`,
+            borderRadius: 8,
+            padding: '8px 10px',
+            fontSize: 12.5,
+            color: C.red,
+          }}
+        >
+          {state.message}
+        </div>
+      )}
+
+      {state.status === 'configured' && !editing && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: C.muted }}>Base URL:</span>
+            <span style={{ fontSize: 13, color: C.text, fontFamily: 'monospace' }}>{state.n8nBaseUrl}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: C.muted }}>Webhook secret:</span>
+            <span style={{ fontSize: 13, color: C.muted, fontFamily: 'monospace' }}>•••••••• (set)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 12, color: C.muted }}>Backfill:</span>
+            <span style={{ fontSize: 12.5, color: state.backfillCompletedAt ? C.green : C.muted }}>
+              {state.backfillCompletedAt
+                ? `Completed ${fmtDate(state.backfillCompletedAt)}`
+                : 'Pending — run the opsradar-backfill workflow on your n8n'}
+            </span>
+          </div>
+          <button
+            onClick={() => { setEditing(true); setSecretInput(''); }}
+            style={{
+              background: 'transparent',
+              color: C.accent,
+              border: `1px solid ${C.accent}`,
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontSize: 12.5,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Update connection
+          </button>
+        </div>
+      )}
+
+      {(state.status === 'unconfigured' || (state.status === 'configured' && editing)) && (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 11.5, color: C.muted, letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+              n8n base URL
+            </span>
+            <input
+              type="url"
+              required
+              placeholder="https://your-tenant.app.n8n.cloud"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              style={{
+                background: '#080C14',
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: '8px 10px',
+                fontSize: 13,
+                color: C.text,
+                fontFamily: 'monospace',
+                outline: 'none',
+              }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 11.5, color: C.muted, letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+              Webhook secret
+            </span>
+            <input
+              type="password"
+              required
+              placeholder="The secret your webhook node validates"
+              value={secretInput}
+              onChange={(e) => setSecretInput(e.target.value)}
+              style={{
+                background: '#080C14',
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: '8px 10px',
+                fontSize: 13,
+                color: C.text,
+                fontFamily: 'monospace',
+                outline: 'none',
+              }}
+            />
+            <span style={{ fontSize: 11, color: C.muted }}>
+              Stored only as routing config. Never view-only after save — re-enter to update.
+            </span>
+          </label>
+
+          {submitError && (
+            <div
+              style={{
+                background: 'rgba(255,77,77,0.08)',
+                border: `1px solid rgba(255,77,77,0.3)`,
+                borderRadius: 8,
+                padding: '6px 10px',
+                fontSize: 12,
+                color: C.red,
+              }}
+            >
+              {submitError}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                background: C.accent,
+                color: '#0D1117',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 14px',
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: submitting ? 'wait' : 'pointer',
+                opacity: submitting ? 0.7 : 1,
+              }}
+            >
+              {submitting ? 'Saving…' : state.status === 'configured' ? 'Save changes' : 'Connect n8n'}
+            </button>
+            {state.status === 'configured' && (
+              <button
+                type="button"
+                onClick={() => { setEditing(false); setSubmitError(null); }}
+                style={{
+                  background: 'transparent',
+                  color: C.muted,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: '8px 14px',
+                  fontSize: 12.5,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

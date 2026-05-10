@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Chart,
   LineController,
@@ -31,6 +31,8 @@ import { SalesCard } from '<npm>/components/dashboard/sales-card';
 import { HeroRoiBlock } from '<npm>/components/dashboard/hero-roi-block';
 import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-strip';
 import { MarketingCard } from '<npm>/components/dashboard/marketing-card';
+import { FinancialsCard } from '<npm>/components/dashboard/financials-card';
+import { DeliveryCard } from '<npm>/components/dashboard/delivery-card';
 
 Chart.register(
   LineController,
@@ -44,7 +46,22 @@ Chart.register(
   ArcElement
 );
 
-const metrics = [
+type LiveMetrics = {
+  revenue: { total: number; weekly: number[] };
+  invoiced: { total: number; paid: number; overdue: number };
+  hours_tracked: { total: number; weekly: number[] };
+  active_projects: { count: number };
+  tasks: { completed: number; in_progress: number; todo: number };
+  profit_margin_pct: number | null;
+  period_label: string;
+  sources_connected: string[];
+  backfill_pending: boolean;
+};
+
+const fmtCurrency = (n: number) =>
+  n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+const FALLBACK_METRICS = [
   { label: 'Revenue',         value: '$128,540', delta: '18.6%' },
   { label: 'Profit Margin',   value: '32.4%',    delta: '6.3%'  },
   { label: 'Active Projects', value: '24',        delta: '4'     },
@@ -96,7 +113,7 @@ const activityItems = [
   },
 ];
 
-function RevenueChart() {
+function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?: string[]; data?: number[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef  = useRef<Chart | null>(null);
 
@@ -113,10 +130,10 @@ function RevenueChart() {
     chartRef.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: revenueLabels,
+        labels,
         datasets: [{
           label: 'Revenue',
-          data: revenueData,
+          data,
           borderColor: '#3B82F6',
           borderWidth: 2.5,
           backgroundColor: gradient,
@@ -159,7 +176,7 @@ function RevenueChart() {
     });
 
     return () => { chartRef.current?.destroy(); };
-  }, []);
+  }, [labels, data]);
 
   return (
     <Card title="Revenue Overview" style={{ flex: '0 0 59%' }}>
@@ -374,6 +391,46 @@ function ActivityFeed() {
   );
 }
 
+function MetricStatCards() {
+  const [liveData, setLiveData] = useState<LiveMetrics | null>(null);
+
+  useEffect(() => {
+    fetch('/api/dashboard/metrics')
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.status === 'ok') setLiveData(json.data as LiveMetrics);
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayMetrics = liveData
+    ? [
+        { label: 'Revenue',         value: fmtCurrency(liveData.revenue.total),                                              delta: '—' },
+        { label: 'Profit Margin',   value: liveData.profit_margin_pct != null ? `${liveData.profit_margin_pct.toFixed(1)}%` : '—', delta: '—' },
+        { label: 'Active Projects', value: String(liveData.active_projects.count),                                            delta: '—' },
+        { label: 'Hours Tracked',   value: `${Math.round(liveData.hours_tracked.total)}h`,                                    delta: '—' },
+        { label: 'Invoiced',        value: fmtCurrency(liveData.invoiced.total),                                              delta: '—' },
+      ]
+    : FALLBACK_METRICS;
+
+  const chartLabels = liveData
+    ? liveData.revenue.weekly.map((_, i) => `W${i + 1}`)
+    : revenueLabels;
+  const chartData = liveData?.revenue.weekly ?? revenueData;
+
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
+        {displayMetrics.map((m) => <StatCard key={m.label} {...m} />)}
+      </div>
+      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+        <RevenueChart labels={chartLabels} data={chartData} />
+        <TasksChart />
+      </div>
+    </>
+  );
+}
+
 export default function DashboardPage() {
   return (
     <>
@@ -400,17 +457,15 @@ export default function DashboardPage() {
 
       <MarketingCard />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
-        {metrics.map((m) => <StatCard key={m.label} {...m} />)}
-      </div>
-
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
-        <RevenueChart />
-        <TasksChart />
-      </div>
+      <MetricStatCards />
 
       <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
         <SalesCard />
+      </div>
+
+      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+        <FinancialsCard />
+        <DeliveryCard />
       </div>
 
       <div style={{ display: 'flex', gap: 14 }}>
