@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '<npm>/lib/database.types';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -17,15 +15,11 @@ export default function ForgotPasswordPage() {
     setError(null);
     setLoading(true);
 
-    const supabase = createBrowserClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    // Anti-enumeration: ignore the result. ALWAYS redirect to check-email,
-    // regardless of whether the email exists.
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    // Anti-enumeration: ignore the result. ALWAYS redirect to check-email.
+    await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     });
 
     router.replace('/login/check-email');

@@ -3,8 +3,6 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '<npm>/lib/database.types';
 
 export default function LoginPage() {
   return (
@@ -36,14 +34,13 @@ function LoginContent() {
     setError(null);
     setLoading(true);
 
-    const supabase = createBrowserClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const res = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (signInError) {
+    if (!res.ok) {
       setError('Invalid email or password.');
       setLoading(false);
       return;
