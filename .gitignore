@@ -42,3 +42,7 @@ next-env.d.ts
 
 # RAG research library — ingested into Supabase, not tracked in git
 knowledge-base/*.json
+
+# superpowers workspace — local-only worktrees + brainstorm mockups
+.worktrees/
+.superpowers/
