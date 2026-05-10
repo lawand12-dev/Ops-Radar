@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { fetchDashboardWidget } from '<npm>/lib/dashboard-fetch';
 import { getClientN8nConfig } from '<npm>/lib/client-n8n';
+import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,10 +21,7 @@ export type MetricsData = {
 const ALLOWED_PERIODS = [7, 14, 30, 90];
 
 export async function GET(req: NextRequest) {
-  const supabase = getServerSupabaseClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  const clientId = userData.user?.id ?? process.env.DEV_CLIENT_ID;
+  const clientId = await getCurrentUserId();
   if (!clientId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
