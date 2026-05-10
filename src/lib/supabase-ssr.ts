@@ -37,10 +37,13 @@ export async function getSessionSupabaseClient(): Promise<SupabaseClient<Databas
 
 /**
  * Returns the current user's id from the session cookie, or
- * `process.env.DEV_CLIENT_ID` as a dev fallback.
+ * `process.env.DEV_CLIENT_ID` as a dev-only fallback.
  *
  * Returns null if neither is available — the caller should treat that as
  * unauthorized (return 401).
+ *
+ * The DEV_CLIENT_ID fallback is gated to non-production. Setting it in a
+ * production environment must NEVER short-circuit auth.
  */
 export async function getCurrentUserId(): Promise<string | null> {
   try {
@@ -50,5 +53,6 @@ export async function getCurrentUserId(): Promise<string | null> {
   } catch (err) {
     console.warn('[getCurrentUserId] session read failed:', err);
   }
+  if (process.env.NODE_ENV === 'production') return null;
   return process.env.DEV_CLIENT_ID ?? null;
 }

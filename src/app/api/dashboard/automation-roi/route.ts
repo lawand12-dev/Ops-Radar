@@ -4,7 +4,43 @@ import { Redis } from '@upstash/redis';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const redis = Redis.fromEnv();
+let redisInstance: Redis | null | undefined;
+
+function getRedis(): Redis | null {
+  if (redisInstance !== undefined) return redisInstance;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    redisInstance = null;
+    return null;
+  }
+  try {
+    redisInstance = new Redis({ url, token });
+    return redisInstance;
+  } catch (err) {
+    console.warn('[automation-roi] Redis init failed, caching disabled:', err);
+    redisInstance = null;
+    return null;
+  }
+}
+
+async function safeRedisGet<T>(key: string): Promise<T | null> {
+  const r = getRedis();
+  if (!r) return null;
+  try { return (await r.get<T>(key)) ?? null; } catch (err) {
+    console.warn('[automation-roi] redis.get failed:', err);
+    return null;
+  }
+}
+
+async function safeRedisSet<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+  const r = getRedis();
+  if (!r) return;
+  try { await r.set(key, value, { ex: ttlSeconds }); } catch (err) {
+    console.warn('[automation-roi] redis.set failed:', err);
+  }
+}
+
 const CACHE_TTL_SECONDS = 180;
 const STALE_TTL_SECONDS = 60 * 60 * 24;
 
@@ -76,7 +112,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
   const fresh = req.nextUrl.searchParams.get('fresh') === '1';
 
   if (!fresh) {
-    const cached = await redis.get<{ data: AutomationRoiWidget; ts: number }>(CACHE_KEY);
+    const cached = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(CACHE_KEY);
     if (cached) {
       return NextResponse.json({ status: 'ok', data: cached.data, fromCache: true });
     }
@@ -95,7 +131,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
       cache: 'no-store',
     });
   } catch (err) {
-    const stale = await redis.get<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
+    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
     return NextResponse.json({
       status: 'error',
       message: err instanceof Error ? err.message : 'CTO backend unreachable',
@@ -104,7 +140,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
   }
 
   if (!response.ok) {
-    const stale = await redis.get<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
+    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
     return NextResponse.json({
       status: 'error',
       message: `CTO backend returned ${response.status}`,
@@ -128,8 +164,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
   const data = shape(raw);
   const wrapped = { data, ts: Date.now() };
   await Promise.all([
-    redis.set(CACHE_KEY, wrapped, { ex: CACHE_TTL_SECONDS }),
-    redis.set(STALE_KEY, wrapped, { ex: STALE_TTL_SECONDS }),
+    safeRedisSet(CACHE_KEY, wrapped, CACHE_TTL_SECONDS),
+    safeRedisSet(STALE_KEY, wrapped, STALE_TTL_SECONDS),
   ]);
 
   return NextResponse.json({ status: 'ok', data, fromCache: false });

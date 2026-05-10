@@ -5,6 +5,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { safeInternalRedirect } from '<npm>/lib/security'
 
 export default function LoginPage() {
   return (
@@ -39,7 +40,7 @@ function LoginContent() {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Login failed')
       }
 
-      const redirectTo = searchParams.get('redirectTo') || '/admin'
+      const redirectTo = safeInternalRedirect(searchParams.get('redirectTo'), '/admin')
       router.replace(redirectTo)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     if (view === 'audits') {
       const { data, error } = await supabase
         .from('audits')
-        .select('id, created_at, name, email, company, answers, result')
+        .select('id, created_at, name, email, company, answers, result, access_token')
         .order('created_at', { ascending: false })
 
       if (error) {

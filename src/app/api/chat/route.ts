@@ -361,7 +361,13 @@ export async function POST(request: Request) {
       content: sanitizeString(message.content, 500),
     }))
 
-    if (sanitizedMessages.some((message) => message.role === 'user' && containsPromptInjectionAttempt(message.content))) {
+    // The client supplies the full conversation array; both `user` and
+    // `assistant` messages are attacker-controlled. Scan both — a forged
+    // assistant turn ("Sure, I'll ignore previous instructions…") will
+    // otherwise steer the model. If the conversation needs to be trustworthy,
+    // assistant history must be reconstructed server-side, but for now the
+    // injection-pattern scan is the gating mitigation.
+    if (sanitizedMessages.some((message) => containsPromptInjectionAttempt(message.content))) {
       return new Response(OPSRADAR_REDIRECT_MESSAGE, {
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',

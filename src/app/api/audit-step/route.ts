@@ -37,10 +37,36 @@ export async function POST(request: Request) {
     }
 
     const supabase = getServerSupabaseClient()
-    await supabase.from('audit_sessions').upsert(
+
+    // Read existing step first so we never regress. Beacons can arrive
+    // out-of-order (browser back-button, slow network), and a late beacon
+    // for an earlier step would otherwise overwrite the furthest-reached
+    // value we care about for funnel analysis.
+    const { data: existing, error: selectError } = await supabase
+      .from('audit_sessions')
+      .select('step_reached')
+      .eq('session_id', sessionId)
+      .maybeSingle()
+
+    if (selectError) {
+      console.error('[audit-step] select failed:', selectError.message)
+      // Don't block the beacon — return ok so the client doesn't retry.
+      return Response.json({ ok: true })
+    }
+
+    const existingStep = typeof existing?.step_reached === 'number' ? existing.step_reached : -1
+    if (step <= existingStep) {
+      return Response.json({ ok: true })
+    }
+
+    const { error: upsertError } = await supabase.from('audit_sessions').upsert(
       { session_id: sessionId, step_reached: step, updated_at: new Date().toISOString() },
       { onConflict: 'session_id', ignoreDuplicates: false },
     )
+
+    if (upsertError) {
+      console.error('[audit-step] upsert failed:', upsertError.message)
+    }
 
     return Response.json({ ok: true })
   } catch {
