@@ -116,6 +116,12 @@ export default function SiteHeader({
           {/* Right CTAs — right column (only desktop) */}
           <div className="hidden lg:flex items-center justify-end gap-2">
             <Link
+              href="/login"
+              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
+            >
+              Sign in
+            </Link>
+            <Link
               href="/audit"
               className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
             >
@@ -167,6 +173,13 @@ export default function SiteHeader({
                 )
               })}
               <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/[0.04] hover:text-white transition-colors"
+                >
+                  Sign in
+                </Link>
                 <Link
                   href="/audit"
                   onClick={() => setMobileMenuOpen(false)}
