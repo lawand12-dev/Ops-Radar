@@ -3,6 +3,7 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 export type ClientN8nConfig = {
   n8nBaseUrl: string;
   n8nWebhookSecret: string;
+  n8nApiKey: string | null;
   backfillCompletedAt: string | null;
 };
 
@@ -12,7 +13,7 @@ export async function getClientN8nConfig(
   const supabase = getServerSupabaseClient();
   const { data, error } = await supabase
     .from('client_n8n_config')
-    .select('n8n_base_url, n8n_webhook_secret, backfill_completed_at')
+    .select('n8n_base_url, n8n_webhook_secret, n8n_api_key, backfill_completed_at')
     .eq('client_id', clientId)
     .maybeSingle();
 
@@ -24,6 +25,7 @@ export async function getClientN8nConfig(
     return {
       n8nBaseUrl: data.n8n_base_url,
       n8nWebhookSecret: data.n8n_webhook_secret,
+      n8nApiKey: data.n8n_api_key,
       backfillCompletedAt: data.backfill_completed_at,
     };
   }
@@ -35,6 +37,7 @@ export async function getClientN8nConfig(
     return {
       n8nBaseUrl: envBaseUrl,
       n8nWebhookSecret: envSecret,
+      n8nApiKey: process.env.N8N_API_KEY ?? null,
       backfillCompletedAt: null,
     };
   }
