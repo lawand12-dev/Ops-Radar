@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
+import { safeInternalRedirect } from '<npm>/lib/security';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
     if (typeParam === 'recovery') {
       return NextResponse.redirect(new URL('/auth/reset-password', url.origin));
     }
-    const dest = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard';
+    const dest = safeInternalRedirect(redirectTo, '/dashboard');
     return NextResponse.redirect(new URL(dest, url.origin));
   }
 
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
       target.searchParams.set('error', 'invalid_or_expired_link');
       return NextResponse.redirect(target);
     }
-    const dest = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard';
+    const dest = safeInternalRedirect(redirectTo, '/dashboard');
     return NextResponse.redirect(new URL(dest, url.origin));
   }
 

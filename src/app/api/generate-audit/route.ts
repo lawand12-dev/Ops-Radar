@@ -36,18 +36,41 @@ import { CONTACT_EMAIL } from '../../../lib/constants'
 const RESEARCH_TIMEOUT_MS = 15_000
 const RESEARCH_CACHE_TTL_DAYS = 7
 
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+/**
+ * Runs `factory(signal)` with a timeout. If the timer fires before the
+ * factory resolves, the signal is aborted (so any fetch chained off it can
+ * cancel) and `fallback` is returned. Without aborting, the underlying work
+ * keeps running after the response goes out, wasting CPU and possibly
+ * spending budget on follow-up calls.
+ */
+function withTimeout<T>(
+  factory: (signal: AbortSignal) => Promise<T>,
+  ms: number,
+  fallback: T,
+): Promise<T> {
   return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms)
-    promise
-      .then((value) => {
+    const controller = new AbortController()
+    let settled = false
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      controller.abort()
+      resolve(fallback)
+    }, ms)
+    factory(controller.signal).then(
+      (value) => {
+        if (settled) return
+        settled = true
         clearTimeout(timer)
         resolve(value)
-      })
-      .catch(() => {
+      },
+      () => {
+        if (settled) return
+        settled = true
         clearTimeout(timer)
         resolve(fallback)
-      })
+      },
+    )
   })
 }
 
@@ -228,14 +251,14 @@ export async function POST(request: Request) {
 
       const researchPromise: Promise<AgencyResearch | null> = cached
         ? Promise.resolve(cached)
-        : withTimeout(researchAgency(normalizedWebsiteUrl), RESEARCH_TIMEOUT_MS, null)
+        : withTimeout((signal) => researchAgency(normalizedWebsiteUrl, signal), RESEARCH_TIMEOUT_MS, null)
 
       const [websiteSignalsResult, websiteVisualSignalsResult, agencyResearchResult, linkedInResult] =
         await Promise.allSettled([
           fetchWebsiteSignals(normalizedWebsiteUrl),
           analyzeWebsiteVisualSignals(normalizedWebsiteUrl),
           researchPromise,
-          withTimeout(findLinkedInJobSignals(company), RESEARCH_TIMEOUT_MS, [] as string[]),
+          withTimeout((signal) => findLinkedInJobSignals(company, signal), RESEARCH_TIMEOUT_MS, [] as string[]),
         ])
 
       websiteSignals = websiteSignalsResult.status === 'fulfilled'

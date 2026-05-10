@@ -23,8 +23,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // /dashboard/* — gated by the Supabase customer session cookie.
-  if (pathname.startsWith('/dashboard')) {
+  // /dashboard/* (pages) and /api/dashboard/* (data endpoints) — both gated
+  // by the Supabase customer session cookie. Pages redirect to /login on
+  // failure; API routes return 401 JSON so client fetches handle it cleanly.
+  const isDashboardPage = pathname.startsWith('/dashboard')
+  const isDashboardApi = pathname.startsWith('/api/dashboard')
+  if (isDashboardPage || isDashboardApi) {
     const res = NextResponse.next()
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -52,11 +56,16 @@ export async function proxy(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Dev fallback: no real session AND DEV_CLIENT_ID set → allow through.
-    if (!user && process.env.DEV_CLIENT_ID) {
+    // Hard-gated to non-production. A leaked DEV_CLIENT_ID env var must NEVER
+    // turn the dashboard into an open route in prod.
+    if (!user && process.env.NODE_ENV !== 'production' && process.env.DEV_CLIENT_ID) {
       return res
     }
 
     if (!user) {
+      if (isDashboardApi) {
+        return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+      }
       const target = request.nextUrl.clone()
       target.pathname = '/login'
       target.searchParams.set(
@@ -77,5 +86,6 @@ export const config = {
     '/admin/:path*',
     '/api/admin/:path*',
     '/dashboard/:path*',
+    '/api/dashboard/:path*',
   ],
 }

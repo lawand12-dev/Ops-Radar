@@ -16,18 +16,34 @@ import { normalizeWebsiteUrlInput } from '../../../lib/website-intel'
 const RESEARCH_TIMEOUT_MS = 15_000
 const CACHE_TTL_DAYS = 7
 
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+function withTimeout<T>(
+  factory: (signal: AbortSignal) => Promise<T>,
+  ms: number,
+  fallback: T,
+): Promise<T> {
   return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms)
-    promise
-      .then((value) => {
+    const controller = new AbortController()
+    let settled = false
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      controller.abort()
+      resolve(fallback)
+    }, ms)
+    factory(controller.signal).then(
+      (value) => {
+        if (settled) return
+        settled = true
         clearTimeout(timer)
         resolve(value)
-      })
-      .catch(() => {
+      },
+      () => {
+        if (settled) return
+        settled = true
         clearTimeout(timer)
         resolve(fallback)
-      })
+      },
+    )
   })
 }
 
@@ -131,7 +147,7 @@ export async function POST(request: Request) {
 
     const cached = await getCached(normalized)
     const research = cached ??
-      (await withTimeout(researchAgency(normalized), RESEARCH_TIMEOUT_MS, null))
+      (await withTimeout((signal) => researchAgency(normalized, signal), RESEARCH_TIMEOUT_MS, null))
 
     if (!research) {
       return Response.json(fallbackPreview(normalized))

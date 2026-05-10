@@ -392,7 +392,7 @@ async function resolvesToPublicAddress(hostname: string): Promise<boolean> {
   }
 }
 
-async function validatePublicWebsiteUrl(rawUrl: string): Promise<string | null> {
+export async function validatePublicWebsiteUrl(rawUrl: string): Promise<string | null> {
   const normalizedUrl = normalizeWebsiteUrlInput(rawUrl)
   if (!normalizedUrl) {
     return null
@@ -404,6 +404,54 @@ async function validatePublicWebsiteUrl(rawUrl: string): Promise<string | null> 
   } catch {
     return null
   }
+}
+
+/**
+ * SSRF-safe fetch. Validates the initial URL and every redirect target
+ * against the public-IP allowlist before issuing the request. Manual redirect
+ * handling is required because `redirect: 'follow'` would skip the per-hop
+ * validation. Returns the final `Response` or `null` if validation fails or
+ * the redirect chain exceeds `maxRedirects` (default 3).
+ *
+ * Use for any outbound HTTP that targets a user-supplied URL or hostname.
+ */
+export async function safeFetchWithRedirects(
+  rawUrl: string,
+  init: RequestInit & { maxRedirects?: number } = {},
+): Promise<Response | null> {
+  const validated = await validatePublicWebsiteUrl(rawUrl)
+  if (!validated) return null
+
+  const { maxRedirects = 3, ...rest } = init
+  let currentUrl = validated
+
+  for (let i = 0; i <= maxRedirects; i += 1) {
+    let response: Response
+    try {
+      response = await fetch(currentUrl, { ...rest, redirect: 'manual' })
+    } catch {
+      return null
+    }
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location')
+      if (!location) return null
+      let nextUrl: string
+      try {
+        nextUrl = new URL(location, currentUrl).toString()
+      } catch {
+        return null
+      }
+      const validatedNext = await validatePublicWebsiteUrl(nextUrl)
+      if (!validatedNext) return null
+      currentUrl = validatedNext
+      continue
+    }
+
+    return response
+  }
+
+  return null
 }
 
 function extractLinks(html: string, baseUrl: string): LinkCandidate[] {

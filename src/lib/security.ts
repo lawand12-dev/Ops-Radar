@@ -47,3 +47,16 @@ export function escapeHtml(value: string): string {
 export function serverErrorResponse() {
   return Response.json({ error: 'An error occurred' }, { status: 500 })
 }
+
+/**
+ * Returns `value` if it is a safe same-origin path redirect, otherwise returns
+ * `fallback`. Rejects protocol-relative (`//host`), absolute (`http://...`),
+ * and anything that doesn't start with a single `/`.
+ */
+export function safeInternalRedirect(value: string | null | undefined, fallback: string): string {
+  if (typeof value !== 'string' || value.length === 0) return fallback
+  if (!value.startsWith('/')) return fallback
+  if (value.startsWith('//')) return fallback
+  if (value.startsWith('/\\')) return fallback
+  return value
+}

@@ -9,13 +9,16 @@ export const contentType = 'image/png'
 export default async function Image({
   searchParams,
 }: {
-  searchParams?: Promise<{ id?: string; access?: string }> | { id?: string; access?: string }
+  searchParams?: Promise<{ id?: string; token?: string }> | { id?: string; token?: string }
 }) {
   const resolvedSearchParams = searchParams
     ? await searchParams
     : {}
   const id = typeof resolvedSearchParams?.id === 'string'
     ? resolvedSearchParams.id
+    : ''
+  const token = typeof resolvedSearchParams?.token === 'string'
+    ? resolvedSearchParams.token
     : ''
 
   let company    = ''
@@ -24,12 +27,17 @@ export default async function Image({
   let oppCount   = 0
   let headline   = 'Your Automation Audit Is Ready'
 
-  if (id) {
+  // Only render personalized data when the caller supplies BOTH id and the
+  // access_token that was issued for that audit. A bare id is not enough —
+  // matching the gate enforced by /api/audit-result. Without both, the image
+  // falls back to the generic OpsRadar branding.
+  if (id && token) {
     const supabase = getServerSupabaseClient()
     const { data } = await supabase
       .from('audits')
       .select('company, result')
       .eq('id', id)
+      .eq('access_token', token)
       .maybeSingle()
 
     if (data?.result) {

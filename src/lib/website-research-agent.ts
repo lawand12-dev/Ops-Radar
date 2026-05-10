@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio'
 import { openai } from './openai'
 import { sanitizeString } from './security'
-import { normalizeWebsiteUrlInput } from './website-intel'
+import { normalizeWebsiteUrlInput, safeFetchWithRedirects } from './website-intel'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -302,16 +302,19 @@ type FetchedPage = {
   headerSignature: string
 }
 
-async function fetchPage(rawUrl: string): Promise<FetchedPage | null> {
+async function fetchPage(rawUrl: string, outerSignal?: AbortSignal): Promise<FetchedPage | null> {
   const normalized = normalizeWebsiteUrlInput(rawUrl)
   if (!normalized) return null
+  if (outerSignal?.aborted) return null
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  // If the caller's signal aborts (outer timeout), abort our internal one too.
+  const onOuterAbort = () => controller.abort()
+  outerSignal?.addEventListener('abort', onOuterAbort, { once: true })
 
   try {
-    const response = await fetch(normalized, {
-      redirect: 'follow',
+    const response = await safeFetchWithRedirects(normalized, {
       signal: controller.signal,
       headers: {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -321,7 +324,7 @@ async function fetchPage(rawUrl: string): Promise<FetchedPage | null> {
       cache: 'no-store',
     })
 
-    if (!response.ok) return null
+    if (!response || !response.ok) return null
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.toLowerCase().includes('text/html')) return null
 
@@ -358,6 +361,7 @@ async function fetchPage(rawUrl: string): Promise<FetchedPage | null> {
     return null
   } finally {
     clearTimeout(timeout)
+    outerSignal?.removeEventListener('abort', onOuterAbort)
   }
 }
 
@@ -382,8 +386,7 @@ async function fetchSitemapXml(url: string): Promise<string | null> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), SITEMAP_FETCH_TIMEOUT_MS)
   try {
-    const response = await fetch(url, {
-      redirect: 'follow',
+    const response = await safeFetchWithRedirects(url, {
       signal: controller.signal,
       headers: {
         Accept: 'application/xml,text/xml,*/*;q=0.8',
@@ -391,7 +394,7 @@ async function fetchSitemapXml(url: string): Promise<string | null> {
       },
       cache: 'no-store',
     })
-    if (!response.ok) return null
+    if (!response || !response.ok) return null
     const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
     // Some servers return text/html for missing sitemaps; reject those.
     if (contentType.includes('text/html')) return null
@@ -453,7 +456,7 @@ async function parseSitemap(xml: string, origin: string, depth = 0): Promise<str
  * Discover URLs from /sitemap.xml (fallback: /sitemap_index.xml). Returns
  * same-origin URLs only. In-memory cached for 1 hour per origin.
  */
-async function discoverSitemapUrls(homepageUrl: string): Promise<string[]> {
+async function discoverSitemapUrls(homepageUrl: string, signal?: AbortSignal): Promise<string[]> {
   let origin: string
   try {
     origin = new URL(homepageUrl).origin
@@ -469,6 +472,7 @@ async function discoverSitemapUrls(homepageUrl: string): Promise<string[]> {
   const candidates = [`${origin}/sitemap.xml`, `${origin}/sitemap_index.xml`]
   let urls: string[] = []
   for (const candidate of candidates) {
+    if (signal?.aborted) return []
     const xml = await fetchSitemapXml(candidate)
     if (!xml) continue
     const parsed = await parseSitemap(xml, origin)
@@ -1201,7 +1205,7 @@ async function generatePositioningAnalysis(
 
 // ─── Main research function ─────────────────────────────────────────────────
 
-export async function researchAgency(url: string): Promise<AgencyResearch> {
+export async function researchAgency(url: string, signal?: AbortSignal): Promise<AgencyResearch> {
   const normalized = normalizeWebsiteUrlInput(url)
   const research = emptyResearch(normalized || url)
 
@@ -1210,8 +1214,18 @@ export async function researchAgency(url: string): Promise<AgencyResearch> {
     return research
   }
 
+  // Outer timeout aborted before we did meaningful work.
+  if (signal?.aborted) {
+    research.errors.push('Aborted before fetch.')
+    return research
+  }
+
   // 1. Fetch homepage
-  const homepage = await fetchPage(normalized)
+  const homepage = await fetchPage(normalized, signal)
+  if (signal?.aborted) {
+    research.errors.push('Aborted after homepage fetch.')
+    return research
+  }
   if (!homepage) {
     research.errors.push('Failed to fetch homepage (timeout, blocked, or non-HTML response).')
     return research
@@ -1219,7 +1233,7 @@ export async function researchAgency(url: string): Promise<AgencyResearch> {
 
   // Kick off sitemap discovery in parallel with homepage parsing — it's purely
   // network-bound and doesn't depend on any parse state.
-  const sitemapPromise = discoverSitemapUrls(homepage.url).catch(() => [] as string[])
+  const sitemapPromise = discoverSitemapUrls(homepage.url, signal).catch(() => [] as string[])
 
   let $: cheerio.CheerioAPI
   try {
@@ -1297,7 +1311,8 @@ export async function researchAgency(url: string): Promise<AgencyResearch> {
   //    response can't block the rest.
   const innerResults = await Promise.allSettled(
     cappedTargets.map(async (target) => {
-      const fetched = await fetchPage(target.url)
+      if (signal?.aborted) return null
+      const fetched = await fetchPage(target.url, signal)
       return { key: target.key, source: target.source, fetched }
     }),
   )
@@ -1457,19 +1472,21 @@ const ROLE_SALARY_HINTS: Record<string, string> = {
   'Revenue Operations': '$90-130K',
 }
 
-export async function findLinkedInJobSignals(companyName: string): Promise<LinkedInJobSignal[]> {
+export async function findLinkedInJobSignals(companyName: string, outerSignal?: AbortSignal): Promise<LinkedInJobSignal[]> {
   const cleaned = sanitizeString(companyName, 120).trim()
   if (!cleaned) return []
+  if (outerSignal?.aborted) return []
 
   const keywords = encodeURIComponent(`${cleaned} operations`)
   const url = `https://www.linkedin.com/jobs/search?keywords=${keywords}`
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  const onOuterAbort = () => controller.abort()
+  outerSignal?.addEventListener('abort', onOuterAbort, { once: true })
 
   try {
-    const response = await fetch(url, {
-      redirect: 'follow',
+    const response = await safeFetchWithRedirects(url, {
       signal: controller.signal,
       headers: {
         Accept: 'text/html,application/xhtml+xml',
@@ -1480,7 +1497,7 @@ export async function findLinkedInJobSignals(companyName: string): Promise<Linke
       cache: 'no-store',
     })
 
-    if (!response.ok) return []
+    if (!response || !response.ok) return []
     const html = (await response.text()).slice(0, 200_000)
 
     // LinkedIn public results typically wrap titles in <h3> or have a `base-search-card__title` class.
@@ -1510,6 +1527,7 @@ export async function findLinkedInJobSignals(companyName: string): Promise<Linke
     return []
   } finally {
     clearTimeout(timeout)
+    outerSignal?.removeEventListener('abort', onOuterAbort)
   }
 }
 

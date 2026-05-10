@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { safeInternalRedirect } from '<npm>/lib/security';
 
 export default function LoginPage() {
   return (
@@ -16,7 +17,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialError = searchParams.get('error');
-  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard';
+  const redirectTo = safeInternalRedirect(searchParams.get('redirectTo'), '/dashboard');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -200,7 +200,8 @@ export async function GET(request: Request) {
       const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html, replyTo: CONTACT_EMAIL })
       if (error) { console.error('[followup day1]', error); sent.errors++; continue }
 
-      await supabase.from('audits').update({ follow_up_1_sent: true }).eq('id', audit.id)
+      const { error: flagError } = await supabase.from('audits').update({ follow_up_1_sent: true }).eq('id', audit.id)
+      if (flagError) { console.error('[followup day1 flag]', flagError); sent.errors++; continue }
       sent.day1++
     }
 
@@ -226,7 +227,8 @@ export async function GET(request: Request) {
       const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html, replyTo: CONTACT_EMAIL })
       if (error) { console.error('[followup day3]', error); sent.errors++; continue }
 
-      await supabase.from('audits').update({ follow_up_2_sent: true }).eq('id', audit.id)
+      const { error: flagError } = await supabase.from('audits').update({ follow_up_2_sent: true }).eq('id', audit.id)
+      if (flagError) { console.error('[followup day3 flag]', flagError); sent.errors++; continue }
       sent.day3++
     }
 
@@ -251,7 +253,8 @@ export async function GET(request: Request) {
       const { error } = await resend.emails.send({ from: 'OpsRadar <notifications@opsradar.co>', to: audit.email, subject, html, replyTo: CONTACT_EMAIL })
       if (error) { console.error('[followup day7]', error); sent.errors++; continue }
 
-      await supabase.from('audits').update({ follow_up_3_sent: true }).eq('id', audit.id)
+      const { error: flagError } = await supabase.from('audits').update({ follow_up_3_sent: true }).eq('id', audit.id)
+      if (flagError) { console.error('[followup day7 flag]', flagError); sent.errors++; continue }
       sent.day7++
     }
 

@@ -60,6 +60,7 @@ type AuditRow = {
   company: string;
   answers: Answers;
   result: AuditResult;
+  access_token?: string | null;
 }
 
 type FunnelData = {
@@ -106,10 +107,12 @@ function diffBadge(d: string) {
 
 // Expanded row detail
 function AuditDetail({ audit }: { audit: AuditRow }) {
-  const { answers, result, id } = audit
+  const { answers, result, id, access_token } = audit
   const opps = result.opportunities ?? []
   const tools = result.tools_analysis
-  const reportHref = `/results?id=${encodeURIComponent(id)}`
+  const reportHref = access_token
+    ? `/results?id=${encodeURIComponent(id)}&token=${encodeURIComponent(access_token)}`
+    : `/results?id=${encodeURIComponent(id)}`
 
   return (
     <div className="mt-4 space-y-5 text-[13px]">
