@@ -209,6 +209,7 @@ export type Database = {
           backfill_completed_at: string | null
           client_id: string
           created_at: string
+          n8n_api_key: string | null
           n8n_base_url: string
           n8n_webhook_secret: string
           updated_at: string
@@ -217,6 +218,7 @@ export type Database = {
           backfill_completed_at?: string | null
           client_id: string
           created_at?: string
+          n8n_api_key?: string | null
           n8n_base_url: string
           n8n_webhook_secret: string
           updated_at?: string
@@ -225,6 +227,7 @@ export type Database = {
           backfill_completed_at?: string | null
           client_id?: string
           created_at?: string
+          n8n_api_key?: string | null
           n8n_base_url?: string
           n8n_webhook_secret?: string
           updated_at?: string
