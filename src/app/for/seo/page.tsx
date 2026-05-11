@@ -1,304 +1,265 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { SiteNav } from '<npm>/components/marketing/site-nav'
+import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
+import { Badge } from '<npm>/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For SEO Agencies — OpsRadar',
   description:
-    "n8n automation for SEO agencies under 20 people. Weekly rank rollups from Ahrefs + GSC. AI Overview mention tracking across ChatGPT, Perplexity, Google AIO. Technical audit alerts from Screaming Frog. Built inside your n8n account.",
+    'OpsRadar builds the automation layer for SEO agencies under 20 people. Weekly rank digests from Ahrefs + GSC. AIO presence tracking across ChatGPT, Perplexity, and Google AI Overviews. Technical audit alerts before your clients notice.',
   openGraph: {
     title: 'For SEO Agencies — OpsRadar',
     description:
-      "n8n automation for SEO agencies under 20 people. Rank tracking rollups. AIO mention monitoring. Technical audit alerts. Client reporting that includes AI Overview presence.",
+      'Rank digests, AIO mention tracking, and technical alerts — automated inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for SEO Agencies' }],
   },
   twitter: {
     title: 'For SEO Agencies — OpsRadar',
     description:
-      "n8n automation for SEO agencies under 20 people. Rank tracking rollups. AIO mention monitoring. Technical audit alerts.",
+      'Rank digests, AIO mention tracking, and technical alerts — automated inside your n8n account.',
     images: ['/og-image.png'],
   },
 }
 
-const WHAT_I_BUILD_FOR_SEO = [
+/* ── Data ───────────────────────────────────────────────────────────────── */
+
+const OUTCOMES = [
   {
-    title: 'Weekly rank-tracking rollups, white-labeled.',
-    desc: 'Ahrefs + GSC + Semrush data merged into a branded weekly digest. Delivered to your Slack or to the client\u2019s inbox. No more pasting keyword positions into a Google Doc every Monday morning.',
+    tag: 'Rank tracking',
+    title: 'Weekly rank digests, white-labeled.',
+    body: "Ahrefs, GSC, and Semrush data merged into one branded digest — delivered to Slack or the client's inbox every Monday. Keyword positions stop living in a spreadsheet you paste manually.",
   },
   {
-    title: 'AI Overview and LLM mention tracking.',
-    desc: 'Monitor your clients\u2019 brand visibility across ChatGPT, Perplexity, and Google AI Overviews. Track which queries surface them, which cite competitors, and which miss them entirely. A category that barely existed a year ago — and is the new line item you can charge for.',
+    tag: 'AIO visibility',
+    title: 'Track what 2026 SEO actually measures.',
+    body: 'Brand visibility across ChatGPT, Perplexity, and Google AI Overviews — tracked per query, per competitor. The category your incumbent reporting tools ignore is now the line item clients ask about most.',
   },
   {
-    title: 'Technical audit alerting.',
-    desc: 'Daily Screaming Frog diffs. Core Web Vitals regressions pulled from CrUX. Schema markup breakage. Status code spikes. Flagged in Slack before the client notices — or before Google does.',
-  },
-  {
-    title: 'Content brief automation.',
-    desc: 'Frase, SurferSEO, or Clearscope briefs piped automatically into a Google Doc with your on-brand template, client folder, and writer assignment. 30 minutes of setup work per brief turned into 30 seconds.',
-  },
-  {
-    title: 'Backlink monitoring and disavow workflows.',
-    desc: 'New backlinks detected in Ahrefs or GSC, enriched with spam score and topical relevance, routed to you for review. Toxic links assembled into a disavow file ready to upload. No more monthly manual audits.',
-  },
-  {
-    title: 'Client reporting that includes AIO presence.',
-    desc: 'Monthly client reports that actually acknowledge 2026 reality — AI Overview presence percentage, LLM citation coverage, share-of-voice against competitors. The metrics no incumbent dashboard reports well.',
+    tag: 'Technical',
+    title: 'Technical alerts before Google notices.',
+    body: 'Daily Screaming Frog diffs. Core Web Vitals regressions from CrUX. Schema markup breakage. Status code spikes. Every flag lands in Slack before the client emails you — or before a crawl buries the issue.',
   },
 ]
 
-const YOUR_STACK = [
-  'Ahrefs',
-  'Semrush',
-  'Screaming Frog',
-  'Sitebulb',
-  'Google Search Console',
-  'Google Analytics 4',
-  'SurferSEO / Clearscope / Frase',
-  'Profound / Peec AI / Otterly',
-  'Looker Studio',
-  'AgencyAnalytics',
-  'Google Docs / Notion',
-  'Slack',
+const WORKFLOWS = [
+  {
+    name: 'aio-rank-digest',
+    desc: 'Queries Ahrefs + GSC every Monday for keyword movements, then checks Profound for AIO presence changes. Posts a ranked diff to Slack with winner/loser callouts.',
+    touches: ['Ahrefs API', 'GSC', 'Profound'],
+    saved: '~10 h / mo',
+  },
+  {
+    name: 'technical-audit-alert',
+    desc: 'Runs a daily diff of Screaming Frog exports. Flags broken links, new 4xx pages, and Core Web Vitals regressions in a Slack thread before any human checks.',
+    touches: ['Screaming Frog', 'CrUX API', 'Slack'],
+    saved: '~12 h / mo',
+  },
+  {
+    name: 'content-brief-pipeline',
+    desc: 'On new keyword target in Notion: pulls SurferSEO brief, creates a Google Doc from your agency template, assigns the writer, and logs the due date.',
+    touches: ['SurferSEO', 'Google Docs', 'Notion'],
+    saved: '~6 h / mo per writer',
+  },
 ]
 
-const FAQS = [
+const BEFORE_AFTER = [
   {
-    q: 'We already use Zapier for some of this. Why switch?',
-    a: 'Zapier breaks at SEO scale. Weekly rank-tracking pulls across 50+ clients with hundreds of keywords each quickly hit Zapier\u2019s per-task ceiling — that\u2019s where the $500–$2,000/month retainers come from. On your own n8n account, it\u2019s a flat $20/month, unlimited runs. I move the workflows over and rebuild them properly.',
+    before: 'Keyword positions pasted into Google Doc every Monday morning',
+    after: 'Ahrefs + GSC digest auto-delivered to Slack with movement flags',
   },
   {
-    q: 'How is this different from SEOmonitor, Nightwatch, or Local Falcon?',
-    a: 'Those tools each solve one slice — rank tracking, local SEO, technical monitoring. I connect them together and plug the gaps. Most SEO founders I talk to want to keep their existing subscriptions and have me stitch them into one workflow that feeds client reports, Slack alerts, and internal dashboards.',
+    before: 'AIO / LLM brand presence checked manually, if at all',
+    after: 'Weekly AIO snapshot across ChatGPT, Perplexity, and Google AIO',
   },
   {
-    q: 'Could I just hire a VA for $1,500/month to do this manually?',
-    a: 'You could — and many SEO agencies do. The problem is a VA still needs managing, training, and QA. I deliver the outcome, not the labor. When Ahrefs\u2019 API changes or Google updates AIO rendering, I fix it once and every client benefits. A VA has to re-learn every workflow when something breaks.',
+    before: 'Technical regressions found when clients email about traffic drops',
+    after: 'Daily Screaming Frog diff flags issues the morning they appear',
   },
   {
-    q: 'Can you track AI Overviews reliably? That space keeps changing.',
-    a: 'Yes, with caveats I\u2019ll be honest about. AIO rendering varies by query, geography, and user context. I use Profound and Peec AI where available, supplemented with direct SERP scraping on a rotating proxy for brand-owned queries. We\u2019ll capture 80% of what\u2019s trackable today and iterate as the tools mature.',
+    before: 'Content brief setup takes 25–30 min per article',
+    after: 'Brief pipeline creates Doc, assigns writer, logs deadline in 60 sec',
+  },
+  {
+    before: 'Backlink audit is a monthly spreadsheet exercise',
+    after: 'New toxic links flagged and disavow file pre-built, weekly',
   },
 ]
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
 
 export default function ForSeoPage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/for/seo" />
       <SegmentPageAnalytics segment="seo" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'n8n Automation for SEO Agencies',
-            provider: {
-              '@type': 'Organization',
-              name: 'OpsRadar',
-              url: 'https://www.opsradar.co',
-              founder: { '@type': 'Person', name: 'Lawand Soran' },
-            },
-            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
-            audience: {
-              '@type': 'BusinessAudience',
-              audienceType: 'SEO Agencies',
-              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 20 },
-            },
-            description:
-              'Custom AI Operating System (AIOS) builds for SEO agencies under 20 people. Weekly rank rollups from Ahrefs and GSC; AI Overview and LLM mention tracking; technical audit alerting from Screaming Frog.',
-            offers: {
-              '@type': 'AggregateOffer',
-              priceCurrency: 'USD',
-              lowPrice: 400,
-              highPrice: 4500,
-              offerCount: 6,
-            },
-            url: 'https://www.opsradar.co/for/seo',
-          }),
-        }}
-      />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-28 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            For SEO agencies
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-6">
-            Google's AI Overviews ate your CTRs.
-          </h1>
-          <p className="font-headline text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-white/80 mb-8">
-            Let me automate what's left to fight for.
-          </p>
-          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            We build the AI Operating System (AIOS) for SEO agencies under 20 people. Weekly rank rollups from
-            Ahrefs and GSC. AI Overview and LLM mention tracking across ChatGPT, Perplexity, and
-            Google AIO. Technical audit alerts from Screaming Frog. You own every workflow in
-            your n8n account. We build them, we maintain them, you get the hours back to do the
-            strategy work AI can't replace.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-            <Link
-              href="/aios"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
-            >
-              See real workflows I&apos;ve built →
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
+          For SEO agencies
+        </p>
+
+        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+          Track what matters in 2026.
+        </h1>
+
+        <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+          AI Overviews cut your CTRs. LLM citations replaced position one for branded queries.
+          Manual rank-tracking still takes 30 hours a week. OpsRadar automates the signals
+          that matter now — AIO presence, LLM mentions, and rank — inside your n8n account.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/audit">
+              Start your audit
+              <ArrowRight className="size-4" />
             </Link>
-          </div>
-          <Link
-            href="/audit"
-            className="inline-flex mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
+          </Button>
         </div>
       </section>
 
-      {/* ── What I build ──────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What I build for SEO shops
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Six workflows for the 2026 SEO reality.
+      {/* ── Three outcomes ────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--color-border)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            Three outcomes, delivered in weeks.
           </h2>
-          <div className="space-y-0">
-            {WHAT_I_BUILD_FOR_SEO.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
 
-      {/* ── Your stack ────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-20">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Your stack, my workflows
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-10">
-            I work inside the tools you already pay for.
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {YOUR_STACK.map((tool) => (
-              <span
-                key={tool}
-                className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-[13px] text-white/70"
+          <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {OUTCOMES.map((o) => (
+              <div
+                key={o.tag}
+                className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
               >
-                {tool}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-white/40 mt-6 max-w-2xl leading-relaxed">
-            If your tool isn't here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
-          </p>
-        </section>
-      </div>
-
-
-      {/* ── Cost of NOT automating ────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What it costs to keep doing it manually
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-8">
-            The math in a price-compressed market.
-          </h2>
-          <div className="space-y-6 text-[15px] leading-relaxed text-white/[0.7]">
-            <p>
-              Per SE Ranking's 2025 survey of 260 SEO agencies, <span className="text-white font-semibold">64% charge under $1,000/month</span> per client. That means every hour spent on manual rank tracking, briefs, and reports eats your already-thin margin.
-            </p>
-            <p>
-              A typical 10-person SEO agency loses <span className="text-white font-semibold">15–30 hours/week</span> to manual reporting, backlink audits, and content brief assembly — work that automation eliminates within weeks.
-            </p>
-            <p>
-              The common alternative — hiring a VA at <span className="text-white font-semibold">$1,500/month</span> — replaces the labor but not the management overhead. You still train, QA, and hand-hold.
-            </p>
-            <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>. The outcome, without the management layer. At those numbers, most SEO agencies should break even in about six weeks.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Questions
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            What SEO founders ask me first.
-          </h2>
-          <div>
-            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            {FAQS.map(({ q, a }) => (
-              <div key={q}>
-                <div className="py-6">
-                  <p className="font-semibold text-[14px] text-white/80 mb-2">{q}</p>
-                  <p className="text-[13px] text-[rgba(255,255,255,0.65)] leading-[1.7]">{a}</p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <Badge variant="accent">{o.tag}</Badge>
+                <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
+                  {o.title}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
               </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            Build automations for 2026, not 2020.
+      {/* ── Workflow cards ────────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What a typical SEO AIOS looks like.
           </h2>
-          <p className="text-white/40 mb-10 leading-relaxed">
-            3-minute audit. Real dollar numbers for your agency. No commitment.
+
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {WORKFLOWS.map((wf) => (
+              <Card key={wf.name}>
+                <CardHeader className="border-b border-[var(--color-border)]">
+                  <CardTitle>
+                    <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
+                  </CardTitle>
+                  <CardDescription>{wf.desc}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {wf.touches.map((t) => (
+                      <Badge key={t} variant="secondary">{t}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Before / After table ──────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)]">
+        <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What your shop looks like after OpsRadar lands.
+          </h2>
+
+          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+            <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+              <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
+              <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
+                After OpsRadar
+              </div>
+            </div>
+            {BEFORE_AFTER.map((row, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
+              >
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
+                  {row.before}
+                </div>
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                  {row.after}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonial slot ──────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">From the field</p>
+          <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
+          </blockquote>
+          <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
+            — SEO agency founder · 9-person shop · AIO tracking live in week two
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section>
+        <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+          <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+            Run a SEO agency audit.
+          </h2>
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
+            3 minutes. Real figures on the hours your shop loses to manual rank-tracking,
+            brief setup, and AIO monitoring. No pitch, no card.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/audit">
+                Start your audit
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
+                Talk to founders
               </a>
             </Button>
           </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
         </div>
       </section>
 
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }
