@@ -13,7 +13,7 @@ const sections = [
 ];
 
 const inputBase = {
-  background: '#080C18',
+  background: '#0A0A0B',
   border: `1px solid ${C.border}`,
   borderRadius: 8,
   padding: '9px 12px',
@@ -105,7 +105,7 @@ export default function SettingsPage() {
                   width: 64,
                   height: 64,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3B82F6, #6366F1)',
+                  background: 'linear-gradient(135deg, #818CF8, #6366F1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

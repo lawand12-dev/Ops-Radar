@@ -22,7 +22,7 @@ import {
   FolderOpen,
   Clock,
 } from 'lucide-react';
-import { C } from './_lib/theme';
+import { C, CHART_COLORS } from './_lib/theme';
 import { PageHeader } from './_components/page-header';
 import { StatCard } from './_components/stat-card';
 import { Card } from './_components/card';
@@ -73,9 +73,9 @@ const revenueLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 const revenueData   = [35000, 55000, 72000, 88000, 95000, 105000, 128540];
 
 const taskData = [
-  { label: 'Completed',   count: 182, color: '#3B82F6' },
-  { label: 'In Progress', count: 48,  color: '#818CF8' },
-  { label: 'To Do',       count: 22,  color: '#1E293B' },
+  { label: 'Completed',   count: 182, color: CHART_COLORS.primary },          // indigo
+  { label: 'In Progress', count: 48,  color: CHART_COLORS.success },          // success-green
+  { label: 'To Do',       count: 22,  color: CHART_COLORS.trackOnSurface },   // muted track
 ];
 
 const projects = [
@@ -88,26 +88,26 @@ const projects = [
 
 const activityItems = [
   {
-    color: '#22C55E', bg: 'rgba(34,197,94,0.12)',  icon: CheckCircle,
-    titleColor: '#4ADE80', title: 'Task completed',
+    color: CHART_COLORS.success, bg: 'rgba(52,211,153,0.12)',  icon: CheckCircle,
+    titleColor: CHART_COLORS.success, title: 'Task completed',
     sub: 'Homepage design approved',
     project: 'Website Redesign', time: '2h ago',
   },
   {
-    color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', icon: Clock,
-    titleColor: '#60A5FA', title: 'Time logged',
+    color: CHART_COLORS.primary, bg: 'rgba(129,140,248,0.12)', icon: Clock,
+    titleColor: CHART_COLORS.primary, title: 'Time logged',
     sub: '3h 20m logged on SEO Audit',
     project: 'SEO Campaign', time: '4h ago',
   },
   {
-    color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)', icon: FileText,
-    titleColor: '#A78BFA', title: 'Invoice sent',
+    color: CHART_COLORS.primary, bg: 'rgba(129,140,248,0.18)', icon: FileText,
+    titleColor: CHART_COLORS.primary, title: 'Invoice sent',
     sub: 'Invoice #INV-0321 sent to Acme Corp',
     project: 'Website Redesign', time: '6h ago',
   },
   {
-    color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', icon: FolderOpen,
-    titleColor: '#FCD34D', title: 'Project created',
+    color: CHART_COLORS.warn, bg: 'rgba(251,191,36,0.12)', icon: FolderOpen,
+    titleColor: CHART_COLORS.warn, title: 'Project created',
     sub: 'New project "Brand Strategy" created',
     project: 'Brand Strategy', time: '1d ago',
   },
@@ -124,8 +124,8 @@ function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?:
     if (!ctx) return;
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 240);
-    gradient.addColorStop(0, 'rgba(59,130,246,0.35)');
-    gradient.addColorStop(1, 'rgba(59,130,246,0)');
+    gradient.addColorStop(0, CHART_COLORS.primaryAlpha35);
+    gradient.addColorStop(1, 'rgba(129,140,248,0)');
 
     chartRef.current = new Chart(ctx, {
       type: 'line',
@@ -134,14 +134,14 @@ function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?:
         datasets: [{
           label: 'Revenue',
           data,
-          borderColor: '#3B82F6',
+          borderColor: CHART_COLORS.primary,
           borderWidth: 2.5,
           backgroundColor: gradient,
           fill: true,
           tension: 0.45,
           pointRadius: 0,
           pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#3B82F6',
+          pointHoverBackgroundColor: CHART_COLORS.primary,
           pointHoverBorderColor: '#fff',
           pointHoverBorderWidth: 2,
         }],
@@ -152,11 +152,11 @@ function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?:
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1E293B',
-            borderColor: 'rgba(59,130,246,0.4)',
+            backgroundColor: CHART_COLORS.surfaceSunken,
+            borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
-            titleColor: '#94A3B8',
-            bodyColor: '#F0F4FF',
+            titleColor: CHART_COLORS.fgMuted,
+            bodyColor: CHART_COLORS.fg,
             padding: 10,
             callbacks: {
               title: (items) => items[0].label + ' 2024',
@@ -165,11 +165,11 @@ function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?:
           },
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#4B5F7A', font: { size: 11 } } },
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: CHART_COLORS.fgSubtle, font: { size: 11 } } },
           y: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
+            grid: { color: CHART_COLORS.primaryAlpha04 },
             border: { display: false },
-            ticks: { color: '#4B5F7A', font: { size: 11 }, callback: (v) => `${Number(v) / 1000}K` },
+            ticks: { color: CHART_COLORS.fgSubtle, font: { size: 11 }, callback: (v) => `${Number(v) / 1000}K` },
           },
         },
       },
@@ -204,7 +204,7 @@ function TasksChart() {
         datasets: [{
           data: taskData.map((t) => t.count),
           backgroundColor: taskData.map((t) => t.color),
-          borderColor: C.card,
+          borderColor: CHART_COLORS.surface,
           borderWidth: 3,
           hoverOffset: 3,
         }],
@@ -216,11 +216,11 @@ function TasksChart() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1E293B',
-            borderColor: 'rgba(59,130,246,0.4)',
+            backgroundColor: CHART_COLORS.surfaceSunken,
+            borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
-            titleColor: '#94A3B8',
-            bodyColor: '#F0F4FF',
+            titleColor: CHART_COLORS.fgMuted,
+            bodyColor: CHART_COLORS.fg,
           },
         },
       },
@@ -323,12 +323,12 @@ function ProjectsTable() {
                 </td>
                 <td style={{ padding: '11px 16px 11px 0', borderBottom: border }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ flex: 1, height: 5, background: 'rgba(59,130,246,0.1)', borderRadius: 99, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 5, background: 'rgba(129,140,248,0.1)', borderRadius: 99, overflow: 'hidden' }}>
                       <div
                         style={{
                           height: '100%',
                           width: `${progress}%`,
-                          background: 'linear-gradient(90deg, #2563EB, #3B82F6)',
+                          background: 'linear-gradient(90deg, var(--color-accent-500), var(--color-primary))',
                           borderRadius: 99,
                         }}
                       />

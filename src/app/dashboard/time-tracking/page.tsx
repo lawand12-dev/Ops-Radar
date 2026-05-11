@@ -46,8 +46,8 @@ export default function TimeTrackingPage() {
       {/* Active timer */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.06))',
-          border: `1px solid rgba(59,130,246,0.25)`,
+          background: 'linear-gradient(135deg, rgba(129,140,248,0.12), rgba(99,102,241,0.06))',
+          border: `1px solid rgba(129,140,248,0.25)`,
           borderRadius: 12,
           padding: '18px 22px',
           marginBottom: 20,
@@ -69,7 +69,7 @@ export default function TimeTrackingPage() {
               justifyContent: 'center',
               color: '#fff',
               cursor: 'pointer',
-              boxShadow: '0 0 0 4px rgba(59,130,246,0.15)',
+              boxShadow: '0 0 0 4px rgba(129,140,248,0.15)',
             }}
           >
             <Pause size={16} fill="#fff" />

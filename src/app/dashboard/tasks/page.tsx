@@ -31,7 +31,7 @@ const columns: { name: string; color: string; tasks: Task[] }[] = [
   },
   {
     name: 'In Progress',
-    color: '#3B82F6',
+    color: '#818CF8',
     tasks: [
       { title: 'Wireframes v3 for homepage',     project: 'Acme Corp',     assignee: 'JK', due: 'Aug 09', priority: 'High'   },
       { title: 'Set up GA4 conversion events',   project: 'Crest Finance', assignee: 'MR', due: 'Aug 10', priority: 'High'   },
@@ -108,7 +108,7 @@ function TaskCard({ task }: { task: Task }) {
             width: 24,
             height: 24,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #3B82F6, #6366F1)',
+            background: 'linear-gradient(135deg, #818CF8, #6366F1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

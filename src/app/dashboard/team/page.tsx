@@ -13,11 +13,11 @@ const stats = [
 ];
 
 const team = [
-  { name: 'Alex Kim',      role: 'Agency Owner',     email: 'alex@opsradar.io',     status: 'online', hours: 38, projects: 24, initials: 'AK', color: 'linear-gradient(135deg, #3B82F6, #6366F1)' },
+  { name: 'Alex Kim',      role: 'Agency Owner',     email: 'alex@opsradar.io',     status: 'online', hours: 38, projects: 24, initials: 'AK', color: 'linear-gradient(135deg, #818CF8, #6366F1)' },
   { name: 'Jordan Park',   role: 'Design Lead',      email: 'jordan@opsradar.io',   status: 'online', hours: 42, projects: 11, initials: 'JP', color: 'linear-gradient(135deg, #8B5CF6, #EC4899)' },
   { name: 'Maya Rivera',   role: 'SEO Strategist',   email: 'maya@opsradar.io',     status: 'online', hours: 36, projects: 8,  initials: 'MR', color: 'linear-gradient(135deg, #22C55E, #14B8A6)' },
   { name: 'Tom Hayes',     role: 'Senior Developer', email: 'tom@opsradar.io',      status: 'away',   hours: 40, projects: 6,  initials: 'TH', color: 'linear-gradient(135deg, #F59E0B, #EF4444)' },
-  { name: 'Priya Patel',   role: 'Content Manager',  email: 'priya@opsradar.io',    status: 'online', hours: 32, projects: 9,  initials: 'PP', color: 'linear-gradient(135deg, #06B6D4, #3B82F6)' },
+  { name: 'Priya Patel',   role: 'Content Manager',  email: 'priya@opsradar.io',    status: 'online', hours: 32, projects: 9,  initials: 'PP', color: 'linear-gradient(135deg, #06B6D4, #818CF8)' },
   { name: 'Marcus Webb',   role: 'PPC Specialist',   email: 'marcus@opsradar.io',   status: 'online', hours: 38, projects: 7,  initials: 'MW', color: 'linear-gradient(135deg, #6366F1, #8B5CF6)' },
   { name: 'Elena Rossi',   role: 'Account Manager',  email: 'elena@opsradar.io',    status: 'offline', hours: 35, projects: 12, initials: 'ER', color: 'linear-gradient(135deg, #EC4899, #F43F5E)' },
   { name: 'Ryan Chen',     role: 'Junior Designer',  email: 'ryan@opsradar.io',     status: 'online', hours: 30, projects: 4,  initials: 'RC', color: 'linear-gradient(135deg, #10B981, #06B6D4)' },

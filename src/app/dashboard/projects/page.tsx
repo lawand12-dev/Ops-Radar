@@ -24,7 +24,7 @@ const projects = [
 ];
 
 const statusColors: Record<string, { color: string; bg: string }> = {
-  'In Progress': { color: '#60A5FA', bg: 'rgba(59,130,246,0.12)' },
+  'In Progress': { color: '#60A5FA', bg: 'rgba(129,140,248,0.12)' },
   'Review':      { color: '#FCD34D', bg: 'rgba(245,158,11,0.12)' },
   'Planning':    { color: '#A78BFA', bg: 'rgba(139,92,246,0.12)' },
   'Completed':   { color: '#4ADE80', bg: 'rgba(34,197,94,0.12)'  },
@@ -147,12 +147,12 @@ export default function ProjectsPage() {
                   </td>
                   <td style={{ padding: '11px 16px 11px 0', borderBottom: border, minWidth: 140 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ flex: 1, height: 5, background: 'rgba(59,130,246,0.1)', borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ flex: 1, height: 5, background: 'rgba(129,140,248,0.1)', borderRadius: 99, overflow: 'hidden' }}>
                         <div
                           style={{
                             height: '100%',
                             width: `${p.progress}%`,
-                            background: 'linear-gradient(90deg, #2563EB, #3B82F6)',
+                            background: 'linear-gradient(90deg, #6366F1, #818CF8)',
                             borderRadius: 99,
                           }}
                         />
