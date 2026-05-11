@@ -4,6 +4,15 @@ import * as React from "react";
 
 import { Button } from "<npm>/components/ui/button";
 import { Input } from "<npm>/components/ui/input";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from "<npm>/components/ui/card";
 
 export function Showcase() {
   return (
@@ -22,8 +31,9 @@ export function Showcase() {
       <ThemeToggle />
       <ButtonSection />
       <InputSection />
+      <CardSection />
 
-      {/* Sections will be added by Tasks 10–22 (Card, Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 11–22 (Badge, Metric, Table, etc.) */}
     </main>
   );
 }
@@ -88,6 +98,40 @@ function InputSection() {
         <Input placeholder="With aria-invalid state" aria-invalid />
         <Input placeholder="Disabled" disabled />
         <Input type="number" placeholder="Number type, e.g. 2431" />
+      </div>
+    </section>
+  );
+}
+
+function CardSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Card</p>
+      <div className="grid grid-cols-2 gap-4 max-w-3xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>invoice-reminders</CardTitle>
+            <CardDescription>Sends overdue invoice reminders via Gmail.</CardDescription>
+            <CardAction>
+              <Button size="xs" variant="ghost">…</Button>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            <p className="text-body-sm text-fg-muted">Last run 2 min ago · 412 runs / 24h</p>
+          </CardContent>
+          <CardFooter>
+            <Button size="sm" variant="outline">Open</Button>
+          </CardFooter>
+        </Card>
+        <Card size="sm">
+          <CardHeader>
+            <CardTitle>Compact card</CardTitle>
+            <CardDescription>Size=sm uses 4-unit padding instead of 6.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-body-sm text-fg-muted">Density propagates through subcomponents.</p>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
