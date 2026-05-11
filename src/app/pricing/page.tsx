@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import OpsRadarPricing from '<npm>/components/ui/pricing-component'
 import Footer from '<npm>/components/Footer'
 import BookCallButton from '../components/BookCallButton'
@@ -58,7 +57,6 @@ export default function PricingPage() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />

@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import FaqAccordion from '../components/FaqAccordion'
 import { Button } from '<npm>/components/ui/button'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
@@ -96,7 +94,6 @@ export default function ServicesPage() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
@@ -133,7 +130,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ── Flagship: Automated Reporting ─────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="relative max-w-5xl mx-auto px-6 pb-20">
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-4">
@@ -166,10 +163,10 @@ export default function ServicesPage() {
             </Button>
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── What We Build ──────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-5xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             The Full Menu
@@ -200,10 +197,10 @@ export default function ServicesPage() {
             ))}
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── The process (compressed, full details on /how-it-works) ─── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-4xl mx-auto px-6 py-24">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             The process
@@ -249,10 +246,10 @@ export default function ServicesPage() {
             See the full 6-phase breakdown →
           </Link>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-3xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Questions
@@ -262,7 +259,7 @@ export default function ServicesPage() {
           </h2>
           <FaqAccordion faqs={FAQS} />
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
       <section className="py-32 px-6 text-center">

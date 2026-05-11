@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
@@ -171,7 +169,6 @@ export default function HowItWorksPage() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
@@ -198,7 +195,7 @@ export default function HowItWorksPage() {
       <section className="max-w-5xl mx-auto px-6 pb-24">
         <div className="space-y-0">
           {PHASES.map((phase, i) => (
-            <FadeInOnScroll key={phase.dayRange}>
+            <div>
               <div className="border-t border-white/[0.08] py-14 md:py-16">
                 <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:gap-14">
                   <div>
@@ -260,7 +257,7 @@ export default function HowItWorksPage() {
                   </div>
                 </div>
               </div>
-            </FadeInOnScroll>
+            </div>
           ))}
         </div>
       </section>

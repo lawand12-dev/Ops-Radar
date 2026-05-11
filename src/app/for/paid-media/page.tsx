@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
@@ -91,7 +89,6 @@ export default function ForPaidMediaPage() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky />
@@ -170,7 +167,7 @@ export default function ForPaidMediaPage() {
       </section>
 
       {/* ── What I build ──────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-5xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             What I build for paid-media shops
@@ -197,10 +194,10 @@ export default function ForPaidMediaPage() {
             ))}
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Your stack ────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-5xl mx-auto px-6 py-20">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Your stack, my workflows
@@ -222,10 +219,10 @@ export default function ForPaidMediaPage() {
             If your tool isn't here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
           </p>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Cost of NOT automating ────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-3xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             What it costs to keep doing it manually
@@ -248,10 +245,10 @@ export default function ForPaidMediaPage() {
             </p>
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-3xl mx-auto px-6 py-28">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Questions
@@ -272,7 +269,7 @@ export default function ForPaidMediaPage() {
             ))}
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
       <section className="py-32 px-6 text-center">
