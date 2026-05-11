@@ -1,299 +1,265 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { SiteNav } from '<npm>/components/marketing/site-nav'
+import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
+import { Badge } from '<npm>/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For Design Agencies — OpsRadar',
   description:
-    "n8n automation for boutique design and creative studios under 15 people. Project status rollups in one Slack digest. Feedback consolidation across Figma, Frame.io, and Loom. Time tracking that actually surfaces utilization. Scope-creep alerts before invoicing.",
+    'OpsRadar builds the automation layer for design and creative studios under 15 people. Feedback consolidated from Figma, Frame.io, and Loom into one queue. Project status in one Monday Slack digest. Utilization visible weekly, not at quarter-end.',
   openGraph: {
     title: 'For Design Agencies — OpsRadar',
     description:
-      "n8n automation for design studios under 15 people. Project rollups in one Slack digest. Feedback consolidated across Figma + Frame.io + Loom. Utilization that surfaces weekly, not at quarter-end.",
+      'Feedback consolidated. Status in one digest. Utilization weekly. Built inside your n8n account in 5 to 14 days.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Design Agencies' }],
   },
   twitter: {
     title: 'For Design Agencies — OpsRadar',
     description:
-      "n8n automation for design studios under 15 people. Project rollups in one Slack digest. Feedback consolidated across Figma + Frame.io + Loom.",
+      'Feedback consolidated. Status in one digest. Utilization weekly. Built inside your n8n account.',
     images: ['/og-image.png'],
   },
 }
 
-const WHAT_I_BUILD_FOR_DESIGN = [
+/* ── Data ───────────────────────────────────────────────────────────────── */
+
+const OUTCOMES = [
   {
-    title: 'Project status rollups in one Slack digest.',
-    desc: 'Notion, Asana, ClickUp, or monday.com pulled into a single Monday-morning Slack message — revision status, approval blockers, deadline drift. Kills the daily status meeting.',
+    tag: 'Feedback',
+    title: 'One queue. No more triage.',
+    body: 'Figma comments, Frame.io notes, Loom replies, Slack DMs, and client emails collapsed into a single Notion or Asana queue per project. Designers stop triaging sources. PMs stop chasing threads. ~4 hours per designer back each week.',
   },
   {
-    title: 'Feedback consolidation across Figma, Frame.io, and Loom.',
-    desc: 'Figma comments + Frame.io notes + Loom replies + email + Slack DMs collapsed into one designer-facing Notion or Asana queue. Designers stop triaging; PMs stop chasing.',
+    tag: 'Status',
+    title: 'Monday digest replaces the stand-up.',
+    body: 'Notion, Asana, or ClickUp pulled into one Slack message every Monday at 8 a.m. — revision status, approval blockers, deadline drift per project. The 30-minute status meeting disappears.',
   },
   {
-    title: 'Time tracking enforcement and utilization rollups.',
-    desc: 'Harvest, Toggl, or Clockify rolled into a weekly Sheets or Looker dashboard showing utilization per designer. Surfaces under-billing within days, not at quarter-end.',
-  },
-  {
-    title: 'Asset and brand-kit delivery, automated.',
-    desc: 'Final logos, source files, fonts, and guidelines auto-bundled and delivered to a client portal the moment a project closes. No more "where’s the logo file" emails six months later.',
-  },
-  {
-    title: 'Scope-creep alerts before invoicing.',
-    desc: 'When a project’s tracked hours pass the retainer threshold, the PM gets a Slack ping the same week — not at month-end when the over-scope conversation is already awkward.',
-  },
-  {
-    title: 'Client onboarding from brief to kickoff.',
-    desc: 'Intake form → Notion project doc + Figma moodboard skeleton + Calendly kickoff invite + brief confirmation email, in one click. Eliminates the manual setup that eats every Monday.',
+    tag: 'Utilization',
+    title: 'Under-billing surfaces in days.',
+    body: 'Harvest, Toggl, or Clockify rolled into a weekly Slack digest showing utilization per designer. Scope-creep alert fires when hours pass the retainer floor — the same week, not at month-end when the conversation is already awkward.',
   },
 ]
 
-const YOUR_STACK = [
-  'Figma / FigJam',
-  'Adobe Creative Cloud',
-  'Frame.io',
-  'Linear / Asana / ClickUp',
-  'monday.com / Notion',
-  'Harvest / Toggl / Clockify',
-  'Slack / Microsoft Teams',
-  'Loom',
-  'Webflow / Framer',
-  'Dropbox / Google Drive',
-  'HubSpot / Pipedrive',
-  'PandaDoc',
-  'QuickBooks / Stripe',
-  'GitHub (dev handoff)',
+const WORKFLOWS = [
+  {
+    name: 'design-handoff-pipeline',
+    desc: 'On Figma project approval: bundles final frames, source files, and brand guidelines from Drive into a client portal link. Sends delivery email and logs the handoff in Notion. Kills the "where\'s the logo file" email.',
+    touches: ['Figma', 'Google Drive', 'Notion', 'Slack'],
+    saved: '~3 h / project',
+  },
+  {
+    name: 'client-revision-tracker',
+    desc: 'Watches Figma for new comments and Asana for revision requests. Collapses both into one prioritized queue per designer. Pings the PM in Slack if a revision sits unassigned for 24 hours.',
+    touches: ['Figma', 'Asana', 'Slack'],
+    saved: '~5 h / mo per designer',
+  },
+  {
+    name: 'weekly-creative-recap',
+    desc: 'Every Friday at 4 p.m.: pulls Drive activity, Figma version history, and Slack threads for the week. Posts a per-project summary to the agency Slack channel — what shipped, what\'s pending, what\'s at risk.',
+    touches: ['Google Drive', 'Figma', 'Slack'],
+    saved: '~4 h / mo',
+  },
 ]
 
-const FAQS = [
+const BEFORE_AFTER = [
   {
-    q: 'Will Figma plugins do most of this?',
-    a: 'Plugins do things inside Figma. The hours you’re losing live between tools — Figma → Notion brief → Linear ticket → client portal. Industry data says 57% of creative-agency time is admin, not design. That’s not a plugin problem; that’s the operations layer between them.',
+    before: 'Figma, Frame.io, Loom, Slack, and email checked separately for feedback',
+    after: 'All feedback collapsed into one Notion queue — one place to start the day',
   },
   {
-    q: 'We charge fixed-fee. Why care about utilization?',
-    a: 'Fixed-fee is exactly when utilization matters most — it’s the only signal that tells you which retainer is profitable and which one is bleeding margin into scope creep. Design-agency net margins average ~9.5%; the shops that move from $100K to $150K+ revenue per employee all do it on disciplined utilization reporting.',
+    before: 'Status meeting reconstructs project state from memory and Slack scroll',
+    after: 'Monday Slack digest shows revision status, blockers, and drift per project',
   },
   {
-    q: 'What if AI hallucinates on client work?',
-    a: 'I don’t put AI between you and your client. I use it for research, summary, and triage — drafts a human reviews. The actual asset delivery, the actual feedback loop, stays human-in-the-loop. Studios with proper governance see 4 hours saved per designer per week; studios without it see 9× lower ROI from the same tools.',
+    before: 'Over-scope discovered at invoicing — conversation already awkward',
+    after: 'Slack alert fires the week hours cross the retainer threshold',
   },
   {
-    q: 'Our design process is too custom for templates.',
-    a: 'Mine isn’t a template service. I sit with you for an hour, watch how your shop actually runs (brand sprints vs. deep dives, AOR vs. project work, your handoff to dev), and build to that. Half the studios I talk to say the same thing first — until they see what custom automation actually looks like.',
+    before: 'Final asset delivery is a manual zip-and-send after project close',
+    after: 'Handoff pipeline delivers portal link and logs completion in Notion',
+  },
+  {
+    before: 'Utilization gaps visible at quarter-end, not when they open',
+    after: 'Weekly digest flags anyone under-billed before the week is gone',
   },
 ]
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
 
 export default function ForDesignPage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/for/design" />
       <SegmentPageAnalytics segment="design" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'n8n Automation for Design Agencies',
-            provider: {
-              '@type': 'Organization',
-              name: 'OpsRadar',
-              url: 'https://www.opsradar.co',
-              founder: { '@type': 'Person', name: 'Lawand Soran' },
-            },
-            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
-            audience: {
-              '@type': 'BusinessAudience',
-              audienceType: 'Design Agencies',
-              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 15 },
-            },
-            description:
-              'Custom AI Operating System (AIOS) builds for boutique design and creative studios under 15 people. Project status rollups, feedback consolidation across Figma + Frame.io + Loom, utilization reporting, scope-creep alerts, asset delivery, and onboarding workflows.',
-            offers: {
-              '@type': 'AggregateOffer',
-              priceCurrency: 'USD',
-              lowPrice: 400,
-              highPrice: 4500,
-              offerCount: 6,
-            },
-            url: 'https://www.opsradar.co/for/design',
-          }),
-        }}
-      />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-28 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            For design agencies
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-6">
-            Your designers were hired to design.
-          </h1>
-          <p className="font-headline text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-white/80 mb-8">
-            Not to chase Frame.io comments back into Figma.
-          </p>
-          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            We build the AI Operating System (AIOS) for boutique design and creative studios under 15 people.
-            Project status rollups in one Slack digest. Feedback consolidation across Figma,
-            Frame.io, and Loom. Time tracking that actually surfaces utilization. Scope-creep
-            alerts before invoicing. You own every workflow in your n8n account. We build them,
-            we maintain them, you get your billable hours back.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-            <Link
-              href="/audit"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
-            >
-              Run a 3-minute self-serve audit →
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
+          For design agencies
+        </p>
+
+        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+          Designers stop doing handoffs at 8 pm.
+        </h1>
+
+        <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+          Figma feedback, Frame.io revisions, and Loom replies all land in different places.
+          Status meetings reconstruct state from memory. OpsRadar builds the automation layer
+          that closes all three gaps — inside your n8n account, in 5 to 14 days.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/audit">
+              Start your audit
+              <ArrowRight className="size-4" />
             </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
+          </Button>
+        </div>
+      </section>
+
+      {/* ── Three outcomes ────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--color-border)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            Three outcomes, delivered in weeks.
+          </h2>
+
+          <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {OUTCOMES.map((o) => (
+              <div
+                key={o.tag}
+                className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
+              >
+                <Badge variant="accent">{o.tag}</Badge>
+                <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
+                  {o.title}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── What I build ──────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What I build for design studios
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Six workflows that turn admin hours back into design hours.
+      {/* ── Workflow cards ────────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What a typical design studio AIOS looks like.
           </h2>
-          <div className="space-y-0">
-            {WHAT_I_BUILD_FOR_DESIGN.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
+
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {WORKFLOWS.map((wf) => (
+              <Card key={wf.name}>
+                <CardHeader className="border-b border-[var(--color-border)]">
+                  <CardTitle>
+                    <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
+                  </CardTitle>
+                  <CardDescription>{wf.desc}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {wf.touches.map((t) => (
+                      <Badge key={t} variant="secondary">{t}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Your stack ────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-20">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Your stack, my workflows
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-10">
-            I work inside the tools you already pay for.
+      {/* ── Before / After table ──────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)]">
+        <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What your studio looks like after OpsRadar lands.
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {YOUR_STACK.map((tool) => (
-              <span
-                key={tool}
-                className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-[13px] text-white/70"
+
+          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+            <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+              <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
+              <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
+                After OpsRadar
+              </div>
+            </div>
+            {BEFORE_AFTER.map((row, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
               >
-                {tool}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-white/40 mt-6 max-w-2xl leading-relaxed">
-            If your tool isn&apos;t here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
-          </p>
-        </section>
-      </div>
-
-      {/* ── Cost of NOT automating ────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What it costs to keep doing it manually
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-8">
-            The math most founders don&apos;t run.
-          </h2>
-          <div className="space-y-6 text-[15px] leading-relaxed text-white/[0.7]">
-            <p>
-              A 10-person design shop typically spends <span className="text-white font-semibold">22–28 hours/week</span> on PM admin, feedback triage, time tracking, and asset prep — work that workflows do nightly. Industry surveys put admin at <span className="text-white font-semibold">57% of creative-agency time</span>, not design.
-            </p>
-            <p>
-              At $80–$120/hour fully loaded for a designer or PM, that&apos;s <span className="text-white font-semibold">$91,000–$175,000/year</span> of billable time going to non-billable admin.
-            </p>
-            <p>
-              Design-agency net margins average <span className="text-white font-semibold">~9.5%</span> — operating costs eat 90.5 cents of every dollar. The single biggest lever is turning admin hours back into billable hours; shops with disciplined utilization reporting move from $100K to $150K+ revenue per employee.
-            </p>
-            <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>. Most boutique design shops break even in five to nine weeks.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Questions
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            What design founders ask me first.
-          </h2>
-          <div>
-            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            {FAQS.map(({ q, a }) => (
-              <div key={q}>
-                <div className="py-6">
-                  <p className="font-semibold text-[14px] text-white/80 mb-2">{q}</p>
-                  <p className="text-[13px] text-[rgba(255,255,255,0.65)] leading-[1.7]">{a}</p>
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
+                  {row.before}
                 </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                  {row.after}
+                </div>
               </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            Get your designers back to designing.
-          </h2>
-          <p className="text-white/40 mb-10 leading-relaxed">
-            3-minute audit. Real dollar numbers for your studio. No commitment.
+      {/* ── Testimonial slot ──────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">From the field</p>
+          <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
+          </blockquote>
+          <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
+            — Design studio founder · 8-person shop · 4 h/week back per designer
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section>
+        <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+          <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+            Run a design studio audit.
+          </h2>
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
+            3 minutes. Real figures on the hours your studio loses to feedback triage,
+            status meetings, and late-night handoffs. No pitch, no card.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/audit">
+                Start your audit
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
+                Talk to founders
               </a>
             </Button>
           </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
         </div>
       </section>
 
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }
