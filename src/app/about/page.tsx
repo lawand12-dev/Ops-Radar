@@ -10,17 +10,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: 'About — OpsRadar',
   description:
-    'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
+    'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
   openGraph: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
+      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'About — OpsRadar' }],
   },
   twitter: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
+      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
     images: ['/og-image.png'],
   },
 }
@@ -30,54 +30,54 @@ export const metadata: Metadata = {
 const CREDIBILITY_MARKERS = [
   {
     n: '01',
-    label: 'Delivery model',
-    value: 'One team. End to end.',
+    label: 'Platform model',
+    value: 'One system. Four surfaces.',
     detail:
-      'Same people scope, build, and maintain. No outsourced handoff. The team that knows your system fixes it when it breaks.',
+      'OPERATE runs your workflows. OBSERVE shows you everything. BRAIN holds your institutional knowledge. GUARD watches the system while you sleep.',
   },
   {
     n: '02',
     label: 'Ownership',
     value: 'You own everything.',
     detail:
-      'Workflows live in your account, on your infrastructure, with your credentials. If you leave, you keep the system. We just stop maintaining it.',
+      'Workflows live in your n8n account, on your infrastructure, with your credentials. If you ever leave, you keep the entire system — workflows, logic, and logs.',
   },
   {
     n: '03',
     label: 'Stack depth',
-    value: '30+ integrations, hands-on.',
+    value: '40+ tools connected.',
     detail:
-      'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — built end-to-end, ready to deploy.',
+      'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — 120+ workflows ready inside the AIOS library.',
   },
   {
     n: '04',
-    label: 'Speed to live',
-    value: '5–14 days from kickoff.',
+    label: 'How we build',
+    value: 'We don\'t build for shops we don\'t understand.',
     detail:
-      'Most builds ship inside two weeks. You get the proposal in 48 hours, the walkthrough on day 9, production on day 10.',
+      'Discovery comes before design. We learn your real operations — your tools, your clients, your team, your patterns — before a single workflow is written.',
   },
 ]
 
 const WHY_TRUST = [
   {
-    kind: 'On accountability',
-    quote: 'One team. Full accountability.',
-    body: 'Same people scope it, build it, and maintain it. When it breaks, the team that built it fixes it — not a stranger reading docs at 2am.',
+    kind: 'On philosophy',
+    quote: 'We don\'t build for shops we don\'t understand.',
+    body: 'AIOS is not a template. Discovery comes before every build. We go deeper than the audit — your tools, your clients, your team, your patterns, the things only operators know. That is the only honest way to build a system for a business.',
   },
   {
-    kind: 'On experience',
-    quote: 'Agency operators, not generic devs.',
-    body: 'We came up inside agency ops. Smart teams bleeding margin to broken handoffs, duplicate entry, and automations nobody trusted two weeks after launch. OpsRadar exists because operational debt keeps getting dressed up as process.',
+    kind: 'On why this exists',
+    quote: 'Built from the inside out.',
+    body: 'We spent years inside agency ops watching good teams bleed margin to broken handoffs, duplicate entry, and automations nobody trusted two weeks after launch. OpsRadar is the response: the operating system that should have existed.',
   },
   {
     kind: 'On ownership',
     quote: 'You own everything. No lock-in.',
-    body: 'Workflows live in your account. Documentation lives with you. Credentials are yours. If you ever want to leave, you keep the entire system — we just stop maintaining it.',
+    body: 'Every workflow runs inside your n8n. Credentials live in your vault. Logs stay on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the history.',
   },
   {
-    kind: 'On AI',
-    quote: 'AI drafts. Humans verify.',
-    body: 'AI lets us scope and prototype in hours, not weeks. But nothing touches your live business without a human on our team reviewing it first. Speed without shortcuts.',
+    kind: 'On intelligence',
+    quote: 'The system gets sharper every week.',
+    body: 'BRAIN learns your shop over time — your data, your history, your patterns — queried through Claude. The longer AIOS runs, the more it knows about how your agency actually operates.',
   },
 ]
 
@@ -112,12 +112,12 @@ function PageHeader() {
         <div className="max-w-3xl">
           <p className="text-label text-[var(--color-fg-subtle)]">About</p>
           <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance">
-            We build the system your agency should already have.
+            The AI Operating System for agencies.
           </h1>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-            Most agencies don&apos;t have an operations problem. They have a system problem.
-            OpsRadar maps how your work actually flows, builds the automation layer on top of it,
-            and keeps that layer running.
+            Most agencies have the tools. Almost none have a system connecting them.
+            OpsRadar is AIOS — one platform that runs your workflows, watches them while you sleep,
+            shows everything in one dashboard, and remembers how your shop actually operates.
           </p>
         </div>
       </div>
@@ -135,24 +135,25 @@ function ShortVersion() {
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
         <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-fg-subtle)]">What we do</p>
+            <p className="text-label text-[var(--color-fg-subtle)]">What AIOS is</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Workflows, intelligence, and the interface to run them.
+              Four surfaces. One platform.
             </h2>
           </div>
 
           <div className="space-y-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
             <p>
-              We build the automation layer that sits between your tools — Slack, HubSpot,
-              Meta, Google Ads, Klaviyo, n8n — and the work your team does every day.
+              AIOS is not a tool — it&apos;s the layer that connects every tool you already pay for
+              and adds the parts you don&apos;t have yet. OPERATE runs the work. OBSERVE shows you
+              what&apos;s happening. BRAIN holds your institutional knowledge. GUARD catches silent
+              failures before they cost you.
             </p>
             <p>
-              OpsRadar is not a tool your team has to learn. It connects the tools you already use,
-              captures the knowledge in your team&apos;s heads, and runs the work that should never
-              have been manual.
+              The platform is built specifically for each agency it runs inside. Your data, your
+              history, your patterns — not a generic template dropped into your stack.
             </p>
             <p className="font-serif text-h3 tracking-[-0.015em] text-[var(--color-fg)] text-balance">
-              Your agency&apos;s real operations, turned into a system that gets sharper every week.
+              Your agency&apos;s real operations, running inside a system that gets sharper every week.
             </p>
           </div>
         </div>
@@ -172,7 +173,7 @@ function CredibilitySection() {
         <div className="max-w-2xl mb-16">
           <p className="text-label text-[var(--color-fg-subtle)]">The specifics</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            What you&apos;re actually getting.
+            How the platform works.
           </h2>
         </div>
 
@@ -215,8 +216,8 @@ function OriginNote() {
             O
           </span>
           <div>
-            <p className="text-body-sm font-medium text-[var(--color-fg)]">OpsRadar · AI Operations Team</p>
-            <p className="text-caption text-[var(--color-fg-subtle)]">Why we exist.</p>
+            <p className="text-body-sm font-medium text-[var(--color-fg)]">OpsRadar · AIOS</p>
+            <p className="text-caption text-[var(--color-fg-subtle)]">Why this exists.</p>
           </div>
         </div>
 
@@ -224,17 +225,17 @@ function OriginNote() {
           <p>
             OpsRadar exists because we kept watching the same thing happen. Agencies hire to fix
             problems that should be automated. They build process docs no one reads. They lose
-            Friday afternoons to reports a script could ship in seconds.
+            Friday afternoons to reports the system could ship in seconds.
           </p>
           <p>
-            We spent years inside agencies watching good teams bleed margin to broken handoffs,
-            spreadsheet rituals, and automations that looked clever in demos but broke in
-            production. OpsRadar is the response: an operator-minded team building systems that
-            stay useful after launch.
+            We spent years inside agency ops studying how good teams bleed margin to broken
+            handoffs, spreadsheet rituals, and automations that looked clever in demos but broke
+            in production. AIOS is the response: the operating system we built because it
+            should have existed.
           </p>
           <p>
             Most agencies have the tools — HubSpot, Meta, GA4, Klaviyo, Slack. Almost none have
-            the layer connecting them. That&apos;s what we build.
+            the layer connecting them. AIOS is that layer.
           </p>
         </div>
       </div>
@@ -251,9 +252,9 @@ function WhySection() {
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
         <div className="max-w-2xl mb-12">
-          <p className="text-label text-[var(--color-fg-subtle)]">Why trust us</p>
+          <p className="text-label text-[var(--color-fg-subtle)]">The philosophy</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
-            Why this works where retainers don&apos;t.
+            Four things we hold to.
           </h2>
         </div>
 
@@ -288,19 +289,21 @@ function VisionCallout() {
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
         <div className="border-l-2 border-[var(--color-primary)] pl-8 md:pl-10">
-          <p className="text-label text-[var(--color-primary)]">The vision</p>
+          <p className="text-label text-[var(--color-primary)]">The bet</p>
           <div className="mt-6 space-y-6 text-body-lg leading-[1.65] text-[var(--color-fg-muted)] max-w-3xl">
             <p>
-              Every agency that runs on OpsRadar gets an operations layer built from
-              their real workflows, their tools, their data, their history.
+              Every agency that runs on AIOS gets an operations layer built from
+              their real workflows, their tools, their data, their history — not
+              a template, not a category average.
             </p>
             <p>
-              Their team queries it through Claude. Their automations run through n8n.
-              The system gets sharper every week without anyone maintaining it manually.
+              The team queries institutional knowledge through Claude. Automations run
+              inside their n8n. GUARD watches the stack overnight. The system gets
+              sharper every week without manual upkeep.
             </p>
             <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
-              Not another automation tool. The layer that makes the tools you already
-              have actually work together.
+              We are not building another automation tool. We are building the
+              operating system that runs the agency.
             </p>
           </div>
         </div>
@@ -317,29 +320,32 @@ function FinalCTA() {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          Stop running your agency on memory.
+          See what your AIOS looks like.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          A 20-minute call. Real numbers on what your agency is losing. The
-          shortlist of workflows worth automating first.
+          13 questions. Three minutes. An AI-generated report on where your
+          operations are bleeding hours — and which workflows are worth
+          automating first.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a free 20-min call
+            <Link href="/audit">
+              Start the audit
               <ArrowRight className="size-4" />
-            </a>
+            </Link>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <Link href="/audit">Or run a self-serve audit</Link>
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)]">
-          20 minutes · Free · No commitment
+          13 questions · Free · No card, no pitch · 3 minutes to the report.
         </p>
       </div>
     </section>
