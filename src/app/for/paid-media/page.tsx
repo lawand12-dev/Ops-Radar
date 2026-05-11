@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For Paid-Media Agencies — OpsRadar',
+  title: 'AIOS for Paid-Media Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for paid-media shops under 20 people. Meta + Google + Klaviyo reports that build themselves. Pacing alerts tied to MER, not last-click ROAS. BM access to first report in 5 days.',
+    'OpsRadar is AIOS for paid-media shops under 20 people. Meta + Google + Klaviyo reports that build themselves. Pacing alerts tied to MER, not last-click ROAS. Onboarding that runs itself from signed contract.',
   openGraph: {
-    title: 'For Paid-Media Agencies — OpsRadar',
+    title: 'AIOS for Paid-Media Agencies — OpsRadar',
     description:
-      'Reports that build themselves. Pacing alerts tied to MER. Onboarding in 5 days. Built inside your n8n account.',
+      'Reports that build themselves. Pacing alerts tied to MER. OPERATE runs the reporting; GUARD catches the API drift. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Paid-Media Agencies' }],
   },
   twitter: {
-    title: 'For Paid-Media Agencies — OpsRadar',
+    title: 'AIOS for Paid-Media Agencies — OpsRadar',
     description:
-      'Reports that build themselves. Pacing alerts tied to MER. Onboarding in 5 days.',
+      'Reports that build themselves. Pacing alerts tied to MER. GUARD catches the API drift. Built inside your n8n account.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Reporting',
     title: 'Reports that build themselves.',
-    body: "Meta, Google Ads, Klaviyo, Triple Whale, and Shopify rolled into a branded PDF or Looker board — delivered on the 2nd of every month. You stop spending Sunday night on a spreadsheet no client reads until Tuesday.",
+    body: "OPERATE runs the monthly rollup: Meta, Google Ads, Klaviyo, Triple Whale, and Shopify collapsed into a branded PDF and delivered on the 2nd. You stop spending Sunday night on a spreadsheet no client reads until Tuesday.",
   },
   {
     tag: 'Attribution',
     title: 'Pacing alerts tied to MER.',
-    body: "Daily Slack alerts that fire when MER drops below your threshold — not when Facebook's attribution model decides to report a bad week. No more Valentine's Day budget fires caused by a last-click ROAS that masks a broken funnel.",
+    body: "GUARD watches spend in real time and fires a Slack alert the moment MER drops below your threshold — not when Facebook's attribution model decides to report a bad week. No more Valentine's Day budget fires caused by a last-click ROAS that masks a broken funnel.",
   },
   {
     tag: 'Onboarding',
-    title: 'BM access to first report in 5 days.',
-    body: 'Business Manager access, Pixel installation, GA4 configuration, Conversion API setup, MCC link — a single n8n workflow handles the whole sequence. Cuts 10–15 hours of senior time per new client.',
+    title: 'BM access to first report, automatically.',
+    body: 'Business Manager access, Pixel installation, GA4 configuration, Conversion API setup, MCC link — OPERATE runs the whole onboarding sequence from signed contract. Cuts 10–15 hours of senior time per new client.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForPaidMediaPage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For paid-media agencies
+          AIOS for paid-media agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -111,14 +111,14 @@ export default function ForPaidMediaPage() {
 
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Reports eat your Sundays. Pacing alerts come too late. BM access takes 3 weeks.
-          OpsRadar builds the automation layer that fixes all three — inside your n8n account,
-          in 5 to 14 days.
+          OpsRadar is AIOS — the system that fixes all three inside your n8n account,
+          running under your credentials, owned by you from day one.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -135,7 +135,7 @@ export default function ForPaidMediaPage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -236,17 +236,17 @@ export default function ForPaidMediaPage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run a paid-media audit.
+            See what your paid-media AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real dollar figures on what your shop is losing to manual reporting
-            and late alerts. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on what your shop is losing
+            to manual reporting and late alerts — and which workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -256,6 +256,10 @@ export default function ForPaidMediaPage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 

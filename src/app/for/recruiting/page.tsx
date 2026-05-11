@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For Recruiting Agencies — OpsRadar',
+  title: 'AIOS for Recruiting Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for boutique recruiting and search firms under 25 people. ATS pipeline digest across Greenhouse, Ashby, or Lever every Monday. Candidate follow-up gaps caught before the req goes cold. Scorecard data synced to Notion automatically.',
+    'OpsRadar is AIOS for boutique recruiting and search firms under 25 people. OBSERVE shows the ATS pipeline digest every Monday. GUARD catches candidate follow-up gaps before the req goes cold. OPERATE syncs scorecard data to Notion automatically.',
   openGraph: {
-    title: 'For Recruiting Agencies — OpsRadar',
+    title: 'AIOS for Recruiting Agencies — OpsRadar',
     description:
-      'Pipeline digest, follow-up automation, and scorecard sync — built inside your n8n account in 5 to 14 days.',
+      'Pipeline digest, follow-up automation, and scorecard sync — OBSERVE shows the pipeline; GUARD catches the gaps. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Recruiting Agencies' }],
   },
   twitter: {
-    title: 'For Recruiting Agencies — OpsRadar',
+    title: 'AIOS for Recruiting Agencies — OpsRadar',
     description:
-      'Pipeline digest, follow-up automation, and scorecard sync — built inside your n8n account.',
+      'Pipeline digest, follow-up automation, scorecard sync. OBSERVE shows the pipeline; GUARD catches the gaps.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Pipeline',
     title: 'Every req visible every Monday.',
-    body: 'Greenhouse, Ashby, or Lever data pulled into a Slack digest every Monday morning — stage, days since last touch, submit-to-interview ratio per req. Recruiters stop reconstructing pipeline state from memory and Slack scroll.',
+    body: 'OBSERVE pulls Greenhouse, Ashby, or Lever data into a Slack digest every Monday morning — stage, days since last touch, submit-to-interview ratio per req. Recruiters stop reconstructing pipeline state from memory and Slack scroll.',
   },
   {
     tag: 'Follow-up',
     title: 'Candidate gaps caught before reqs go cold.',
-    body: 'Gmail and ATS activity monitored per candidate. Slack alert fires when any active candidate goes 72 hours without a touch — before the req stalls or the client asks why the pipeline dried up. ~5 hours of follow-up drag per recruiter per week gone.',
+    body: 'GUARD monitors Gmail and ATS activity per candidate and fires a Slack alert when any active candidate goes 72 hours without a touch — before the req stalls or the client asks why the pipeline dried up. ~5 hours of follow-up drag per recruiter per week gone.',
   },
   {
     tag: 'Scorecards',
     title: 'Interview notes land in Notion automatically.',
-    body: 'Scorecard submitted in Greenhouse or Ashby triggers a sync to the requisition Notion page — decision, highlights, and red flags populated without anyone copying and pasting. No more "can you paste the scorecard in the doc" Slack messages.',
+    body: 'OPERATE syncs scorecard submissions from Greenhouse or Ashby to the requisition Notion page — decision, highlights, and red flags populated without anyone copying and pasting. No more "can you paste the scorecard in the doc" Slack messages.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForRecruitingPage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For recruiting agencies
+          AIOS for recruiting agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -112,14 +112,14 @@ export default function ForRecruitingPage() {
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           ATS data is scattered across Greenhouse, Gmail, and Notion. Candidate follow-up
           falls through when no one is watching. Scorecards never make it to the req doc.
-          OpsRadar builds the automation layer that closes all three — inside your n8n
-          account, in 5 to 14 days.
+          OpsRadar is AIOS — the system that closes all three, runs inside your n8n account,
+          and watches your pipeline around the clock.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -136,7 +136,7 @@ export default function ForRecruitingPage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -237,17 +237,18 @@ export default function ForRecruitingPage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run a recruiting agency audit.
+            See what your recruiting AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real figures on the hours your shop loses to pipeline admin,
-            follow-up gaps, and scorecard copying. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on the hours your shop
+            loses to pipeline admin, follow-up gaps, and scorecard copying — and which
+            workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -257,6 +258,10 @@ export default function ForRecruitingPage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 

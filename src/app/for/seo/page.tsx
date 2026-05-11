@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For SEO Agencies — OpsRadar',
+  title: 'AIOS for SEO Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for SEO agencies under 20 people. Weekly rank digests from Ahrefs + GSC. AIO presence tracking across ChatGPT, Perplexity, and Google AI Overviews. Technical audit alerts before your clients notice.',
+    'OpsRadar is AIOS for SEO agencies under 20 people. Weekly rank digests from Ahrefs + GSC. AIO presence tracking across ChatGPT, Perplexity, and Google AI Overviews. GUARD catches technical regressions before your clients notice.',
   openGraph: {
-    title: 'For SEO Agencies — OpsRadar',
+    title: 'AIOS for SEO Agencies — OpsRadar',
     description:
-      'Rank digests, AIO mention tracking, and technical alerts — automated inside your n8n account.',
+      'Rank digests, AIO mention tracking, and technical alerts — OPERATE runs the signals, GUARD catches the regressions. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for SEO Agencies' }],
   },
   twitter: {
-    title: 'For SEO Agencies — OpsRadar',
+    title: 'AIOS for SEO Agencies — OpsRadar',
     description:
-      'Rank digests, AIO mention tracking, and technical alerts — automated inside your n8n account.',
+      'Rank digests, AIO mention tracking, technical alerts. OPERATE runs the signals; GUARD catches the regressions.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Rank tracking',
     title: 'Weekly rank digests, white-labeled.',
-    body: "Ahrefs, GSC, and Semrush data merged into one branded digest — delivered to Slack or the client's inbox every Monday. Keyword positions stop living in a spreadsheet you paste manually.",
+    body: "OPERATE merges Ahrefs, GSC, and Semrush data into one branded digest — delivered to Slack or the client's inbox every Monday. Keyword positions stop living in a spreadsheet you paste manually.",
   },
   {
     tag: 'AIO visibility',
     title: 'Track what 2026 SEO actually measures.',
-    body: 'Brand visibility across ChatGPT, Perplexity, and Google AI Overviews — tracked per query, per competitor. The category your incumbent reporting tools ignore is now the line item clients ask about most.',
+    body: 'OBSERVE shows brand visibility across ChatGPT, Perplexity, and Google AI Overviews — tracked per query, per competitor. The category your incumbent reporting tools ignore is now the line item clients ask about most.',
   },
   {
     tag: 'Technical',
     title: 'Technical alerts before Google notices.',
-    body: 'Daily Screaming Frog diffs. Core Web Vitals regressions from CrUX. Schema markup breakage. Status code spikes. Every flag lands in Slack before the client emails you — or before a crawl buries the issue.',
+    body: 'GUARD runs daily Screaming Frog diffs. Core Web Vitals regressions from CrUX. Schema markup breakage. Status code spikes. Every flag lands in Slack before the client emails you — or before a crawl buries the issue.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForSeoPage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For SEO agencies
+          AIOS for SEO agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -111,14 +111,15 @@ export default function ForSeoPage() {
 
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           AI Overviews cut your CTRs. LLM citations replaced position one for branded queries.
-          Manual rank-tracking still takes 30 hours a week. OpsRadar automates the signals
-          that matter now — AIO presence, LLM mentions, and rank — inside your n8n account.
+          Manual rank-tracking still takes 30 hours a week. OpsRadar is AIOS — the system that
+          automates the signals that matter now, runs inside your n8n account, and gets sharper
+          every week it operates.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -135,7 +136,7 @@ export default function ForSeoPage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -236,17 +237,18 @@ export default function ForSeoPage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run a SEO agency audit.
+            See what your SEO AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real figures on the hours your shop loses to manual rank-tracking,
-            brief setup, and AIO monitoring. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on the hours your shop
+            loses to manual rank-tracking, brief setup, and AIO monitoring — and which
+            workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -256,6 +258,10 @@ export default function ForSeoPage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 
