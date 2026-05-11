@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { cn } from '<npm>/lib/utils';
 
 type WidgetData = {
   dollars_saved: number;
@@ -17,17 +18,6 @@ type WidgetData = {
 type ApiResponse =
   | { status: 'ok'; data: WidgetData; fromCache: boolean }
   | { status: 'error'; message: string; staleData?: WidgetData; staleAgeMs?: number };
-
-const C = {
-  card: '#0F1923',
-  border: 'rgba(0,194,255,0.1)',
-  accent: '#00C2FF',
-  text: '#E0F0FF',
-  muted: '#4A6280',
-  green: '#22C55E',
-  amber: '#F59E0B',
-  red: '#FF4D4D',
-};
 
 export function WorkflowHealthStrip() {
   const [response, setResponse] = useState<ApiResponse | null>(null);
@@ -63,39 +53,23 @@ export function WorkflowHealthStrip() {
 
   return (
     <div
-      style={{
-        background: failingTone ? 'rgba(255,77,77,0.05)' : C.card,
-        border: `1px solid ${failingTone ? 'rgba(255,77,77,0.18)' : C.border}`,
-        borderRadius: 12,
-        padding: '14px 20px',
-        marginBottom: 18,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-        flexWrap: 'wrap',
-      }}
-    >
-      {loading && (
-        <div
-          style={{ height: 18, width: 320, background: 'rgba(0,194,255,0.05)', borderRadius: 4 }}
-        />
+      className={cn(
+        'mb-4 flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-md)] border px-5 py-3.5',
+        failingTone
+          ? 'border-[color-mix(in_srgb,var(--color-danger)_18%,transparent)] bg-[color-mix(in_srgb,var(--color-danger)_5%,transparent)]'
+          : 'border-[var(--color-border)] bg-[var(--color-surface)]',
       )}
+    >
+      {loading && <div className="h-[18px] w-[320px] rounded-[4px] bg-[var(--color-surface-sunken)]" />}
       {!loading && data && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-          <Pill dotColor={C.green} label={`${data.healthy_count} healthy`} />
-          <Pill
-            dotColor={data.failing_count > 0 ? C.red : C.muted}
-            label={`${data.failing_count} failing`}
-          />
-          <Pill
-            dotColor={data.open_alerts > 0 ? C.amber : C.muted}
-            label={`${data.open_alerts} alerts`}
-          />
+        <div className="flex flex-wrap items-center gap-4">
+          <Pill tone="success" label={`${data.healthy_count} healthy`} />
+          <Pill tone={data.failing_count > 0 ? 'danger' : 'muted'} label={`${data.failing_count} failing`} />
+          <Pill tone={data.open_alerts > 0 ? 'warn' : 'muted'} label={`${data.open_alerts} alerts`} />
         </div>
       )}
       {!loading && !data && response?.status === 'error' && (
-        <span style={{ fontSize: 12.5, color: C.red }}>
+        <span className="text-[12.5px] text-[var(--color-danger)]">
           Automation status unavailable — {response.message}
         </span>
       )}
@@ -103,12 +77,7 @@ export function WorkflowHealthStrip() {
         href={data?.monitor_url ?? 'https://opstest.atta.codes/#/projects'}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          fontSize: 12.5,
-          fontWeight: 500,
-          color: C.accent,
-          textDecoration: 'none',
-        }}
+        className="text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
       >
         Open monitor →
       </a>
@@ -116,18 +85,17 @@ export function WorkflowHealthStrip() {
   );
 }
 
-function Pill({ dotColor, label }: { dotColor: string; label: string }) {
+const DOT_TONE: Record<'success' | 'danger' | 'warn' | 'muted', string> = {
+  success: 'bg-[var(--color-success)]',
+  danger:  'bg-[var(--color-danger)]',
+  warn:    'bg-[var(--color-warn)]',
+  muted:   'bg-[var(--color-fg-subtle)]',
+};
+
+function Pill({ tone, label }: { tone: keyof typeof DOT_TONE; label: string }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: C.text }}>
-      <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: dotColor,
-          flexShrink: 0,
-        }}
-      />
+    <span className="inline-flex items-center gap-1.5 text-[12.5px] text-[var(--color-fg)]">
+      <span className={cn('size-2 shrink-0 rounded-full', DOT_TONE[tone])} />
       {label}
     </span>
   );
