@@ -42,6 +42,9 @@ import {
   SelectLabel,
   SelectSeparator,
 } from "<npm>/components/ui/select";
+import { Checkbox } from "<npm>/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "<npm>/components/ui/radio-group";
+import { Switch } from "<npm>/components/ui/switch";
 
 export function Showcase() {
   return (
@@ -66,6 +69,7 @@ export function Showcase() {
       <BadgeSection />
       <LabelTextareaSection />
       <SelectSection />
+      <CheckboxRadioSwitchSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -304,6 +308,69 @@ function SelectSection() {
             </SelectGroup>
           </SelectContent>
         </Select>
+      </div>
+    </section>
+  );
+}
+
+function CheckboxRadioSwitchSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Checkbox · Radio · Switch</p>
+      <div className="flex gap-12 flex-wrap">
+        <div className="space-y-2">
+          <Label className="text-caption text-fg-subtle">Checkbox</Label>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Checkbox id="ds-cb-1" />
+              <Label htmlFor="ds-cb-1">Unchecked</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="ds-cb-2" defaultChecked />
+              <Label htmlFor="ds-cb-2">Checked</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="ds-cb-3" disabled />
+              <Label htmlFor="ds-cb-3">Disabled</Label>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-caption text-fg-subtle">Radio</Label>
+          <RadioGroup defaultValue="b">
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="a" id="ds-r-a" />
+              <Label htmlFor="ds-r-a">Option A</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="b" id="ds-r-b" />
+              <Label htmlFor="ds-r-b">Option B</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="c" id="ds-r-c" />
+              <Label htmlFor="ds-r-c">Option C</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-caption text-fg-subtle">Switch</Label>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Switch id="ds-sw-1" />
+              <Label htmlFor="ds-sw-1">Off</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="ds-sw-2" defaultChecked />
+              <Label htmlFor="ds-sw-2">On</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="ds-sw-3" disabled />
+              <Label htmlFor="ds-sw-3">Disabled</Label>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
