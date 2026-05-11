@@ -10,19 +10,19 @@ import { Badge } from "<npm>/components/ui/badge";
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
-  title: "OpsRadar — The operating system for agency operations",
+  title: "OpsRadar — The AI Operating System for agencies",
   description:
-    "OpsRadar audits every workflow you already run, then builds and monitors the automations that replace them. One pane of glass for tools, runs, and ROI.",
+    "OpsRadar is AIOS. One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
   openGraph: {
-    title: "OpsRadar — The operating system for agency operations",
+    title: "OpsRadar — The AI Operating System for agencies",
     description:
-      "OpsRadar audits every workflow you already run, then builds and monitors the automations that replace them.",
+      "One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar" }],
   },
   twitter: {
-    title: "OpsRadar — The operating system for agency operations",
+    title: "OpsRadar — The AI Operating System for agencies",
     description:
-      "OpsRadar audits every workflow you already run, then builds and monitors the automations that replace them.",
+      "One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
     images: ["/og-image.png"],
   },
 };
@@ -34,13 +34,12 @@ export default function Home() {
 
       <Hero />
       <MetricStrip />
-      <SystemSection />
+      <PillarsSection />
       <DashboardSection />
+      <HowItWorksSection />
       <SegmentSection />
-      <RulesSection />
       <WhySection />
-      <FounderNote />
-      <VisionSection />
+      <CloserSection />
       <FinalCTA />
 
       <SiteFooter />
@@ -59,22 +58,22 @@ function Hero() {
         <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
           <div>
             <p className="text-label text-[var(--color-fg-subtle)]">
-              Operations infrastructure
+              AIOS · for agencies under 30 people
             </p>
             <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.5rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance">
-              The operating system for{" "}
-              <span className="text-[var(--color-primary)]">agency operations</span>.
+              The AI Operating System for{" "}
+              <span className="text-[var(--color-primary)]">agencies</span>.
             </h1>
             <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-              Every workflow your agency runs has a cost. OpsRadar finds the
-              leak, ships the n8n automation that closes it in 5 to 14 days,
-              and keeps it running when Meta breaks its API.
+              One platform that runs your workflows, watches them while you
+              sleep, shows everything in one dashboard, and remembers how your
+              shop actually operates. Built specifically for your business.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
                 <Link href="/audit">
-                  Start your audit
+                  Start the 3-minute audit
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
@@ -87,10 +86,10 @@ function Hero() {
 
             <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-caption text-[var(--color-fg-subtle)]">
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />Audit in 3 minutes
+                <Check className="size-3.5 text-[var(--color-success)]" />13 questions
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />Real dollar figures
+                <Check className="size-3.5 text-[var(--color-success)]" />Free
               </li>
               <li className="inline-flex items-center gap-1.5">
                 <Check className="size-3.5 text-[var(--color-success)]" />No card, no pitch
@@ -101,7 +100,7 @@ function Hero() {
           <div className="relative">
             <DashboardPreview />
             <p className="mt-4 text-caption text-[var(--color-fg-subtle)] font-mono">
-              ↑ How your /dashboard will look once OpsRadar is running.
+              ↑ The OBSERVE dashboard. One screen, every morning.
             </p>
           </div>
         </div>
@@ -111,15 +110,15 @@ function Hero() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Metric strip                                                               */
+/*  Metric strip — product capability stats (no delivery promises)             */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function MetricStrip() {
   const metrics = [
+    { label: "Audit length", value: "13 Q · 3 min", note: "free, no card" },
+    { label: "Tools connected", value: "40+", note: "across n8n + Claude" },
+    { label: "Workflows ready", value: "120+", note: "in the AIOS library" },
     { label: "Hours reclaimed", value: "31 / mo", note: "per operator" },
-    { label: "Time to first workflow", value: "5 days", note: "from audit complete" },
-    { label: "Workflows live", value: "1,200+", note: "across customers" },
-    { label: "Avg agency ROI", value: "14×", note: "in year one" },
   ];
 
   return (
@@ -152,63 +151,66 @@ function MetricStrip() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  System (Audit. Build. Monitor.)                                            */
+/*  Pillars — OPERATE · OBSERVE · BRAIN · GUARD                                */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function SystemSection() {
-  const cols = [
+function PillarsSection() {
+  const pillars = [
     {
-      step: "01",
-      title: "Audit",
-      copy: "A 3-minute audit maps every tool, workflow, and report your agency runs — then quantifies what each one is actually costing in hours and dollars.",
+      name: "OPERATE",
+      title: "The engine running your agency.",
+      body: "Automations doing the manual work. Your workflows run inside your n8n, on your credentials, under your control.",
     },
     {
-      step: "02",
-      title: "Build",
-      copy: "Custom n8n workflows, in your n8n account, delivered in 5 to 14 days. Real code, real logs, real ownership. Day one.",
+      name: "OBSERVE",
+      title: "The dashboard showing everything.",
+      body: "One screen. Real data. Every morning. What's running, what's broken, what it saved you this week.",
     },
     {
-      step: "03",
-      title: "Monitor",
-      copy: "Meta breaks something on Tuesday. Triple Whale ships a breaking update on Friday. Our team fixes it before your Monday recap runs.",
+      name: "BRAIN",
+      title: "The AI that knows your company.",
+      body: "Your data. Your history. Your patterns. Queried through Claude. Gets sharper every week the system runs.",
+    },
+    {
+      name: "GUARD",
+      title: "The system watching while you sleep.",
+      body: "Silent failures caught before they cost you. Meta breaks something at 3 a.m.; GUARD knows by 3:01.",
     },
   ];
 
   return (
-    <section id="system" className="border-b border-[var(--color-border)]">
+    <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 mb-14 md:mb-16">
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-fg-subtle)]">The system</p>
+            <p className="text-label text-[var(--color-fg-subtle)]">What&apos;s in AIOS</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Three things we do. Nothing else.
+              Four parts. One platform.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              Not hourly consulting. Not training. Not dashboards you have to
-              maintain yourself.
+              AIOS is not a tool. It&apos;s the layer that connects every tool you
+              already pay for — and adds the parts you don&apos;t have yet.
             </p>
           </div>
+        </div>
 
-          <div className="space-y-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
-            {cols.map((c) => (
-              <article
-                key={c.title}
-                className="bg-[var(--color-surface)] p-8 md:p-10 grid grid-cols-[auto_1fr] gap-6 md:gap-10 items-start"
-              >
-                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
-                  {c.step}
-                </p>
-                <div>
-                  <h3 className="font-serif text-h2 text-[var(--color-fg)] tracking-[-0.02em]">
-                    {c.title}.
-                  </h3>
-                  <p className="mt-3 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
-                    {c.copy}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+          {pillars.map((p) => (
+            <article
+              key={p.name}
+              className="bg-[var(--color-surface)] p-8 md:p-10"
+            >
+              <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">
+                {p.name}
+              </p>
+              <h3 className="mt-4 font-serif text-h2 text-[var(--color-fg)] tracking-[-0.02em] leading-[1.12] text-balance">
+                {p.title}
+              </h3>
+              <p className="mt-3 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+                {p.body}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -227,14 +229,14 @@ function DashboardSection() {
     >
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-2xl">
-          <p className="text-label text-[var(--color-fg-subtle)]">Dashboard</p>
+          <p className="text-label text-[var(--color-fg-subtle)]">OBSERVE</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            What&apos;s running, what&apos;s broken, what it saved you.
+            Your agency, on one screen.
           </h2>
           <p className="mt-5 text-body-lg text-[var(--color-fg-muted)]">
             Every workflow, every credential, every dollar reclaimed — visible
-            the second it changes. No nightly batches. No client data stored in
-            our database. Just your n8n, read live.
+            the second it changes. No nightly batches. No client data in our
+            database. Just your stack, read live.
           </p>
         </div>
 
@@ -294,9 +296,9 @@ function DashboardSection() {
           </div>
 
           <aside className="space-y-6">
-            <Card title="Live, not nightly" body="Workflow status comes straight from your n8n. Nothing is ever cached longer than 60 seconds. You see the same world your team sees." />
-            <Card title="Your data, your DB" body="OpsRadar does not store client data. Workflows run inside your n8n; credentials live in your vault; logs stay on your infrastructure." />
-            <Card title="ROI, not dashboards" body="Every workflow ships with a baseline cost-to-run and a hours-saved target. The dashboard tells you whether you're still ahead." />
+            <Card title="Live, not nightly" body="Workflow status comes straight from your n8n. Nothing is cached longer than 60 seconds. You see the same world your team sees." />
+            <Card title="Your data stays yours" body="OpsRadar never stores client data. Workflows run inside your n8n; credentials live in your vault; logs stay on your infrastructure." />
+            <Card title="ROI, not vanity charts" body="Every workflow ships with a baseline cost-to-run and an hours-saved target. The dashboard tells you whether AIOS is still earning its keep." />
           </aside>
         </div>
       </div>
@@ -314,6 +316,83 @@ function Card({ title, body }: { title: string; body: string }) {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
+/*  How it works — the funnel (audit → discovery → build), no pricing          */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function HowItWorksSection() {
+  const steps = [
+    {
+      n: "01",
+      tag: "Audit",
+      title: "Tell us what your agency runs on.",
+      body: "13 questions about your tools, your team, and your operations. Free. Three minutes. You get an AI-generated report on where the hours are bleeding out.",
+      side: "What you walk away with: a PDF that names the workflows worth automating first, and the dollar figures behind them.",
+    },
+    {
+      n: "02",
+      tag: "Discovery",
+      title: "We sit with you to understand the business.",
+      body: "We do not build AIOS for shops we do not understand. On a call, we go deeper than the audit — your tools, your clients, your team, your patterns, the things only operators know.",
+      side: "What we walk away with: a real picture of how your shop actually works. We take roughly a week to evaluate and reason about it.",
+    },
+    {
+      n: "03",
+      tag: "Blueprint",
+      title: "A written plan for your AIOS.",
+      body: "We send you a PDF that shows what's actually happening to your operations today, what the system will do about it, what gets built first, and what the build will cost.",
+      side: "What you walk away with: a buy-or-don't decision with full visibility. No surprises, no nine-page MSAs.",
+    },
+    {
+      n: "04",
+      tag: "Build",
+      title: "Your AIOS goes live.",
+      body: "Workflows run in your n8n. The BRAIN learns your shop. OBSERVE shows you everything. GUARD watches it overnight. We can run it for you, or hand it over to your team.",
+      side: "What stays with you: every workflow, every credential, every log — in your accounts, under your control, from day one.",
+    },
+  ];
+
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="text-label text-[var(--color-fg-subtle)]">How OpsRadar happens</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              From audit to live AIOS in four steps.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Free at the front. Honest in the middle. Real ownership at the end.
+            </p>
+          </div>
+
+          <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+            {steps.map((s) => (
+              <li key={s.n} className="grid grid-cols-[auto_1fr] gap-8 md:gap-12 py-10 md:py-12 items-start">
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
+                  — {s.n}
+                </p>
+                <div>
+                  <p className="text-label text-[var(--color-primary)]">{s.tag}</p>
+                  <h3 className="mt-3 font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em] text-balance">
+                    {s.title}
+                  </h3>
+                  <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
+                    {s.body}
+                  </p>
+                  <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-subtle)] max-w-2xl italic">
+                    {s.side}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
 /*  Segment picker                                                             */
 /* ────────────────────────────────────────────────────────────────────────── */
 
@@ -322,7 +401,7 @@ function SegmentSection() {
     {
       href: "/for/paid-media",
       tag: "Paid media",
-      headline: "Sunday nights are for your family, not Meta + Google + Klaviyo reports.",
+      headline: "Sunday-night reporting goes away. Pacing alerts find you first.",
       bullets: [
         "Monthly client reports that build themselves",
         "Pacing alerts tied to MER, not last-click ROAS",
@@ -332,7 +411,7 @@ function SegmentSection() {
     {
       href: "/for/seo",
       tag: "SEO",
-      headline: "Track what matters in 2026 — AI Overviews, LLM mentions, and rank.",
+      headline: "Track what matters in 2026 — AI Overviews, LLM mentions, rank.",
       bullets: [
         "Weekly rank digests from Ahrefs + GSC + Semrush",
         "AIO presence tracking across ChatGPT, Perplexity, Google AIO",
@@ -355,10 +434,15 @@ function SegmentSection() {
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-2xl mb-14">
-          <p className="text-label text-[var(--color-fg-subtle)]">Built for three kinds of shop</p>
+          <p className="text-label text-[var(--color-fg-subtle)]">Working inside agencies like</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
-            Which one are you running?
+            AIOS, shaped to your shop.
           </h2>
+          <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
+            AIOS is not a template. Each one is built for the specific
+            operations of the agency it runs inside. Here&apos;s what it looks
+            like for the three shapes we see most.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -384,7 +468,7 @@ function SegmentSection() {
                 ))}
               </ul>
               <p className="mt-8 inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-muted)] group-hover:text-[var(--color-fg)] transition-colors">
-                See the {seg.tag.toLowerCase()} page
+                See AIOS for {seg.tag.toLowerCase()}
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </p>
             </Link>
@@ -396,85 +480,25 @@ function SegmentSection() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Four rules                                                                 */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-function RulesSection() {
-  const rules = [
-    {
-      n: "01",
-      title: "Our team builds it directly.",
-      copy: "No freelancers. No handoffs. The system that scopes your AIOS is the system that runs it.",
-    },
-    {
-      n: "02",
-      title: "We diagnose before we pitch.",
-      copy: "Every call starts with a real diagnosis of what your agency is actually losing. We do not take meetings to talk about what we might do for you.",
-    },
-    {
-      n: "03",
-      title: "We price systems, not task volume.",
-      copy: "Flat monthly retainers. No surprise bills. Zapier punishes you for scaling — we do not.",
-    },
-    {
-      n: "04",
-      title: "We stay for year two.",
-      copy: "Your AI Operating System is designed to keep running after launch. Our team is still here when you add client #15 and Triple Whale breaks its API.",
-    },
-  ];
-
-  return (
-    <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <div className="max-w-2xl mb-16">
-          <p className="text-label text-[var(--color-fg-subtle)]">Who we are</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
-            Four rules we won&apos;t break.
-          </h2>
-        </div>
-
-        <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
-          {rules.map((r) => (
-            <li key={r.n} className="grid grid-cols-[auto_1fr] gap-8 md:gap-16 py-10 md:py-12 items-start">
-              <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
-                — {r.n}
-              </p>
-              <div>
-                <h3 className="font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em] text-balance">
-                  {r.title}
-                </h3>
-                <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-                  {r.copy}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/*  Why — three editorial pull-quotes                                          */
+/*  Why — three editorial pull-quotes (product-positioned)                     */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function WhySection() {
   const quotes = [
     {
+      kind: "On understanding",
+      quote: "We don’t build for shops we don’t understand.",
+      body: "AIOS is not a template you drop into your stack. We diagnose your real operations — your tools, your clients, your team, your patterns — before a single workflow is written. That is the only honest way to build a system for a business.",
+    },
+    {
       kind: "On ownership",
-      quote: "You own it. All of it.",
-      body: "Every workflow we build lives in your n8n account, on your Google Drive, running on your credentials. If OpsRadar ever left, nothing breaks. You keep the code, the logic, and the logs — day one.",
+      quote: "You own all of it. Day one.",
+      body: "Every workflow lives in your n8n account, on your Google Drive, running on your credentials. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the logs.",
     },
     {
       kind: "On reliability",
-      quote: "Meta breaks something. Guardian knows before you do.",
-      body: "Ad platforms push breaking API changes every quarter. Guardian catches them before your Monday morning report fails. You see the fix, not the error.",
-    },
-    {
-      kind: "On AI",
-      quote: "AI builds fast. We verify every line.",
-      body: "AI accelerates the build. Our team reviews every workflow before it touches your HubSpot, reports MER to your clients, or sends a branded PDF on the 2nd of the month.",
+      quote: "GUARD watches the system while you sleep.",
+      body: "Ad platforms push breaking changes every quarter. GUARD catches them before your Monday recap fails. You see the fix in your inbox, not the error.",
     },
   ];
 
@@ -511,59 +535,27 @@ function WhySection() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Founder note                                                               */
+/*  Closer — replaces FounderNote + Vision                                     */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function FounderNote() {
-  return (
-    <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-3xl px-6 py-24 md:py-28">
-        <div className="flex items-center gap-3 mb-8">
-          <span className="size-9 rounded-full bg-[var(--color-accent-100)] flex items-center justify-center text-[var(--color-primary)] font-serif text-body-lg">
-            L
-          </span>
-          <div>
-            <p className="text-body-sm font-medium text-[var(--color-fg)]">Lawand · Founder</p>
-            <p className="text-caption text-[var(--color-fg-subtle)]">A short note before you keep scrolling.</p>
-          </div>
-        </div>
-
-        <div className="space-y-5 text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
-          <p>
-            OpsRadar is built by a team that spent years studying how agencies
-            actually operate — not how they look on LinkedIn, but where the
-            work leaks, why tools do not talk to each other, and why agencies
-            keep hiring for problems that should be automated.
-          </p>
-          <p>
-            We exist because the gap between AI capability and operational
-            reality is still enormous. Most agencies have the tools. Almost
-            none have the system connecting them. We are building that system.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/*  Vision                                                                     */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-function VisionSection() {
+function CloserSection() {
   return (
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-      <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
         <div className="border-l-2 border-[var(--color-primary)] pl-8 md:pl-10">
-          <p className="text-label text-[var(--color-primary)]">The vision</p>
+          <p className="text-label text-[var(--color-primary)]">The bet</p>
           <div className="mt-6 space-y-6 text-body-lg leading-[1.65] text-[var(--color-fg-muted)] max-w-3xl">
             <p>
-              Every agency that runs on OpsRadar gets their own AI Operating System —
-              built from their real operations, their tools, their data, their history.
+              Most agencies have the tools — HubSpot, Meta, Klaviyo, GA4, Slack,
+              a Notion no one reads. Almost none have a system connecting them.
+              The work lives in someone&apos;s head, the reports get built by
+              hand, the platforms break quietly, and the team scales by hiring.
             </p>
             <p>
-              Their team queries it through Claude. Their workflows run on it through
-              n8n. Their brain gets richer every week.
+              AIOS is the platform that ends that. Your data, your history,
+              your patterns — fed into a system built specifically for your
+              shop. It runs the work. It watches the work. It remembers how
+              you operate, and gets sharper every week.
             </p>
             <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
               We are not building another automation tool. We are building the
@@ -584,30 +576,32 @@ function FinalCTA() {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          See what your radar looks like.
+          See what your AIOS looks like.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          A 20-minute call. Real numbers on what your agency is losing. The
-          shortlist of workflows worth automating first.
+          13 questions. Three minutes. An AI-generated report on where your
+          operations are bleeding hours — and which workflows are worth
+          automating first.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a free 20-min call
+            <Link href="/audit">
+              Start the audit
               <ArrowRight className="size-4" />
-            </a>
+            </Link>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <Link href="/audit">Or run a self-serve audit</Link>
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Or talk to founders
+            </a>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No card. No sales pitch. Just the shortlist of workflows burning the
-          most hours in your agency this week.
+          13 questions · Free · No card, no pitch · 3 minutes to the report.
         </p>
       </div>
     </section>
