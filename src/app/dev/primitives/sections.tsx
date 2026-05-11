@@ -70,6 +70,7 @@ import { Skeleton } from "<npm>/components/ui/skeleton";
 import { Progress } from "<npm>/components/ui/progress";
 import { StatusDot, type Status } from "<npm>/components/ui/status-dot";
 import { Metric } from "<npm>/components/ui/metric";
+import { Table, THead, TR, TH, TD } from "<npm>/components/ui/data-table";
 
 export function Showcase() {
   return (
@@ -99,8 +100,9 @@ export function Showcase() {
       <ToastSection />
       <SkeletonProgressStatusSection />
       <MetricSection />
+      <TableSection />
 
-      {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
+      {/* Tasks 14–22 complete */}
     </main>
   );
 }
@@ -525,6 +527,50 @@ function MetricSection() {
         <Metric label="Active integrations" value="12" delta={{ value: "0", trend: "flat" }} />
         <Metric label="Failed runs (7d)" value="3" delta={{ value: "+1", trend: "down" }} />
       </div>
+    </section>
+  );
+}
+
+function TableSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Data table</p>
+      <Table density="medium" className="max-w-3xl">
+        <THead>
+          <TR>
+            <TH>Workflow</TH>
+            <TH>Runs (24h)</TH>
+            <TH>Status</TH>
+            <TH>Last run</TH>
+          </TR>
+        </THead>
+        <tbody>
+          <TR>
+            <TD>invoice-reminders</TD>
+            <TD>412</TD>
+            <TD><Badge variant="success" dot>Running</Badge></TD>
+            <TD>2 min ago</TD>
+          </TR>
+          <TR>
+            <TD>lead-router-v2</TD>
+            <TD>87</TD>
+            <TD><Badge variant="success" dot>Running</Badge></TD>
+            <TD>14 min ago</TD>
+          </TR>
+          <TR>
+            <TD>slack-recap-daily</TD>
+            <TD>3</TD>
+            <TD><Badge variant="warn" dot>Degraded</Badge></TD>
+            <TD>1 hr ago</TD>
+          </TR>
+          <TR>
+            <TD>onboarding-emails</TD>
+            <TD>54</TD>
+            <TD><Badge variant="success" dot>Running</Badge></TD>
+            <TD>4 min ago</TD>
+          </TR>
+        </tbody>
+      </Table>
     </section>
   );
 }
