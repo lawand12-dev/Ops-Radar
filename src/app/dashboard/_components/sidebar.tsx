@@ -19,17 +19,40 @@ import { C } from '<npm>/app/dashboard/_lib/theme';
 import { EcgIcon } from './icons';
 import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
 
-const navItems = [
-  { label: 'Dashboard',     href: '/dashboard',                icon: LayoutDashboard },
-  { label: 'Projects',      href: '/dashboard/projects',       icon: FolderKanban    },
-  { label: 'Tasks',         href: '/dashboard/tasks',          icon: CheckSquare     },
-  { label: 'Time Tracking', href: '/dashboard/time-tracking',  icon: Clock           },
-  { label: 'Financials',    href: '/dashboard/financials',     icon: TrendingUp      },
-  { label: 'Clients',       href: '/dashboard/clients',        icon: Users           },
-  { label: 'Reports',       href: '/dashboard/reports',        icon: BarChart3       },
-  { label: 'Team',          href: '/dashboard/team',           icon: UsersRound      },
-  { label: 'Integrations',  href: '/dashboard/settings/integrations', icon: Plug      },
-  { label: 'Settings',      href: '/dashboard/settings',       icon: Settings        },
+type NavItem = { label: string; href: string; icon: typeof LayoutDashboard };
+type NavSection = { tag: string | null; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    tag: 'BRAIN',
+    items: [
+      { label: 'Dashboard', href: '/dashboard',         icon: LayoutDashboard },
+      { label: 'Reports',   href: '/dashboard/reports', icon: BarChart3       },
+    ],
+  },
+  {
+    tag: 'OPERATE',
+    items: [
+      { label: 'Projects',      href: '/dashboard/projects',      icon: FolderKanban },
+      { label: 'Tasks',         href: '/dashboard/tasks',         icon: CheckSquare  },
+      { label: 'Time tracking', href: '/dashboard/time-tracking', icon: Clock        },
+    ],
+  },
+  {
+    tag: 'OBSERVE',
+    items: [
+      { label: 'Financials', href: '/dashboard/financials', icon: TrendingUp },
+      { label: 'Clients',    href: '/dashboard/clients',    icon: Users      },
+    ],
+  },
+  {
+    tag: 'WORKSPACE',
+    items: [
+      { label: 'Team',         href: '/dashboard/team',                  icon: UsersRound },
+      { label: 'Integrations', href: '/dashboard/settings/integrations', icon: Plug       },
+      { label: 'Settings',     href: '/dashboard/settings',              icon: Settings   },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -70,30 +93,48 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '4px 10px', overflowY: 'auto' }}>
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={label}
-              href={href}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 11,
-                padding: '9px 12px',
-                borderRadius: 8,
-                marginBottom: 2,
-                background: active ? C.accentMuted : 'transparent',
-                color: active ? C.accent : C.sub,
-                textDecoration: 'none',
-                transition: 'background 0.15s',
-              }}
-            >
-              <Icon size={16} strokeWidth={active ? 2 : 1.6} />
-              <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400 }}>{label}</span>
-            </Link>
-          );
-        })}
+        {navSections.map((section, sectionIdx) => (
+          <div key={section.tag ?? sectionIdx} style={{ marginTop: sectionIdx === 0 ? 4 : 14 }}>
+            {section.tag && (
+              <div
+                style={{
+                  fontFamily: '"JetBrains Mono", ui-monospace, SF Mono, monospace',
+                  fontSize: 9.5,
+                  fontWeight: 600,
+                  letterSpacing: '0.16em',
+                  color: C.muted,
+                  padding: '4px 12px 6px',
+                }}
+              >
+                {section.tag}
+              </div>
+            )}
+            {section.items.map(({ label, href, icon: Icon }) => {
+              const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 11,
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    marginBottom: 2,
+                    background: active ? C.accentMuted : 'transparent',
+                    color: active ? C.accent : C.sub,
+                    textDecoration: 'none',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <Icon size={16} strokeWidth={active ? 2 : 1.6} />
+                  <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400 }}>{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* User */}
