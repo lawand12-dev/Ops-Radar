@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For Full-Service Digital Agencies — OpsRadar',
+  title: 'AIOS for Full-Service Digital Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for full-service agencies (10–25 people). Cross-channel reporting that protects delivery margin. Utilization alerts before scope creep eats your P&L. Onboarding that locks expectations before sprint one.',
+    'OpsRadar is AIOS for full-service agencies (10–25 people). Cross-channel reporting that protects delivery margin. Utilization alerts before scope creep eats your P&L. OBSERVE shows you everything; GUARD catches it before it costs you.',
   openGraph: {
-    title: 'For Full-Service Digital Agencies — OpsRadar',
+    title: 'AIOS for Full-Service Digital Agencies — OpsRadar',
     description:
-      'Cross-channel reporting, utilization alerts, and scope-creep flagging — automated inside your n8n account.',
+      'Cross-channel reporting, utilization alerts, and scope-creep flagging — OPERATE runs the workflows, OBSERVE shows the gaps. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Full-Service Agencies' }],
   },
   twitter: {
-    title: 'For Full-Service Digital Agencies — OpsRadar',
+    title: 'AIOS for Full-Service Digital Agencies — OpsRadar',
     description:
-      'Cross-channel reporting, utilization alerts, and scope-creep flagging — automated inside your n8n account.',
+      'Cross-channel reporting, utilization alerts, scope-creep flagging. OPERATE runs it; OBSERVE shows it.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Reporting',
     title: 'Cross-channel reporting that defends margin.',
-    body: 'Google Ads, Meta, GA4, HubSpot, and SEO data in one branded monthly rollup — automated on the 2nd. The 4–8 hours per client your team burns on reporting each month go back to billable work.',
+    body: 'OPERATE merges Google Ads, Meta, GA4, HubSpot, and SEO data into one branded monthly rollup — automated on the 2nd. The 4–8 hours per client your team burns on reporting each month go back to billable work.',
   },
   {
     tag: 'Utilization',
     title: 'Utilization visible before the P&L hurts.',
-    body: 'Harvest, Toggl, or Float data pulled nightly into a Slack digest your ops lead actually reads. See utilization dipping below 55% before it becomes a quarter-end conversation with your accountant.',
+    body: 'OBSERVE pulls Harvest, Toggl, or Float data nightly into a Slack digest your ops lead actually reads. See utilization dipping below 55% before it becomes a quarter-end conversation with your accountant.',
   },
   {
     tag: 'Onboarding',
     title: 'Structured onboarding that locks expectations.',
-    body: 'Signed contract triggers a 6-phase workflow — provisioning, intake, kickoff, setup, first deliverable, steady state — with gates at each step. 48% of churn starts in weeks 1–4. This is where you fix the trajectory.',
+    body: 'OPERATE triggers a 6-phase onboarding workflow on signed contract — provisioning, intake, kickoff, setup, first deliverable, steady state — with gates at each step. 48% of churn starts in weeks 1–4. This is where you fix the trajectory.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForFullServicePage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For full-service agencies
+          AIOS for full-service agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -111,14 +111,15 @@ export default function ForFullServicePage() {
 
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Cross-channel reporting eats your senior time. Utilization dips go unnoticed until
-          quarter-end. Scope creep absorbs retainer silently. OpsRadar builds the automation
-          layer that closes all three leaks — inside your n8n account, in 5 to 14 days.
+          quarter-end. Scope creep absorbs retainer silently. OpsRadar is AIOS — the system
+          that closes all three leaks, runs inside your n8n account, and gets sharper every
+          week the data flows through it.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -135,7 +136,7 @@ export default function ForFullServicePage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -236,17 +237,18 @@ export default function ForFullServicePage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run a full-service audit.
+            See what your full-service AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real figures on what your shop loses to cross-channel reporting,
-            scope creep, and invisible utilization gaps. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on what your shop loses
+            to cross-channel reporting, scope creep, and invisible utilization gaps —
+            and which workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -256,6 +258,10 @@ export default function ForFullServicePage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 

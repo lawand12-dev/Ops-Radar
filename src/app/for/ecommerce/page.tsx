@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For E-commerce Agencies — OpsRadar',
+  title: 'AIOS for E-commerce Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for e-commerce and Shopify Plus partner agencies under 25 people. Product feed sync across Shopify + Meta + Google Merchant. Daily revenue roll-up from Shopify, Klaviyo, and GA4. Low-stock alerts before customers notice.',
+    'OpsRadar is AIOS for e-commerce and Shopify Plus partner agencies under 25 people. OPERATE syncs product feeds across Shopify + Meta + Google Merchant. OBSERVE delivers the daily revenue roll-up. GUARD fires low-stock alerts before customers notice.',
   openGraph: {
-    title: 'For E-commerce Agencies — OpsRadar',
+    title: 'AIOS for E-commerce Agencies — OpsRadar',
     description:
-      'Product feed sync, daily revenue roll-up, and low-stock alerts — automated inside your n8n account.',
+      'Product feed sync, daily revenue roll-up, and low-stock alerts — OPERATE runs the feeds, GUARD watches the inventory. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for E-commerce Agencies' }],
   },
   twitter: {
-    title: 'For E-commerce Agencies — OpsRadar',
+    title: 'AIOS for E-commerce Agencies — OpsRadar',
     description:
-      'Product feed sync, daily revenue roll-up, and low-stock alerts — automated inside your n8n account.',
+      'Product feed sync, daily revenue roll-up, low-stock alerts. OPERATE runs the feeds; GUARD watches inventory.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Feed sync',
     title: 'Product data stays in sync automatically.',
-    body: 'Shopify catalogue changes — price updates, variant adds, inventory edits — pushed to Meta and Google Merchant Center within the hour. No more ad rejections from stale feeds or out-of-stock products burning spend overnight.',
+    body: 'OPERATE pushes Shopify catalogue changes — price updates, variant adds, inventory edits — to Meta and Google Merchant Center within the hour. No more ad rejections from stale feeds or out-of-stock products burning spend overnight.',
   },
   {
     tag: 'Reporting',
     title: 'Daily revenue roll-up in Slack by 8 a.m.',
-    body: 'Shopify gross, Klaviyo email revenue, and GA4 sessions combined into one Slack message every morning. 12–15 hours of senior strategist time per week stop going to spreadsheet assembly.',
+    body: 'OBSERVE combines Shopify gross, Klaviyo email revenue, and GA4 sessions into one Slack message every morning. 12–15 hours of senior strategist time per week stop going to spreadsheet assembly.',
   },
   {
     tag: 'Inventory',
     title: 'Low-stock alerts before customers see 404s.',
-    body: 'Shopify inventory monitored hourly per variant. Slack alert fires when any SKU crosses your threshold — before the product page goes unavailable and before ad spend continues driving to zero-inventory URLs.',
+    body: 'GUARD monitors Shopify inventory hourly per variant and fires a Slack alert when any SKU crosses your threshold — before the product page goes unavailable and before ad spend continues driving to zero-inventory URLs.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForEcommercePage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For e-commerce agencies
+          AIOS for e-commerce agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -112,14 +112,14 @@ export default function ForEcommercePage() {
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Product feed drift burns ad spend. Revenue numbers live across Shopify, Klaviyo,
           and GA4. Out-of-stock SKUs keep running traffic until someone checks. OpsRadar
-          builds the automation layer that closes all three — inside your n8n account,
-          in 5 to 14 days.
+          is AIOS — the system that closes all three, runs inside your n8n account, and
+          watches your inventory while you sleep.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -136,7 +136,7 @@ export default function ForEcommercePage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -237,17 +237,18 @@ export default function ForEcommercePage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run an e-commerce audit.
+            See what your e-commerce AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real figures on the hours your agency loses to feed drift,
-            manual reporting, and inventory blind spots. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on the hours your agency
+            loses to feed drift, manual reporting, and inventory blind spots — and which
+            workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -257,6 +258,10 @@ export default function ForEcommercePage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 

@@ -10,19 +10,19 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'For Design Agencies — OpsRadar',
+  title: 'AIOS for Design Agencies — OpsRadar',
   description:
-    'OpsRadar builds the automation layer for design and creative studios under 15 people. Feedback consolidated from Figma, Frame.io, and Loom into one queue. Project status in one Monday Slack digest. Utilization visible weekly, not at quarter-end.',
+    'OpsRadar is AIOS for design and creative studios under 15 people. OPERATE consolidates feedback from Figma, Frame.io, and Loom into one queue. OBSERVE shows project status in one Monday Slack digest. Utilization visible weekly, not at quarter-end.',
   openGraph: {
-    title: 'For Design Agencies — OpsRadar',
+    title: 'AIOS for Design Agencies — OpsRadar',
     description:
-      'Feedback consolidated. Status in one digest. Utilization weekly. Built inside your n8n account in 5 to 14 days.',
+      'Feedback consolidated. Status in one digest. Utilization weekly. OPERATE runs the handoffs; OBSERVE keeps your studio visible. Built inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Design Agencies' }],
   },
   twitter: {
-    title: 'For Design Agencies — OpsRadar',
+    title: 'AIOS for Design Agencies — OpsRadar',
     description:
-      'Feedback consolidated. Status in one digest. Utilization weekly. Built inside your n8n account.',
+      'Feedback consolidated. Status in one digest. OPERATE runs the handoffs; OBSERVE keeps the studio visible.',
     images: ['/og-image.png'],
   },
 }
@@ -33,17 +33,17 @@ const OUTCOMES = [
   {
     tag: 'Feedback',
     title: 'One queue. No more triage.',
-    body: 'Figma comments, Frame.io notes, Loom replies, Slack DMs, and client emails collapsed into a single Notion or Asana queue per project. Designers stop triaging sources. PMs stop chasing threads. ~4 hours per designer back each week.',
+    body: 'OPERATE collapses Figma comments, Frame.io notes, Loom replies, Slack DMs, and client emails into a single Notion or Asana queue per project. Designers stop triaging sources. PMs stop chasing threads. ~4 hours per designer back each week.',
   },
   {
     tag: 'Status',
     title: 'Monday digest replaces the stand-up.',
-    body: 'Notion, Asana, or ClickUp pulled into one Slack message every Monday at 8 a.m. — revision status, approval blockers, deadline drift per project. The 30-minute status meeting disappears.',
+    body: 'OBSERVE pulls Notion, Asana, or ClickUp into one Slack message every Monday at 8 a.m. — revision status, approval blockers, deadline drift per project. The 30-minute status meeting disappears.',
   },
   {
     tag: 'Utilization',
     title: 'Under-billing surfaces in days.',
-    body: 'Harvest, Toggl, or Clockify rolled into a weekly Slack digest showing utilization per designer. Scope-creep alert fires when hours pass the retainer floor — the same week, not at month-end when the conversation is already awkward.',
+    body: 'OBSERVE rolls Harvest, Toggl, or Clockify into a weekly Slack digest showing utilization per designer. GUARD fires a scope-creep alert when hours pass the retainer floor — the same week, not at month-end when the conversation is already awkward.',
   },
 ]
 
@@ -102,7 +102,7 @@ export default function ForDesignPage() {
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          For design agencies
+          AIOS for design agencies
         </p>
 
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
@@ -111,14 +111,15 @@ export default function ForDesignPage() {
 
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Figma feedback, Frame.io revisions, and Loom replies all land in different places.
-          Status meetings reconstruct state from memory. OpsRadar builds the automation layer
-          that closes all three gaps — inside your n8n account, in 5 to 14 days.
+          Status meetings reconstruct state from memory. OpsRadar is AIOS — the system that
+          closes all three gaps, runs inside your n8n account, and gets sharper every week
+          your studio operates.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
             <Link href="/audit">
-              Start your audit
+              Start the audit
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -135,7 +136,7 @@ export default function ForDesignPage() {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes, delivered in weeks.
+            Three outcomes. One system.
           </h2>
 
           <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
@@ -236,17 +237,18 @@ export default function ForDesignPage() {
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
           <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
           <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Run a design studio audit.
+            See what your design studio AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            3 minutes. Real figures on the hours your studio loses to feedback triage,
-            status meetings, and late-night handoffs. No pitch, no card.
+            13 questions. Three minutes. An AI-generated report on the hours your studio
+            loses to feedback triage, status meetings, and late-night handoffs — and which
+            workflows are worth automating first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
               <Link href="/audit">
-                Start your audit
+                Start the audit
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -256,6 +258,10 @@ export default function ForDesignPage() {
               </a>
             </Button>
           </div>
+
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            13 questions · Free · No card, no pitch · 3 minutes to the report.
+          </p>
         </div>
       </section>
 
