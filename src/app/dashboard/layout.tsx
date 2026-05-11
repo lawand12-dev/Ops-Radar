@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import { Sidebar } from './_components/sidebar';
-import { C } from './_lib/theme';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', fontFamily: 'inherit' }}>
+    <div className="flex min-h-screen bg-[var(--color-bg)] font-sans">
       <Sidebar />
-      <main style={{ marginLeft: 220, flex: 1, padding: '28px 26px', minWidth: 0 }}>
+      <main className="ml-[220px] min-w-0 flex-1 px-6 py-7">
         {children}
       </main>
     </div>

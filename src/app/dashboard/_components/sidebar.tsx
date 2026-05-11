@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Plug,
 } from 'lucide-react';
-import { C } from '<npm>/app/dashboard/_lib/theme';
+import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
 import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
 
@@ -59,53 +59,24 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      style={{
-        width: 220,
-        minWidth: 220,
-        background: C.sidebar,
-        borderRight: `1px solid ${C.border}`,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '100vh',
-        zIndex: 40,
-      }}
-    >
+    <aside className="fixed top-0 left-0 z-40 flex h-screen w-[220px] min-w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]">
       {/* Logo */}
       <Link
         href="/dashboard"
-        style={{
-          padding: '22px 20px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          textDecoration: 'none',
-        }}
+        className="flex items-center gap-2.5 px-5 pt-5 pb-5 text-[var(--color-fg)] no-underline"
       >
         <EcgIcon />
-        <span style={{ fontWeight: 600, fontSize: 17, color: C.text, letterSpacing: '-0.3px' }}>
-          opsradar
+        <span className="font-serif text-[17px] tracking-[-0.01em] text-[var(--color-fg)]">
+          OpsRadar
         </span>
       </Link>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '4px 10px', overflowY: 'auto' }}>
+      <nav className="flex-1 overflow-y-auto px-2.5 py-1">
         {navSections.map((section, sectionIdx) => (
-          <div key={section.tag ?? sectionIdx} style={{ marginTop: sectionIdx === 0 ? 4 : 14 }}>
+          <div key={section.tag ?? sectionIdx} className={sectionIdx === 0 ? 'mt-1' : 'mt-3.5'}>
             {section.tag && (
-              <div
-                style={{
-                  fontFamily: '"JetBrains Mono", ui-monospace, SF Mono, monospace',
-                  fontSize: 9.5,
-                  fontWeight: 600,
-                  letterSpacing: '0.16em',
-                  color: C.muted,
-                  padding: '4px 12px 6px',
-                }}
-              >
+              <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">
                 {section.tag}
               </div>
             )}
@@ -115,21 +86,17 @@ export function Sidebar() {
                 <Link
                   key={label}
                   href={href}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 11,
-                    padding: '9px 12px',
-                    borderRadius: 8,
-                    marginBottom: 2,
-                    background: active ? C.accentMuted : 'transparent',
-                    color: active ? C.accent : C.sub,
-                    textDecoration: 'none',
-                    transition: 'background 0.15s',
-                  }}
+                  className={cn(
+                    'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
+                    active
+                      ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
+                      : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+                  )}
                 >
                   <Icon size={16} strokeWidth={active ? 2 : 1.6} />
-                  <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400 }}>{label}</span>
+                  <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
+                    {label}
+                  </span>
                 </Link>
               );
             })}
@@ -138,44 +105,20 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div style={{ padding: '12px 14px', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '8px 10px',
-            borderRadius: 10,
-            background: 'rgba(255,255,255,0.03)',
-            cursor: 'pointer',
-          }}
+      <div className="flex flex-col gap-2 border-t border-[var(--color-border)] px-3.5 py-3">
+        <button
+          type="button"
+          className="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-sunken)] px-2.5 py-2 transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
         >
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--color-accent-400), var(--color-accent-600))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontSize: 12,
-              fontWeight: 700,
-              flexShrink: 0,
-              letterSpacing: '0.5px',
-            }}
-          >
+          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-accent-400)] to-[var(--color-accent-600)] text-[12px] font-bold tracking-[0.5px] text-white">
             AK
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Alex Kim
-            </div>
-            <div style={{ fontSize: 11, color: C.muted }}>Agency Owner</div>
+          <div className="min-w-0 flex-1 text-left">
+            <div className="truncate text-body-sm font-semibold text-[var(--color-fg)]">Alex Kim</div>
+            <div className="text-caption text-[var(--color-fg-subtle)]">Agency owner</div>
           </div>
-          <ChevronDown size={13} color={C.muted} />
-        </div>
+          <ChevronDown size={13} className="text-[var(--color-fg-faint)]" />
+        </button>
 
         <SignOutButton />
       </div>

@@ -1,7 +1,25 @@
 import { Info, X } from 'lucide-react';
-import { C } from '<npm>/app/dashboard/_lib/theme';
+import { cn } from '<npm>/lib/utils';
 
 type Trend = 'up' | 'down' | 'neutral';
+
+const TREND_STYLES: Record<Trend, { color: string; bg: string; arrow: string }> = {
+  up: {
+    color: 'text-[var(--color-success)]',
+    bg: 'bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)]',
+    arrow: '▲',
+  },
+  down: {
+    color: 'text-[var(--color-danger)]',
+    bg: 'bg-[color-mix(in_srgb,var(--color-danger)_12%,transparent)]',
+    arrow: '▼',
+  },
+  neutral: {
+    color: 'text-[var(--color-fg-muted)]',
+    bg: 'bg-[var(--color-surface-sunken)]',
+    arrow: '•',
+  },
+};
 
 export function StatCard({
   label,
@@ -16,44 +34,32 @@ export function StatCard({
   trend?: Trend;
   hint?: string;
 }) {
-  const trendColor = trend === 'down' ? C.red : trend === 'neutral' ? C.sub : C.green;
-  const trendBg    = trend === 'down' ? C.redBg : trend === 'neutral' ? 'rgba(148,163,184,0.1)' : C.greenBg;
-  const arrow      = trend === 'down' ? '▼' : trend === 'neutral' ? '•' : '▲';
+  const t = TREND_STYLES[trend];
 
   return (
-    <div
-      style={{
-        background: C.card,
-        border: `1px solid ${C.border}`,
-        borderRadius: 12,
-        padding: '14px 16px',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ fontSize: 12, color: C.sub, fontWeight: 500 }}>{label}</span>
-          <Info size={11} color={C.muted} />
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
+      <div className="mb-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <span className="text-caption font-medium text-[var(--color-fg-muted)]">{label}</span>
+          <Info size={11} className="text-[var(--color-fg-faint)]" />
         </div>
-        <X size={12} color={C.muted} style={{ cursor: 'pointer' }} />
+        <X size={12} className="cursor-pointer text-[var(--color-fg-faint)]" />
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1, marginBottom: 12 }}>
+      <div className="mb-3 font-mono text-[26px] font-medium leading-none tabular-nums text-[var(--color-fg)] tracking-[-0.01em]">
         {value}
       </div>
       {delta && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <div className="flex items-center gap-2">
           <span
-            style={{
-              fontSize: 11.5,
-              fontWeight: 600,
-              color: trendColor,
-              background: trendBg,
-              borderRadius: 20,
-              padding: '2px 8px',
-            }}
+            className={cn(
+              'inline-flex items-center rounded-full px-2 py-[2px] text-[11.5px] font-semibold',
+              t.color,
+              t.bg,
+            )}
           >
-            {arrow} {delta}
+            {t.arrow} {delta}
           </span>
-          <span style={{ fontSize: 11, color: C.muted }}>{hint}</span>
+          <span className="text-caption text-[var(--color-fg-faint)]">{hint}</span>
         </div>
       )}
     </div>
