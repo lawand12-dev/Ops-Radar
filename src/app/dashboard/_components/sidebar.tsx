@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronDown,
   Plug,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
@@ -43,6 +44,12 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Financials', href: '/dashboard/financials', icon: TrendingUp },
       { label: 'Clients',    href: '/dashboard/clients',    icon: Users      },
+    ],
+  },
+  {
+    tag: 'GUARD',
+    items: [
+      { label: 'Workflow Health', href: '/dashboard/workflow-health', icon: ShieldCheck },
     ],
   },
   {
