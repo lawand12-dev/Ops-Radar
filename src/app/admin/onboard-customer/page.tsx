@@ -1,6 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '<npm>/components/ui/button';
+import { Input } from '<npm>/components/ui/input';
+import { Label } from '<npm>/components/ui/label';
+import { Badge } from '<npm>/components/ui/badge';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '<npm>/components/ui/card';
 
 export default function OnboardCustomerPage() {
   const [adminPassword, setAdminPassword] = useState('');
@@ -46,83 +60,152 @@ export default function OnboardCustomerPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080C14', padding: 32, color: '#E0F0FF' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto', background: '#0F1923', border: '1px solid rgba(0,194,255,0.1)', borderRadius: 16, padding: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Onboard customer</h1>
-        <p style={{ fontSize: 13.5, color: '#4A6280', marginBottom: 22, lineHeight: 1.5 }}>
-          Creates a Supabase user, inserts their <code>client_n8n_config</code> row,
-          and sends them a magic-link invite. Atomic &mdash; if either step fails, the user is rolled back.
-        </p>
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col">
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Field label="Admin password" type="password" value={adminPassword} onChange={setAdminPassword} required />
-          <Field label="Customer email" type="email" value={email} onChange={setEmail} required />
-          <Field label="n8n base URL" type="url" placeholder="https://customer.n8n.cloud" value={n8nBaseUrl} onChange={setN8nBaseUrl} required />
-          <Field label="n8n webhook secret" type="password" value={n8nWebhookSecret} onChange={setN8nWebhookSecret} required />
-          <Field label="n8n API key" type="password" value={n8nApiKey} onChange={setN8nApiKey} required />
-
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              background: '#00C2FF',
-              color: '#0D1117',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 14px',
-              fontSize: 13.5,
-              fontWeight: 600,
-              cursor: submitting ? 'wait' : 'pointer',
-              opacity: submitting ? 0.7 : 1,
-              marginTop: 4,
-            }}
-          >
-            {submitting ? 'Onboarding…' : 'Onboard + send invite'}
-          </button>
-        </form>
-
-        {result?.kind === 'success' && (
-          <div style={{ marginTop: 16, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, padding: '10px 12px', fontSize: 12.5, color: '#4ADE80' }}>
-            Onboarded {result.email} (user id: <code>{result.userId}</code>). Invite email sent.
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-10 px-6 pt-4">
+        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">
+                <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
+                OpsRadar
+              </Link>
+              <span className="text-[var(--color-border-strong)]">/</span>
+              <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">Admin</Link>
+              <span className="text-[var(--color-border-strong)]">/</span>
+              <span className="text-caption text-[var(--color-fg-muted)]">Onboard customer</span>
+            </div>
           </div>
-        )}
-
-        {result?.kind === 'error' && (
-          <div style={{ marginTop: 16, background: 'rgba(255,77,77,0.08)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 8, padding: '10px 12px', fontSize: 12.5, color: '#FF4D4D' }}>
-            {result.message}
-          </div>
-        )}
+        </div>
       </div>
-    </div>
-  );
-}
 
-function Field({
-  label,
-  type,
-  value,
-  onChange,
-  required,
-  placeholder,
-}: {
-  label: string;
-  type: string;
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-  placeholder?: string;
-}) {
-  return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <span style={{ fontSize: 11.5, color: '#4A6280', letterSpacing: '0.3px', textTransform: 'uppercase' }}>{label}</span>
-      <input
-        type={type}
-        required={required}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ background: '#080C14', border: '1px solid rgba(0,194,255,0.1)', borderRadius: 8, padding: '10px 12px', fontSize: 14, color: '#E0F0FF', outline: 'none', fontFamily: 'monospace' }}
-      />
-    </label>
+      {/* ── Main content ─────────────────────────────────────────── */}
+      <main className="flex flex-1 items-start justify-center px-6 py-12">
+        <div className="w-full max-w-md">
+
+          {/* Page heading */}
+          <div className="mb-6">
+            <p className="text-label text-[var(--color-fg-subtle)] mb-2">Admin · Customer provisioning</p>
+            <h1 className="font-serif text-h2 text-[var(--color-fg)] leading-tight tracking-[-0.02em]">
+              Onboard customer
+            </h1>
+            <p className="mt-2 text-body-sm text-[var(--color-fg-muted)] leading-relaxed">
+              Creates a Supabase user, inserts their automation config row,
+              and sends a magic-link invite. Atomic&nbsp;&mdash; if either step fails, the user is rolled back.
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader className="border-b border-[var(--color-border)] pb-4">
+              <CardTitle className="text-body font-medium">New customer details</CardTitle>
+              <CardDescription>All fields required.</CardDescription>
+            </CardHeader>
+
+            <CardContent className="pt-5">
+              <form id="onboard-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="admin-password">Admin password</Label>
+                  <Input
+                    id="admin-password"
+                    type="password"
+                    required
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <div className="h-px bg-[var(--color-border)]" />
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="customer-email">Customer email</Label>
+                  <Input
+                    id="customer-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="agency@example.com"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="n8n-base-url">Automation base URL</Label>
+                  <Input
+                    id="n8n-base-url"
+                    type="url"
+                    required
+                    value={n8nBaseUrl}
+                    onChange={e => setN8nBaseUrl(e.target.value)}
+                    placeholder="https://customer.example.com"
+                    className="font-mono"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="n8n-webhook-secret">Webhook secret</Label>
+                  <Input
+                    id="n8n-webhook-secret"
+                    type="password"
+                    required
+                    value={n8nWebhookSecret}
+                    onChange={e => setN8nWebhookSecret(e.target.value)}
+                    className="font-mono"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="n8n-api-key">API key</Label>
+                  <Input
+                    id="n8n-api-key"
+                    type="password"
+                    required
+                    value={n8nApiKey}
+                    onChange={e => setN8nApiKey(e.target.value)}
+                    className="font-mono"
+                  />
+                </div>
+
+              </form>
+            </CardContent>
+
+            <CardFooter className="flex flex-col items-stretch gap-3 border-t border-[var(--color-border)] pt-4">
+              <Button
+                type="submit"
+                form="onboard-form"
+                disabled={submitting}
+                className="w-full"
+              >
+                {submitting ? 'Onboarding…' : 'Onboard + send invite'}
+              </Button>
+
+              {result?.kind === 'success' && (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-success)]/30 bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-3.5 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="success" dot>Onboarded</Badge>
+                  </div>
+                  <p className="text-body-sm text-[var(--color-success)] leading-relaxed">
+                    {result.email} was provisioned successfully. Invite email sent.
+                  </p>
+                  <p className="text-caption text-[var(--color-fg-subtle)] mt-1 font-mono">{result.userId}</p>
+                </div>
+              )}
+
+              {result?.kind === 'error' && (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-danger)]/30 bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3.5 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="destructive" dot>Error</Badge>
+                  </div>
+                  <p className="text-body-sm text-[var(--color-danger)] leading-relaxed">{result.message}</p>
+                </div>
+              )}
+            </CardFooter>
+          </Card>
+
+        </div>
+      </main>
+    </div>
   );
 }

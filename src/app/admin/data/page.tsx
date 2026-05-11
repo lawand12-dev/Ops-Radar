@@ -6,6 +6,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '<npm>/components/ui/button'
 import { Input } from '<npm>/components/ui/input'
+import { Badge } from '<npm>/components/ui/badge'
+import {
+  Table,
+  THead,
+  TR,
+  TH,
+  TD,
+} from '<npm>/components/ui/data-table'
 import {
   Dialog,
   DialogContent,
@@ -58,7 +66,7 @@ const TABLES: TableMeta[] = [
   {
     name: 'audits',
     label: 'Audits',
-    color: '#60a5fa',
+    color: '#818CF8',
     previewFields: ['name', 'email', 'company', 'created_at'],
   },
   {
@@ -182,24 +190,25 @@ function ConfirmModal({
 }) {
   return (
     <Dialog open={open} onOpenChange={v => !v && onCancel()}>
-      <DialogContent className="max-w-sm bg-surface-container border border-outline-variant/15 text-on-surface rounded-[16px] shadow-2xl">
+      <DialogContent className="max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-fg)] rounded-[var(--radius-xl)] shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="font-headline text-[18px] font-bold text-on-surface">{title}</DialogTitle>
+          <DialogTitle className="font-serif text-h4 font-medium text-[var(--color-fg)]">{title}</DialogTitle>
         </DialogHeader>
-        <p className="text-[13px] text-on-surface-variant leading-[1.6] mt-1">{description}</p>
+        <p className="text-body-sm text-[var(--color-fg-muted)] leading-relaxed mt-1">{description}</p>
         <div className="flex gap-3 mt-4">
           <Button
             variant="outline"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 h-auto py-2.5 rounded-[10px] text-[13px] border-outline-variant/20 text-on-surface-variant hover:bg-surface-container-high"
+            className="flex-1"
           >
             Cancel
           </Button>
           <Button
+            variant="destructive"
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 h-auto py-2.5 rounded-[10px] text-[13px] bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            className="flex-1"
           >
             {loading ? 'Deleting…' : 'Delete'}
           </Button>
@@ -219,16 +228,16 @@ function RowModal({
 }) {
   return (
     <Dialog open={!!row} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-surface-container border border-outline-variant/15 text-on-surface rounded-[16px] shadow-2xl">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-fg)] rounded-[var(--radius-xl)] shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="font-headline text-[16px] font-bold text-on-surface">Row Details</DialogTitle>
+          <DialogTitle className="font-serif text-h4 font-medium text-[var(--color-fg)]">Row details</DialogTitle>
         </DialogHeader>
         {row && (
-          <div className="space-y-3 mt-2">
+          <div className="space-y-2 mt-2">
             {Object.entries(row).map(([key, val]) => (
-              <div key={key} className="rounded-[10px] bg-surface-container-low border border-outline-variant/10 p-3">
-                <p className="text-[10px] font-bold uppercase tracking-[1.8px] text-on-surface-variant/50 mb-1">{key}</p>
-                <pre className="text-[12px] text-on-surface-variant whitespace-pre-wrap break-all leading-[1.6] font-mono">
+              <div key={key} className="rounded-[var(--radius-md)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] p-3">
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">{key}</p>
+                <pre className="text-body-sm text-[var(--color-fg-muted)] whitespace-pre-wrap break-all leading-relaxed font-mono">
                   {typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val ?? '—')}
                 </pre>
               </div>
@@ -239,6 +248,8 @@ function RowModal({
     </Dialog>
   )
 }
+
+// ─── Stat card ─────────────────────────────────────────────────────────────
 
 function FunnelStatCard({
   label,
@@ -253,12 +264,12 @@ function FunnelStatCard({
 }) {
   return (
     <div
-      className="rounded-[14px] p-5 border"
-      style={{ background: `${color}08`, borderColor: `${color}20` }}
+      className="rounded-[var(--radius-lg)] p-5 border"
+      style={{ background: `${color}08`, borderColor: `${color}22` }}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[1.8px] mb-2" style={{ color }}>{label}</p>
-      <p className="font-headline text-[34px] font-extrabold leading-none tabular-nums text-on-surface">{value}</p>
-      <p className="text-[11px] text-on-surface-variant/55 mt-2">{detail}</p>
+      <p className="text-label mb-2" style={{ color }}>{label}</p>
+      <p className="font-serif text-[2rem] font-medium leading-none tabular-nums text-[var(--color-fg)]">{value}</p>
+      <p className="text-caption text-[var(--color-fg-subtle)] mt-2 leading-relaxed">{detail}</p>
     </div>
   )
 }
@@ -278,10 +289,10 @@ function TableSection({
   onDelete: (id: string) => Promise<void>
   onRefresh: () => void
 }) {
-  const [query, setQuery]         = useState('')
+  const [query, setQuery]             = useState('')
   const [selectedRow, setSelectedRow] = useState<Record<string, unknown> | null>(null)
-  const [confirmId, setConfirmId] = useState<string | null>(null)
-  const [deleting, setDeleting]   = useState(false)
+  const [confirmId, setConfirmId]     = useState<string | null>(null)
+  const [deleting, setDeleting]       = useState(false)
 
   const filtered = query.trim()
     ? rows.filter(r =>
@@ -299,38 +310,39 @@ function TableSection({
   }
 
   return (
-    <div className="rounded-[16px] bg-surface-container border border-outline-variant/10 overflow-hidden">
+    <div className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
       {/* Table header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/10">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-3">
           <div
-            className="w-2 h-2 rounded-full"
-            style={{ background: meta.color, boxShadow: `0 0 8px ${meta.color}` }}
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ background: meta.color, boxShadow: `0 0 8px ${meta.color}60` }}
           />
-          <h3 className="font-headline font-bold text-[15px] text-on-surface">{meta.label}</h3>
-          <span
-            className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums"
-            style={{ background: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}30` }}
+          <h3 className="font-serif text-h4 font-medium text-[var(--color-fg)]">{meta.label}</h3>
+          <Badge
+            variant="secondary"
+            className="tabular-nums"
+            style={{ background: `${meta.color}14`, color: meta.color, borderColor: `${meta.color}28` }}
           >
             {count} rows
-          </span>
+          </Badge>
         </div>
       </div>
 
       {/* Search */}
-      <div className="px-5 py-3 border-b border-outline-variant/10">
+      <div className="px-5 py-3 border-b border-[var(--color-border)]">
         <Input
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder={`Search ${meta.label.toLowerCase()}…`}
-          className="h-9 text-[13px] bg-surface-container-low border-outline-variant/15 text-on-surface placeholder:text-on-surface-variant/40 rounded-[8px]"
+          className="h-8 text-body-sm"
         />
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-outline-variant/8 max-h-[400px] overflow-y-auto">
+      <div className="divide-y divide-[var(--color-border)] max-h-[400px] overflow-y-auto">
         {filtered.length === 0 && (
-          <p className="text-center py-8 text-[13px] text-on-surface-variant/40">No rows found</p>
+          <p className="text-center py-8 text-body-sm text-[var(--color-fg-faint)]">No rows found</p>
         )}
         {filtered.map(row => {
           const id = row.id as string
@@ -338,26 +350,28 @@ function TableSection({
           return (
             <div
               key={id}
-              className="flex items-center gap-3 px-5 py-3 hover:bg-surface-container-high transition-colors group"
+              className="flex items-center gap-3 px-5 py-3 hover:bg-[var(--color-surface-sunken)]/50 transition-colors group"
             >
               <button
                 onClick={() => setSelectedRow(row)}
                 className="flex-1 text-left min-w-0"
               >
-                <p className="text-[13px] text-on-surface truncate">{preview}</p>
-                <p className="text-[11px] text-on-surface-variant/50 font-mono truncate mt-0.5">{id}</p>
+                <p className="text-body-sm text-[var(--color-fg)] truncate">{preview}</p>
+                <p className="text-caption text-[var(--color-fg-faint)] font-mono truncate mt-0.5">{id}</p>
               </button>
               {meta.name === 'chat_conversations' && (
-                <span className="text-[11px] text-on-surface-variant/50 shrink-0">
+                <span className="text-caption text-[var(--color-fg-subtle)] shrink-0">
                   {msgCount(row)} msgs
                 </span>
               )}
-              <button
+              <Button
+                variant="destructive"
+                size="xs"
                 onClick={() => setConfirmId(id)}
-                className="shrink-0 px-2.5 py-1 rounded-[6px] text-[11px] font-semibold text-red-400 bg-red-500/0 border border-red-500/0 hover:bg-red-500/10 hover:border-red-500/25 transition-all opacity-0 group-hover:opacity-100"
+                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 Delete
-              </button>
+              </Button>
             </div>
           )
         })}
@@ -389,9 +403,9 @@ function CleanupCard({
   color: string
   onRun: () => Promise<{ count: number }>
 }) {
-  const [confirm, setConfirm]   = useState(false)
-  const [loading, setLoading]   = useState(false)
-  const [result, setResult]     = useState<string | null>(null)
+  const [confirm, setConfirm] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [result, setResult]   = useState<string | null>(null)
 
   async function handleConfirm() {
     setLoading(true)
@@ -409,21 +423,22 @@ function CleanupCard({
 
   return (
     <div
-      className="rounded-[14px] p-4 border"
-      style={{ background: `${color}06`, borderColor: `${color}20` }}
+      className="rounded-[var(--radius-lg)] p-4 border"
+      style={{ background: `${color}06`, borderColor: `${color}22` }}
     >
-      <p className="text-[13px] font-semibold text-on-surface mb-1">{label}</p>
-      <p className="text-[12px] text-on-surface-variant/60 mb-3 leading-relaxed">{description}</p>
+      <p className="text-body-sm font-medium text-[var(--color-fg)] mb-1">{label}</p>
+      <p className="text-caption text-[var(--color-fg-subtle)] mb-3 leading-relaxed">{description}</p>
       <div className="flex items-center gap-3">
         <Button
+          size="sm"
           onClick={() => setConfirm(true)}
-          className="h-auto px-3 py-1.5 rounded-[8px] text-[12px] font-semibold"
+          className="text-body-sm"
           style={{ background: `${color}12`, border: `1px solid ${color}30`, color }}
         >
           Run cleanup
         </Button>
         {result && (
-          <span className="text-[12px] text-emerald-400">{result}</span>
+          <Badge variant="success">{result}</Badge>
         )}
       </div>
 
@@ -466,25 +481,26 @@ function OldAuditsCard({ onRefresh }: { onRefresh: () => void }) {
   }
 
   return (
-    <div className="rounded-[14px] p-4 border border-outline-variant/15 bg-surface-container-low">
-      <p className="text-[13px] font-semibold text-on-surface mb-1">Delete audits older than X days</p>
-      <p className="text-[12px] text-on-surface-variant/60 mb-3">Removes audits created before the cutoff.</p>
+    <div className="rounded-[var(--radius-lg)] p-4 border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <p className="text-body-sm font-medium text-[var(--color-fg)] mb-1">Delete audits older than X days</p>
+      <p className="text-caption text-[var(--color-fg-subtle)] mb-3 leading-relaxed">Removes audits created before the cutoff.</p>
       <div className="flex items-center gap-2">
         <Input
           type="number"
           min={1}
           value={days}
           onChange={e => setDays(Number(e.target.value))}
-          className="w-20 h-8 text-[13px] bg-surface-container border-outline-variant/15 text-on-surface rounded-[8px] tabular-nums"
+          className="w-20 h-8 text-body-sm tabular-nums"
         />
-        <span className="text-[12px] text-on-surface-variant/60">days</span>
+        <span className="text-caption text-[var(--color-fg-subtle)]">days</span>
         <Button
+          size="sm"
+          variant="destructive"
           onClick={() => setConfirm(true)}
-          className="h-8 px-3 rounded-[8px] text-[12px] font-semibold bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
         >
           Run cleanup
         </Button>
-        {result && <span className="text-[12px] text-emerald-400">{result}</span>}
+        {result && <Badge variant="success">{result}</Badge>}
       </div>
 
       <ConfirmModal
@@ -495,6 +511,17 @@ function OldAuditsCard({ onRefresh }: { onRefresh: () => void }) {
         onCancel={() => setConfirm(false)}
         loading={loading}
       />
+    </div>
+  )
+}
+
+// ─── Section label ─────────────────────────────────────────────────────────
+
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <p className="text-label text-[var(--color-fg-subtle)] shrink-0">{text}</p>
+      <div className="flex-1 h-px bg-[var(--color-border)]" />
     </div>
   )
 }
@@ -570,7 +597,7 @@ export default function AdminDataPage() {
     const buildRequestSuccess = Math.max(countUniqueEvents(auditEvents, 'build_request_success'), counts.build_requests)
 
     const stageRows = [
-      { label: 'Started Audit', count: started, color: '#60a5fa' },
+      { label: 'Started Audit', count: started, color: '#818CF8' },
       { label: 'Reached Stack Questions', count: reachedStack, color: '#38bdf8' },
       { label: 'Reached Core Pain Step', count: reachedAutomation, color: '#22c55e' },
       { label: 'Opened Lead Modal', count: leadModalOpened, color: '#a78bfa' },
@@ -610,49 +637,53 @@ export default function AdminDataPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 animate-spin"
-          style={{ borderColor: '#adc6ff', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+        <div
+          className="w-8 h-8 rounded-full border-2 animate-spin"
+          style={{ borderColor: 'var(--color-accent-400)', borderTopColor: 'transparent' }}
+        />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-10 px-6 pt-4">
-        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
           <div className="flex flex-col gap-3 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Link href="/" className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors">
-                <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
-                OpsRadar
-              </Link>
-              <span className="text-on-surface-variant/20">/</span>
-              <Link href="/admin" className="text-[11px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors">Admin</Link>
-              <span className="text-on-surface-variant/20">/</span>
-              <span className="text-[11px] text-on-surface-variant">Data</span>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Link href="/" className="flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">
+                  <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
+                  OpsRadar
+                </Link>
+                <span className="text-[var(--color-border-strong)]">/</span>
+                <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">Admin</Link>
+                <span className="text-[var(--color-border-strong)]">/</span>
+                <span className="text-caption text-[var(--color-fg-muted)]">Data</span>
+              </div>
+              <h1 className="font-serif text-h3 font-medium tracking-[-0.015em]">Data Management</h1>
             </div>
-            <h1 className="font-headline font-bold text-[22px] tracking-[-0.02em]">Data Management</h1>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={loadAll}
-              className="h-auto px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-surface-container border border-outline-variant/15 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
-            >
-              Refresh
-            </Button>
-            <Button
-              onClick={handleSignOut}
-              className="h-auto px-4 py-2 rounded-[8px] text-[12px] font-semibold bg-surface-container border border-outline-variant/15 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
-            >
-              Sign out
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadAll}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </Button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
 
@@ -667,14 +698,14 @@ export default function AdminDataPage() {
             {TABLES.map(t => (
               <div
                 key={t.name}
-                className="rounded-[14px] p-5 border"
-                style={{ background: `${t.color}06`, borderColor: `${t.color}20` }}
+                className="rounded-[var(--radius-lg)] p-5 border"
+                style={{ background: `${t.color}06`, borderColor: `${t.color}22` }}
               >
-                <p className="text-[10px] font-bold uppercase tracking-[1.8px] mb-2" style={{ color: t.color }}>{t.label}</p>
-                <p className="font-headline text-[36px] font-extrabold leading-none tabular-nums" style={{ color: t.color }}>
+                <p className="text-label mb-2" style={{ color: t.color }}>{t.label}</p>
+                <p className="font-serif text-[2.25rem] font-medium leading-none tabular-nums" style={{ color: t.color }}>
                   {counts[t.name as keyof typeof counts]}
                 </p>
-                <p className="text-[11px] text-on-surface-variant/50 mt-1">total rows</p>
+                <p className="text-caption text-[var(--color-fg-subtle)] mt-1">total rows</p>
               </div>
             ))}
           </div>
@@ -687,29 +718,42 @@ export default function AdminDataPage() {
                 : builds
               const recent = rows.slice(0, 5)
               return (
-                <div key={t.name} className="rounded-[14px] border border-outline-variant/10 overflow-hidden bg-surface-container">
-                  <div className="flex items-center gap-2.5 px-5 py-3 border-b border-outline-variant/10">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: t.color }} />
-                    <p className="text-[12px] font-bold text-on-surface-variant">{t.label} — most recent 5</p>
+                <div key={t.name} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] overflow-hidden bg-[var(--color-surface)]">
+                  <div className="flex items-center gap-2.5 px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: t.color }} />
+                    <p className="text-body-sm font-medium text-[var(--color-fg-muted)]">{t.label} — most recent 5</p>
                   </div>
-                  <div className="divide-y divide-outline-variant/8">
-                    {recent.length === 0 && (
-                      <p className="px-5 py-4 text-[12px] text-on-surface-variant/40">No data yet</p>
-                    )}
-                    {recent.map(row => (
-                      <div key={row.id as string} className="flex items-center gap-3 px-5 py-3">
-                        <p className="flex-1 text-[12px] text-on-surface truncate">
-                          {rowPreview(row, t.previewFields)}
-                        </p>
-                        {t.name === 'chat_conversations' && (
-                          <span className="text-[11px] text-on-surface-variant/40 shrink-0">{msgCount(row)} msgs</span>
-                        )}
-                        <p className="text-[11px] font-mono text-on-surface-variant/30 shrink-0 hidden sm:block">
-                          {(row.id as string).slice(0, 8)}…
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                  <Table density="medium">
+                    <THead>
+                      <TR>
+                        <TH density="medium">Preview</TH>
+                        {t.name === 'chat_conversations' && <TH density="medium">Messages</TH>}
+                        <TH density="medium" className="hidden sm:table-cell">ID</TH>
+                      </TR>
+                    </THead>
+                    <tbody>
+                      {recent.length === 0 && (
+                        <TR>
+                          <TD density="medium" colSpan={3} className="text-center text-[var(--color-fg-faint)]">No data yet</TD>
+                        </TR>
+                      )}
+                      {recent.map(row => (
+                        <TR key={row.id as string}>
+                          <TD density="medium" className="truncate max-w-[280px]">
+                            {rowPreview(row, t.previewFields)}
+                          </TD>
+                          {t.name === 'chat_conversations' && (
+                            <TD density="medium" className="text-[var(--color-fg-subtle)] tabular-nums">
+                              {msgCount(row)}
+                            </TD>
+                          )}
+                          <TD density="medium" className="font-mono text-caption text-[var(--color-fg-faint)] hidden sm:table-cell">
+                            {(row.id as string).slice(0, 8)}…
+                          </TD>
+                        </TR>
+                      ))}
+                    </tbody>
+                  </Table>
                 </div>
               )
             })}
@@ -725,7 +769,7 @@ export default function AdminDataPage() {
               label="Audit Starts"
               value={funnel.started}
               detail={`${funnel.auditSubmitted} finished the intake`}
-              color="#60a5fa"
+              color="#818CF8"
             />
             <FunnelStatCard
               label="Results Views"
@@ -753,14 +797,14 @@ export default function AdminDataPage() {
             />
           </div>
 
-          <div className="rounded-[16px] bg-surface-container border border-outline-variant/10 p-5 mb-5">
+          <div className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-5 mb-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <p className="text-[13px] font-semibold text-on-surface">Conversion Ladder</p>
-                <p className="text-[12px] text-on-surface-variant/60 mt-1">Shows where people stall from intake to commercial intent.</p>
+                <p className="text-body-sm font-medium text-[var(--color-fg)]">Conversion Ladder</p>
+                <p className="text-caption text-[var(--color-fg-subtle)] mt-1">Shows where people stall from intake to commercial intent.</p>
               </div>
-              <p className="text-[11px] text-on-surface-variant/40">
-                Based on `audit_sessions`, `audit_events`, and submitted records
+              <p className="text-caption text-[var(--color-fg-faint)] hidden sm:block">
+                Based on audit_sessions, audit_events, and submitted records
               </p>
             </div>
 
@@ -770,17 +814,17 @@ export default function AdminDataPage() {
                 const width = funnel.stageRows[0]?.count ? Math.max((row.count / Math.max(funnel.stageRows[0].count, 1)) * 100, row.count > 0 ? 6 : 0) : 0
 
                 return (
-                  <div key={row.label} className="rounded-[14px] border border-outline-variant/10 bg-surface-container-low p-4">
+                  <div key={row.label} className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4">
                     <div className="flex items-center justify-between gap-3 mb-2">
-                      <p className="text-[13px] font-medium text-on-surface">{row.label}</p>
-                      <div className="text-right">
-                        <p className="text-[14px] font-bold tabular-nums text-on-surface">{row.count}</p>
-                        <p className="text-[11px] text-on-surface-variant/50">
+                      <p className="text-body-sm font-medium text-[var(--color-fg)]">{row.label}</p>
+                      <div className="text-right shrink-0">
+                        <p className="text-body font-medium tabular-nums text-[var(--color-fg)]">{row.count}</p>
+                        <p className="text-caption text-[var(--color-fg-subtle)]">
                           {percentage(row.count, Math.max(previous, 1))} of previous
                         </p>
                       </div>
                     </div>
-                    <div className="h-2.5 rounded-full bg-surface-container overflow-hidden">
+                    <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{ width: `${width}%`, background: `linear-gradient(90deg, ${row.color}, ${row.color}bb)` }}
@@ -792,7 +836,7 @@ export default function AdminDataPage() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-4">
+          <div className="grid lg:grid-cols-2 gap-4">
             {[
               {
                 title: 'Top Report Sections',
@@ -813,22 +857,29 @@ export default function AdminDataPage() {
                 formatter: (key: string) => key.replace(/\b([a-z])/g, (match) => match.toUpperCase()).replace(/[-_]/g, ' '),
               },
             ].map((card) => (
-              <div key={card.title} className="rounded-[16px] bg-surface-container border border-outline-variant/10 p-5">
-                <p className="text-[13px] font-semibold text-on-surface">{card.title}</p>
-                <p className="text-[12px] text-on-surface-variant/60 mt-1 mb-4">{card.subtitle}</p>
-                <div className="space-y-3">
-                  {card.rows.length === 0 && (
-                    <p className="text-[12px] text-on-surface-variant/40">No tracked events yet.</p>
-                  )}
-                  {card.rows.map((row) => (
-                    <div key={row.key} className="rounded-[12px] bg-surface-container-low border border-outline-variant/8 px-3.5 py-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-[12px] text-on-surface pr-4">{card.formatter(row.key)}</p>
-                        <span className="text-[12px] font-bold tabular-nums text-secondary shrink-0">{row.count}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div key={card.title} className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
+                <p className="text-body-sm font-medium text-[var(--color-fg)]">{card.title}</p>
+                <p className="text-caption text-[var(--color-fg-subtle)] mt-1 mb-4">{card.subtitle}</p>
+                {card.rows.length === 0 ? (
+                  <p className="text-caption text-[var(--color-fg-faint)]">No tracked events yet.</p>
+                ) : (
+                  <Table density="medium">
+                    <THead>
+                      <TR>
+                        <TH density="medium">Source</TH>
+                        <TH density="medium" className="text-right">Count</TH>
+                      </TR>
+                    </THead>
+                    <tbody>
+                      {card.rows.map((row) => (
+                        <TR key={row.key}>
+                          <TD density="medium">{card.formatter(row.key)}</TD>
+                          <TD density="medium" className="text-right font-mono tabular-nums text-[var(--color-primary)]">{row.count}</TD>
+                        </TR>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </div>
             ))}
           </div>
@@ -906,52 +957,41 @@ export default function AdminDataPage() {
           <SectionLabel text="Export" />
           <div className="flex flex-wrap gap-3">
             <Button
+              variant="outline"
               onClick={() => downloadJSON(audits, `audits-${Date.now()}.json`)}
               disabled={audits.length === 0}
-              className="h-auto px-5 py-2.5 rounded-[10px] text-[13px] font-semibold bg-blue-500/10 border border-blue-500/25 text-blue-400 hover:bg-blue-500/20 disabled:opacity-40"
             >
               Export audits as JSON
-              <span className="ml-2 opacity-50">({audits.length})</span>
+              <Badge variant="secondary" className="ml-1 tabular-nums">{audits.length}</Badge>
             </Button>
             <Button
+              variant="outline"
               onClick={() => downloadJSON(builds, `build-requests-${Date.now()}.json`)}
               disabled={builds.length === 0}
-              className="h-auto px-5 py-2.5 rounded-[10px] text-[13px] font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-400 hover:bg-amber-500/20 disabled:opacity-40"
             >
-              Export build_requests as JSON
-              <span className="ml-2 opacity-50">({builds.length})</span>
+              Export build requests as JSON
+              <Badge variant="secondary" className="ml-1 tabular-nums">{builds.length}</Badge>
             </Button>
             <Button
+              variant="outline"
               onClick={() => downloadJSON(auditSessions, `audit-sessions-${Date.now()}.json`)}
               disabled={auditSessions.length === 0}
-              className="h-auto px-5 py-2.5 rounded-[10px] text-[13px] font-semibold bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 hover:bg-cyan-500/20 disabled:opacity-40"
             >
-              Export audit_sessions as JSON
-              <span className="ml-2 opacity-50">({auditSessions.length})</span>
+              Export audit sessions as JSON
+              <Badge variant="secondary" className="ml-1 tabular-nums">{auditSessions.length}</Badge>
             </Button>
             <Button
+              variant="outline"
               onClick={() => downloadJSON(auditEvents, `audit-events-${Date.now()}.json`)}
               disabled={auditEvents.length === 0}
-              className="h-auto px-5 py-2.5 rounded-[10px] text-[13px] font-semibold bg-violet-500/10 border border-violet-500/25 text-violet-400 hover:bg-violet-500/20 disabled:opacity-40"
             >
-              Export audit_events as JSON
-              <span className="ml-2 opacity-50">({auditEvents.length})</span>
+              Export audit events as JSON
+              <Badge variant="secondary" className="ml-1 tabular-nums">{auditEvents.length}</Badge>
             </Button>
           </div>
         </section>
 
       </main>
-    </div>
-  )
-}
-
-// ─── Section label ─────────────────────────────────────────────────────────
-
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50">{text}</p>
-      <div className="flex-1 h-px bg-outline-variant/10" />
     </div>
   )
 }
