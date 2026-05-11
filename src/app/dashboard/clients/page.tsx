@@ -34,7 +34,7 @@ export default function ClientsPage() {
     <>
       <PageHeader
         title="Clients"
-        subtitle="Your full client roster and relationship health."
+        subtitle="Your roster — margins, MER, status, history. Surfaced live."
         actions={
           <>
             <div

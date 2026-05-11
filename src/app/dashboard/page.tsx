@@ -437,8 +437,8 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={<>Welcome back! 👋</>}
-        subtitle="Here's what's happening with your agency today."
+        title="Your agency, this morning."
+        subtitle="Connected continuously from your stack. Updated 14s ago."
         actions={
           <>
             <SecondaryButton>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
             </SecondaryButton>
             <PrimaryButton>
               <Plus size={14} />
-              New Project
+              New project
             </PrimaryButton>
           </>
         }

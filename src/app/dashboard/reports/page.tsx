@@ -238,7 +238,7 @@ export default function ReportsPage() {
     <>
       <PageHeader
         title="Reports"
-        subtitle="Insights and analytics across your agency."
+        subtitle="Performance across revenue, margin, utilization, and delivery."
         actions={
           <>
             <SecondaryButton>

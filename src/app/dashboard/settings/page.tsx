@@ -69,7 +69,7 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        subtitle="Manage your account, workspace, and preferences."
+        subtitle="Workspace, integrations, and access."
       />
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>

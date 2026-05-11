@@ -130,7 +130,7 @@ export default function TasksPage() {
     <>
       <PageHeader
         title="Tasks"
-        subtitle="Plan, assign, and ship work across your team."
+        subtitle="Active work, by project, status, and owner."
         actions={
           <>
             <SecondaryButton>
