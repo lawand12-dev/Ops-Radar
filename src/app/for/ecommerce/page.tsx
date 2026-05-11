@@ -1,299 +1,266 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { SiteNav } from '<npm>/components/marketing/site-nav'
+import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
+import { Badge } from '<npm>/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For E-commerce Agencies — OpsRadar',
   description:
-    "n8n automation for e-commerce and Shopify Plus partner agencies under 25 people. Multi-store reporting across Shopify, Klaviyo, and Triple Whale. Subscription churn early warning before MRR drops. Klaviyo flow audits without a manual scan. Sale-prep that isn't a 60-hour fire drill.",
+    'OpsRadar builds the automation layer for e-commerce and Shopify Plus partner agencies under 25 people. Product feed sync across Shopify + Meta + Google Merchant. Daily revenue roll-up from Shopify, Klaviyo, and GA4. Low-stock alerts before customers notice.',
   openGraph: {
     title: 'For E-commerce Agencies — OpsRadar',
     description:
-      "n8n automation for e-commerce agencies under 25 people. Cross-tool reporting across Shopify + Klaviyo + Triple Whale. Subscription churn early warning. Klaviyo flow audits, automated.",
+      'Product feed sync, daily revenue roll-up, and low-stock alerts — automated inside your n8n account.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for E-commerce Agencies' }],
   },
   twitter: {
     title: 'For E-commerce Agencies — OpsRadar',
     description:
-      "n8n automation for e-commerce agencies under 25 people. Cross-tool reporting across Shopify + Klaviyo + Triple Whale. Subscription churn early warning.",
+      'Product feed sync, daily revenue roll-up, and low-stock alerts — automated inside your n8n account.',
     images: ['/og-image.png'],
   },
 }
 
-const WHAT_I_BUILD_FOR_ECOMMERCE = [
+/* ── Data ───────────────────────────────────────────────────────────────── */
+
+const OUTCOMES = [
   {
-    title: 'Multi-store performance rollups across the whole stack.',
-    desc: 'Shopify orders + Klaviyo revenue + Postscript SMS + Northbeam or Triple Whale attribution rolled into one weekly client board. Built across 8+ stores per agency. Saves 12–15 hours of senior strategist time every week.',
+    tag: 'Feed sync',
+    title: 'Product data stays in sync automatically.',
+    body: 'Shopify catalogue changes — price updates, variant adds, inventory edits — pushed to Meta and Google Merchant Center within the hour. No more ad rejections from stale feeds or out-of-stock products burning spend overnight.',
   },
   {
-    title: 'Klaviyo flow audits, automated.',
-    desc: 'Monthly scan of every flow — bounce rates, segment-size drift, inactive list bloat, abandonment open rates. Flags any flow under 15% open rate or any segment dormant 60+ days. Plus an AI-drafted remediation checklist.',
+    tag: 'Reporting',
+    title: 'Daily revenue roll-up in Slack by 8 a.m.',
+    body: 'Shopify gross, Klaviyo email revenue, and GA4 sessions combined into one Slack message every morning. 12–15 hours of senior strategist time per week stop going to spreadsheet assembly.',
   },
   {
-    title: 'Subscription churn early warning.',
-    desc: 'Watch Recharge or Skio cancellation events + Klaviyo segment drift + Gorgias ticket spikes. Trigger an alert when churn rises 5% month-over-month — before MRR drops, not after the client calls.',
-  },
-  {
-    title: 'Site speed + checkout monitoring.',
-    desc: 'Lighthouse runs on every theme deploy via GitHub Actions. Slack alert when the checkout page slows past your threshold or conversion rate drops post-deploy. Catch regressions before your client emails.',
-  },
-  {
-    title: 'Credential-access orchestration on onboarding.',
-    desc: 'Meta partial-access link + Google Ads MCC invite + Shopify staff account + Klaviyo API scope all gated behind a single intake. Cuts the 5–7 day credential-chase that stalls 60–80% of e-com onboardings.',
-  },
-  {
-    title: 'LTV and cohort retention reporting.',
-    desc: 'Customers segmented by acquisition month across Shopify + Recharge. Subscription lifetime, repeat-order frequency, and channel decay surfaced in a CFO-friendly cohort deck monthly. Catch the LTV collapse before blended ROAS hides it.',
+    tag: 'Inventory',
+    title: 'Low-stock alerts before customers see 404s.',
+    body: 'Shopify inventory monitored hourly per variant. Slack alert fires when any SKU crosses your threshold — before the product page goes unavailable and before ad spend continues driving to zero-inventory URLs.',
   },
 ]
 
-const YOUR_STACK = [
-  'Shopify / Shopify Plus',
-  'Klaviyo',
-  'Postscript / Attentive',
-  'Triple Whale / Northbeam / Hyros',
-  'Recharge / Skio / Stay AI',
-  'Yotpo / Okendo / Judge.me',
-  'Gorgias / Help Scout',
-  'Rebuy / Bold',
-  'Tapcart',
-  'GA4 / Google Tag Manager',
-  'Meta Ads / Google Ads / TikTok Ads',
-  'Slack / Notion / ClickUp',
-  'GitHub Actions',
-  'Stripe / QuickBooks',
+const WORKFLOWS = [
+  {
+    name: 'product-feed-monitor',
+    desc: 'Watches Shopify for product changes and inventory deltas every 30 minutes. Pushes diff to Meta Catalog and Google Merchant Center. Posts a Slack summary if any rejected items need review.',
+    touches: ['Shopify', 'Meta Catalog', 'Google Merchant'],
+    saved: '~8 h / mo',
+  },
+  {
+    name: 'daily-revenue-roll-up',
+    desc: 'At 7:45 a.m.: pulls yesterday\'s Shopify revenue, Klaviyo flow and campaign attribution, and GA4 sessions. Posts a formatted daily card to Slack per store — no Ads Manager login required.',
+    touches: ['Shopify', 'Klaviyo', 'GA4', 'Slack'],
+    saved: '~14 h / mo',
+  },
+  {
+    name: 'inventory-low-stock-alert',
+    desc: 'Hourly Shopify inventory check per SKU. Fires a Slack alert with reorder quantity suggestion when any variant drops below your floor. Optionally pauses Meta ad sets pointing to low-stock products.',
+    touches: ['Shopify', 'Slack', 'Meta API'],
+    saved: '~6 h / mo + ad waste',
+  },
 ]
 
-const FAQS = [
+const BEFORE_AFTER = [
   {
-    q: 'We already use Triple Whale. Why do we need this?',
-    a: 'Triple Whale is a dashboard. I’m the operations layer underneath — I monitor your Northbeam data, flag when your Recharge cohorts collapse, watch your Klaviyo segment drift, and alert your Gorgias team before churn accelerates. You keep Triple Whale. I’m the nervous system it doesn’t have.',
+    before: 'Product feed updated manually when someone remembers to export',
+    after: 'Feed synced to Meta + Google Merchant within the hour of any Shopify change',
   },
   {
-    q: 'How do you handle multiple Shopify stores?',
-    a: 'n8n calls each store’s API independently and rolls them up. I’ve built rollups across 8+ stores for one agency client — different themes, different apps, different Klaviyo accounts — into one Monday-morning board. Shopify’s GraphQL Admin API is the right surface for new builds; REST for legacy stores.',
+    before: 'Revenue numbers pulled from three tabs each morning before standup',
+    after: 'Daily Slack card lands at 8 a.m. — Shopify + Klaviyo + GA4 in one read',
   },
   {
-    q: 'Can you write Liquid or theme code?',
-    a: 'Theme code I refer to a partner. What I do is wire GitHub Actions to your theme repo for auto-Lighthouse runs and version diffs after deploys, so you catch the regression. Anything API, automation, or data-stitch — I build.',
+    before: 'Out-of-stock products discovered when the client asks about ad waste',
+    after: 'Low-stock alert fires and ad set optionally paused before customers see 404s',
   },
   {
-    q: 'We can’t afford another SaaS line item plus a consultant.',
-    a: 'At ~50K automatable tasks/month across your stores, Zapier costs around $7,000/year. Self-hosted n8n runs about $600/year. The retainer funds itself from that delta, plus you own the workflows day one — no rental, no lock-in, no vendor dependency.',
+    before: 'Klaviyo flow health checked manually, if at all, once a month',
+    after: 'Monthly flow audit flags bounce spikes and dormant segments automatically',
+  },
+  {
+    before: 'New client credential chase takes 5–7 days to collect all tool access',
+    after: 'Single intake flow gates all credentials — Shopify, Meta, GA4, Klaviyo',
   },
 ]
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
 
 export default function ForEcommercePage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/for/ecommerce" />
       <SegmentPageAnalytics segment="ecommerce" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'n8n Automation for E-commerce Agencies',
-            provider: {
-              '@type': 'Organization',
-              name: 'OpsRadar',
-              url: 'https://www.opsradar.co',
-              founder: { '@type': 'Person', name: 'Lawand Soran' },
-            },
-            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
-            audience: {
-              '@type': 'BusinessAudience',
-              audienceType: 'E-commerce Agencies',
-              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 25 },
-            },
-            description:
-              'Custom AI Operating System (AIOS) builds for e-commerce and Shopify Plus partner agencies under 25 people. Multi-store reporting across Shopify, Klaviyo, Postscript, and Triple Whale; subscription churn early warning; Klaviyo flow audits; site speed monitoring; LTV cohort reporting.',
-            offers: {
-              '@type': 'AggregateOffer',
-              priceCurrency: 'USD',
-              lowPrice: 400,
-              highPrice: 4500,
-              offerCount: 6,
-            },
-            url: 'https://www.opsradar.co/for/ecommerce',
-          }),
-        }}
-      />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-28 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            For e-commerce agencies
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-6">
-            Your strategists were hired to grow stores.
-          </h1>
-          <p className="font-headline text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-white/80 mb-8">
-            Not to copy Shopify exports into Klaviyo dashboards.
-          </p>
-          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            We build the AI Operating System (AIOS) for e-commerce and Shopify Plus partner agencies under 25
-            people. Multi-store reporting across Shopify, Klaviyo, and Triple Whale. Subscription
-            churn early warning before MRR drops. Klaviyo flow audits without a manual scan.
-            You own every workflow in your n8n account. We build them, we maintain them, you get
-            your strategy hours back.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-            <Link
-              href="/audit"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
-            >
-              Run a 3-minute self-serve audit →
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
+          For e-commerce agencies
+        </p>
+
+        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+          Shopify data reaches Meta before the day starts.
+        </h1>
+
+        <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+          Product feed drift burns ad spend. Revenue numbers live across Shopify, Klaviyo,
+          and GA4. Out-of-stock SKUs keep running traffic until someone checks. OpsRadar
+          builds the automation layer that closes all three — inside your n8n account,
+          in 5 to 14 days.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/audit">
+              Start your audit
+              <ArrowRight className="size-4" />
             </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
+          </Button>
+        </div>
+      </section>
+
+      {/* ── Three outcomes ────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--color-border)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            Three outcomes, delivered in weeks.
+          </h2>
+
+          <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {OUTCOMES.map((o) => (
+              <div
+                key={o.tag}
+                className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
+              >
+                <Badge variant="accent">{o.tag}</Badge>
+                <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
+                  {o.title}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── What I build ──────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What I build for e-commerce agencies
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Six workflows that surface what your stack already knows.
+      {/* ── Workflow cards ────────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What a typical e-commerce AIOS looks like.
           </h2>
-          <div className="space-y-0">
-            {WHAT_I_BUILD_FOR_ECOMMERCE.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
+
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {WORKFLOWS.map((wf) => (
+              <Card key={wf.name}>
+                <CardHeader className="border-b border-[var(--color-border)]">
+                  <CardTitle>
+                    <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
+                  </CardTitle>
+                  <CardDescription>{wf.desc}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {wf.touches.map((t) => (
+                      <Badge key={t} variant="secondary">{t}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Your stack ────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-20">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Your stack, my workflows
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-10">
-            I work inside the tools you already pay for.
+      {/* ── Before / After table ──────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)]">
+        <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What your shop looks like after OpsRadar lands.
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {YOUR_STACK.map((tool) => (
-              <span
-                key={tool}
-                className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-[13px] text-white/70"
+
+          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+            <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+              <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
+              <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
+                After OpsRadar
+              </div>
+            </div>
+            {BEFORE_AFTER.map((row, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
               >
-                {tool}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-white/40 mt-6 max-w-2xl leading-relaxed">
-            If your tool isn&apos;t here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
-          </p>
-        </section>
-      </div>
-
-      {/* ── Cost of NOT automating ────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What it costs to keep doing it manually
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-8">
-            The math most founders don&apos;t run.
-          </h2>
-          <div className="space-y-6 text-[15px] leading-relaxed text-white/[0.7]">
-            <p>
-              A 10-person e-com agency typically burns <span className="text-white font-semibold">~137 hours/month</span> — 30+ hours/week — on cross-tool reporting, Klaviyo flow audits, and credential chasing during onboarding. Single-workflow automation typically saves <span className="text-white font-semibold">$50K+/year</span>.
-            </p>
-            <p>
-              At $65–$85/hour fully loaded for a senior strategist, manual reporting alone runs <span className="text-white font-semibold">$3,100–$3,900/month</span> — <span className="text-white font-semibold">$37,000–$47,000/year</span> of billable time spent on tasks workflows do overnight.
-            </p>
-            <p>
-              The typical core ecom stack already runs <span className="text-white font-semibold">$3,650–$5,190/month</span> — Shopify Plus, Klaviyo, Recharge, Gorgias, Northbeam, Triple Whale, Yotpo. Most of that data never reaches one screen.
-            </p>
-            <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>. Most e-com agencies break even in four to seven weeks.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Questions
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            What e-commerce founders ask me first.
-          </h2>
-          <div>
-            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            {FAQS.map(({ q, a }) => (
-              <div key={q}>
-                <div className="py-6">
-                  <p className="font-semibold text-[14px] text-white/80 mb-2">{q}</p>
-                  <p className="text-[13px] text-[rgba(255,255,255,0.65)] leading-[1.7]">{a}</p>
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
+                  {row.before}
                 </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                  {row.after}
+                </div>
               </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            Stop reporting on growth. Start delivering it.
-          </h2>
-          <p className="text-white/40 mb-10 leading-relaxed">
-            3-minute audit. Real dollar numbers for your agency. No commitment.
+      {/* ── Testimonial slot ──────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">From the field</p>
+          <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
+          </blockquote>
+          <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
+            — E-commerce agency founder · 14-person shop · feed sync live in week one
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section>
+        <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+          <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+            Run an e-commerce audit.
+          </h2>
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
+            3 minutes. Real figures on the hours your agency loses to feed drift,
+            manual reporting, and inventory blind spots. No pitch, no card.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/audit">
+                Start your audit
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
+                Talk to founders
               </a>
             </Button>
           </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
         </div>
       </section>
 
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }
