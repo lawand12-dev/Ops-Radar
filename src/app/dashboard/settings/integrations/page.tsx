@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { cn } from '<npm>/lib/utils';
 
 type ConnectedTool = { tool: string; connected_at: string };
 
@@ -21,17 +22,6 @@ const TOOL_CATALOG: ToolDef[] = [
   { key: 'toggl',    label: 'Toggl',    blurb: 'Hours tracked, utilization',                      cardKey: 'Delivery',  status: 'coming_soon' },
   { key: 'stripe',   label: 'Stripe',   blurb: 'Invoiced, paid, overdue',                         cardKey: 'Finance',   status: 'coming_soon' },
 ];
-
-const C = {
-  bg: '#080C14',
-  card: '#0F1923',
-  border: 'rgba(0,194,255,0.1)',
-  accent: '#00C2FF',
-  text: '#E0F0FF',
-  muted: '#4A6280',
-  green: '#22C55E',
-  red: '#FF4D4D',
-};
 
 const fmtDate = (iso: string) => {
   const d = new Date(iso);
@@ -73,31 +63,23 @@ export default function IntegrationsSettingsPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 6 }}>Connected systems</h1>
-        <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>
+      <div className="mb-7">
+        <h1 className="mb-1.5 font-serif text-[22px] font-normal leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)]">
+          Connected systems
+        </h1>
+        <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
           These are the tools your dashboard reads from. Your OpsRadar account team manages
           credentials and connections — reach out if you want to add or change anything.
         </p>
       </div>
 
       {error && (
-        <div
-          style={{
-            background: 'rgba(255,77,77,0.08)',
-            border: `1px solid rgba(255,77,77,0.3)`,
-            borderRadius: 8,
-            padding: '10px 12px',
-            fontSize: 12.5,
-            color: C.red,
-            marginBottom: 16,
-          }}
-        >
+        <div className="mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-danger)]">
           {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="flex flex-col gap-2.5">
         {TOOL_CATALOG.map((t) => {
           const conn = isConnected(t.key);
           const isAvailable = t.status === 'available';
@@ -105,61 +87,43 @@ export default function IntegrationsSettingsPage() {
           return (
             <div
               key={t.key}
-              style={{
-                background: C.card,
-                border: `1px solid ${C.border}`,
-                borderRadius: 12,
-                padding: '16px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 16,
-                opacity: isAvailable ? 1 : 0.55,
-              }}
+              className={cn(
+                'flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4',
+                !isAvailable && 'opacity-55',
+              )}
             >
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{t.label}</span>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      color: C.muted,
-                      background: 'rgba(74,98,128,0.15)',
-                      borderRadius: 4,
-                      padding: '2px 6px',
-                      letterSpacing: '0.3px',
-                    }}
-                  >
+              <div className="min-w-0">
+                <div className="mb-1 flex items-center gap-2.5">
+                  <span className="text-body font-semibold text-[var(--color-fg)]">{t.label}</span>
+                  <span className="rounded-[var(--radius-sm)] bg-[var(--color-surface-sunken)] px-1.5 py-[2px] text-[10.5px] tracking-[0.04em] text-[var(--color-fg-subtle)]">
                     {t.cardKey} card
                   </span>
                 </div>
-                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.4 }}>{t.blurb}</div>
+                <div className="text-[12.5px] leading-[1.4] text-[var(--color-fg-muted)]">{t.blurb}</div>
                 {conn && (
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                  <div className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
                     Tracking since {fmtDate(conn.connected_at)}
                   </div>
                 )}
               </div>
 
-              <div style={{ flexShrink: 0 }}>
+              <div className="shrink-0">
                 {!isAvailable && (
-                  <span style={{ fontSize: 12, color: C.muted, fontStyle: 'italic' }}>Coming soon</span>
+                  <span className="text-caption italic text-[var(--color-fg-subtle)]">Coming soon</span>
                 )}
                 {isAvailable && !loading && (
                   <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: conn ? C.green : C.muted,
-                      background: conn ? 'rgba(34,197,94,0.12)' : 'rgba(74,98,128,0.15)',
-                      borderRadius: 4,
-                      padding: '4px 10px',
-                    }}
+                    className={cn(
+                      'rounded-[var(--radius-sm)] px-2.5 py-1 text-[11px] font-semibold',
+                      conn
+                        ? 'bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)] text-[var(--color-success)]'
+                        : 'bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)]',
+                    )}
                   >
                     {conn ? 'Tracking' : 'Not yet tracking'}
                   </span>
                 )}
-                {loading && <span style={{ fontSize: 12, color: C.muted }}>Loading…</span>}
+                {loading && <span className="text-caption text-[var(--color-fg-subtle)]">Loading…</span>}
               </div>
             </div>
           );

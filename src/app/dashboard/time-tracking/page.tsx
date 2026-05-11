@@ -1,5 +1,5 @@
 import { Play, Plus, Calendar, ChevronDown, Pause } from 'lucide-react';
-import { C } from '../_lib/theme';
+import { cn } from '<npm>/lib/utils';
 import { PageHeader } from '../_components/page-header';
 import { StatCard } from '../_components/stat-card';
 import { Card } from '../_components/card';
@@ -26,7 +26,7 @@ export default function TimeTrackingPage() {
   return (
     <>
       <PageHeader
-        title="Time Tracking"
+        title="Time tracking"
         subtitle="Hours logged and utilization, across your team."
         actions={
           <>
@@ -37,79 +37,59 @@ export default function TimeTrackingPage() {
             </SecondaryButton>
             <PrimaryButton>
               <Plus size={14} />
-              New Entry
+              New entry
             </PrimaryButton>
           </>
         }
       />
 
       {/* Active timer */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, rgba(129,140,248,0.12), rgba(99,102,241,0.06))',
-          border: `1px solid rgba(129,140,248,0.25)`,
-          borderRadius: 12,
-          padding: '18px 22px',
-          marginBottom: 20,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+      <div className="mb-5 flex items-center justify-between rounded-[var(--radius-md)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-6 py-5">
+        <div className="flex items-center gap-5">
           <button
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              background: C.accent,
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              cursor: 'pointer',
-              boxShadow: '0 0 0 4px rgba(129,140,248,0.15)',
-            }}
+            type="button"
+            aria-label="Pause timer"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] transition-colors hover:bg-[var(--color-primary-hover)]"
           >
-            <Pause size={16} fill="#fff" />
+            <Pause size={16} fill="currentColor" />
           </button>
           <div>
-            <div style={{ fontSize: 12, color: C.sub, marginBottom: 4, fontWeight: 500 }}>
-              Currently tracking · <span style={{ color: C.accent }}>Acme Corp</span>
+            <div className="mb-1 text-caption font-medium text-[var(--color-fg-muted)]">
+              Currently tracking · <span className="text-[var(--color-primary)]">Acme Corp</span>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Wireframes v3 for homepage</div>
+            <div className="text-body font-semibold text-[var(--color-fg)]">Wireframes v3 for homepage</div>
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: C.text, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+        <div className="text-right">
+          <div className="font-mono text-[28px] font-bold leading-none tabular-nums text-[var(--color-fg)]">
             01:24:38
           </div>
-          <div style={{ fontSize: 11.5, color: C.sub, marginTop: 4 }}>Started 09:12 AM</div>
+          <div className="mt-1 text-[11.5px] text-[var(--color-fg-muted)]">Started 09:12 AM</div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="mb-5 grid grid-cols-4 gap-3">
         {stats.map((s) => <StatCard key={s.label} {...s} />)}
       </div>
 
-      <Card title="Recent Entries" action={<span style={{ fontSize: 12.5, color: C.accent, cursor: 'pointer', fontWeight: 500 }}>Export CSV</span>}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <Card
+        title="Recent entries"
+        action={
+          <button
+            type="button"
+            className="cursor-pointer text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
+          >
+            Export CSV
+          </button>
+        }
+      >
+        <table className="w-full border-collapse">
           <thead>
             <tr>
-              {['Task', 'Project', 'Member', 'Start', 'Duration', 'Billable', 'Date', ''].map((h) => (
+              {['Task', 'Project', 'Member', 'Start', 'Duration', 'Billable', 'Date', ''].map((h, idx) => (
                 <th
-                  key={h}
-                  style={{
-                    textAlign: 'left',
-                    fontSize: 11,
-                    color: C.muted,
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    paddingBottom: 10,
-                    borderBottom: `1px solid ${C.border}`,
-                  }}
+                  key={`${h}-${idx}`}
+                  className="border-b border-[var(--color-border)] pb-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]"
                 >
                   {h}
                 </th>
@@ -119,54 +99,44 @@ export default function TimeTrackingPage() {
           <tbody>
             {entries.map((e, i) => {
               const isLast = i === entries.length - 1;
-              const border = isLast ? 'none' : `1px solid ${C.border}`;
+              const cellBorder = !isLast && 'border-b border-[var(--color-border)]';
               return (
                 <tr key={i}>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{e.task}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-body-sm font-medium text-[var(--color-fg)]">{e.task}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.sub }}>{e.project}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] text-[var(--color-fg-muted)]">{e.project}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.sub }}>{e.assignee}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] text-[var(--color-fg-muted)]">{e.assignee}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.muted, fontVariantNumeric: 'tabular-nums' }}>{e.start}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="font-mono text-[12.5px] tabular-nums text-[var(--color-fg-subtle)]">{e.start}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{e.duration}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="font-mono text-[12.5px] font-semibold tabular-nums text-[var(--color-fg)]">{e.duration}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
+                  <td className={cn('py-2.5', cellBorder)}>
                     {e.billable ? (
-                      <span style={{ fontSize: 11, fontWeight: 600, color: C.green, background: C.greenBg, padding: '2px 8px', borderRadius: 20 }}>
+                      <span className="inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)] px-2 py-[2px] text-[11px] font-semibold text-[var(--color-success)]">
                         Billable
                       </span>
                     ) : (
-                      <span style={{ fontSize: 11, fontWeight: 600, color: C.muted, background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 20 }}>
+                      <span className="inline-flex rounded-full bg-[var(--color-surface-sunken)] px-2 py-[2px] text-[11px] font-semibold text-[var(--color-fg-subtle)]">
                         Internal
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.muted }}>{e.date}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] text-[var(--color-fg-subtle)]">{e.date}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
+                  <td className={cn('py-2.5', cellBorder)}>
                     <button
-                      style={{
-                        background: 'transparent',
-                        border: `1px solid ${C.border}`,
-                        borderRadius: 7,
-                        padding: '4px 8px',
-                        color: C.sub,
-                        fontSize: 11,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
+                      type="button"
+                      className="inline-flex cursor-pointer items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-transparent px-2 py-1 text-[11px] text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)]"
                     >
-                      <Play size={10} fill={C.sub} /> Resume
+                      <Play size={10} fill="currentColor" /> Resume
                     </button>
                   </td>
                 </tr>
