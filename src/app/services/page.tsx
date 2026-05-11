@@ -1,13 +1,17 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import FaqAccordion from '../components/FaqAccordion'
-import { Button } from '<npm>/components/ui/button'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
-import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+import { SiteNav } from "<npm>/components/marketing/site-nav";
+import { SiteFooter } from "<npm>/components/marketing/site-footer";
+import { Button } from "<npm>/components/ui/button";
+import { Badge } from "<npm>/components/ui/badge";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "<npm>/components/ui/accordion";
+import { Table, THead, TR, TH, TD } from "<npm>/components/ui/data-table";
+import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Services",
+  title: "Services — OpsRadar",
   description:
     "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
   openGraph: {
@@ -22,272 +26,446 @@ export const metadata: Metadata = {
       "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
     images: ["/og-image.png"],
   },
-}
-
-// ── Nav ───────────────────────────────────────────────────────────────────────
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'AIOS', href: '/aios' },
-  { label: 'About', href: '/about' },
-]
+};
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const WHAT_WE_BUILD = [
   {
-    title: 'Automated Reporting',
-    desc: 'We pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.',
+    n: "01",
+    title: "Automated Reporting",
+    desc: "We pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.",
   },
   {
-    title: 'Lead Qualification & Routing',
-    desc: 'New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds — automatically.',
+    n: "02",
+    title: "Lead Qualification & Routing",
+    desc: "New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds — automatically.",
   },
   {
-    title: 'Client Onboarding',
-    desc: 'A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup — all without anyone on your team lifting a finger.',
+    n: "03",
+    title: "Client Onboarding",
+    desc: "A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup — all without anyone on your team lifting a finger.",
   },
   {
-    title: 'Email & Follow-up Sequences',
-    desc: 'Context-aware follow-ups that write themselves based on deal stage, time since last contact, and prior interactions. Leads stop going cold because the system never forgets.',
+    n: "04",
+    title: "Email & Follow-up Sequences",
+    desc: "Context-aware follow-ups that write themselves based on deal stage, time since last contact, and prior interactions. Leads stop going cold because the system never forgets.",
   },
   {
-    title: 'Invoice & Payment Processing',
-    desc: 'Project completion triggers invoice generation, sends it to the client, follows up if unpaid, and notifies your team when it clears — no one has to chase payments manually.',
+    n: "05",
+    title: "Invoice & Payment Processing",
+    desc: "Project completion triggers invoice generation, sends it to the client, follows up if unpaid, and notifies your team when it clears — no one has to chase payments manually.",
   },
   {
-    title: 'Data Sync Between Tools',
-    desc: 'We keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.',
+    n: "06",
+    title: "Data Sync Between Tools",
+    desc: "We keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.",
   },
-]
+];
+
+const PROCESS_STEPS = [
+  {
+    range: "Day 0–2",
+    title: "Scope & price",
+    desc: "You run the audit, we have a kickoff call, and our team sends a written fixed-price proposal within 48 hours.",
+  },
+  {
+    range: "Day 3–9",
+    title: "Build & walk-through",
+    desc: "We build in a dev environment, walk you through the live workflow on Day 9, and you approve before it touches production.",
+  },
+  {
+    range: "Day 10+",
+    title: "Deploy & maintain",
+    desc: "Deploy to your n8n account, documentation delivered, monitoring runs in the background. You go back to your clients.",
+  },
+];
+
+const WHAT_IS_INCLUDED = [
+  { feature: "Custom n8n workflow builds", audit: false, build: true, managed: true },
+  { feature: "Fixed-price proposal within 48 h", audit: false, build: true, managed: true },
+  { feature: "Video walkthrough before deploy", audit: false, build: true, managed: true },
+  { feature: "30-day post-delivery bug fix", audit: false, build: true, managed: true },
+  { feature: "24/7 monitoring & proactive fixes", audit: false, build: false, managed: true },
+  { feature: "API breakage recovery (Meta, Google)", audit: false, build: false, managed: true },
+  { feature: "Monthly retainer (flat fee)", audit: false, build: false, managed: true },
+  { feature: "Self-serve operations audit", audit: true, build: false, managed: false },
+  { feature: "Dollar-figure ROI estimate", audit: true, build: false, managed: false },
+];
 
 const FAQS = [
   {
-    q: 'What tools can you connect?',
-    a: 'Any tool with an API or webhook support. That includes HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Calendly, Mailchimp, ActiveCampaign, and hundreds more via n8n\u2019s native node library.',
+    q: "What tools can you connect?",
+    a: "Any tool with an API or webhook support. That includes HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Calendly, Mailchimp, ActiveCampaign, and hundreds more via n8n’s native node library.",
   },
   {
-    q: 'How long does it take to build?',
-    a: 'Most single-workflow builds take 5\u201310 business days. More complex multi-workflow systems take 2\u20134 weeks. We give you a specific timeline in the proposal before you commit.',
+    q: "How long does it take to build?",
+    a: "Most single-workflow builds take 5–10 business days. More complex multi-workflow systems take 2–4 weeks. We give you a specific timeline in the proposal before you commit.",
   },
   {
-    q: 'What if something breaks?',
-    a: 'On the Managed plan, our team monitors every workflow 24/7 and fixes it before you notice. On the One-Time Build plan, we include 30 days of free bug fixes after delivery.',
+    q: "What if something breaks?",
+    a: "On the Managed plan, our team monitors every workflow 24/7 and fixes it before you notice. On the One-Time Build plan, we include 30 days of free bug fixes after delivery.",
   },
   {
-    q: 'Is technical knowledge required?',
-    a: 'No. You describe your problem in plain English — our team handles all the technical implementation. You\u2019ll review the workflow in a walkthrough session, but you won\u2019t need to touch any code.',
+    q: "Is technical knowledge required?",
+    a: "No. You describe your problem in plain English — our team handles all the technical implementation. You’ll review the workflow in a walkthrough session, but you won’t need to touch any code.",
   },
   {
-    q: 'Can the workflow be reviewed before it goes live?',
-    a: 'Always. We record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.',
+    q: "Can the workflow be reviewed before it goes live?",
+    a: "Always. We record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.",
   },
   {
-    q: 'What happens after cancellation?',
-    a: 'Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. We just stop maintaining them.',
+    q: "What happens after cancellation?",
+    a: "Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. We just stop maintaining them.",
   },
-]
+];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ServicesPage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky navLinks={NAV_LINKS} />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/services" />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-28 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            Services
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.08] mb-6">
-            What specifically do we build for agencies?
-          </h1>
-          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            Six types of automation that fix the manual work burning your team: client reporting,
-            ad platform handoffs, HubSpot/CRM routing, onboarding, invoicing, and data sync. Built
-            for paid-media, SEO, and full-service agencies under 25 people. All on n8n. All
-            maintained by our team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-          </div>
-          <Link
-            href="/audit"
-            className="inline-flex mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
+      <PageHeader />
+      <FlagshipSection />
+      <WhatWeBuildSection />
+      <ProcessSection />
+      <ComparisonSection />
+      <FaqSection />
+      <FinalCTA />
+
+      <SiteFooter />
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Page header                                                                */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function PageHeader() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-5xl px-6 pt-14 md:pt-20 pb-20 md:pb-24">
+        <p className="text-label text-[var(--color-fg-subtle)]">Services</p>
+        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+          What specifically do we build for{" "}
+          <span className="text-[var(--color-primary)]">agencies</span>?
+        </h1>
+        <p className="mt-6 max-w-2xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+          Six types of automation that fix the manual work burning your team: client reporting,
+          ad platform handoffs, HubSpot/CRM routing, onboarding, invoicing, and data sync.
+          Built for paid-media, SEO, and full-service agencies under 25 people. All on n8n.
+          All maintained by our team.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a free 20-min call
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/audit">Run the self-serve audit</Link>
+          </Button>
         </div>
-      </section>
-
-      {/* ── Flagship: Automated Reporting ─────────────────────────────── */}
-      <div>
-        <section className="relative max-w-5xl mx-auto px-6 pb-20">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
-            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-4">
-              The automation every agency asks about first
-            </p>
-            <h2 className="font-headline text-3xl md:text-5xl font-extrabold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
-              Automated Client Reporting
-            </h2>
-            <p className="text-[15px] md:text-base leading-relaxed text-white/[0.75] mb-6 max-w-3xl">
-              We pull data from Google Ads, Meta, GA4, and your CRM on schedule.
-              Merge it, format it, and deliver branded client reports automatically
-              — every week, zero manual work.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="border-t border-white/10 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Typical impact</p>
-                <p className="text-white/90 text-sm leading-relaxed">Designed to replace 20–40 hours/week of manual reporting at 10–20 person agencies</p>
-              </div>
-              <div className="border-t border-white/10 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Payback</p>
-                <p className="text-white/90 text-sm leading-relaxed">At typical blended rates, a 10-person shop running this would break even in roughly 6 weeks</p>
-              </div>
-              <div className="border-t border-white/10 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Delivery</p>
-                <p className="text-white/90 text-sm leading-relaxed">Built in your n8n account in 7–14 days</p>
-              </div>
-            </div>
-            <Button asChild className="px-6 py-3 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <Link href="/audit">See if this fits your agency &rarr;</Link>
-            </Button>
-          </div>
-        </section>
       </div>
+    </section>
+  );
+}
 
-      {/* ── What We Build ──────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            The Full Menu
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-4">
-            Other things we build.
-          </h2>
-          <p className="text-white/40 max-w-lg mb-16 leading-relaxed">
-            Reporting is the most common, but not the only one. Here are the other five.
-          </p>
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Flagship — Automated Reporting                                             */
+/* ────────────────────────────────────────────────────────────────────────── */
 
-          <div className="space-y-0">
-            {WHAT_WE_BUILD.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-16 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+function FlagshipSection() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
+          {/* Sticky sidebar */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="text-label text-[var(--color-primary)]">The automation every agency asks about first</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              Automated Client Reporting.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it,
+              format it, and deliver branded client reports automatically — every week,
+              zero manual work.
+            </p>
+            <div className="mt-8">
+              <Button asChild size="lg">
+                <Link href="/audit">
+                  See if this fits your agency
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats panel */}
+          <div className="space-y-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {[
+              {
+                label: "Typical impact",
+                value: "Designed to replace 20–40 hours/week of manual reporting at 10–20 person agencies",
+              },
+              {
+                label: "Payback",
+                value: "At typical blended rates, a 10-person shop running this would break even in roughly 6 weeks",
+              },
+              {
+                label: "Delivery",
+                value: "Built in your n8n account in 7–14 days",
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="bg-[var(--color-surface)] p-8 md:p-10 grid grid-cols-[auto_1fr] gap-6 md:gap-10 items-start"
+              >
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1 min-w-[80px]">
+                  {item.label}
+                </p>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+                  {item.value}
+                </p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
       </div>
+    </section>
+  );
+}
 
-      {/* ── The process (compressed, full details on /how-it-works) ─── */}
-      <div>
-        <section className="max-w-4xl mx-auto px-6 py-24">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            The process
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-12">
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  What We Build — editorial numbered list                                    */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function WhatWeBuildSection() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
+          {/* Sticky sidebar */}
+          <div className="lg:sticky lg:top-24">
+            <p className="text-label text-[var(--color-fg-subtle)]">The full menu</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              Other things we build.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Reporting is the most common, but not the only one. Here are the other five.
+            </p>
+          </div>
+
+          {/* Numbered editorial list */}
+          <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+            {WHAT_WE_BUILD.map((item) => (
+              <li
+                key={item.n}
+                className="grid grid-cols-[auto_1fr] gap-8 md:gap-10 py-10 items-start"
+              >
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1">
+                  — {item.n}
+                </p>
+                <div>
+                  <h3 className="font-serif text-h2 text-[var(--color-fg)] tracking-[-0.02em]">
+                    {item.title}.
+                  </h3>
+                  <p className="mt-3 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-prose">
+                    {item.desc}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  The process                                                                */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function ProcessSection() {
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="max-w-2xl mb-16">
+          <p className="text-label text-[var(--color-fg-subtle)]">The process</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
             From audit to running workflow in ~10 business days.
           </h2>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
-                Day 0–2
+        <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+          {PROCESS_STEPS.map((step, i) => (
+            <li
+              key={step.title}
+              className="grid grid-cols-[auto_1fr] gap-8 md:gap-16 py-10 md:py-12 items-start"
+            >
+              <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2 min-w-[80px]">
+                — 0{i + 1}
               </p>
-              <p className="text-base font-semibold text-white mb-2">Scope & price</p>
-              <p className="text-[14px] leading-relaxed text-white/60">
-                You run the audit, we have a kickoff call, and our team sends a written fixed-price proposal within 48 hours.
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
-                Day 3–9
-              </p>
-              <p className="text-base font-semibold text-white mb-2">Build & walk-through</p>
-              <p className="text-[14px] leading-relaxed text-white/60">
-                We build in a dev environment, walk you through the live workflow on Day 9, and you approve before it touches production.
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
-                Day 10+
-              </p>
-              <p className="text-base font-semibold text-white mb-2">Deploy & maintain</p>
-              <p className="text-[14px] leading-relaxed text-white/60">
-                Deploy to your n8n account, documentation delivered, monitoring runs in the background. You go back to your clients.
-              </p>
-            </div>
-          </div>
+              <div>
+                <p className="text-label text-[var(--color-primary)] mb-2">{step.range}</p>
+                <h3 className="font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em]">
+                  {step.title}.
+                </h3>
+                <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
+                  {step.desc}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
 
+        <p className="mt-10">
           <Link
             href="/how-it-works"
-            className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white/90 transition-colors"
+            className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
           >
-            See the full 6-phase breakdown →
+            See the full 6-phase breakdown
+            <ArrowRight className="size-3.5" />
           </Link>
-        </section>
+        </p>
       </div>
+    </section>
+  );
+}
 
-      {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Questions
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            Frequently Asked
-          </h2>
-          <FaqAccordion faqs={FAQS} />
-        </section>
-      </div>
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Comparison table                                                           */
+/* ────────────────────────────────────────────────────────────────────────── */
 
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            See what we&apos;d automate for you.
+function ComparisonSection() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="max-w-2xl mb-14">
+          <p className="text-label text-[var(--color-fg-subtle)]">What&rsquo;s included</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            Pick the level of support you need.
           </h2>
-          <p className="text-white/40 mb-10 leading-relaxed">
-            3-minute audit. Instant results. No commitment.
+          <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-lg">
+            Every engagement starts with the audit — free, self-serve, 3 minutes. The Build
+            and Managed tiers layer on progressively more hands-on support.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-          </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
         </div>
-      </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────── */}
-      <Footer />
-    </div>
-  )
+        <Table density="medium">
+          <THead>
+            <TR>
+              <TH>Feature</TH>
+              <TH className="text-center">
+                <span className="font-mono text-caption text-[var(--color-fg-subtle)]">Audit</span>
+              </TH>
+              <TH className="text-center">
+                <span className="font-mono text-caption text-[var(--color-fg-subtle)]">One-Time Build</span>
+              </TH>
+              <TH className="text-center">
+                <span className="font-mono text-caption text-[var(--color-primary)]">Managed</span>
+              </TH>
+            </TR>
+          </THead>
+          <tbody>
+            {WHAT_IS_INCLUDED.map((row) => (
+              <TR key={row.feature}>
+                <TD>{row.feature}</TD>
+                <TD className="text-center">
+                  {row.audit ? (
+                    <Badge variant="success">Included</Badge>
+                  ) : (
+                    <span className="text-[var(--color-fg-faint)]">—</span>
+                  )}
+                </TD>
+                <TD className="text-center">
+                  {row.build ? (
+                    <Badge variant="success">Included</Badge>
+                  ) : (
+                    <span className="text-[var(--color-fg-faint)]">—</span>
+                  )}
+                </TD>
+                <TD className="text-center">
+                  {row.managed ? (
+                    <Badge variant="success">Included</Badge>
+                  ) : (
+                    <span className="text-[var(--color-fg-faint)]">—</span>
+                  )}
+                </TD>
+              </TR>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  FAQ                                                                        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function FaqSection() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-3xl px-6 py-24 md:py-32">
+        <p className="text-label text-[var(--color-fg-subtle)]">Questions</p>
+        <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance mb-14">
+          Frequently asked.
+        </h2>
+
+        <Accordion type="multiple">
+          {FAQS.map((faq) => (
+            <AccordionItem key={faq.q} value={faq.q}>
+              <AccordionTrigger>{faq.q}</AccordionTrigger>
+              <AccordionContent>{faq.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Final CTA                                                                  */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function FinalCTA() {
+  return (
+    <section>
+      <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+          See what we&apos;d automate for you.
+        </h2>
+        <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
+          3-minute audit. Instant results. No commitment.
+        </p>
+
+        <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+          <Button asChild size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a free 20-min call
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+          <Button asChild variant="ghost" size="lg">
+            <Link href="/audit">Or run a self-serve audit</Link>
+          </Button>
+        </div>
+
+        <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+          No credit card. No sales pitch. Just the shortlist of workflows
+          burning the most money in your agency right now.
+        </p>
+      </div>
+    </section>
+  );
 }
