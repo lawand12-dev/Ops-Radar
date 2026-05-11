@@ -44,7 +44,7 @@ export default function FinancialsPage() {
     <>
       <PageHeader
         title="Financials"
-        subtitle="Track revenue, expenses, and outstanding invoices."
+        subtitle="Revenue, spend, and margin — surfaced from your billing tools."
         actions={
           <>
             <SecondaryButton>

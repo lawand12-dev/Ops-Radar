@@ -34,7 +34,7 @@ export default function TeamPage() {
     <>
       <PageHeader
         title="Team"
-        subtitle="Your people, what they're working on, and how loaded they are."
+        subtitle="Who's on what, and how loaded they are."
         actions={
           <PrimaryButton>
             <Plus size={14} />

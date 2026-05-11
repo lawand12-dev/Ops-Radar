@@ -27,7 +27,7 @@ export default function TimeTrackingPage() {
     <>
       <PageHeader
         title="Time Tracking"
-        subtitle="Log billable hours and review your team's time entries."
+        subtitle="Hours logged and utilization, across your team."
         actions={
           <>
             <SecondaryButton>

@@ -41,7 +41,7 @@ export default function ProjectsPage() {
     <>
       <PageHeader
         title="Projects"
-        subtitle="Manage and track all your client projects in one place."
+        subtitle="Active client work across your agency."
         actions={
           <>
             <SecondaryButton>
