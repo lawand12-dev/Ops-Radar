@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '<npm>/components/ui/button';
+import { Input } from '<npm>/components/ui/input';
+import { Label } from '<npm>/components/ui/label';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -25,57 +28,107 @@ export default function ForgotPasswordPage() {
     router.replace('/login/check-email');
   }
 
+  const year = new Date().getFullYear();
+
   return (
-    <div style={{ minHeight: '100vh', background: '#080C14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 400, background: '#0F1923', border: '1px solid rgba(0,194,255,0.1)', borderRadius: 16, padding: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E0F0FF', marginBottom: 6 }}>Reset password</h1>
-        <p style={{ fontSize: 13.5, color: '#4A6280', marginBottom: 22 }}>Enter your email and we&apos;ll send you a reset link.</p>
-
-        {error && (
-          <div style={{ background: 'rgba(255,77,77,0.08)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 8, padding: '8px 10px', fontSize: 12.5, color: '#FF4D4D', marginBottom: 16 }}>
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 11.5, color: '#4A6280', letterSpacing: '0.3px', textTransform: 'uppercase' }}>Email</span>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ background: '#080C14', border: '1px solid rgba(0,194,255,0.1)', borderRadius: 8, padding: '10px 12px', fontSize: 14, color: '#E0F0FF', outline: 'none' }}
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              background: '#00C2FF',
-              color: '#0D1117',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 14px',
-              fontSize: 13.5,
-              fontWeight: 600,
-              cursor: loading ? 'wait' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              marginTop: 4,
-            }}
+    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
+      {/* Minimal auth header */}
+      <div className="flex justify-center pt-10 pb-0 px-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[var(--color-fg)]"
+          aria-label="OpsRadar home"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 22 22"
+            fill="none"
+            aria-hidden="true"
+            className="text-[var(--color-primary)]"
           >
-            {loading ? 'Sending…' : 'Send reset link'}
-          </button>
-        </form>
-
-        <div style={{ marginTop: 18, textAlign: 'center' }}>
-          <Link href="/login" style={{ fontSize: 12.5, color: '#00C2FF', textDecoration: 'none' }}>
-            ← Back to sign in
-          </Link>
-        </div>
+            <circle cx="11" cy="11" r="10" stroke="currentColor" strokeWidth="1.2" opacity="0.25" />
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
+            <circle cx="11" cy="11" r="3" stroke="currentColor" strokeWidth="1.4" opacity="0.7" />
+            <circle cx="11" cy="11" r="1.4" fill="currentColor" />
+          </svg>
+          <span className="font-serif text-[1.0625rem] tracking-[-0.01em]">OpsRadar</span>
+        </Link>
       </div>
+
+      {/* Form area */}
+      <main className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md">
+          <h1 className="font-serif text-h1 tracking-[-0.025em] text-[var(--color-fg)] text-balance">
+            Reset your password.
+          </h1>
+          <p className="mt-2 text-body text-[var(--color-fg-muted)]">
+            Enter your email and we&apos;ll send a reset link. It expires in 15 minutes.
+          </p>
+
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 rounded-[var(--radius)] border border-[var(--color-danger)] bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3 py-2.5"
+            >
+              <p className="text-body-sm text-[var(--color-danger)]">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@agency.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full mt-1"
+              disabled={loading}
+            >
+              {loading ? 'Sending…' : 'Send reset link.'}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-body-sm text-[var(--color-fg-muted)]">
+            <Link
+              href="/login"
+              className="hover:text-[var(--color-fg)] transition-colors"
+            >
+              ← Back to sign in
+            </Link>
+          </p>
+        </div>
+      </main>
+
+      {/* Minimal auth footer */}
+      <footer className="flex justify-center pb-10 px-6">
+        <p className="text-caption text-[var(--color-fg-subtle)]">
+          © {year} OpsRadar&nbsp;&nbsp;·&nbsp;&nbsp;
+          <Link
+            href="/privacy"
+            className="hover:text-[var(--color-fg)] transition-colors"
+          >
+            Privacy
+          </Link>
+          &nbsp;&nbsp;·&nbsp;&nbsp;
+          <Link
+            href="/terms"
+            className="hover:text-[var(--color-fg)] transition-colors"
+          >
+            Terms
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 }
