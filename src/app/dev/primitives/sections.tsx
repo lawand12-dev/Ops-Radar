@@ -69,6 +69,7 @@ import { toast } from "<npm>/components/ui/toast";
 import { Skeleton } from "<npm>/components/ui/skeleton";
 import { Progress } from "<npm>/components/ui/progress";
 import { StatusDot, type Status } from "<npm>/components/ui/status-dot";
+import { Metric } from "<npm>/components/ui/metric";
 
 export function Showcase() {
   return (
@@ -97,6 +98,7 @@ export function Showcase() {
       <TooltipTabsDropdownSection />
       <ToastSection />
       <SkeletonProgressStatusSection />
+      <MetricSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -506,6 +508,22 @@ function SkeletonProgressStatusSection() {
             </span>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function MetricSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Metric</p>
+      <div className="grid grid-cols-3 gap-8 max-w-2xl">
+        <Metric label="Hours reclaimed / mo" value="2,431" delta={{ value: "+18%", trend: "up" }} />
+        <Metric label="Workflows running" value="87" delta={{ value: "+6", trend: "up" }} />
+        <Metric label="ROI to date" value="$184,200" />
+        <Metric label="Avg run time" value="412ms" delta={{ value: "−14ms", trend: "down" }} />
+        <Metric label="Active integrations" value="12" delta={{ value: "0", trend: "flat" }} />
+        <Metric label="Failed runs (7d)" value="3" delta={{ value: "+1", trend: "down" }} />
       </div>
     </section>
   );
