@@ -417,8 +417,8 @@ function coerceAuditContext(value: unknown): AuditContext | null {
 function SectionLabel({ num, text }: { num: string; text: string }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <span className="font-mono text-[10px] font-bold tracking-[3px] text-on-surface-variant/30">{num}</span>
-      <span className="text-[10px] font-bold uppercase tracking-[2.5px] text-secondary">{text}</span>
+      <span className="font-mono text-[10px] font-bold tracking-[3px] text-[var(--color-fg-subtle)]">{num}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[2.5px] text-[var(--color-primary)]">{text}</span>
     </div>
   )
 }
@@ -428,8 +428,7 @@ function SectionLabel({ num, text }: { num: string; text: string }) {
 function Divider() {
   return (
     <div
-      className="h-px w-full"
-      style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(173,198,255,0.2) 30%, rgba(76,215,246,0.15) 70%, transparent 100%)' }}
+      className="h-px w-full bg-[var(--color-border)]"
     />
   )
 }
@@ -483,82 +482,73 @@ function ReportLoadingExperience({
   }, [steps.length])
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-hidden">
-      <div className="absolute inset-0 grid-texture pointer-events-none opacity-70" />
-      <div className="absolute -top-10 left-[-10%] h-[380px] w-[520px] rounded-full bg-primary/10 blur-[140px] pointer-events-none" />
-      <div className="absolute top-[18%] right-[-8%] h-[320px] w-[380px] rounded-full bg-secondary/8 blur-[140px] pointer-events-none" />
-
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] overflow-hidden">
       <div className="relative z-[1] mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="max-w-[720px]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/18 bg-primary/8 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-primary mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--color-primary)] mb-6">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-primary)] opacity-70" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--color-primary)]" />
               </span>
-              Building your diagnosis
+              Synthesising your diagnosis
             </div>
 
-            <h1 className="font-headline text-[clamp(32px,5.6vw,68px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-on-surface">
-              Turning raw answers into something that feels like{' '}
-              <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
-                ops magic
-              </span>
-              .
+            <h1 className="font-serif text-[clamp(32px,5.6vw,64px)] font-normal leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)]">
+              Turning your answers into a working{' '}
+              <span className="text-[var(--color-primary)]">ops diagnosis</span>.
             </h1>
 
-            <p className="mt-5 max-w-[640px] text-[16px] leading-[1.8] text-on-surface-variant">
-              We’re not loading a template. We’re synthesizing a custom operations diagnosis for {company}, tuned to the pressure points inside your {agencyType.toLowerCase()} workflow.
+            <p className="mt-5 max-w-[640px] text-body-lg leading-[1.75] text-[var(--color-fg-muted)]">
+              This is not a template. OpsRadar is mapping {company}&apos;s {agencyType.toLowerCase()} operating model and surfacing the highest-cost manual patterns.
             </p>
 
-            <div className="mt-7 rounded-[22px] border border-white/7 bg-surface-container-low/80 p-5 backdrop-blur-xl">
+            <div className="mt-7 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
               <div className="mb-4 flex items-center justify-between gap-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/45">
-                  Diagnosis synthesis progress
+                <p className="text-label text-[var(--color-fg-subtle)]">
+                  Analysis progress
                 </p>
-                <p className="font-headline text-[24px] font-extrabold tabular-nums text-primary">
+                <p className="font-mono text-h3 tabular-nums text-[var(--color-primary)]">
                   {progress}%
                 </p>
               </div>
-              <div className="h-[9px] overflow-hidden rounded-full bg-surface-container-high">
+              <div className="h-[6px] overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
                 <div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full bg-[var(--color-primary)]"
                   style={{
                     width: `${progress}%`,
-                    background: 'linear-gradient(90deg, #3b82f6, #4cd7f6, #a78bfa)',
-                    boxShadow: '0 0 24px rgba(96,165,250,0.45)',
                     transition: 'width 420ms cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 />
               </div>
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-4 space-y-2">
                 {steps.map((item, index) => {
                   const active = index <= step
                   return (
                     <div
                       key={item}
-                      className="flex items-center gap-3 rounded-[14px] border px-3.5 py-3 transition-all duration-500"
+                      className="flex items-center gap-3 rounded-[var(--radius-md)] border px-3.5 py-3 transition-all duration-300"
                       style={{
-                        background: active ? 'rgba(173,198,255,0.06)' : 'rgba(255,255,255,0.02)',
-                        borderColor: active ? 'rgba(173,198,255,0.14)' : 'rgba(255,255,255,0.05)',
+                        background: active ? 'var(--color-surface-sunken)' : 'transparent',
+                        borderColor: active ? 'var(--color-border-strong)' : 'var(--color-border)',
                       }}
                     >
                       <div
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
                         style={{
-                          borderColor: active ? 'rgba(76,215,246,0.35)' : 'rgba(255,255,255,0.08)',
-                          background: active ? 'rgba(76,215,246,0.14)' : 'rgba(255,255,255,0.03)',
+                          borderColor: active ? 'var(--color-primary)' : 'var(--color-border)',
+                          background: active ? 'var(--color-surface)' : 'transparent',
                         }}
                       >
                         {active ? (
-                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                            <path d="M3 8l3.2 3.2L13 4.5" stroke="#4cd7f6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8l3.2 3.2L13 4.5" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
-                          <div className="h-1.5 w-1.5 rounded-full bg-white/18" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-border-strong)]" />
                         )}
                       </div>
-                      <p className={`text-[13px] leading-[1.5] ${active ? 'text-on-surface' : 'text-on-surface-variant/45'}`}>
+                      <p className={`text-body-sm leading-[1.5] ${active ? 'text-[var(--color-fg)]' : 'text-[var(--color-fg-subtle)]'}`}>
                         {item}
                       </p>
                     </div>
@@ -568,61 +558,58 @@ function ReportLoadingExperience({
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-primary/14 bg-surface-container-low/75 p-5 shadow-[0_30px_100px_rgba(2,6,23,0.42)] backdrop-blur-xl">
-            <div
-              className="rounded-[22px] border border-white/7 bg-surface-container/80 p-5"
-              style={{ backgroundImage: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(167,139,250,0.03))' }}
-            >
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary mb-3">
-                Live signal preview
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-5">
+              <p className="text-label text-[var(--color-primary)] mb-3">
+                Input snapshot
               </p>
-              <div className="space-y-4">
-                <div className="rounded-[18px] border border-white/7 bg-surface-container-high/60 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
-                    Company
+              <div className="space-y-3">
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+                  <p className="text-label text-[var(--color-fg-subtle)] mb-1">
+                    Agency
                   </p>
-                  <p className="font-headline text-[26px] font-extrabold tracking-[-0.03em] text-on-surface">
+                  <p className="font-serif text-h3 text-[var(--color-fg)]">
                     {company}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-[16px] border border-white/7 bg-surface-container-high/60 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
-                      Core Model
+                  <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                    <p className="text-label text-[var(--color-fg-subtle)] mb-1">
+                      Type
                     </p>
-                    <p className="font-headline text-[20px] font-bold text-[#7dd3fc]">
+                    <p className="font-mono text-body-sm font-medium text-[var(--color-primary)]">
                       {agencyType}
                     </p>
                   </div>
-                  <div className="rounded-[16px] border border-white/7 bg-surface-container-high/60 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                  <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                    <p className="text-label text-[var(--color-fg-subtle)] mb-1">
                       Focus
                     </p>
-                    <p className="font-headline text-[20px] font-bold text-[#ffb786]">
-                      Manual Drag
+                    <p className="font-mono text-body-sm font-medium text-[var(--color-warn)]">
+                      Manual drag
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-[18px] border border-white/7 bg-surface-container-high/60 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
-                    Highest-pressure bottleneck
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+                  <p className="text-label text-[var(--color-fg-subtle)] mb-1">
+                    Primary bottleneck
                   </p>
-                  <p className="text-[14px] leading-[1.7] text-on-surface-variant">
+                  <p className="text-body-sm leading-[1.7] text-[var(--color-fg-muted)]">
                     {automationWish}
                   </p>
                 </div>
 
-                <div className="rounded-[18px] border border-primary/14 bg-primary/6 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary mb-3">
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+                  <p className="text-label text-[var(--color-primary)] mb-2">
                     Detected stack
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {(tools.length > 0 ? tools : ['Ops stack']).map((tool) => (
                       <span
                         key={tool}
-                        className="rounded-full border border-primary/18 bg-surface-container/85 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                        className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                       >
                         {tool}
                       </span>
@@ -745,17 +732,10 @@ function VerdictHero({
 
   return (
     <section className="relative mt-10 mb-12">
-      {/* Ethereal beams / ambient glow matching the rest of the header */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse 60% 80% at 15% 20%, ${tone.accentSoft}, transparent 55%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(125,211,252,0.08), transparent 60%)`,
-        }}
-      />
-      <div className="relative z-[1] py-16 sm:py-20">
+      <div className="py-16 sm:py-20">
         {/* Segment label — mirrors /for/* landing page style, shown only for 3 marketing segments */}
         {segmentLabel && (
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-5">
+          <p className="text-label text-[var(--color-fg-subtle)] mb-5">
             {segmentLabel}
           </p>
         )}
@@ -779,56 +759,49 @@ function VerdictHero({
             />
           </span>
           <span
-            className="font-mono text-[10px] font-bold uppercase tracking-[0.22em]"
+            className="font-mono text-caption font-bold uppercase tracking-[0.22em]"
             style={{ color: tone.accent }}
           >
-            Diagnosis · {tone.label}
+            OPERATE diagnosis · {tone.label}
           </span>
         </div>
 
         {/* Headline */}
         {headline && (
-          <h1
-            className="font-headline mt-6 max-w-[900px] text-[clamp(34px,6vw,64px)] font-black leading-[1.02] tracking-[-0.035em] text-on-surface"
-            style={{ fontWeight: 900 }}
-          >
+          <h1 className="font-serif mt-6 max-w-[900px] text-[clamp(34px,6vw,64px)] font-normal leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)]">
             {headline}
           </h1>
         )}
 
         {/* Subline — quotes user's own words */}
         {subline && (
-          <p className="mt-6 max-w-[760px] text-[clamp(18px,2.3vw,26px)] font-medium leading-[1.45] text-on-surface/70">
+          <p className="mt-6 max-w-[760px] text-body-lg font-normal leading-[1.55] text-[var(--color-fg-muted)]">
             {subline}
           </p>
         )}
 
-        {/* Stakes — amber warning tone */}
+        {/* Stakes — warn tone */}
         {stakes && (
           <div className="mt-8 flex items-start gap-3 max-w-[760px]">
             <span
-              className="mt-[10px] inline-block h-[2px] w-8 shrink-0"
-              style={{ background: '#fbbf24' }}
+              className="mt-[10px] inline-block h-[2px] w-6 shrink-0 bg-[var(--color-warn)]"
             />
-            <p
-              className="text-[clamp(15px,1.6vw,18px)] font-semibold leading-[1.55]"
-              style={{ color: '#fcd34d' }}
-            >
+            <p className="text-body font-medium leading-[1.55] text-[var(--color-warn)]">
               {stakes}
             </p>
           </div>
         )}
 
-        {/* Identity line — muted italic */}
+        {/* Identity line — muted */}
         {identityLine && (
-          <p className="mt-6 max-w-[680px] text-[clamp(13px,1.4vw,16px)] italic leading-[1.6] text-on-surface/50">
+          <p className="mt-6 max-w-[680px] text-body-sm italic leading-[1.6] text-[var(--color-fg-subtle)]">
             {identityLine}
           </p>
         )}
       </div>
 
       {/* Thin divider under the verdict */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-outline-variant/25 to-transparent" />
+      <div className="h-px w-full bg-[var(--color-border)]" />
     </section>
   )
 }
@@ -891,89 +864,81 @@ function MagicMomentPanel({
   }, [maxStep])
 
   return (
-    <div className="mt-8 rounded-[26px] overflow-hidden border border-primary/14 bg-surface-container-low/70 shadow-[0_24px_90px_rgba(4,12,28,0.42)] backdrop-blur-xl">
-      <div
-        className="relative px-6 py-6 sm:px-7 sm:py-7"
-        style={{
-          background:
-            'radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%), radial-gradient(circle at 90% 20%, rgba(76,215,246,0.12), transparent 26%), linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))',
-        }}
-      >
-        <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'linear-gradient(rgba(173,198,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(173,198,255,0.045) 1px, transparent 1px)', backgroundSize: '34px 34px' }} />
-        <div className="relative z-[1] grid gap-5 lg:grid-cols-[1.35fr_0.95fr]">
+    <div className="mt-8 rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="px-6 py-6 sm:px-7 sm:py-7">
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_0.95fr]">
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-secondary/18 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-secondary">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-70" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-secondary" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1.5 text-label text-[var(--color-primary)]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-primary)] opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-primary)]" />
               </span>
-              Live Ops Signal
+              OPERATE · Live ops signal
             </div>
 
             <div className="max-w-[680px]">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">
-                What the system sees instantly
+              <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+                What OpsRadar sees from your inputs
               </p>
-              <h2 className="font-headline text-[clamp(23px,3.2vw,40px)] font-extrabold leading-[1.08] tracking-[-0.035em] text-on-surface">
+              <h2 className="font-serif text-[clamp(23px,3.2vw,38px)] font-normal leading-[1.08] tracking-[-0.025em] text-[var(--color-fg)]">
                 {hasRealWasteValue ? (
                   <>
-                    {company || 'Your agency'} is leaking{' '}
-                    <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                    {company || 'Your agency'} is losing{' '}
+                    <span className="text-[var(--color-primary)]">
                       {annualWasteDisplay}
                     </span>{' '}
-                    a year through manual drag that now has a build path.
+                    a year to manual work that has a clear automation path.
                   </>
                 ) : (
                   <>
-                    We analyzed {company || 'your'} operations.{' '}
-                    <span className="bg-gradient-to-r from-[#7dd3fc] via-[#adc6ff] to-[#c4b5fd] bg-clip-text text-transparent">
+                    OpsRadar mapped {company || 'your'} operations.{' '}
+                    <span className="text-[var(--color-primary)]">
                       {topOpportunityTitle
-                        ? `Your highest-leverage build is "${topOpportunityTitle}".`
-                        : 'Your highest-leverage build is below.'}
+                        ? `The highest-leverage build is "${topOpportunityTitle}".`
+                        : 'The highest-leverage build is below.'}
                     </span>
                   </>
                 )}
               </h2>
             </div>
 
-            <div className="rounded-[18px] border border-white/7 bg-surface-container/75 px-4 py-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
-                The strongest signal
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-4 py-4">
+              <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+                Strongest signal from this audit
               </p>
-              <p className="text-[14px] leading-[1.75] text-on-surface-variant">
+              <p className="text-body leading-[1.75] text-[var(--color-fg-muted)]">
                 {riskSummary}
               </p>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {statusItems.map((item, index) => {
                 const active = index <= step
                 return (
                   <div
                     key={item}
-                    className="flex items-center gap-3 rounded-[14px] border px-3.5 py-3 transition-all duration-500"
+                    className="flex items-center gap-3 rounded-[var(--radius-md)] border px-3.5 py-2.5 transition-all duration-300"
                     style={{
-                      background: active ? 'rgba(173,198,255,0.07)' : 'rgba(255,255,255,0.02)',
-                      borderColor: active ? 'rgba(173,198,255,0.16)' : 'rgba(255,255,255,0.06)',
-                      boxShadow: active ? '0 0 28px rgba(96,165,250,0.08)' : 'none',
+                      background: active ? 'var(--color-surface-sunken)' : 'transparent',
+                      borderColor: active ? 'var(--color-border-strong)' : 'var(--color-border)',
                     }}
                   >
                     <div
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
                       style={{
-                        borderColor: active ? 'rgba(76,215,246,0.35)' : 'rgba(255,255,255,0.08)',
-                        background: active ? 'rgba(76,215,246,0.12)' : 'rgba(255,255,255,0.03)',
+                        borderColor: active ? 'var(--color-primary)' : 'var(--color-border)',
+                        background: active ? 'var(--color-surface)' : 'transparent',
                       }}
                     >
                       {active ? (
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                          <path d="M3 8l3.2 3.2L13 4.5" stroke="#4cd7f6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                          <path d="M3 8l3.2 3.2L13 4.5" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : (
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/18" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-border-strong)]" />
                       )}
                     </div>
-                    <p className={`text-[13px] leading-[1.5] ${active ? 'text-on-surface' : 'text-on-surface-variant/45'}`}>
+                    <p className={`text-body-sm leading-[1.5] ${active ? 'text-[var(--color-fg)]' : 'text-[var(--color-fg-subtle)]'}`}>
                       {item}
                     </p>
                   </div>
@@ -982,26 +947,26 @@ function MagicMomentPanel({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Readiness', value: readiness ?? 0, suffix: readiness != null ? '/100' : '—', color: '#4cd7f6' },
-                { label: 'Hours Back', value: hoursWeekly, suffix: 'h/wk', color: '#34d399' },
-                { label: 'Build Paths', value: opportunities.length, suffix: 'mapped', color: '#ffb786' },
-                { label: 'Top Priority', value: 1, suffix: opportunities[0] ? 'ready' : 'queued', color: '#adc6ff' },
+                { label: 'Readiness', value: readiness ?? 0, suffix: readiness != null ? '/100' : '—' },
+                { label: 'Hours back', value: hoursWeekly, suffix: 'h/wk' },
+                { label: 'Build paths', value: opportunities.length, suffix: 'mapped' },
+                { label: 'Top priority', value: 1, suffix: opportunities[0] ? 'ready' : 'queued' },
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-[18px] border border-white/7 bg-surface-container/80 p-4"
+                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4"
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                  <p className="text-label text-[var(--color-fg-subtle)] mb-2">
                     {stat.label}
                   </p>
                   <div className="flex items-end gap-1.5">
-                    <p className="font-headline text-[32px] font-extrabold leading-none tabular-nums" style={{ color: stat.color }}>
+                    <p className="font-mono text-h2 font-medium leading-none tabular-nums text-[var(--color-fg)]">
                       {stat.value}
                     </p>
-                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/45">
+                    <p className="mb-0.5 text-caption text-[var(--color-fg-subtle)]">
                       {stat.suffix}
                     </p>
                   </div>
@@ -1009,15 +974,15 @@ function MagicMomentPanel({
               ))}
             </div>
 
-            <div className="rounded-[18px] border border-primary/14 bg-primary/6 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-3">
-                Detected Stack
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4">
+              <p className="text-label text-[var(--color-primary)] mb-2">
+                Detected stack
               </p>
               <div className="flex flex-wrap gap-2">
                 {(tools.length > 0 ? tools : ['Ops stack']).map((tool) => (
                   <span
                     key={tool}
-                    className="rounded-full border border-primary/18 bg-surface-container/80 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                    className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                   >
                     {tool}
                   </span>
@@ -1025,14 +990,14 @@ function MagicMomentPanel({
               </div>
             </div>
 
-            <div className="rounded-[18px] border border-white/7 bg-surface-container/80 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
-                Highest-Leverage Move
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4">
+              <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+                Highest-leverage move
               </p>
-              <p className="font-headline text-[19px] font-bold leading-[1.3] tracking-[-0.02em] text-on-surface">
+              <p className="font-serif text-h4 leading-[1.3] text-[var(--color-fg)]">
                 {topOpportunity}
               </p>
-              <p className="mt-2 text-[13px] leading-[1.65] text-on-surface-variant">
+              <p className="mt-2 text-body-sm leading-[1.65] text-[var(--color-fg-muted)]">
                 {headline}
               </p>
             </div>
@@ -1075,82 +1040,81 @@ function TransformationStrip({
   ]
 
   return (
-    <div className="mt-7 rounded-[26px] overflow-hidden border border-outline-variant/12 bg-surface-container-low/75 shadow-[0_20px_80px_rgba(2,6,23,0.34)] backdrop-blur-xl">
-      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, rgba(248,113,113,0.9), rgba(245,158,11,0.9), rgba(52,211,153,0.9), rgba(76,215,246,0.9))' }} />
+    <div className="mt-7 rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="p-6 sm:p-7">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-5">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant/45 mb-2">
-              The Before / After
+            <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+              Before / after
             </p>
-            <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              What changes when {company || 'your team'} stops operating manually.
+            <h2 className="font-serif text-[clamp(22px,3vw,32px)] font-normal tracking-[-0.025em] text-[var(--color-fg)]">
+              What changes when {company || 'your agency'} stops operating manually.
             </h2>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1.5 text-label text-[var(--color-fg-subtle)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
             Outcome view
           </div>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
-          <div className="rounded-[22px] border border-red-400/16 bg-red-400/6 p-5">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-danger)] border-opacity-20 bg-[var(--color-surface-sunken)] p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-300/80 mb-1">
+                <p className="text-label text-[var(--color-danger)] mb-1">
                   Today
                 </p>
-                <p className="font-headline text-[22px] font-extrabold tracking-[-0.03em] text-on-surface">
-                  Busywork runs the day
+                <p className="font-serif text-h4 text-[var(--color-fg)]">
+                  Manual work runs the day
                 </p>
               </div>
-              <div className="rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-red-300">
+              <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-label text-[var(--color-danger)]">
                 Ops drag
               </div>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {currentBullets.map((bullet) => (
                 <div
                   key={bullet}
-                  className="flex items-start gap-3 rounded-[14px] border border-white/6 bg-surface-container/55 px-3.5 py-3"
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-3"
                 >
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-300" />
-                  <p className="text-[13px] leading-[1.65] text-on-surface-variant">{bullet}</p>
+                  <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-danger)]" />
+                  <p className="text-body-sm leading-[1.65] text-[var(--color-fg-muted)]">{bullet}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="hidden lg:flex items-center justify-center px-2">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-primary/20 bg-primary/10 shadow-[0_0_30px_rgba(96,165,250,0.18)]">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14m-5-5 5 5-5 5" stroke="#adc6ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14m-5-5 5 5-5 5" stroke="var(--color-fg-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-emerald-400/18 bg-emerald-400/7 p-5">
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-success)] border-opacity-20 bg-[var(--color-surface-sunken)] p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300/80 mb-1">
-                  After the build
+                <p className="text-label text-[var(--color-success)] mb-1">
+                  After AIOS
                 </p>
-                <p className="font-headline text-[22px] font-extrabold tracking-[-0.03em] text-on-surface">
+                <p className="font-serif text-h4 text-[var(--color-fg)]">
                   The system carries the load
                 </p>
               </div>
-              <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">
+              <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-label text-[var(--color-success)]">
                 Leverage
               </div>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {futureBullets.map((bullet) => (
                 <div
                   key={bullet}
-                  className="flex items-start gap-3 rounded-[14px] border border-white/6 bg-surface-container/55 px-3.5 py-3"
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-3"
                 >
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
-                  <p className="text-[13px] leading-[1.65] text-on-surface">{bullet}</p>
+                  <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-success)]" />
+                  <p className="text-body-sm leading-[1.65] text-[var(--color-fg)]">{bullet}</p>
                 </div>
               ))}
             </div>
@@ -1158,13 +1122,13 @@ function TransformationStrip({
         </div>
 
         {leadOpportunity?.technical_flow && (
-          <div className="mt-5 rounded-[20px] border border-primary/14 bg-primary/6 p-5">
+          <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
-                  Most likely first system to ship
+                <p className="text-label text-[var(--color-primary)] mb-1.5">
+                  Highest-probability first build
                 </p>
-                <p className="font-headline text-[20px] font-bold tracking-[-0.02em] text-on-surface">
+                <p className="font-serif text-h4 text-[var(--color-fg)]">
                   {leadOpportunity.title}
                 </p>
               </div>
@@ -1260,48 +1224,47 @@ function ForensicMatchPanel({
   ]).slice(0, 4)
 
   return (
-    <div className="mt-7 rounded-[26px] overflow-hidden border border-secondary/14 bg-surface-container-low/80 shadow-[0_24px_80px_rgba(2,6,23,0.38)] backdrop-blur-xl">
-      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, #4cd7f6, #adc6ff, #f59e0b)' }} />
+    <div className="mt-7 rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="p-6 sm:p-7">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-secondary mb-2">
-              Why This Came First
+            <p className="text-label text-[var(--color-primary)] mb-2">
+              Why this came first
             </p>
-            <h2 className="font-headline text-[clamp(22px,3vw,34px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              The report separated what you told us and what OpsRadar inferred from your stack.
+            <h2 className="font-serif text-[clamp(22px,3vw,32px)] font-normal tracking-[-0.025em] text-[var(--color-fg)]">
+              What {company || 'your agency'} declared — and what OpsRadar inferred from your stack.
             </h2>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-secondary/16 bg-secondary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-secondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1.5 text-label text-[var(--color-fg-subtle)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
             Decision trace
           </div>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-[22px] border border-white/7 bg-surface-container/75 p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-3">
-              Declared By {company || 'Your Team'}
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-5">
+            <p className="text-label text-[var(--color-fg-subtle)] mb-3">
+              Declared by {company || 'your agency'}
             </p>
-            <div className="rounded-[18px] border border-primary/14 bg-primary/6 px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+              <p className="text-label text-[var(--color-primary)] mb-2">
                 Core pain point
               </p>
-              <p className="font-headline text-[18px] font-bold leading-[1.5] tracking-[-0.02em] text-on-surface">
+              <p className="font-serif text-h4 leading-[1.5] text-[var(--color-fg)]">
                 {quote}
               </p>
             </div>
 
             {toolSignals.length > 0 && (
               <div className="mt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
-                  Stack friction you surfaced
+                <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+                  Stack friction surfaced
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {toolSignals.map((signal) => (
                     <span
                       key={signal}
-                      className="rounded-full border border-white/8 bg-surface-container-high/70 px-3 py-1.5 text-[12px] font-medium text-on-surface-variant"
+                      className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                     >
                       {signal}
                     </span>
@@ -1312,14 +1275,14 @@ function ForensicMatchPanel({
 
             {declaredTools.length > 0 && (
               <div className="mt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
-                  Systems you named
+                <p className="text-label text-[var(--color-fg-subtle)] mb-2">
+                  Systems named
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {declaredTools.map((tool) => (
                     <span
                       key={tool}
-                      className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                      className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                     >
                       {tool}
                     </span>
@@ -1329,17 +1292,17 @@ function ForensicMatchPanel({
             )}
 
             {inferredHighlights.length > 0 && (
-              <div className="mt-4 rounded-[18px] border border-amber-400/14 bg-amber-400/7 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300/80 mb-2">
-                  Inferred By OpsRadar
+              <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+                <p className="text-label text-[var(--color-warn)] mb-2">
+                  Inferred by OpsRadar
                 </p>
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {inferredHighlights.map((item) => (
                     <div
                       key={item}
-                      className="rounded-[14px] border border-white/6 bg-surface-container/55 px-3 py-3"
+                      className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-2.5"
                     >
-                      <p className="text-[13px] leading-[1.6] text-on-surface">
+                      <p className="text-body-sm leading-[1.6] text-[var(--color-fg)]">
                         {item}
                       </p>
                     </div>
@@ -1350,20 +1313,19 @@ function ForensicMatchPanel({
 
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {rationaleCards.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[20px] border bg-surface-container/75 p-4"
-                style={{ borderColor: `${item.color}25`, backgroundImage: `linear-gradient(135deg, ${item.color}12, rgba(255,255,255,0.02))` }}
+                className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4"
               >
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-2" style={{ color: item.color }}>
+                <p className="text-label mb-2" style={{ color: item.color }}>
                   {item.label}
                 </p>
-                <p className="font-headline text-[21px] font-bold tracking-[-0.025em] text-on-surface mb-1.5">
+                <p className="font-serif text-h4 text-[var(--color-fg)] mb-1.5">
                   {item.value}
                 </p>
-                <p className="text-[13px] leading-[1.65] text-on-surface-variant">
+                <p className="text-body-sm leading-[1.65] text-[var(--color-fg-muted)]">
                   {item.detail}
                 </p>
               </div>
@@ -1371,14 +1333,14 @@ function ForensicMatchPanel({
           </div>
         </div>
 
-        <div className="mt-5 rounded-[22px] border border-primary/14 bg-primary/6 p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+        <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-5">
+          <p className="text-label text-[var(--color-primary)] mb-2">
             Why recommendation #1 won
           </p>
-          <p className="font-headline text-[22px] font-bold leading-[1.4] tracking-[-0.025em] text-on-surface">
+          <p className="font-serif text-h4 leading-[1.4] text-[var(--color-fg)]">
             {leadOpportunity?.title ?? 'The first automation path'} rose to the top because {reasonFragments.join(', ')}.
           </p>
-          <p className="mt-3 text-[14px] leading-[1.75] text-on-surface-variant">
+          <p className="mt-3 text-body leading-[1.75] text-[var(--color-fg-muted)]">
             {toolSignalLine}
           </p>
         </div>
@@ -1399,15 +1361,15 @@ function WebsiteScreenshotPreview({
   if (!screenshotUrl || hidden) return null
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-white/7 bg-surface-container/80 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
-      <div className="flex items-center justify-between border-b border-white/6 px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
-          Homepage visual read
+    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
+        <p className="text-label text-[var(--color-fg-subtle)]">
+          Homepage scan
         </p>
         <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#fb7185]/75" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]/75" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#34d399]/75" />
+          <span className="h-2 w-2 rounded-full bg-[var(--color-danger)] opacity-70" />
+          <span className="h-2 w-2 rounded-full bg-[var(--color-warn)] opacity-70" />
+          <span className="h-2 w-2 rounded-full bg-[var(--color-success)] opacity-70" />
         </div>
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1452,21 +1414,20 @@ function WebsiteEvidencePanel({
   ).slice(0, 4)
 
   return (
-    <div className="mt-7 rounded-[26px] overflow-hidden border border-primary/14 bg-surface-container-low/80 shadow-[0_24px_80px_rgba(2,6,23,0.34)] backdrop-blur-xl">
-      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, #4cd7f6, #60a5fa, #f59e0b)' }} />
+    <div className="mt-7 rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="p-6 sm:p-7">
         <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary mb-2">
-              Verified On Your Site
+            <p className="text-label text-[var(--color-primary)] mb-2">
+              Verified on your site
             </p>
-            <h2 className="font-headline text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-0.03em] text-on-surface">
-              The system found public signals that support the diagnosis for {company || 'your team'}.
+            <h2 className="font-serif text-[clamp(22px,3vw,30px)] font-normal tracking-[-0.025em] text-[var(--color-fg)]">
+              OpsRadar found public signals that support the diagnosis for {company || 'your agency'}.
             </h2>
           </div>
           {websiteUrl && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/14 bg-primary/8 px-3 py-1.5 text-[11px] font-semibold text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1.5 text-label text-[var(--color-fg-subtle)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
               {websiteUrl}
             </div>
           )}
@@ -1488,22 +1449,19 @@ function WebsiteEvidencePanel({
             <div className="space-y-4">
               {websiteVisualEvidence.length > 0 && (
                 <div>
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
-                    Visual cues
+                  <p className="mb-2 text-label text-[var(--color-fg-subtle)]">
+                    Visual signals
                   </p>
                   <div className="grid gap-3">
                     {websiteVisualEvidence.map((item, index) => (
                       <div
                         key={`visual-${item.label}-${item.sourcePath}-${index}`}
-                        className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
-                        style={{
-                          backgroundImage: `linear-gradient(135deg, ${['rgba(76,215,246,0.12)', 'rgba(96,165,250,0.10)', 'rgba(167,139,250,0.10)', 'rgba(245,158,11,0.10)'][index % 4]}, rgba(255,255,255,0.02))`,
-                        }}
+                        className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4"
                       >
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                        <p className="text-label text-[var(--color-fg-subtle)] mb-2">
                           {item.label}
                         </p>
-                        <p className="font-headline text-[18px] font-bold leading-[1.45] tracking-[-0.02em] text-on-surface">
+                        <p className="font-serif text-h4 leading-[1.45] text-[var(--color-fg)]">
                           &ldquo;{item.detail}&rdquo;
                         </p>
                       </div>
@@ -1514,25 +1472,22 @@ function WebsiteEvidencePanel({
 
               {websiteEvidence.length > 0 && (
                 <div>
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+                  <p className="mb-2 text-label text-[var(--color-fg-subtle)]">
                     Page evidence
                   </p>
                   <div className="grid gap-3">
                     {websiteEvidence.map((item, index) => (
                       <div
                         key={`content-${item.label}-${item.sourcePath}-${index}`}
-                        className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
-                        style={{
-                          backgroundImage: `linear-gradient(135deg, ${['rgba(76,215,246,0.08)', 'rgba(96,165,250,0.08)', 'rgba(167,139,250,0.08)', 'rgba(245,158,11,0.08)'][index % 4]}, rgba(255,255,255,0.02))`,
-                        }}
+                        className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4"
                       >
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                        <p className="text-label text-[var(--color-fg-subtle)] mb-2">
                           {item.label}
                         </p>
-                        <p className="text-[14px] font-semibold leading-[1.65] text-on-surface">
+                        <p className="text-body font-medium leading-[1.65] text-[var(--color-fg)]">
                           {item.detail}
                         </p>
-                        <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/55">
+                        <p className="mt-3 text-caption text-[var(--color-fg-subtle)]">
                           Source: {item.sourceLabel} {item.sourcePath}
                         </p>
                       </div>
@@ -1543,7 +1498,7 @@ function WebsiteEvidencePanel({
 
               {(websiteDetectedStack.length > 0 || websiteStackEvidence.length > 0) && (
                 <div>
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45">
+                  <p className="mb-2 text-label text-[var(--color-fg-subtle)]">
                     Public stack fingerprints
                   </p>
                   {websiteDetectedStack.length > 0 && (
@@ -1551,7 +1506,7 @@ function WebsiteEvidencePanel({
                       {websiteDetectedStack.map((tool) => (
                         <span
                           key={tool}
-                          className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                          className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                         >
                           {tool}
                         </span>
@@ -1563,18 +1518,15 @@ function WebsiteEvidencePanel({
                       {websiteStackEvidence.map((item, index) => (
                         <div
                           key={`stack-${item.label}-${item.sourcePath}-${index}`}
-                          className="rounded-[20px] border border-white/7 bg-surface-container/80 p-4"
-                          style={{
-                            backgroundImage: `linear-gradient(135deg, ${['rgba(59,130,246,0.10)', 'rgba(34,211,238,0.08)', 'rgba(167,139,250,0.08)', 'rgba(16,185,129,0.08)'][index % 4]}, rgba(255,255,255,0.02))`,
-                          }}
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4"
                         >
-                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface-variant/45 mb-2">
+                          <p className="text-label text-[var(--color-fg-subtle)] mb-2">
                             {item.label}
                           </p>
-                          <p className="text-[14px] font-semibold leading-[1.65] text-on-surface">
+                          <p className="text-body font-medium leading-[1.65] text-[var(--color-fg)]">
                             {item.detail}
                           </p>
-                          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/55">
+                          <p className="mt-3 text-caption text-[var(--color-fg-subtle)]">
                             Source: {item.sourceLabel} {item.sourcePath}
                           </p>
                         </div>
@@ -1589,14 +1541,14 @@ function WebsiteEvidencePanel({
 
         {sourceBadges.length > 0 && (
           <div className="mt-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+            <p className="text-label text-[var(--color-fg-subtle)] mb-2">
               Pages scanned
             </p>
             <div className="flex flex-wrap gap-2">
               {sourceBadges.map((source) => (
                 <span
                   key={source}
-                  className="rounded-full border border-primary/16 bg-primary/7 px-3 py-1.5 text-[11px] font-semibold text-on-surface"
+                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-sunken)] px-3 py-1 text-caption font-medium text-[var(--color-fg-muted)]"
                 >
                   {source}
                 </span>
@@ -1606,22 +1558,22 @@ function WebsiteEvidencePanel({
         )}
 
         {websiteContext && (
-          <div className="mt-4 rounded-[18px] border border-white/7 bg-surface-container/70 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/45 mb-2">
+          <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4">
+            <p className="text-label text-[var(--color-fg-subtle)] mb-2">
               Scan synthesis
             </p>
-            <p className="text-[13px] leading-[1.7] text-on-surface-variant">
+            <p className="text-body-sm leading-[1.7] text-[var(--color-fg-muted)]">
               {websiteContext}
             </p>
           </div>
         )}
 
         {websiteVisualContext && (
-          <div className="mt-4 rounded-[18px] border border-primary/14 bg-primary/6 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+          <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] p-4">
+            <p className="text-label text-[var(--color-primary)] mb-2">
               Visual synthesis
             </p>
-            <p className="text-[13px] leading-[1.7] text-on-surface-variant">
+            <p className="text-body-sm leading-[1.7] text-[var(--color-fg-muted)]">
               {websiteVisualContext}
             </p>
           </div>
@@ -1643,9 +1595,9 @@ function ReportMap({
   if (sections.length === 0) return null
 
   return (
-    <div className="sticky top-[96px] z-[70] border-y border-outline-variant/10 bg-slate-950/72 backdrop-blur-2xl">
+    <div className="sticky top-[96px] z-[70] border-y border-[var(--color-border)] bg-[var(--color-bg)] backdrop-blur-sm">
       <div className="mx-auto max-w-[980px] px-6">
-        <div className="flex gap-2 overflow-x-auto py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-1.5 overflow-x-auto py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {sections.map((section) => {
             const active = section.id === activeSection
             return (
@@ -1653,12 +1605,11 @@ function ReportMap({
                 key={section.id}
                 type="button"
                 onClick={() => onJump(section.id)}
-                className="shrink-0 rounded-full border px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200"
+                className="shrink-0 rounded-full border px-3.5 py-1.5 text-label transition-colors duration-150"
                 style={{
-                  borderColor: active ? 'rgba(76,215,246,0.26)' : 'rgba(255,255,255,0.08)',
-                  background: active ? 'rgba(76,215,246,0.12)' : 'rgba(255,255,255,0.03)',
-                  color: active ? '#7dd3fc' : 'rgba(255,255,255,0.56)',
-                  boxShadow: active ? '0 0 24px rgba(76,215,246,0.12)' : 'none',
+                  borderColor: active ? 'var(--color-primary)' : 'var(--color-border)',
+                  background: active ? 'var(--color-surface-sunken)' : 'transparent',
+                  color: active ? 'var(--color-primary)' : 'var(--color-fg-subtle)',
                 }}
               >
                 <span>{section.label}</span>
@@ -1716,8 +1667,8 @@ function ReadinessRing({ score }: { score: number }) {
         </div>
       </div>
       <div className="text-center">
-        <p className="font-headline text-[17px] font-bold text-on-surface">Automation Readiness Score</p>
-        <p className="text-[13px] mt-1 font-medium" style={{ color }}>{label}</p>
+        <p className="font-serif text-h4 text-[var(--color-fg)]">Automation Readiness Score</p>
+        <p className="text-body-sm mt-1 font-medium" style={{ color }}>{label}</p>
       </div>
     </div>
   )
@@ -1745,18 +1696,17 @@ function StackRatingBar({ rating }: { rating: number }) {
   return (
     <div ref={ref} className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-[13px] font-medium text-on-surface-variant">Current Stack Efficiency</p>
-        <p className="font-headline text-[20px] font-bold tabular-nums" style={{ color }}>
-          {rating}<span className="text-[13px] font-normal text-on-surface-variant">/10</span>
+        <p className="text-body-sm text-[var(--color-fg-muted)]">Current Stack Efficiency</p>
+        <p className="font-mono text-h3 font-medium tabular-nums" style={{ color }}>
+          {rating}<span className="text-body-sm font-normal text-[var(--color-fg-muted)]">/10</span>
         </p>
       </div>
-      <div className="h-[6px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+      <div className="h-[6px] rounded-full overflow-hidden bg-[var(--color-surface-sunken)]">
         <div
           className="h-full rounded-full"
           style={{
             width: `${w}%`,
-            background: `linear-gradient(90deg, ${color}80, ${color})`,
-            boxShadow: `0 0 12px ${color}60`,
+            background: color,
             transition: 'width 1.2s cubic-bezier(0.34,1.56,0.64,1)',
           }}
         />
@@ -1792,22 +1742,21 @@ function LaborArbitrageSection({ data }: { data: LaborArbitrageBreakdown }) {
     <RevealSection>
       <section>
         <SectionLabel num="04" text="Labor Arbitrage" />
-        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
-          Where Your Skilled Team Does Low-Value Work
+        <h2 className="font-serif font-normal text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-[var(--color-fg)] mb-2">
+          Where skilled people do low-value work
         </h2>
-        <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-6 max-w-[520px]">
-          Skilled labor performing repetitive tasks is the most expensive leak in any agency.
+        <p className="text-body text-[var(--color-fg-muted)] mb-6 max-w-[520px]">
+          The most expensive leak in any agency is high-cost labor doing work that can be automated.
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-4">
           {stats.map(({ label, value, color, isBenchmark, benchmarkLabel }) => (
             <div
               key={label}
-              className="p-5 rounded-[16px]"
-              style={{ background: `${color}08`, border: `1px solid ${color}20` }}
+              className="p-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]"
             >
-              <p className="text-[10px] font-bold uppercase tracking-[2px] mb-3" style={{ color: `${color}bb` }}>{label}</p>
-              <p className="font-headline text-[clamp(22px,3vw,30px)] font-extrabold tabular-nums leading-none" style={{ color, textShadow: `0 0 20px ${color}60` }}>
+              <p className="text-label mb-3" style={{ color: `${color}` }}>{label}</p>
+              <p className="font-mono text-h2 font-medium tabular-nums leading-none" style={{ color }}>
                 {value}
               </p>
               {isBenchmark && <BenchmarkTag label={benchmarkLabel} />}
@@ -1816,13 +1765,10 @@ function LaborArbitrageSection({ data }: { data: LaborArbitrageBreakdown }) {
         </div>
 
         {data.explanation && (
-          <div
-            className="p-5 rounded-[16px] relative overflow-hidden"
-            style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
-            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">The Math</p>
-            <p className="text-[14px] text-on-surface-variant leading-[1.7] pl-2">{data.explanation}</p>
+          <div className="p-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[var(--radius-md)] bg-[var(--color-warn)]" />
+            <p className="text-label text-[var(--color-warn)] mb-2 pl-2">The math</p>
+            <p className="text-body text-[var(--color-fg-muted)] leading-[1.7] pl-2">{data.explanation}</p>
           </div>
         )}
       </section>
@@ -1844,30 +1790,29 @@ function ContextSwitchingSection({ data }: { data: ContextSwitchingAnalysis }) {
     <RevealSection>
       <section>
         <SectionLabel num="05" text="Context Switching Tax" />
-        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
-          The Hidden Cost of Jumping Between Tools
+        <h2 className="font-serif font-normal text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-[var(--color-fg)] mb-2">
+          The cost of jumping between tools
         </h2>
-        <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-6 max-w-[520px]">
-          Each tool switch costs 15–23 minutes of refocus time. It compounds fast.
+        <p className="text-body text-[var(--color-fg-muted)] mb-6 max-w-[520px]">
+          Each tool switch costs 15–23 minutes of refocus time. With enough tools, it compounds into a full day of lost capacity every week.
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats.map(({ label, value, unit, color }) => (
             <div
               key={label}
-              className="p-5 rounded-[16px] flex flex-col gap-2"
-              style={{ background: `${color}08`, border: `1px solid ${color}20` }}
+              className="p-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] flex flex-col gap-2"
             >
-              <p className="text-[10px] font-bold uppercase tracking-[2px]" style={{ color: `${color}bb` }}>{label}</p>
-              <p className="font-headline text-[clamp(24px,3vw,32px)] font-extrabold tabular-nums leading-none" style={{ color, textShadow: `0 0 20px ${color}60` }}>
+              <p className="text-label" style={{ color }}>{label}</p>
+              <p className="font-mono text-h2 font-medium tabular-nums leading-none" style={{ color }}>
                 {value}
               </p>
-              <p className="text-[11px] text-on-surface-variant/50">{unit}</p>
+              <p className="text-caption text-[var(--color-fg-subtle)]">{unit}</p>
             </div>
           ))}
         </div>
         {data.is_benchmark_estimate && (
-          <p className="text-[11px] text-on-surface-variant/45 italic mt-3">
+          <p className="text-caption text-[var(--color-fg-subtle)] italic mt-3">
             Based on typical context-switching costs for your tool count and team size
           </p>
         )}
@@ -1912,24 +1857,24 @@ function BenchmarkBar({
 
   return (
     <div className="space-y-4">
-      <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/50">{label}</p>
+      <p className="text-label text-[var(--color-fg-subtle)]">{label}</p>
 
       {/* Their bar */}
       <div className="space-y-1.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[11px] text-on-surface-variant">Your agency</span>
-          <span className="font-headline font-extrabold text-[18px] tabular-nums" style={{ color: theirColor }}>
+          <span className="text-body-sm text-[var(--color-fg-muted)]">Your agency</span>
+          <span className="font-mono text-h4 font-medium tabular-nums" style={{ color: theirColor }}>
             {theirDisplay}
           </span>
         </div>
-        <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+        <div className="h-[6px] rounded-full overflow-hidden bg-[var(--color-surface-sunken)]">
           <motion.div
             className="h-full rounded-full"
             initial={{ width: 0 }}
             whileInView={{ width: `${theirPct}%` }}
             viewport={{ once: true }}
             transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: animDelay }}
-            style={{ background: theirColor, boxShadow: `0 0 10px ${theirColor}70` }}
+            style={{ background: theirColor }}
           />
         </div>
       </div>
@@ -1937,17 +1882,17 @@ function BenchmarkBar({
       {/* Industry avg bar */}
       <div className="space-y-1.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[11px] text-on-surface-variant/50">Industry average</span>
-          <span className="text-[15px] font-semibold tabular-nums text-on-surface-variant/60">{avgDisplay}</span>
+          <span className="text-caption text-[var(--color-fg-subtle)]">Industry average</span>
+          <span className="font-mono text-body font-medium tabular-nums text-[var(--color-fg-subtle)]">{avgDisplay}</span>
         </div>
-        <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+        <div className="h-[6px] rounded-full overflow-hidden bg-[var(--color-surface-sunken)]">
           <motion.div
             className="h-full rounded-full"
             initial={{ width: 0 }}
             whileInView={{ width: `${avgPct}%` }}
             viewport={{ once: true }}
             transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: animDelay + 0.15 }}
-            style={{ background: 'rgba(255,255,255,0.14)' }}
+            style={{ background: 'var(--color-border-strong)' }}
           />
         </div>
       </div>
@@ -1973,11 +1918,11 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
       <RevealSection>
         <section>
           <SectionLabel num="03" text="Industry Benchmarks" />
-          <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-2">
-            How You Compare
+          <h2 className="font-serif font-normal text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-[var(--color-fg)] mb-2">
+            How your agency stacks up
           </h2>
-          <p className="text-[14px] text-[rgba(255,255,255,0.38)] mb-8 max-w-[520px]">
-            Benchmarked against agencies your size. Numbers don&apos;t lie.
+          <p className="text-body text-[var(--color-fg-muted)] mb-8 max-w-[520px]">
+            Benchmarked against agencies your size. Where you sit tells you what to fix first.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-4">
@@ -1985,8 +1930,7 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
             {/* Hours wasted */}
             {h && (
               <div
-                className="p-6 rounded-[18px] space-y-5"
-                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] space-y-5"
               >
                 <BenchmarkBar
                   label="Hours Wasted / Week"
@@ -2002,13 +1946,13 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
                   return (
                     <div className="flex items-center gap-2 pt-1">
                       <span
-                        className="px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
-                        style={{ background: vc.bg, border: `1px solid ${vc.border}`, color: vc.color }}
+                        className="px-2.5 py-[4px] rounded-full text-label border"
+                        style={{ borderColor: vc.color, color: vc.color }}
                       >
                         {vc.label}
                       </span>
                       {Math.abs(h.percent_difference) > 1 && (
-                        <span className="text-[11px] text-on-surface-variant/50">
+                        <span className="text-caption text-[var(--color-fg-subtle)]">
                           {h.percent_difference > 0 ? '+' : ''}{Math.round(h.percent_difference)}% vs avg
                         </span>
                       )}
@@ -2021,8 +1965,7 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
             {/* Ops cost ratio */}
             {ops && (
               <div
-                className="p-6 rounded-[18px] space-y-5"
-                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] space-y-5"
               >
                 <BenchmarkBar
                   label="Ops Time Ratio"
@@ -2035,16 +1978,16 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
                 />
                 <div className="pt-1">
                   <span
-                    className="px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    className="px-2.5 py-[4px] rounded-full text-label border"
                     style={{
-                      background: opsBad ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
-                      border: opsBad ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(16,185,129,0.3)',
-                      color: opsBad ? '#ef4444' : '#10b981',
+                      background: opsBad ? 'var(--color-surface)' : 'var(--color-surface)',
+                      borderColor: opsBad ? 'var(--color-danger)' : 'var(--color-success)',
+                      color: opsBad ? 'var(--color-danger)' : 'var(--color-success)',
                     }}
                   >
                     {opsBad ? 'Ops-Heavy' : 'Healthy'}
                   </span>
-                  <p className="text-[11px] text-on-surface-variant/50 mt-2 leading-[1.6]">{ops.verdict}</p>
+                  <p className="text-caption text-[var(--color-fg-subtle)] mt-2 leading-[1.6]">{ops.verdict}</p>
                 </div>
               </div>
             )}
@@ -2052,35 +1995,34 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
             {/* Automation maturity */}
             {mat && (
               <div
-                className="p-6 rounded-[18px] space-y-4"
-                style={{ background: 'rgba(173,198,255,0.04)', border: '1px solid rgba(173,198,255,0.1)' }}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] space-y-4"
               >
-                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-on-surface-variant/50">Automation Maturity</p>
+                <p className="text-label text-[var(--color-fg-subtle)]">Automation Maturity</p>
 
                 {/* Score arc / big number */}
                 <div className="flex items-end gap-3">
                   <span
-                    className="font-headline text-[48px] font-extrabold leading-none tabular-nums"
-                    style={{ color: matColor, textShadow: `0 0 24px ${matColor}60` }}
+                    className="font-mono text-[48px] font-medium leading-none tabular-nums"
+                    style={{ color: matColor }}
                   >
                     {mat.their_score}
                   </span>
-                  <span className="text-[14px] text-on-surface-variant/40 mb-1">/100</span>
+                  <span className="text-body text-[var(--color-fg-subtle)] mb-1">/100</span>
                 </div>
 
                 {/* Maturity track */}
                 <div className="space-y-2">
-                  <div className="h-[7px] rounded-full overflow-hidden bg-surface-container-high">
+                  <div className="h-[6px] rounded-full overflow-hidden bg-[var(--color-surface)]">
                     <motion.div
                       className="h-full rounded-full"
                       initial={{ width: 0 }}
                       whileInView={{ width: `${mat.their_score}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-                      style={{ background: `linear-gradient(90deg, #ef4444, #f59e0b 40%, ${matColor})`, boxShadow: `0 0 10px ${matColor}60` }}
+                      style={{ background: matColor }}
                     />
                   </div>
-                  <div className="flex justify-between text-[9px] text-on-surface-variant/30 font-mono">
+                  <div className="flex justify-between font-mono text-caption text-[var(--color-fg-subtle)]">
                     <span>Manual Chaos</span>
                     <span>Intelligent Ops</span>
                   </div>
@@ -2088,12 +2030,12 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
 
                 <div className="pt-1 space-y-1.5">
                   <span
-                    className="inline-block px-2.5 py-[4px] rounded-full text-[10px] font-bold uppercase tracking-wider"
-                    style={{ background: `${matColor}18`, border: `1px solid ${matColor}40`, color: matColor }}
+                    className="inline-block px-2.5 py-[4px] rounded-full text-label border"
+                    style={{ borderColor: matColor, color: matColor }}
                   >
                     {mat.category}
                   </span>
-                  <p className="text-[11px] text-on-surface-variant/50 leading-[1.6]">{mat.percentile}</p>
+                  <p className="text-caption text-[var(--color-fg-subtle)] leading-[1.6]">{mat.percentile}</p>
                 </div>
               </div>
             )}
@@ -2116,52 +2058,39 @@ function OnboardingAssessmentSection({
     <RevealSection>
       <section>
         <SectionLabel num="07" text="Onboarding Assessment" />
-        <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
-          Client Onboarding Audit
+        <h2 className="font-serif font-normal text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-[var(--color-fg)] mb-6">
+          Client onboarding: what the OPERATE layer changes
         </h2>
 
-        <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-          <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, #f87171)' }} />
+        <div className="rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
           <div className="p-6 space-y-5">
 
             {data.current_state && (
-              <div
-                className="p-4 rounded-[12px]"
-                style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Current State</p>
-                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.current_state}</p>
+              <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                <p className="text-label text-[var(--color-danger)] mb-2">Current state</p>
+                <p className="text-body-sm text-[var(--color-fg-muted)] leading-[1.7]">{data.current_state}</p>
               </div>
             )}
 
             <div className="grid sm:grid-cols-2 gap-3">
               {data.time_per_client_current && (
-                <div
-                  className="p-4 rounded-[12px]"
-                  style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-                >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Time per Client Now</p>
-                  <p className="font-headline text-[26px] font-extrabold text-[#f87171] leading-none">{data.time_per_client_current}</p>
+                <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                  <p className="text-label text-[var(--color-danger)] mb-2">Time per client — now</p>
+                  <p className="font-mono text-h2 font-medium text-[var(--color-danger)] leading-none">{data.time_per_client_current}</p>
                 </div>
               )}
               {data.time_per_client_automated && (
-                <div
-                  className="p-4 rounded-[12px]"
-                  style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)' }}
-                >
-                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-emerald-400 mb-2">Time per Client Automated</p>
-                  <p className="font-headline text-[26px] font-extrabold text-emerald-400 leading-none">{data.time_per_client_automated}</p>
+                <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                  <p className="text-label text-[var(--color-success)] mb-2">Time per client — automated</p>
+                  <p className="font-mono text-h2 font-medium text-[var(--color-success)] leading-none">{data.time_per_client_automated}</p>
                 </div>
               )}
             </div>
 
             {data.revenue_impact && (
-              <div
-                className="p-4 rounded-[12px]"
-                style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#60a5fa] mb-2">Revenue Impact</p>
-                <p className="text-[13px] text-on-surface-variant leading-[1.7]">{data.revenue_impact}</p>
+              <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                <p className="text-label text-[var(--color-primary)] mb-2">Revenue impact</p>
+                <p className="text-body-sm text-[var(--color-fg-muted)] leading-[1.7]">{data.revenue_impact}</p>
               </div>
             )}
           </div>
@@ -2180,38 +2109,32 @@ function OpportunityCard({ opp, onCallClick }: { opp: Opportunity; onCallClick: 
 
   return (
     <div
-      className="rounded-[18px] overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-surface-container border border-outline-variant/10"
-      style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+      className="rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-200 hover:border-[var(--color-border-strong)]"
     >
-      <div className="h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}00 65%)` }} />
+      <div className="h-[2px]" style={{ background: color }} />
 
       {/* Header */}
       <div className="p-6 pb-0">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 min-w-0">
             <div
-              className="w-11 h-11 rounded-[12px] flex items-center justify-center font-headline text-[18px] font-extrabold shrink-0"
-              style={{
-                background: `linear-gradient(135deg, ${color}22 0%, ${color}08 100%)`,
-                border: `1.5px solid ${color}40`,
-                color,
-                boxShadow: `0 0 20px ${color}25, inset 0 0 12px ${color}08`,
-              }}
+              className="w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center font-mono text-h4 font-medium shrink-0 border border-[var(--color-border)] bg-[var(--color-surface-sunken)]"
+              style={{ color }}
             >
               {opp.rank}
             </div>
             <div className="min-w-0">
-              <h3 className="font-headline text-[17px] font-bold text-on-surface leading-snug">{opp.title}</h3>
+              <h3 className="font-serif text-h4 text-[var(--color-fg)] leading-snug">{opp.title}</h3>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {opp.quick_win && (
-                  <Badge variant="outline" className="h-auto px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-400/10 border-emerald-400/25 text-emerald-400">
-                    Quick Win
+                  <Badge variant="outline" className="h-auto px-2.5 py-[3px] rounded-full text-label border border-[var(--color-success)] text-[var(--color-success)] bg-transparent">
+                    Quick win
                   </Badge>
                 )}
                 <Badge
                   variant="outline"
-                  className={`h-auto px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-wider ${diff.pill}`}
-                  style={{ background: diff.bg, border: `1px solid ${diff.border}` }}
+                  className={`h-auto px-2.5 py-[3px] rounded-full text-label ${diff.pill} bg-transparent`}
+                  style={{ border: `1px solid ${diff.border}` }}
                 >
                   {diff.label}
                 </Badge>
@@ -2222,22 +2145,22 @@ function OpportunityCard({ opp, onCallClick }: { opp: Opportunity; onCallClick: 
           {/* ROI stats */}
           <div className="flex gap-5 shrink-0 text-right">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant mb-0.5">Saved/Week</p>
-              <p className="font-headline text-[22px] font-extrabold leading-none tabular-nums" style={{ color }}>
+              <p className="text-label text-[var(--color-fg-subtle)] mb-0.5">Saved/week</p>
+              <p className="font-mono text-h3 font-medium leading-none tabular-nums" style={{ color }}>
                 {opp.hours_saved_weekly}h
               </p>
               {opp.calculation_sources?.hours_saved_weekly?.source === 'benchmark_estimate' && (
-                <p className="text-[9px] text-on-surface-variant/40 italic mt-0.5">estimated</p>
+                <p className="text-caption text-[var(--color-fg-subtle)] italic mt-0.5">estimated</p>
               )}
             </div>
             {monthlyVal > 0 && (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant mb-0.5">Monthly</p>
-                <p className="font-headline text-[22px] font-extrabold leading-none tabular-nums text-on-surface">
+                <p className="text-label text-[var(--color-fg-subtle)] mb-0.5">Monthly</p>
+                <p className="font-mono text-h3 font-medium leading-none tabular-nums text-[var(--color-fg)]">
                   {fmtMoney(monthlyVal)}
                 </p>
                 {opp.calculation_sources?.monthly_savings?.source === 'benchmark_estimate' && (
-                  <p className="text-[9px] text-on-surface-variant/40 italic mt-0.5">estimated</p>
+                  <p className="text-caption text-[var(--color-fg-subtle)] italic mt-0.5">estimated</p>
                 )}
               </div>
             )}
@@ -2248,57 +2171,50 @@ function OpportunityCard({ opp, onCallClick }: { opp: Opportunity; onCallClick: 
       <div className="p-6 space-y-4">
         {/* Hard truth */}
         {opp.hard_truth && (
-          <div
-            className="p-4 rounded-[12px]"
-            style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-[2px] mb-2" style={{ color: '#f87171' }}>
-              The Hard Truth
+          <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+            <p className="text-label text-[var(--color-danger)] mb-2">
+              The hard truth
             </p>
-            <p className="text-[13px] leading-[1.7]" style={{ color: '#e0e2ee' }}>{opp.hard_truth}</p>
+            <p className="text-body-sm leading-[1.7] text-[var(--color-fg-muted)]">{opp.hard_truth}</p>
           </div>
         )}
 
         {/* Why This Matters Now */}
         {opp.urgency_reason && (
-          <div
-            className="p-4 rounded-[12px]"
-            style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-[2px] mb-2" style={{ color: '#fb923c' }}>
-              Why This Matters Now
+          <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+            <p className="text-label text-[var(--color-warn)] mb-2">
+              Why this matters now
             </p>
-            <p className="text-[13px] leading-[1.7]" style={{ color: '#e0e2ee' }}>{opp.urgency_reason}</p>
+            <p className="text-body-sm leading-[1.7] text-[var(--color-fg-muted)]">{opp.urgency_reason}</p>
           </div>
         )}
 
         {/* Pattern match — subtle "we've seen this before" signal from the research library.
             The source_file is intentionally never rendered; users feel the expertise, not the filename. */}
         {opp.pattern_match && opp.pattern_match.similarity_note && (
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <p className="text-[10px] uppercase tracking-wider text-purple-400/70 mb-1">
-              Pattern Match
+          <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+            <p className="text-label text-[var(--color-fg-subtle)] mb-1">
+              Pattern match
             </p>
-            <p className="text-[13px] text-white/60 italic leading-relaxed">
+            <p className="text-body-sm text-[var(--color-fg-muted)] italic leading-relaxed">
               {opp.pattern_match.similarity_note}
             </p>
           </div>
         )}
 
         {/* Book a call CTA */}
-        <div className="pt-3 mt-1 border-t border-[rgba(255,255,255,0.05)]">
+        <div className="pt-3 mt-1 border-t border-[var(--color-border)]">
           <a
             href={CALENDLY_STRATEGY_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => onCallClick('opportunity-card')}
-            className="block w-full text-center py-4 px-6 rounded-[10px] text-[14px] font-bold text-white transition-all duration-200"
+            className="block w-full text-center py-3.5 px-6 rounded-[var(--radius-md)] text-body font-semibold text-[var(--color-primary-fg)] transition-all duration-150"
             style={{
-              background: `linear-gradient(135deg, ${color}cc 0%, ${color}99 100%)`,
-              boxShadow: `0 0 24px ${color}55, 0 4px 12px rgba(0,0,0,0.3)`,
+              background: 'var(--color-primary)',
             }}
           >
-            Book a call to see how we fix this →
+            Book a call with founders →
           </a>
         </div>
       </div>
@@ -2375,25 +2291,24 @@ function BuildRequestModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(6,12,30,0.85)', backdropFilter: 'blur(6px)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-bg)] bg-opacity-80 backdrop-blur-sm">
       <div
-        className="relative w-full max-w-[480px] rounded-[22px] overflow-hidden bg-surface-container border border-outline-variant/15"
-        style={{ boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}
+        className="relative w-full max-w-[480px] rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
       >
-        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa)' }} />
+        <div className="h-[2px] bg-[var(--color-primary)]" />
         <div className="p-6 sm:p-7">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h2 className="font-headline font-bold text-[19px] text-on-surface tracking-[-0.02em]">Get This Built</h2>
-              <p className="text-[12px] text-on-surface-variant mt-0.5">We&apos;ll scope it and get back to you within 24 hours.</p>
+              <h2 className="font-serif text-h4 text-[var(--color-fg)]">Request this build</h2>
+              <p className="text-caption text-[var(--color-fg-subtle)] mt-0.5">We&apos;ll scope it and reply within 24 hours.</p>
             </div>
-            <Button onClick={onClose} variant="outline" className="h-8 w-8 p-0 rounded-full border-outline-variant/20 text-on-surface-variant hover:text-on-surface">✕</Button>
+            <Button onClick={onClose} variant="outline" className="h-8 w-8 p-0 rounded-full border-[var(--color-border)] text-[var(--color-fg-muted)]">✕</Button>
           </div>
 
           {status === 'success' ? (
             <div className="py-8 text-center">
-              <p className="font-headline text-[22px] font-bold text-emerald-400 mb-2">Request Received!</p>
-              <p className="text-[14px] text-on-surface-variant">We&apos;ll review your audit and reach out within 24 hours with a scoped quote.</p>
+              <p className="font-serif text-h3 text-[var(--color-success)] mb-2">Request received.</p>
+              <p className="text-body text-[var(--color-fg-muted)]">We&apos;ll review your audit and reach out within 24 hours with a scoped quote.</p>
               <Button onClick={onClose} className="mt-6">Close</Button>
             </div>
           ) : (
@@ -2402,25 +2317,25 @@ function BuildRequestModal({
               <div className="grid sm:grid-cols-2 gap-3">
                 {(['name', 'email'] as const).map((field) => (
                   <div key={field}>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">{field === 'name' ? 'Your Name' : 'Email'}</label>
+                    <label className="block text-label text-[var(--color-fg-subtle)] mb-1.5">{field === 'name' ? 'Your name' : 'Email'}</label>
                     <input
                       type={field === 'email' ? 'email' : 'text'}
                       required
                       value={form[field]}
                       onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/40"
+                      className="w-full px-3.5 py-2.5 rounded-[var(--radius-md)] text-body text-[var(--color-fg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] placeholder:text-[var(--color-fg-subtle)] focus:outline-none focus:border-[var(--color-primary)]"
                     />
                   </div>
                 ))}
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Automation</label>
-                <input type="text" readOnly value={oppTitle} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface-variant bg-surface-container/50 border border-outline-variant/10" />
+                <label className="block text-label text-[var(--color-fg-subtle)] mb-1.5">Automation</label>
+                <input type="text" readOnly value={oppTitle} className="w-full px-3.5 py-2.5 rounded-[var(--radius-md)] text-body text-[var(--color-fg-muted)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)]" />
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Budget Range</label>
-                  <select required value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 focus:outline-none focus:border-primary/40">
+                  <label className="block text-label text-[var(--color-fg-subtle)] mb-1.5">Budget range</label>
+                  <select required value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[var(--radius-md)] text-body text-[var(--color-fg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] focus:outline-none focus:border-[var(--color-primary)]">
                     <option value="">Select…</option>
                     <option value="under-2k">Under $2,000</option>
                     <option value="2k-5k">$2,000 – $5,000</option>
@@ -2429,8 +2344,8 @@ function BuildRequestModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Timeline</label>
-                  <select required value={form.timeline} onChange={(e) => setForm((f) => ({ ...f, timeline: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 focus:outline-none focus:border-primary/40">
+                  <label className="block text-label text-[var(--color-fg-subtle)] mb-1.5">Timeline</label>
+                  <select required value={form.timeline} onChange={(e) => setForm((f) => ({ ...f, timeline: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-[var(--radius-md)] text-body text-[var(--color-fg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] focus:outline-none focus:border-[var(--color-primary)]">
                     <option value="">Select…</option>
                     <option value="asap">ASAP</option>
                     <option value="1-month">Within 1 month</option>
@@ -2440,18 +2355,18 @@ function BuildRequestModal({
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-on-surface-variant/60 mb-1.5">Notes (optional)</label>
+                <label className="block text-label text-[var(--color-fg-subtle)] mb-1.5">Notes (optional)</label>
                 <textarea
                   rows={3}
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   placeholder="Any context about your setup or priorities…"
-                  className="w-full px-3.5 py-2.5 rounded-[10px] text-[13px] text-on-surface bg-surface-container border border-outline-variant/20 placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/40 resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-[var(--radius-md)] text-body text-[var(--color-fg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)] placeholder:text-[var(--color-fg-subtle)] focus:outline-none focus:border-[var(--color-primary)] resize-none"
                 />
               </div>
-              {status === 'error' && <p className="text-[12px] text-red-400">{errMsg}</p>}
-              <Button type="submit" disabled={!canSubmit || status === 'submitting'} className="w-full py-3 h-auto font-bold text-[14px]">
-                {status === 'submitting' ? 'Submitting…' : 'Submit Build Request'}
+              {status === 'error' && <p className="text-body-sm text-[var(--color-danger)]">{errMsg}</p>}
+              <Button type="submit" disabled={!canSubmit || status === 'submitting'} className="w-full py-3 h-auto font-semibold text-body">
+                {status === 'submitting' ? 'Submitting…' : 'Submit build request'}
               </Button>
             </form>
           )}
@@ -2465,41 +2380,40 @@ function BuildRequestModal({
 
 function InsufficientDataState() {
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col items-center justify-center gap-6 px-6 text-center">
+      <div className="w-14 h-14 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-primary)]">
           <circle cx="12" cy="12" r="10" />
           <line x1="12" y1="8" x2="12" y2="12" />
           <circle cx="12" cy="16" r="0.5" fill="currentColor" />
         </svg>
       </div>
-      <h1 className="font-headline text-2xl font-bold text-on-surface max-w-lg">
-        We need more information to calculate your waste accurately
+      <h1 className="font-serif text-h2 text-[var(--color-fg)] max-w-lg">
+        OpsRadar needs more signal to calculate your waste accurately
       </h1>
-      <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
-        Your audit inputs were too sparse for our system to calculate meaningful waste numbers or opportunities.
-        This is not a failure &mdash; it means you operate with more structure than most agencies,
-        or we need more specific answers to give you an accurate report.
+      <p className="text-body text-[var(--color-fg-muted)] max-w-md leading-relaxed">
+        Your audit inputs were too sparse for a meaningful analysis.
+        This is not a failure — it usually means the form was too vague, or we need more specific answers about how your agency runs day-to-day.
       </p>
       <div className="text-left max-w-md w-full">
-        <p className="text-on-surface text-[14px] font-semibold mb-3">To get a meaningful audit:</p>
-        <ul className="text-on-surface-variant text-[14px] leading-relaxed space-y-2 list-disc list-inside">
+        <p className="text-body font-medium text-[var(--color-fg)] mb-3">To get a real diagnosis:</p>
+        <ul className="text-body text-[var(--color-fg-muted)] leading-relaxed space-y-2 list-disc list-inside">
           <li>Retake the audit with specific hours, tools, and pain points</li>
-          <li>Include your website URL so we can analyze your actual stack</li>
+          <li>Include your website URL so OpsRadar can analyze your actual stack</li>
           <li>Describe concrete processes that consume your team&apos;s time</li>
         </ul>
       </div>
       <div className="flex flex-col items-center gap-3 mt-2">
-        <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
-          <Link href="/audit">Retake the Audit &rarr;</Link>
+        <Button asChild className="px-6 py-3 h-auto rounded-[var(--radius-md)] font-semibold text-body">
+          <Link href="/audit">Retake the audit &rarr;</Link>
         </Button>
         <a
           href={CALENDLY_STRATEGY_CALL_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
+          className="text-body-sm text-[var(--color-fg-subtle)] underline underline-offset-2 hover:text-[var(--color-fg-muted)] transition-colors"
         >
-          Or book a call to discuss manually
+          Or book a call with founders
         </a>
       </div>
     </div>
@@ -2895,9 +2809,9 @@ function ResultsContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6">
-        <p className="text-on-surface-variant text-[15px]">No audit data found.</p>
-        <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col items-center justify-center gap-6 px-6">
+        <p className="text-body text-[var(--color-fg-muted)]">No audit data found.</p>
+        <Button asChild className="px-6 py-3 h-auto rounded-[var(--radius-md)] font-semibold text-body">
           <Link href="/audit">Start a New Audit →</Link>
         </Button>
       </div>
@@ -2944,16 +2858,16 @@ function ResultsContent() {
           We couldn&apos;t load your audit. Please try refreshing or contact support.
         </p>
         <div className="flex flex-col items-center gap-3">
-          <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
+          <Button asChild className="px-6 py-3 h-auto rounded-[var(--radius-md)] font-semibold text-body">
             <Link href="/audit">Start a new audit →</Link>
           </Button>
           <a
             href={CALENDLY_STRATEGY_CALL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-on-surface-variant/60 text-[13px] underline underline-offset-2 hover:text-on-surface-variant transition-colors"
+            className="text-body-sm text-[var(--color-fg-subtle)] underline underline-offset-2 hover:text-[var(--color-fg-muted)] transition-colors"
           >
-            Or book a call
+            Or book a call with founders
           </a>
         </div>
       </div>
@@ -2968,12 +2882,12 @@ function ResultsContent() {
     : (a.estimated_monthly_waste ?? null)
 
   return (
-    <div id="audit-pdf-root" className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden">
+    <div id="audit-pdf-root" className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] overflow-x-hidden">
 
       {fromCache && (
-        <div className="fixed top-0 inset-x-0 z-[200] flex items-center justify-center gap-2 bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-[12px] text-amber-300 backdrop-blur-sm">
+        <div className="fixed top-0 inset-x-0 z-[200] flex items-center justify-center gap-2 bg-[var(--color-warn)] bg-opacity-10 border-b border-[var(--color-warn)] border-opacity-20 px-4 py-1.5 text-caption text-[var(--color-warn)] backdrop-blur-sm">
           <span>Showing your recent audit from cache.</span>
-          <button onClick={() => window.location.reload()} className="underline underline-offset-2 hover:text-amber-200 transition-colors">
+          <button onClick={() => window.location.reload()} className="underline underline-offset-2 hover:opacity-80 transition-opacity">
             Refresh to load latest
           </button>
         </div>
@@ -2981,19 +2895,19 @@ function ResultsContent() {
 
       {/* ── Fixed nav ──────────────────────────────────────────────────────── */}
       <div className="fixed inset-x-0 top-0 z-[100] px-6 pt-4 no-print">
-        <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-7xl rounded-[var(--radius-full)] border border-[var(--color-border)] bg-[var(--color-bg)] bg-opacity-90 p-2 shadow-[var(--shadow)] backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4 px-3 py-1">
-            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
-              <Image src="/logo.png" alt="OpsRadar" width={36} height={36} className="h-9 w-9 rounded-xl object-cover" />
-              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
+            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-[var(--color-fg)] transition-opacity hover:opacity-80">
+              <Image src="/logo.png" alt="OpsRadar" width={32} height={32} className="h-8 w-8 rounded-[var(--radius-md)] object-cover" />
+              <span className="font-serif text-h4 text-[var(--color-fg)]">
                 OpsRadar
               </span>
             </Link>
 
             <div className="flex items-center gap-2.5">
-              <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-semibold text-emerald-400">Audit Complete</span>
+              <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)] animate-pulse" />
+                <span className="text-label text-[var(--color-success)]">Audit complete</span>
               </div>
             </div>
           </div>
@@ -3002,24 +2916,21 @@ function ResultsContent() {
 
       {/* ── Report header ──────────────────────────────────────────────────── */}
       <header className="relative overflow-hidden pt-[104px]">
-        <div className="absolute inset-0 grid-texture pointer-events-none" />
-        <div className="absolute top-0 left-[-10%] w-[500px] h-[300px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
-
         <div className="relative z-[2] max-w-[900px] mx-auto px-6 py-12">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex items-center gap-4">
-              <Image src="/logo.png" alt="OpsRadar" width={48} height={48} className="h-12 w-auto rounded-[10px] shrink-0" />
+              <Image src="/logo.png" alt="OpsRadar" width={44} height={44} className="h-11 w-auto rounded-[var(--radius-md)] shrink-0" />
               <div>
-                <p className="font-headline font-extrabold text-[22px] tracking-[-0.02em] text-on-surface">OpsRadar</p>
-                <p className="text-[12px] text-on-surface-variant font-medium mt-0.5">Operations Audit Report</p>
+                <p className="font-serif text-h4 text-[var(--color-fg)]">OpsRadar</p>
+                <p className="text-caption text-[var(--color-fg-subtle)] mt-0.5">OPERATE Audit Report</p>
               </div>
             </div>
             <div className="sm:text-right">
-              {company && <p className="font-headline font-bold text-[18px] text-on-surface tracking-[-0.01em]">{company}</p>}
-              {dateStr  && <p className="text-[12px] text-on-surface-variant mt-0.5">{dateStr}</p>}
-              <p className="text-[11px] text-on-surface-variant/40 mt-1 flex sm:justify-end items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-                Powered by OpsRadar AI
+              {company && <p className="font-serif text-h4 text-[var(--color-fg)]">{company}</p>}
+              {dateStr  && <p className="text-caption text-[var(--color-fg-subtle)] mt-0.5">{dateStr}</p>}
+              <p className="text-caption text-[var(--color-fg-subtle)] mt-1 flex sm:justify-end items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-[var(--color-primary)] inline-block" />
+                Powered by AIOS
               </p>
             </div>
           </div>
@@ -3030,7 +2941,7 @@ function ResultsContent() {
             <VerdictHero verdict={a.verdict} readiness={readiness} agencyType={auditContext?.agencyType} />
           )}
 
-          <h1 className="font-headline font-extrabold text-[clamp(24px,3.8vw,44px)] leading-[1.1] tracking-[-0.03em] mt-8 max-w-[680px] text-on-surface">
+          <h1 className="font-serif font-normal text-[clamp(24px,3.8vw,42px)] leading-[1.08] tracking-[-0.025em] mt-8 max-w-[680px] text-[var(--color-fg)]">
             {headline}
           </h1>
 
@@ -3064,47 +2975,47 @@ function ResultsContent() {
             topRisk={topRisk}
           />
 
-          <div className="flex flex-wrap gap-6 mt-6">
+          <div className="flex flex-wrap gap-6 mt-6 border-t border-[var(--color-border)] pt-6">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Hours Recovered/Week</p>
-              <p className="font-headline text-[28px] font-extrabold tabular-nums text-secondary leading-none">
+              <p className="text-label text-[var(--color-fg-subtle)] mb-1">Hours recovered/week</p>
+              <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-fg)] leading-none">
                 <AnimatedNumber target={hoursWeekly} suffix="h" duration={1400} />
               </p>
             </div>
-            <div className="w-px self-stretch bg-outline-variant/20" />
+            <div className="w-px self-stretch bg-[var(--color-border)]" />
             {hasRealWasteValue ? (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Annual Waste</p>
-                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">Annual waste</p>
+                <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-primary)] leading-none">
                   <AnimatedNumber target={annualWaste} prefix="$" duration={1600} />
                 </p>
               </div>
             ) : hoursWeekly > 0 ? (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Hours Recovered/Week</p>
-                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">Hours recovered/week</p>
+                <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-primary)] leading-none">
                   <AnimatedNumber target={hoursWeekly} suffix="h" duration={1600} />
                 </p>
               </div>
             ) : (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Opportunities Found</p>
-                <p className="font-headline text-[28px] font-extrabold tabular-nums text-primary leading-none">
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">Build paths found</p>
+                <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-primary)] leading-none">
                   {opportunities.length}
                 </p>
               </div>
             )}
-            <div className="w-px self-stretch bg-outline-variant/20" />
+            <div className="w-px self-stretch bg-[var(--color-border)]" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[2px] text-on-surface-variant mb-1">Opportunities Found</p>
-              <p className="font-headline text-[28px] font-extrabold tabular-nums text-tertiary leading-none">
+              <p className="text-label text-[var(--color-fg-subtle)] mb-1">Build paths found</p>
+              <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-fg)] leading-none">
                 {opportunities.length}
               </p>
             </div>
           </div>
           {hoursCapped && (
-            <p className="text-[11px] text-on-surface-variant/60 mt-2">
-              Showing realistic maximum savings based on your team&apos;s weekly capacity.
+            <p className="text-caption text-[var(--color-fg-subtle)] mt-2">
+              Capped at realistic maximum savings based on your team&apos;s weekly capacity.
             </p>
           )}
         </div>
@@ -3127,30 +3038,30 @@ function ResultsContent() {
             <div>
               <section>
                 <SectionLabel num="01" text="Executive Summary" />
-                <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
-                  <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
+                <div className="rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+                  <div className="h-[2px] bg-[var(--color-primary)]" />
                   <div className="p-7">
-                    <p className="text-[clamp(15px,1.8vw,19px)] text-on-surface leading-[1.75] font-medium max-w-[700px]">
+                    <p className="text-body-lg text-[var(--color-fg)] leading-[1.75] font-normal max-w-[700px]">
                       {executiveSummary}
                     </p>
                     {(!!displayedMonthlyWaste || !!displayedAnnualWaste) && (
-                      <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-outline-variant/10">
+                      <div className="flex flex-wrap gap-4 mt-7 pt-7 border-t border-[var(--color-border)]">
                         {!!displayedMonthlyWaste && (
-                          <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f87171] mb-2">Monthly Waste</p>
-                            <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#f87171] leading-none">
+                          <div className="flex-1 min-w-[160px] p-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                            <p className="text-label text-[var(--color-danger)] mb-2">Monthly waste</p>
+                            <p className="font-mono text-[clamp(28px,4vw,40px)] font-medium tabular-nums text-[var(--color-danger)] leading-none">
                               <AnimatedNumber target={displayedMonthlyWaste} prefix="$" duration={1800} />
                             </p>
-                            <p className="text-[11px] text-on-surface-variant mt-1.5">burned on manual work</p>
+                            <p className="text-caption text-[var(--color-fg-subtle)] mt-1.5">burned on manual work</p>
                           </div>
                         )}
                         {!!displayedAnnualWaste && (
-                          <div className="flex-1 min-w-[160px] p-5 rounded-[14px]" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#fbbf24] mb-2">Annual Waste</p>
-                            <p className="font-headline text-[clamp(28px,4vw,40px)] font-extrabold tabular-nums text-[#fbbf24] leading-none">
+                          <div className="flex-1 min-w-[160px] p-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+                            <p className="text-label text-[var(--color-warn)] mb-2">Annual waste</p>
+                            <p className="font-mono text-[clamp(28px,4vw,40px)] font-medium tabular-nums text-[var(--color-warn)] leading-none">
                               <AnimatedNumber target={displayedAnnualWaste} prefix="$" duration={2000} />
                             </p>
-                            <p className="text-[11px] text-on-surface-variant mt-1.5">total annual cost of staying manual</p>
+                            <p className="text-caption text-[var(--color-fg-subtle)] mt-1.5">total cost of staying manual</p>
                           </div>
                         )}
                       </div>
@@ -3168,14 +3079,10 @@ function ResultsContent() {
           <div>
             <section>
               <SectionLabel num="02" text="Readiness Score" />
-              <div className="rounded-[20px] p-10 flex flex-col items-center relative overflow-hidden bg-surface-container border border-outline-variant/10">
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${readiness >= 60 ? 'rgba(16,185,129,0.06)' : readiness >= 30 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)'} 0%, transparent 70%)` }}
-                />
-                <div className="relative z-[1]"><ReadinessRing score={readiness} /></div>
+              <div className="rounded-[var(--radius-lg)] p-10 flex flex-col items-center border border-[var(--color-border)] bg-[var(--color-surface)]">
+                <ReadinessRing score={readiness} />
                 {currentAudit?.calculation_sources?.automation_readiness_score?.source === 'benchmark_estimate' && (
-                  <p className="text-[11px] text-on-surface-variant/50 mt-3 italic">
+                  <p className="text-caption text-[var(--color-fg-subtle)] mt-3 italic">
                     Estimated from team size and tool signals
                   </p>
                 )}
@@ -3211,16 +3118,15 @@ function ResultsContent() {
           <RevealSection>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <SectionLabel num="06" text="Automation Opportunities" />
-                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface">
-                  Where You&apos;re Bleeding The Most
+                <SectionLabel num="06" text="OPERATE — Automation Opportunities" />
+                <h2 className="font-serif font-normal text-[clamp(22px,3vw,32px)] tracking-[-0.025em] text-[var(--color-fg)]">
+                  Where the highest-cost manual work lives
                 </h2>
               </div>
               <span
-                className="px-4 py-2 rounded-full text-[13px] font-semibold shrink-0"
-                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#60a5fa' }}
+                className="px-4 py-2 rounded-full text-label border border-[var(--color-border)] bg-[var(--color-surface-sunken)] text-[var(--color-primary)] shrink-0"
               >
-                {opportunities.length} found
+                {opportunities.length} build paths
               </span>
             </div>
           </RevealSection>
