@@ -139,6 +139,35 @@
   --shadow-md: 0 12px 32px rgba(0,0,0,0.08);
 }
 
+/* =====================================================================
+   Dark theme — dashboard / admin / aios
+   ===================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0A0A0B;
+  --surface: #0F0F11;
+  --surface-sunken: #15151A;
+  --border: #1F1F22;
+  --border-strong: #27272A;
+  --fg: #FAFAF9;
+  --fg-muted: #A1A1AA;
+  --fg-subtle: #71717A;
+  --fg-faint: #52525B;
+
+  --primary: var(--color-accent-400);
+  --primary-fg: #1E1B4B;
+  --primary-hover: var(--color-accent-300);
+
+  --success: #34D399;
+  --warn: #FBBF24;
+  --danger: #F87171;
+
+  --shadow-xs: 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow:    0 4px 12px rgba(0,0,0,0.5);
+  --shadow-md: 0 12px 32px rgba(0,0,0,0.6);
+}
+
 @layer base {
   html {
     font-family: var(--font-sans);
