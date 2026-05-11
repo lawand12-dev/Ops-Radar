@@ -30,6 +30,7 @@ import { Card } from './_components/card';
 import { PrimaryButton, SecondaryButton } from './_components/buttons';
 import { BrainAskBox } from './_components/brain-ask-box';
 import { PillarTag } from './_components/pillar-tag';
+import { GuardIncidentFeed } from './_components/guard-incident-feed';
 import { SalesCard } from '<npm>/components/dashboard/sales-card';
 import { HeroRoiBlock } from '<npm>/components/dashboard/hero-roi-block';
 import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-strip';
@@ -473,7 +474,12 @@ export default function DashboardPage() {
         <ProjectsTable />
       </div>
 
-      <PillarTag name="GUARD" subtitle="Recent activity & alerts across the system" />
+      <PillarTag name="GUARD" subtitle="What broke, what self-healed, what needs you" />
+      <div className="mb-4 flex gap-3.5">
+        <GuardIncidentFeed />
+      </div>
+
+      <PillarTag name="OBSERVE" subtitle="Recent activity across your stack" />
       <div className="flex gap-3.5">
         <ActivityFeed />
       </div>
