@@ -80,12 +80,12 @@ or hover transforms beyond 2px.
 
 | Token | Value | Used for |
 |---|---|---|
-| `--duration-instant` | 100ms | Button press |
-| `--duration-fast` | 150ms | Hover (color/border shift) |
-| `--duration-base` | 200ms | State change, modal open |
-| `--duration-slow` | 300ms | Drawer slide, progress fill |
+| `--duration-instant` | 100ms | Reserved (instant micro-interactions) |
+| `--duration-fast` | 150ms | Default for Button/Input/Badge hover + transitions |
+| `--duration-base` | 200ms | State change, modal open, accordion expand |
+| `--duration-slow` | 300ms | Progress fill, drawer slide |
 | `--ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
-| `--ease-emphasis` | `cubic-bezier(0.3, 0, 0.1, 1)` | Status changes |
+| `--ease-emphasis` | `cubic-bezier(0.3, 0, 0.1, 1)` | Reserved (status changes) |
 
 In Tailwind: `transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]`.
 
@@ -100,12 +100,14 @@ Single global rule in `globals.css`:
 }
 ```
 
-Don't override unless necessary. All primitives inherit this.
+Primitives explicitly redeclare the same outline-based rule (`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-500)]`) so the focus appearance is identical whether or not the global rule is overridden by a parent style.
 
 ## Primitives
 
-All primitives live in `src/components/ui/`. Open `/dev/primitives` in dev
-to see every primitive rendered in both themes side-by-side.
+All primitives live in `src/components/ui/`. Open `/dev/primitives` in dev to
+see every primitive rendered with the active route theme. Use the **Force light**
+/ **Force dark** toggle at the top of the showcase to flip themes in place
+without changing routes.
 
 | File | Exports |
 |---|---|
