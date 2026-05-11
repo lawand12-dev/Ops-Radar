@@ -66,6 +66,9 @@ import {
   DropdownMenuShortcut,
 } from "<npm>/components/ui/dropdown-menu";
 import { toast } from "<npm>/components/ui/toast";
+import { Skeleton } from "<npm>/components/ui/skeleton";
+import { Progress } from "<npm>/components/ui/progress";
+import { StatusDot, type Status } from "<npm>/components/ui/status-dot";
 
 export function Showcase() {
   return (
@@ -93,6 +96,7 @@ export function Showcase() {
       <CheckboxRadioSwitchSection />
       <TooltipTabsDropdownSection />
       <ToastSection />
+      <SkeletonProgressStatusSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -466,6 +470,42 @@ function ToastSection() {
         <Button variant="outline" onClick={() => toast.error("Connection lost", { description: "Could not reach n8n at api.n8n.cloud." })}>Error</Button>
         <Button variant="outline" onClick={() => toast.warning("Approaching rate limit", { description: "9 of 10 OpenAI requests used this minute." })}>Warn</Button>
         <Button variant="outline" onClick={() => toast.info("Audit ready", { description: "Your report is in the inbox." })}>Info</Button>
+      </div>
+    </section>
+  );
+}
+
+function SkeletonProgressStatusSection() {
+  const statuses: Status[] = ["running", "degraded", "failed", "idle", "info"];
+  return (
+    <section className="space-y-8">
+      <div>
+        <p className="text-label text-fg-subtle mb-3">Skeleton</p>
+        <div className="space-y-2 max-w-md">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-label text-fg-subtle mb-3">Progress</p>
+        <div className="space-y-3 max-w-md">
+          <Progress value={20} />
+          <Progress value={66} />
+          <Progress value={94} />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-label text-fg-subtle mb-3">StatusDot</p>
+        <div className="flex gap-4 flex-wrap">
+          {statuses.map((s) => (
+            <span key={s} className="inline-flex items-center gap-2 text-body-sm text-fg">
+              <StatusDot status={s} /> {s}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );
