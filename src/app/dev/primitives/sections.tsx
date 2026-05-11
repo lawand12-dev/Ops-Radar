@@ -13,6 +13,16 @@ import {
   CardContent,
   CardFooter,
 } from "<npm>/components/ui/card";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "<npm>/components/ui/dialog";
 
 export function Showcase() {
   return (
@@ -32,8 +42,9 @@ export function Showcase() {
       <ButtonSection />
       <InputSection />
       <CardSection />
+      <DialogSection />
 
-      {/* Sections will be added by Tasks 11–22 (Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 12–22 (Badge, Metric, Table, etc.) */}
     </main>
   );
 }
@@ -133,6 +144,33 @@ function CardSection() {
           </CardContent>
         </Card>
       </div>
+    </section>
+  );
+}
+
+function DialogSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Dialog</p>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Open dialog</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm action</DialogTitle>
+            <DialogDescription>
+              This is how a modal looks in the new system. Surface, border, shadow, serif title, fade + zoom on open.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+            <Button>Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
