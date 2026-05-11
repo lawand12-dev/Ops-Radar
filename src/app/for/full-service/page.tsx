@@ -1,305 +1,265 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { SiteNav } from '<npm>/components/marketing/site-nav'
+import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
+import { Badge } from '<npm>/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'For Full-Service Digital Agencies — OpsRadar',
   description:
-    "n8n automation for full-service digital agencies (10-25 people). Client reporting that protects delivery margin. Utilization dashboards. Scope-creep flagging. Onboarding that locks in expectations before the first sprint. Built inside your n8n account.",
+    'OpsRadar builds the automation layer for full-service agencies (10–25 people). Cross-channel reporting that protects delivery margin. Utilization alerts before scope creep eats your P&L. Onboarding that locks expectations before sprint one.',
   openGraph: {
     title: 'For Full-Service Digital Agencies — OpsRadar',
     description:
-      "n8n automation for 10-25 person agencies fighting delivery margin compression. Reporting, utilization, scope creep, onboarding — automated inside your n8n account.",
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Full-Service Digital Agencies' }],
+      'Cross-channel reporting, utilization alerts, and scope-creep flagging — automated inside your n8n account.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Full-Service Agencies' }],
   },
   twitter: {
     title: 'For Full-Service Digital Agencies — OpsRadar',
     description:
-      "n8n automation for 10-25 person full-service agencies. Delivery margin protection, utilization visibility, scope-creep flagging.",
+      'Cross-channel reporting, utilization alerts, and scope-creep flagging — automated inside your n8n account.',
     images: ['/og-image.png'],
   },
 }
 
-const WHAT_I_BUILD_FOR_FULL_SERVICE = [
+/* ── Data ───────────────────────────────────────────────────────────────── */
+
+const OUTCOMES = [
   {
-    title: 'Client reporting that protects delivery margin.',
-    desc: 'Monthly rollups across Google Ads, Meta, GA4, HubSpot, and whatever reporting tool your account managers live in. Automated on the 2nd of every month. The 4–8 hours per client per month your team currently burns on reporting, returned to billable work.',
+    tag: 'Reporting',
+    title: 'Cross-channel reporting that defends margin.',
+    body: 'Google Ads, Meta, GA4, HubSpot, and SEO data in one branded monthly rollup — automated on the 2nd. The 4–8 hours per client your team burns on reporting each month go back to billable work.',
   },
   {
-    title: 'Utilization and capacity dashboards.',
-    desc: 'Harvest, Toggl, or Float data pulled nightly into a Slack digest your ops lead actually reads. See utilization dipping below 55% before the P&L does. Parakeeto-style delivery margin math, surfaced on schedule instead of discovered at quarter-end.',
+    tag: 'Utilization',
+    title: 'Utilization visible before the P&L hurts.',
+    body: 'Harvest, Toggl, or Float data pulled nightly into a Slack digest your ops lead actually reads. See utilization dipping below 55% before it becomes a quarter-end conversation with your accountant.',
   },
   {
-    title: 'Scope-creep flagging.',
-    desc: 'Watches Slack and email for client requests without a corresponding ticket ID, pings the PM before the work gets done on the house. The #1 retainer-eroding habit in full-service shops — caught in real time.',
-  },
-  {
-    title: 'Structured onboarding that locks expectations before sprint one.',
-    desc: 'Contract signed triggers a 6-phase onboarding workflow — provisioning, intake, kickoff, setup, first deliverable, steady state — with gates at each phase. The 48% of churn Setup Marketing attributes to delivery dissatisfaction starts in weeks 1–4. I fix the trajectory-setter.',
-  },
-  {
-    title: 'HubSpot / Asana / ClickUp sync without double-entry.',
-    desc: 'Your PMs live in one tool, clients live in another, leadership reports from a third. I build the sync layer so status updates propagate automatically — without the HubSpot Operations Hub seat count you\'d need to do it their way.',
-  },
-  {
-    title: 'AR and invoicing reconciliation.',
-    desc: 'Project milestones trigger invoice generation in QuickBooks or Xero. 60-day AR gets flagged in Slack before it becomes 90. Cash flow visibility for ops leads who are tired of learning it from the accountant after month close.',
+    tag: 'Onboarding',
+    title: 'Structured onboarding that locks expectations.',
+    body: 'Signed contract triggers a 6-phase workflow — provisioning, intake, kickoff, setup, first deliverable, steady state — with gates at each step. 48% of churn starts in weeks 1–4. This is where you fix the trajectory.',
   },
 ]
 
-const YOUR_STACK = [
-  'HubSpot CRM',
-  'Asana / ClickUp / Monday / Teamwork',
-  'Harvest / Toggl / Float',
-  'QuickBooks / Xero',
-  'Slack',
-  'Notion / Google Workspace',
-  'Figma',
-  'Loom',
-  'AgencyAnalytics / Databox',
-  'Google Ads / Meta / GA4',
-  'Mailchimp / Klaviyo / HubSpot Marketing',
-  'Linear / Jira',
+const WORKFLOWS = [
+  {
+    name: 'client-monthly-recap',
+    desc: 'Pulls Google Ads, Meta, GA4, and HubSpot data on the 1st. Renders a cross-channel PDF per client and emails it on the 2nd — no AM touches required.',
+    touches: ['Google Ads', 'Meta API', 'HubSpot', 'GA4'],
+    saved: '~6 h / client / mo',
+  },
+  {
+    name: 'utilization-weekly-digest',
+    desc: 'Every Friday at 4 p.m.: pulls Harvest time logs, computes utilization per person, and posts a Slack summary flagging anyone below 55% or over 90%.',
+    touches: ['Harvest', 'Slack', 'Float'],
+    saved: '~5 h / mo',
+  },
+  {
+    name: 'scope-creep-watchdog',
+    desc: 'Monitors Slack and email for client requests that lack a ticket ID. Pings the PM to create a ticket before work begins — before the retainer absorbs it silently.',
+    touches: ['Slack', 'Asana', 'HubSpot'],
+    saved: 'Variable — catches retainer erosion',
+  },
 ]
 
-const FAQS = [
+const BEFORE_AFTER = [
   {
-    q: 'We already use HubSpot Operations Hub. Why would we add this?',
-    a: 'Operations Hub is powerful if you\'re already committed to HubSpot as your CRM and have the seat budget. But it solves HubSpot-shaped problems. A 15-person full-service agency typically has Asana, Harvest, Figma, and Slack living outside HubSpot — and that\'s where the ops debt actually lives. I connect HubSpot to the rest of your stack without making you pay per-seat for every person who needs their work synced.',
+    before: 'AMs assemble cross-channel reports manually each month',
+    after: 'Cross-channel PDF generated on the 1st, delivered on the 2nd',
   },
   {
-    q: 'We tried an ops consultant before. It was a 9-month nightmare.',
-    a: 'Fair. The ERP-style implementation pattern kills full-service agencies. My work is different: I deliver workflows in 7–21 days, scoped to one specific pain, with a fixed price. If the first workflow doesn\'t prove itself within a month, we stop. No 9-month transformation. You pay for outcomes, not a journey.',
+    before: 'Utilization dip noticed at quarter-end performance review',
+    after: 'Weekly Slack digest flags anyone below 55% in real time',
   },
   {
-    q: 'Can we get references from other 15-20 person agencies?',
-    a: 'Honest answer: I\'m a solo founder building this one agency at a time. Early clients are early — I\'m not going to fabricate a list of logos to close you. What I can do is walk you through the exact workflow I\'d build for your agency on the free audit, show you the n8n canvas, and let you judge my craft before committing. References will come; right now, the work speaks.',
+    before: 'Scope creep absorbed silently until the retainer is underwater',
+    after: 'Scope-creep watchdog pings PM before unbilled work is done',
   },
   {
-    q: 'Our COO needs to sign off. Do you do demos?',
-    a: 'Yes. After the audit, I\'ll do a 30-minute Loom walkthrough of what I\'d build for you, no call required. Your ops lead can watch on their own time and send questions async. I find this converts better than scheduled calls because it removes the calendar friction. If you want a live call after, I do that too.',
+    before: 'Client onboarding varies by AM — expectations set inconsistently',
+    after: '6-phase onboarding workflow with hard gates, every client',
+  },
+  {
+    before: 'AR aging discovered during accountant call at month close',
+    after: '60-day AR flagged in Slack — before it becomes 90-day',
   },
 ]
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
 
 export default function ForFullServicePage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/for/full-service" />
       <SegmentPageAnalytics segment="full-service" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'n8n Automation for Full-Service Digital Agencies',
-            provider: {
-              '@type': 'Organization',
-              name: 'OpsRadar',
-              url: 'https://www.opsradar.co',
-              founder: { '@type': 'Person', name: 'Lawand Soran' },
-            },
-            areaServed: ['US', 'CA', 'GB', 'AU', 'IE'],
-            audience: {
-              '@type': 'BusinessAudience',
-              audienceType: 'Full-Service Digital Agencies',
-              numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 10, maxValue: 25 },
-            },
-            description:
-              'Custom AI Operating System (AIOS) builds for full-service digital agencies (10-25 people). Client reporting that protects delivery margin; utilization dashboards; scope-creep flagging; structured onboarding.',
-            offers: {
-              '@type': 'AggregateOffer',
-              priceCurrency: 'USD',
-              lowPrice: 400,
-              highPrice: 4500,
-              offerCount: 6,
-            },
-            url: 'https://www.opsradar.co/for/full-service',
-          }),
-        }}
-      />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-28 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            For full-service digital agencies
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04] mb-6">
-            Your delivery margin is bleeding.
-          </h1>
-          <p className="font-headline text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-white/80 mb-8">
-            Let me find the leaks.
-          </p>
-          <p className="text-lg md:text-xl text-white/[0.65] max-w-2xl mb-10 leading-relaxed">
-            We build the AI Operating System (AIOS) for 10–25 person full-service digital agencies. Reporting
-            that protects your margin. Utilization dashboards your ops lead actually reads.
-            Scope-creep flagging that catches erosion in real time. Onboarding that locks in
-            expectations before sprint one. You own every workflow in your n8n account — no
-            seat-count tax, no Operations Hub lock-in. We build them, we maintain them, you get
-            back the hours you've been losing to manual status work.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-            <Link
-              href="/aios"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold text-sm text-white/80 border border-white/20 hover:border-white/40 hover:text-white transition-colors"
-            >
-              See real workflows I&apos;ve built →
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
+          For full-service agencies
+        </p>
+
+        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+          Hold your margin as you scale.
+        </h1>
+
+        <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+          Cross-channel reporting eats your senior time. Utilization dips go unnoticed until
+          quarter-end. Scope creep absorbs retainer silently. OpsRadar builds the automation
+          layer that closes all three leaks — inside your n8n account, in 5 to 14 days.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/audit">
+              Start your audit
+              <ArrowRight className="size-4" />
             </Link>
-          </div>
-          <Link
-            href="/audit"
-            className="inline-flex mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
+          </Button>
         </div>
       </section>
 
-      {/* ── What I build ──────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What I build for full-service shops
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-16">
-            Six workflows that defend the P&amp;L.
+      {/* ── Three outcomes ────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--color-border)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            Three outcomes, delivered in weeks.
           </h2>
-          <div className="space-y-0">
-            {WHAT_I_BUILD_FOR_FULL_SERVICE.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
 
-      {/* ── Your stack ────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-20">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Your stack, my workflows
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-10">
-            I connect the twelve tools your team already pays for.
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {YOUR_STACK.map((tool) => (
-              <span
-                key={tool}
-                className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-[13px] text-white/70"
+          <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {OUTCOMES.map((o) => (
+              <div
+                key={o.tag}
+                className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
               >
-                {tool}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-white/40 mt-6 max-w-2xl leading-relaxed">
-            If your tool isn't here, it probably still works — n8n connects to anything with an API or webhook. Ask me in the audit.
-          </p>
-        </section>
-      </div>
-
-
-      {/* ── Cost of NOT automating ────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            What it costs to keep doing it manually
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-8">
-            The delivery-margin math.
-          </h2>
-          <div className="space-y-6 text-[15px] leading-relaxed text-white/[0.7]">
-            <p>
-              Parakeeto's review of 2023 agency data put industry net margin at <span className="text-white font-semibold">14%, down from 17% in 2021</span>. Every hour of billable senior time lost to manual reporting, status updates, and scope creep comes directly out of that 14%.
-            </p>
-            <p>
-              A typical 15-person full-service agency loses <span className="text-white font-semibold">4–8 hours per client per month</span> to manual reporting alone, across a book of 15–30 clients. At $120/hour fully loaded, that's <span className="text-white font-semibold">$86,400–$345,600/year</span> of margin erosion from one workflow.
-            </p>
-            <p>
-              HubSpot Operations Hub starts at <span className="text-white font-semibold">$800/month for 3 users</span> and scales with seat count. Hiring an ops coordinator runs <span className="text-white font-semibold">$5,500–$9,500/month fully loaded</span> and still needs managing.
-            </p>
-            <p>
-              OpsRadar retainers run <span className="text-white font-semibold">$750–$3,000/month</span>, flat. No per-seat tax, no management overhead. At those numbers, most full-service shops should see payback within a quarter.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FAQ ───────────────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-28">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Questions
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
-            What full-service founders and ops leads ask me first.
-          </h2>
-          <div>
-            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            {FAQS.map(({ q, a }) => (
-              <div key={q}>
-                <div className="py-6">
-                  <p className="font-semibold text-[14px] text-white/80 mb-2">{q}</p>
-                  <p className="text-[13px] text-[rgba(255,255,255,0.65)] leading-[1.7]">{a}</p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <Badge variant="accent">{o.tag}</Badge>
+                <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
+                  {o.title}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
               </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-5 text-white">
-            Defend the margin. Ship the playbook.
+      {/* ── Workflow cards ────────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What a typical full-service AIOS looks like.
           </h2>
-          <p className="text-white/40 mb-10 leading-relaxed">
-            3-minute audit. Real dollar numbers for your agency. Shareable with your ops lead.
+
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {WORKFLOWS.map((wf) => (
+              <Card key={wf.name}>
+                <CardHeader className="border-b border-[var(--color-border)]">
+                  <CardTitle>
+                    <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
+                  </CardTitle>
+                  <CardDescription>{wf.desc}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {wf.touches.map((t) => (
+                      <Badge key={t} variant="secondary">{t}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Before / After table ──────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)]">
+        <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+            What your shop looks like after OpsRadar lands.
+          </h2>
+
+          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+            <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+              <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
+              <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
+                After OpsRadar
+              </div>
+            </div>
+            {BEFORE_AFTER.map((row, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
+              >
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
+                  {row.before}
+                </div>
+                <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                  {row.after}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonial slot ──────────────────────────────────────────── */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
+          <p className="text-label text-[var(--color-fg-subtle)]">From the field</p>
+          <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
+          </blockquote>
+          <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
+            — Ops lead · 18-person full-service agency · margin recovered in Q1
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section>
+        <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+          <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+            Run a full-service audit.
+          </h2>
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
+            3 minutes. Real figures on what your shop loses to cross-channel reporting,
+            scope creep, and invisible utilization gaps. No pitch, no card.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/audit">
+                Start your audit
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
+                Talk to founders
               </a>
             </Button>
           </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
         </div>
       </section>
 
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }
