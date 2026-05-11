@@ -27,6 +27,8 @@ import { PageHeader } from './_components/page-header';
 import { StatCard } from './_components/stat-card';
 import { Card } from './_components/card';
 import { PrimaryButton, SecondaryButton } from './_components/buttons';
+import { BrainAskBox } from './_components/brain-ask-box';
+import { PillarTag } from './_components/pillar-tag';
 import { SalesCard } from '<npm>/components/dashboard/sales-card';
 import { HeroRoiBlock } from '<npm>/components/dashboard/hero-roi-block';
 import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-strip';
@@ -452,11 +454,16 @@ export default function DashboardPage() {
         }
       />
 
+      <BrainAskBox />
+
       <HeroRoiBlock />
+
+      <PillarTag name="OPERATE" subtitle="Workflows running across your stack" />
       <WorkflowHealthStrip />
 
       <MarketingCard />
 
+      <PillarTag name="OBSERVE" subtitle="Every tool, surfaced in one screen" style={{ marginTop: 20 }} />
       <MetricStatCards />
 
       <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
@@ -468,8 +475,13 @@ export default function DashboardPage() {
         <DeliveryCard />
       </div>
 
-      <div style={{ display: 'flex', gap: 14 }}>
+      <PillarTag name="OPERATE" subtitle="Active project work" style={{ marginTop: 20 }} />
+      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
         <ProjectsTable />
+      </div>
+
+      <PillarTag name="GUARD" subtitle="Recent activity & alerts across the system" />
+      <div style={{ display: 'flex', gap: 14 }}>
         <ActivityFeed />
       </div>
     </>
