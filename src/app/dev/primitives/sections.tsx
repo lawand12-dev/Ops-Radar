@@ -45,6 +45,26 @@ import {
 import { Checkbox } from "<npm>/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "<npm>/components/ui/radio-group";
 import { Switch } from "<npm>/components/ui/switch";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "<npm>/components/ui/tooltip";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "<npm>/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+} from "<npm>/components/ui/dropdown-menu";
 
 export function Showcase() {
   return (
@@ -70,6 +90,7 @@ export function Showcase() {
       <LabelTextareaSection />
       <SelectSection />
       <CheckboxRadioSwitchSection />
+      <TooltipTabsDropdownSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -371,6 +392,63 @@ function CheckboxRadioSwitchSection() {
             </div>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function TooltipTabsDropdownSection() {
+  return (
+    <section className="space-y-8">
+      <div>
+        <p className="text-label text-fg-subtle mb-3">Tooltip</p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">Hover me</Button>
+          </TooltipTrigger>
+          <TooltipContent>Workflow last ran 2 minutes ago</TooltipContent>
+        </Tooltip>
+      </div>
+
+      <div>
+        <p className="text-label text-fg-subtle mb-3">Tabs</p>
+        <Tabs defaultValue="overview" className="max-w-2xl">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="runs">Runs</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
+            <TabsTrigger value="config">Config</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview">
+            <p className="text-body-sm text-fg-muted">Overview content — health, last run, ROI delta.</p>
+          </TabsContent>
+          <TabsContent value="runs">
+            <p className="text-body-sm text-fg-muted">Recent runs — timing, output, status.</p>
+          </TabsContent>
+          <TabsContent value="errors">
+            <p className="text-body-sm text-fg-muted">Errors — last 7 days.</p>
+          </TabsContent>
+          <TabsContent value="config">
+            <p className="text-body-sm text-fg-muted">Config — schedule, env vars, integrations.</p>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <div>
+        <p className="text-label text-fg-subtle mb-3">DropdownMenu</p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">Actions</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Workflow</DropdownMenuLabel>
+            <DropdownMenuItem>Edit<DropdownMenuShortcut>⌘E</DropdownMenuShortcut></DropdownMenuItem>
+            <DropdownMenuItem>Duplicate<DropdownMenuShortcut>⌘D</DropdownMenuShortcut></DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Disable</DropdownMenuItem>
+            <DropdownMenuItem className="text-[var(--color-danger)]">Delete<DropdownMenuShortcut>⌫</DropdownMenuShortcut></DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </section>
   );
