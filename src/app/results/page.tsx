@@ -2820,19 +2820,19 @@ function ResultsContent() {
 
   if (currentAudit?.audit_incomplete) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/25 flex items-center justify-center">
-          <span className="text-2xl">!</span>
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col items-center justify-center gap-6 px-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-[var(--color-warn)] bg-opacity-10 border border-[var(--color-warn)] border-opacity-25 flex items-center justify-center">
+          <span className="text-h3 text-[var(--color-warn)]">!</span>
         </div>
-        <h1 className="font-headline text-2xl font-bold text-on-surface">Audit Incomplete</h1>
-        <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
-          We weren&apos;t able to generate enough automation opportunities from the information provided. This usually happens when the input is too sparse for a meaningful analysis.
+        <h1 className="font-serif font-normal text-h2 text-[var(--color-fg)]">Diagnosis Incomplete</h1>
+        <p className="text-body text-[var(--color-fg-muted)] max-w-md leading-relaxed">
+          The system couldn&apos;t surface enough automation signal from the information provided. This usually means the input was too sparse for a meaningful diagnosis.
         </p>
-        <p className="text-on-surface-variant/60 text-[13px] max-w-md">
+        <p className="text-body-sm text-[var(--color-fg-subtle)] max-w-md">
           Try again with more detail about your team size, tools you use daily, and the specific process you want to automate.
         </p>
-        <Button asChild className="px-6 py-3 h-auto rounded-xl font-semibold text-[14px]">
-          <Link href="/audit">Retry Audit →</Link>
+        <Button asChild className="px-6 py-3 h-auto rounded-[var(--radius-md)] font-semibold text-body">
+          <Link href="/audit">Run Diagnosis Again →</Link>
         </Button>
       </div>
     )
@@ -2845,17 +2845,17 @@ function ResultsContent() {
   if (!currentAudit) {
     console.error('[results] reached render block with null currentAudit — guards missed an edge case')
     return (
-      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col items-center justify-center gap-6 px-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-[var(--color-danger)] bg-opacity-10 border border-[var(--color-danger)] border-opacity-25 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-danger)]">
             <circle cx="12" cy="12" r="10" />
             <line x1="15" y1="9" x2="9" y2="15" />
             <line x1="9" y1="9" x2="15" y2="15" />
           </svg>
         </div>
-        <h1 className="font-headline text-2xl font-bold text-on-surface">Audit not found</h1>
-        <p className="text-on-surface-variant text-[15px] max-w-md leading-relaxed">
-          We couldn&apos;t load your audit. Please try refreshing or contact support.
+        <h1 className="font-serif font-normal text-h2 text-[var(--color-fg)]">Audit not found</h1>
+        <p className="text-body text-[var(--color-fg-muted)] max-w-md leading-relaxed">
+          The system couldn&apos;t load your audit. Please try refreshing or contact support.
         </p>
         <div className="flex flex-col items-center gap-3">
           <Button asChild className="px-6 py-3 h-auto rounded-[var(--radius-md)] font-semibold text-body">
@@ -3155,24 +3155,20 @@ function ResultsContent() {
           <RevealSection>
             <section>
               <SectionLabel num="08" text="Your 90-Day Path" />
-              <div
-                className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10"
-                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
-              >
-                <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, #8b5cf6, #adc6ff, #4cd7f6)' }} />
+              <div className="rounded-[var(--radius-lg)] overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="h-[2px] bg-[var(--color-primary)]" />
                 <div className="p-7 text-center">
-                  <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-6">
-                    Your 90-day path is specific to your stack and business. We&apos;ll walk you through it on your strategy call.
+                  <p className="text-body text-[var(--color-fg-muted)] leading-[1.75] max-w-[480px] mx-auto mb-6">
+                    The real diagnostic is a conversation. Your 90-day path is specific to your stack — the system maps the sequence, you decide what ships first.
                   </p>
                   <a
                     href={CALENDLY_STRATEGY_CALL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackStrategyCallClick('roadmap-cta')}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-[13px] text-[15px] font-bold text-white transition-all duration-200 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_45px_rgba(139,92,246,0.5)]"
-                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-[var(--radius-md)] text-body font-semibold bg-[var(--color-primary)] text-white transition-opacity hover:opacity-90"
                   >
-                    Book Your Call →
+                    Book a call with founders →
                   </a>
                 </div>
               </div>
@@ -3186,29 +3182,29 @@ function ResultsContent() {
             <RevealSection>
               <section>
                 <SectionLabel num="09" text="Tools Analysis" />
-                <h2 className="font-headline font-bold text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-on-surface mb-6">
+                <h2 className="font-serif font-normal text-[clamp(22px,3vw,34px)] tracking-[-0.025em] text-[var(--color-fg)] mb-6">
                   Stack Recommendations
                 </h2>
-                <div className="p-6 rounded-[16px] mb-4 bg-surface-container border border-outline-variant/10">
+                <div className="p-6 rounded-[var(--radius-lg)] mb-4 bg-[var(--color-surface)] border border-[var(--color-border)]">
                   <StackRatingBar rating={toolsAnalysis.current_stack_rating} />
                 </div>
 
                 {hasStackDetails && (
                     <div className="space-y-4">
                       {toolsAnalysis.biggest_friction_point && (
-                        <div className="p-5 rounded-[16px] relative overflow-hidden" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                          <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[16px] bg-[#f59e0b]" />
-                          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#f59e0b] mb-2 pl-2">Biggest Friction Point</p>
-                          <p className="text-[14px] text-on-surface-variant leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
+                        <div className="p-5 rounded-[var(--radius-lg)] relative overflow-hidden bg-[var(--color-surface)] border border-[var(--color-warn)] border-opacity-20">
+                          <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[var(--radius-lg)] bg-[var(--color-warn)]" />
+                          <p className="text-label text-[var(--color-warn)] mb-2 pl-2">Biggest Friction Point</p>
+                          <p className="text-body text-[var(--color-fg-muted)] leading-[1.65] pl-2">{toolsAnalysis.biggest_friction_point}</p>
                         </div>
                       )}
                       <div className="grid sm:grid-cols-2 gap-4">
                         {addedTools.length > 0 && (
-                          <div className="p-5 rounded-[16px] bg-primary/5 border border-primary/15">
-                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Recommended Additions</p>
+                          <div className="p-5 rounded-[var(--radius-lg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)]">
+                            <p className="text-label text-[var(--color-fg-subtle)] mb-4">Recommended Additions</p>
                             <div className="flex flex-wrap gap-2">
                               {addedTools.map((t) => (
-                                <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
+                                <span key={t} className="px-3 py-1.5 rounded-[var(--radius)] text-body-sm font-medium bg-[var(--color-primary)] bg-opacity-10 border border-[var(--color-primary)] border-opacity-25 text-[var(--color-primary)]">
                                   + {t}
                                 </span>
                               ))}
@@ -3216,11 +3212,11 @@ function ResultsContent() {
                           </div>
                         )}
                         {removedTools.length > 0 && (
-                          <div className="p-5 rounded-[16px] bg-error/5 border border-error/12">
-                            <p className="text-[10px] font-bold uppercase tracking-[2px] text-on-surface-variant/50 mb-4">Potential Redundancies</p>
+                          <div className="p-5 rounded-[var(--radius-lg)] bg-[var(--color-surface-sunken)] border border-[var(--color-border)]">
+                            <p className="text-label text-[var(--color-fg-subtle)] mb-4">Potential Redundancies</p>
                             <div className="flex flex-wrap gap-2">
                               {removedTools.map((t) => (
-                                <span key={t} className="px-3 py-1.5 rounded-[8px] text-[12px] font-medium" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
+                                <span key={t} className="px-3 py-1.5 rounded-[var(--radius)] text-body-sm font-medium bg-[var(--color-danger)] bg-opacity-8 border border-[var(--color-danger)] border-opacity-20 text-[var(--color-danger)]">
                                   {t}
                                 </span>
                               ))}
@@ -3238,41 +3234,46 @@ function ResultsContent() {
         {/* Final CTA */}
         <div id="aios-build" data-report-section>
           <RevealSection>
-            <section className="rounded-[22px] overflow-hidden relative p-10 sm:p-14 text-center bg-surface-container border-2 border-primary/30 shadow-[0_0_80px_rgba(173,198,255,0.1)]">
-              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #adc6ff, #a78bfa, #4cd7f6)' }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 55% at 50% 100%, rgba(173,198,255,0.08) 0%, transparent 70%)' }} />
+            <section className="rounded-[var(--radius-lg)] overflow-hidden relative p-10 sm:p-14 text-center bg-[var(--color-surface)] border border-[var(--color-primary)] border-opacity-20">
+              <div className="h-[2px] absolute top-0 left-0 right-0 bg-[var(--color-primary)]" />
               <div className="relative z-[1]">
-                <Badge variant="outline" className="inline-flex items-center gap-2 h-auto px-3.5 py-1.5 rounded-full border-primary/25 bg-primary/8 text-primary text-[11px] font-bold tracking-wider mb-6">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                <Badge variant="outline" className="inline-flex items-center gap-2 h-auto px-3.5 py-1.5 rounded-full border-[var(--color-primary)] border-opacity-25 bg-[var(--color-primary)] bg-opacity-8 text-[var(--color-primary)] text-label mb-6">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
                   AI OPERATING SYSTEM
                 </Badge>
-                <h2 className="font-headline font-extrabold text-[clamp(24px,3.5vw,40px)] tracking-[-0.03em] mb-4 text-on-surface">
-                  Want Us to Build This For You?
+                <h2 className="font-serif font-normal text-[clamp(24px,3.5vw,40px)] tracking-[-0.025em] mb-4 text-[var(--color-fg)]">
+                  This diagnosis is the starting point.
                 </h2>
-                <p className="text-[15px] text-on-surface-variant leading-[1.75] max-w-[480px] mx-auto mb-10">
-                  We take your audit results, design the exact workflows, and build them fully custom to your stack.
-                  You get running automations — not a to-do list.
+                <p className="text-body text-[var(--color-fg-muted)] leading-[1.75] max-w-[480px] mx-auto mb-10">
+                  AIOS takes your audit signal, maps the exact build sequence, and deploys it against your stack.
+                  You get an operating system that runs ops — not a roadmap that collects dust.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Button asChild className="px-8 py-[15px] h-auto rounded-[13px] text-[15px] font-bold gap-2.5 shadow-[0_0_30px_rgba(173,198,255,0.3)] hover:shadow-[0_0_45px_rgba(173,198,255,0.5)] btn-spring">
+                  <Button asChild className="px-8 py-[15px] h-auto rounded-[var(--radius-md)] text-body font-semibold gap-2.5">
                     <a
                       href={CALENDLY_STRATEGY_CALL_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackStrategyCallClick('final-cta-strategy-call')}
                     >
-                      Book a Free Strategy Call →
+                      Book a call with founders →
                     </a>
                   </Button>
+                  <Link
+                    href="/audit"
+                    className="text-body text-[var(--color-fg-subtle)] underline underline-offset-2 hover:text-[var(--color-fg-muted)] transition-colors"
+                  >
+                    Run another audit
+                  </Link>
                 </div>
-                <div className="mt-8 pt-6 border-t border-outline-variant/10 flex flex-col items-center gap-2">
-                  <p className="text-[12px] text-on-surface-variant/50">
+                <div className="mt-8 pt-6 border-t border-[var(--color-border)] flex flex-col items-center gap-2">
+                  <p className="text-caption text-[var(--color-fg-subtle)]">
                     Want your team to see this?
                   </p>
                   <button
                     type="button"
                     onClick={handleShareResults}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-[10px] text-[13px] font-semibold border border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/50 hover:text-on-surface bg-surface-container-low/50 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] text-body-sm font-semibold border border-[var(--color-border)] text-[var(--color-fg-muted)] hover:border-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] bg-[var(--color-surface-sunken)] transition-colors"
                   >
                     {shareCopied ? (
                       <>
@@ -3291,8 +3292,8 @@ function ResultsContent() {
                     )}
                   </button>
                 </div>
-                <p className="mt-6 text-[12px] text-on-surface-variant/30">
-                  No pitch. No commitment. We&apos;ll scope the build and give you an exact price.
+                <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
+                  No pitch deck. No commitment. The system maps the build — you decide what ships.
                 </p>
               </div>
             </section>
@@ -3321,8 +3322,8 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <ResultsContent />
