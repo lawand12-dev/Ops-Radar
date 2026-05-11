@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { Button } from "<npm>/components/ui/button";
+import { Input } from "<npm>/components/ui/input";
 
 export function Showcase() {
   return (
@@ -20,8 +21,9 @@ export function Showcase() {
 
       <ThemeToggle />
       <ButtonSection />
+      <InputSection />
 
-      {/* Sections will be added by Tasks 9–22 (Input, Card, Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 10–22 (Card, Badge, Metric, Table, etc.) */}
     </main>
   );
 }
@@ -72,6 +74,20 @@ function ButtonSection() {
           <Button size="lg">LG</Button>
           <Button size="icon" aria-label="Icon"><span>×</span></Button>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function InputSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Input</p>
+      <div className="space-y-3 max-w-sm">
+        <Input placeholder="founders@agency.co" />
+        <Input placeholder="With aria-invalid state" aria-invalid />
+        <Input placeholder="Disabled" disabled />
+        <Input type="number" placeholder="Number type, e.g. 2431" />
       </div>
     </section>
   );
