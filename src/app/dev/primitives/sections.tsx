@@ -32,6 +32,16 @@ import {
 import { Badge } from "<npm>/components/ui/badge";
 import { Label } from "<npm>/components/ui/label";
 import { Textarea } from "<npm>/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
+} from "<npm>/components/ui/select";
 
 export function Showcase() {
   return (
@@ -55,6 +65,7 @@ export function Showcase() {
       <AccordionSection />
       <BadgeSection />
       <LabelTextareaSection />
+      <SelectSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -264,6 +275,35 @@ function LabelTextareaSection() {
           <Label htmlFor="ds-textarea-2">Disabled</Label>
           <Textarea id="ds-textarea-2" placeholder="Disabled" disabled />
         </div>
+      </div>
+    </section>
+  );
+}
+
+function SelectSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Select</p>
+      <div className="max-w-sm">
+        <Select>
+          <SelectTrigger>
+            <SelectValue placeholder="Pick a workflow tool…" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Automation</SelectLabel>
+              <SelectItem value="n8n">n8n</SelectItem>
+              <SelectItem value="make">Make</SelectItem>
+              <SelectItem value="zapier">Zapier</SelectItem>
+            </SelectGroup>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel>AI</SelectLabel>
+              <SelectItem value="claude">Claude</SelectItem>
+              <SelectItem value="gpt">GPT-4o</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
     </section>
   );
