@@ -41,19 +41,19 @@ const CATEGORIES = [
     items: [
       {
         q: "What is OpsRadar?",
-        a: "We build the AI Operating System for agencies — n8n workflows, an Agency Brain, and a Claude interface — all running inside your own accounts, not ours. Paid-media shops, SEO agencies, and full-service teams under 25 people. You own everything from day one.",
+        a: "OpsRadar is AIOS — the AI Operating System for agencies. Four pillars: OPERATE runs your workflows, OBSERVE watches them around the clock, BRAIN remembers how your shop works, GUARD catches breakage before it hits your reports. Everything lives in your accounts, not ours.",
       },
       {
         q: "Who is this for?",
-        a: "Agencies with 5–25 people losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team is spending Sunday nights building client reports, this is for you.",
+        a: "Agencies under 30 people losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team is rebuilding the same client decks every Monday, this is for you.",
       },
       {
         q: "Who is this NOT for?",
-        a: "Solo operators where the math doesn't work yet. Enterprise agencies with 50+ people that need a larger transformation program. Shops that want shrinkwrap software — this is custom-built, not something you install.",
+        a: "Solo operators where the math doesn't land yet. Enterprise shops that need a larger transformation program. Agencies that want shrinkwrap software — AIOS is custom-built for your specific stack and workflows.",
       },
       {
         q: "Why does \"you own it\" matter?",
-        a: "Every workflow runs inside your n8n account, on your credentials, on your infrastructure. If OpsRadar ever left, nothing breaks. You keep the code, the logic, and the logs.",
+        a: "Yes, ownership matters. Every workflow lives in your n8n, every credential in your vault, every log on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the BRAIN.",
       },
     ],
   },
@@ -63,19 +63,19 @@ const CATEGORIES = [
     items: [
       {
         q: "What does it cost?",
-        a: "One-time builds range from $3,500 (Starter) to $9,500 (Advanced). Monthly care retainers run $750–$3,000/month. Exact scope and price are confirmed before any build starts — no surprises.",
+        a: "Build cost is set in your Blueprint PDF after we understand your shop. There is no list price — every AIOS is scoped for the agency it runs inside. The audit is free. The discovery call is free. Scope and cost are locked before any build starts.",
       },
       {
         q: "How does payment work?",
-        a: "50% upfront after we scope the build together, 50% on delivery. Monthly retainers bill at the start of each month. No long-term lock-in — cancel with 30 days notice.",
+        a: "Half upfront once scope is agreed, half on delivery. No long-term lock-in. If we ever part ways, you keep everything — it's your infrastructure.",
       },
       {
-        q: "Is a retainer required?",
-        a: "No. You can do a one-time build and never add ongoing care. Most agencies add the Care retainer ($750/month) because Meta, Shopify, and Google push breaking API changes every quarter — someone has to fix them before Monday morning.",
+        q: "Is ongoing support required?",
+        a: "No. You can take the Blueprint and run it yourself. Most agencies want ongoing care because Meta, Google, and Shopify push breaking API changes every quarter — GUARD catches those, but someone still has to ship the fix.",
       },
       {
-        q: "How is this cheaper than Zapier?",
-        a: "Zapier charges per task. Agency reporting workflows run hundreds of times a day. A typical Zapier retainer: $500–$2,000/month. n8n Cloud: $20/month, unlimited runs. The build pays for itself in roughly 6 weeks at standard agency hourly rates.",
+        q: "How is n8n cheaper than Zapier at scale?",
+        a: "Zapier charges per task. Agency reporting workflows run hundreds of times a day — the bill compounds fast. n8n runs on flat-rate cloud pricing with unlimited executions. For agencies running data at volume, n8n is the only math that holds.",
       },
     ],
   },
@@ -85,19 +85,19 @@ const CATEGORIES = [
     items: [
       {
         q: "How long does a build take?",
-        a: "Single workflows ship in 3–10 business days when scope is tight and you're responsive. Multi-workflow systems take 2–4 weeks. From first message to first workflow running: roughly 10 business days.",
+        a: "Blueprint is roughly a week of evaluation after the discovery call. Build timelines are scoped in the Blueprint, sized to your shop. We don't build AIOS for agencies we don't understand — the evaluation exists so the scope is real.",
       },
       {
         q: "What happens after I submit the audit?",
-        a: "The audit is a 3-minute form. You get back real dollar numbers on what specific ops work is costing you. If the numbers make sense, we book a 15-minute call to scope the exact build. If not, no pressure — keep the audit.",
+        a: "The audit is 13 questions, about 3 minutes. You get back a breakdown of where your ops are leaking time. If the numbers make sense, we book a discovery call to go deeper. If not, keep the audit — no pressure.",
       },
       {
         q: "What's required from me during the build?",
-        a: "About 5 minutes total. You grant API access to the tools you already use (Meta, Google, Slack, etc.), review one proposal, and test the final workflow before it goes live. No scoping meetings, no spec back-and-forth.",
+        a: "Mostly access. You connect the tools you already use — Meta, Google, Slack, and so on — review the Blueprint once, and test the final system before it goes live. We do the heavy lifting; you verify it fits your shop.",
       },
       {
-        q: "What if something breaks?",
-        a: "Every build includes a bug-fix window: 14 days on Starter, 30 on Core, 60 on Advanced. After that, the Care retainer catches breakages before they hit production. If Meta's API changes at 3am, we fix it before your Monday report runs.",
+        q: "What if something breaks after the build?",
+        a: "GUARD monitors every workflow for failures and API drift. If something breaks, it fires before your Monday report runs — not after. We fix it. That's the point of building an operating system, not just a workflow.",
       },
     ],
   },
@@ -106,20 +106,20 @@ const CATEGORIES = [
     label: "Tech & tools",
     items: [
       {
-        q: "What tools do you work with?",
-        a: "Anything with an API or webhook. Most common: Meta Ads, Google Ads, GA4, Triple Whale, Klaviyo, HubSpot, Ahrefs, Semrush, Slack, Notion, Google Sheets, Looker Studio. If your tool isn't listed, it likely still works — ask in the audit.",
+        q: "What tools does AIOS connect to?",
+        a: "Anything with an API or webhook. Most common: Meta Ads, Google Ads, GA4, Triple Whale, Klaviyo, HubSpot, Ahrefs, Semrush, Slack, Notion, Google Sheets, Looker Studio. If your tool isn't listed, note it in the audit — it likely still works.",
       },
       {
         q: "Why n8n instead of Zapier, Make, or a SaaS tool?",
-        a: "Three reasons: (1) flat $20/month instead of per-task fees that explode at volume. (2) The workflow lives in your account, not behind someone else's paywall. (3) More powerful — custom logic, AI nodes, branching, self-hosted option. For agencies running reporting at scale, n8n is the only math that works.",
+        a: "Three reasons: flat monthly cost instead of per-task fees. The workflows live in your account, not ours. And n8n is powerful enough for the AI nodes, branching logic, and custom code that AIOS requires. OPERATE is built on n8n because nothing else holds at agency scale.",
       },
       {
         q: "Can n8n be self-hosted?",
-        a: "Yes. You can run n8n on their cloud ($20/month) or self-host on your own server. We build in either environment. Self-hosting is free but requires a DevOps person — most agencies just use n8n Cloud.",
+        a: "Yes. You can run n8n on their cloud or self-host on your own server. We build in either environment. Self-hosting is free but requires someone to manage a server — most agencies just use n8n Cloud.",
       },
       {
         q: "Can you work with my existing automations?",
-        a: "Yes. If you already have Zapier zaps, Make scenarios, or hand-rolled scripts, we can migrate them to n8n and extend them. Often the migration itself pays for the build through Zapier cost savings alone.",
+        a: "Yes. If you already have Zapier zaps, Make scenarios, or hand-rolled scripts, we can migrate and extend them inside OPERATE. GUARD then watches the migrated workflows the same as anything we built from scratch.",
       },
     ],
   },
