@@ -71,6 +71,7 @@ import { Progress } from "<npm>/components/ui/progress";
 import { StatusDot, type Status } from "<npm>/components/ui/status-dot";
 import { Metric } from "<npm>/components/ui/metric";
 import { Table, THead, TR, TH, TD } from "<npm>/components/ui/data-table";
+import { Separator } from "<npm>/components/ui/separator";
 
 export function Showcase() {
   return (
@@ -101,6 +102,7 @@ export function Showcase() {
       <SkeletonProgressStatusSection />
       <MetricSection />
       <TableSection />
+      <SeparatorSection />
 
       {/* Tasks 14–22 complete */}
     </main>
@@ -571,6 +573,27 @@ function TableSection() {
           </TR>
         </tbody>
       </Table>
+    </section>
+  );
+}
+
+function SeparatorSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Separator</p>
+      <div className="max-w-md space-y-4">
+        <div>
+          <p className="text-body-sm text-fg-muted">Horizontal separator (decorative)</p>
+          <Separator className="mt-2" />
+        </div>
+        <div className="flex items-center gap-4 text-body-sm">
+          <span className="text-fg-muted">Left</span>
+          <Separator orientation="vertical" className="h-6" />
+          <span className="text-fg-muted">Right</span>
+          <Separator orientation="vertical" className="h-6" />
+          <span className="text-fg-muted">Center</span>
+        </div>
+      </div>
     </section>
   );
 }
