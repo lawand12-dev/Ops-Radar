@@ -29,6 +29,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "<npm>/components/ui/accordion";
+import { Badge } from "<npm>/components/ui/badge";
 
 export function Showcase() {
   return (
@@ -50,8 +51,9 @@ export function Showcase() {
       <CardSection />
       <DialogSection />
       <AccordionSection />
+      <BadgeSection />
 
-      {/* Sections will be added by Tasks 13–22 (Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
   );
 }
@@ -213,6 +215,31 @@ function AccordionSection() {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+    </section>
+  );
+}
+
+function BadgeSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Badge</p>
+      <div className="space-y-3">
+        <div className="flex gap-2 flex-wrap items-center">
+          <Badge>Default</Badge>
+          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="outline">Outline</Badge>
+          <Badge variant="destructive">Destructive</Badge>
+          <Badge variant="ghost">Ghost</Badge>
+          <Badge variant="link">Link</Badge>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Badge variant="success" dot>Running</Badge>
+          <Badge variant="warn" dot>Degraded</Badge>
+          <Badge variant="destructive" dot>Failed</Badge>
+          <Badge variant="accent" dot>New</Badge>
+          <Badge variant="secondary" dot>Idle</Badge>
+        </div>
+      </div>
     </section>
   );
 }
