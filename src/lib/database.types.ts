@@ -207,6 +207,7 @@ export type Database = {
       client_n8n_config: {
         Row: {
           backfill_completed_at: string | null
+          chatv2_project_id: string | null
           client_id: string
           created_at: string
           n8n_api_key: string | null
@@ -216,6 +217,7 @@ export type Database = {
         }
         Insert: {
           backfill_completed_at?: string | null
+          chatv2_project_id?: string | null
           client_id: string
           created_at?: string
           n8n_api_key?: string | null
@@ -225,6 +227,7 @@ export type Database = {
         }
         Update: {
           backfill_completed_at?: string | null
+          chatv2_project_id?: string | null
           client_id?: string
           created_at?: string
           n8n_api_key?: string | null
