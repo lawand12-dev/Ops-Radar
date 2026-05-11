@@ -1,4 +1,5 @@
 import { AppError } from "../../lib/errors";
+import { getRequestContext } from "../../lib/request-context";
 import { getLatestAuditLog } from "../audit/audit-repository";
 import {
   getWorkflowLastTerminalRun,
@@ -9,12 +10,25 @@ import {
   countOpenWorkflowAlertsByWorkflowId,
   listOpenWorkflowAlertsByWorkflowId
 } from "../monitoring/workflow-health-repository";
+import { getProjectByIdForUser } from "../projects/project-repository";
 import { getWorkflowById } from "./workflow-repository";
 
 export async function getWorkflowStatus(workflowId: string) {
   const workflow = await getWorkflowById(workflowId);
   if (!workflow) {
     throw new AppError(404, "WORKFLOW_NOT_FOUND", "Workflow not found.");
+  }
+  // Tenancy enforcement: when called from an auth context, the caller must own
+  // the workflow's project. Background calls (no context) skip this and return
+  // the global view — this is what the monitoring scheduler relies on.
+  const ctx = getRequestContext();
+  if (ctx) {
+    const project = await getProjectByIdForUser(workflow.project_id, ctx.userId);
+    if (!project) {
+      // Same 404 we'd give for a missing workflow id — never reveal that the
+      // workflow exists but belongs to a different tenant.
+      throw new AppError(404, "WORKFLOW_NOT_FOUND", "Workflow not found.");
+    }
   }
 
   const [stats, lastRun, failures, alerts, unresolvedAlerts, latestAudit] = await Promise.all([

@@ -2,12 +2,18 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
+import { requireAuth } from "../auth/auth-middleware";
 import { listN8nCredentials } from "./n8n-client";
 import { getCredentialPolicy } from "./credential-policy";
 import { detectNodeCredentialTypes, getProjectWithWorkflow } from "../projects/project-service";
 import { normalizeWorkflowDefinition } from "../workflows/workflow-normalizer";
 
 const n8nRoutes = new Hono();
+
+// All n8n calls hit the authenticated user's per-account n8n instance
+// (resolveN8nConfig reads from request context). Block unauth callers so we
+// never accidentally leak the env-fallback API key to the public.
+n8nRoutes.use("*", requireAuth);
 
 const createCredentialSchema = z.object({
   name: z.string().min(2),

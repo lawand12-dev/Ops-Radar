@@ -1,7 +1,42 @@
 import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
+import { getRequestContext } from "../../lib/request-context";
 import type { N8nWorkflow } from "../../types/workflow";
+
+/**
+ * Resolves the n8n base URL + API key for the current call.
+ *
+ * Two distinct paths:
+ *  1) Authenticated request (ctx present): MUST use the user's stored creds.
+ *     The env fallback is intentionally skipped here — sharing the platform
+ *     n8n key with users who haven't configured their own would silently leak
+ *     access to the operator's n8n instance.
+ *  2) Background caller (ctx absent): falls back to env so the monitoring
+ *     scheduler keeps working without a per-user setup.
+ */
+function resolveN8nConfig(): { baseUrl: string; apiKey: string } {
+  const ctx = getRequestContext();
+
+  if (ctx) {
+    const baseUrl = ctx.n8nBaseUrl?.trim() || env.N8N_BASE_URL; // base URL alone is not sensitive
+    const apiKey = ctx.n8nApiKey?.trim() || "";
+    if (!apiKey) {
+      throw new AppError(
+        400,
+        "N8N_CONFIG_MISSING",
+        "Set your n8n API key under Account → API credentials before using n8n features."
+      );
+    }
+    return { baseUrl, apiKey };
+  }
+
+  const apiKey = env.N8N_API_KEY?.trim();
+  if (!apiKey) {
+    throw new AppError(500, "N8N_CONFIG_ERROR", "N8N_API_KEY is required for background n8n calls.");
+  }
+  return { baseUrl: env.N8N_BASE_URL, apiKey };
+}
 
 interface N8nCreateWorkflowRequest extends N8nWorkflow {
   name: string;
@@ -52,14 +87,10 @@ export interface N8nExecutionDetails extends N8nExecutionSummary {
   resultData: unknown;
 }
 
-function getHeaders(): Record<string, string> {
-  if (!env.N8N_API_KEY) {
-    throw new AppError(500, "N8N_CONFIG_ERROR", "N8N_API_KEY is required for deployment.");
-  }
-
+function getHeaders(apiKey: string): Record<string, string> {
   return {
     "Content-Type": "application/json",
-    "X-N8N-API-KEY": env.N8N_API_KEY
+    "X-N8N-API-KEY": apiKey
   };
 }
 
@@ -214,8 +245,12 @@ function buildWorkflowPayloadMeta(payload: {
   };
 }
 
-function buildUrl(path: string, query?: Record<string, string | number | boolean | undefined>): string {
-  const base = env.N8N_BASE_URL.endsWith("/") ? env.N8N_BASE_URL.slice(0, -1) : env.N8N_BASE_URL;
+function buildUrl(
+  baseUrl: string,
+  path: string,
+  query?: Record<string, string | number | boolean | undefined>
+): string {
+  const base = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
   const url = new URL(`${base}${path}`);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
@@ -251,13 +286,16 @@ async function n8nRequest(input: {
   notFoundCode?: string;
   notFoundMessage?: string;
 }): Promise<unknown> {
+  // Resolve config once per request so all retry/timeout state stays paired
+  // with the URL+key pair we're actually talking to.
+  const { baseUrl, apiKey } = resolveN8nConfig();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), env.N8N_REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch(buildUrl(input.path, input.query), {
+    const response = await fetch(buildUrl(baseUrl, input.path, input.query), {
       method: input.method,
-      headers: getHeaders(),
+      headers: getHeaders(apiKey),
       body: input.body ? JSON.stringify(input.body) : undefined,
       signal: controller.signal
     });

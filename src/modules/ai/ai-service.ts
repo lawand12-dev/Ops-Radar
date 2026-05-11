@@ -25,6 +25,58 @@ import {
   selectKnowledgeForRequest
 } from "./knowledge-base-loader";
 import { persistAIInteraction } from "./ai-interaction-repository";
+import { getRequestContext } from "../../lib/request-context";
+
+/**
+ * Resolves the platform RAG agent endpoint config. The agent is a single
+ * shared resource (DigitalOcean Gen AI agent or any OpenAI-compatible
+ * /chat/completions URL) — there is no per-user agent. Authorization is
+ * gated by users.can_use_rag_agent, which the auth middleware reads onto
+ * RequestContext.canUseRagAgent.
+ *
+ * Returns null when either the env config is missing OR the current request
+ * context isn't permitted to use the agent. Callers fall through to the
+ * regular Anthropic+KB path on null.
+ */
+export function resolveRagAgentConfig(): { url: string; apiKey: string } | null {
+  const ctx = getRequestContext();
+  if (!ctx?.canUseRagAgent) return null;
+  const url = env.RAG_AGENT_URL?.trim();
+  const apiKey = env.RAG_AGENT_API_KEY?.trim();
+  if (!url || !apiKey) return null;
+  return { url, apiKey };
+}
+
+/**
+ * Resolve the Anthropic API key for the current call.
+ *
+ *  - Authenticated request (ctx present): MUST use the user's stored key.
+ *    Never fall back to env here — that would silently bill the operator for
+ *    every authenticated user's AI usage.
+ *  - Background caller (ctx absent, e.g. monitoring's failure-analysis AI):
+ *    falls back to env so the platform default keeps working.
+ */
+function resolveAnthropicApiKey(): string {
+  const ctx = getRequestContext();
+
+  if (ctx) {
+    const userKey = ctx.anthropicApiKey?.trim();
+    if (!userKey) {
+      throw new AppError(
+        400,
+        "AI_CONFIG_MISSING",
+        "Set your Anthropic API key under Account → API credentials before generating workflows."
+      );
+    }
+    return userKey;
+  }
+
+  const fallback = env.ANTHROPIC_API_KEY?.trim();
+  if (!fallback) {
+    throw new AppError(500, "AI_CONFIG_ERROR", "ANTHROPIC_API_KEY is required for background AI calls.");
+  }
+  return fallback;
+}
 
 const BLOCKED_NODE_TYPES = [
   "n8n-nodes-base.function",
@@ -839,7 +891,9 @@ const digitalOceanAdapter: ProviderAdapter = {
 const anthropicAdapter: ProviderAdapter = {
   name: "anthropic",
   async call(input: AIRequestInput): Promise<AIResponse> {
-    const apiKey = requireKey(env.ANTHROPIC_API_KEY, "ANTHROPIC_API_KEY");
+    // Per-user key when available, env fallback otherwise (covers monitoring's
+    // background failure-analysis calls that run outside any auth context).
+    const apiKey = resolveAnthropicApiKey();
     logInfo(
       "ai",
       "Calling Anthropic messages API",
@@ -895,6 +949,95 @@ const anthropicAdapter: ProviderAdapter = {
     return { text: extractAnthropicText(payload), raw: payload };
   }
 };
+
+/**
+ * Calls the platform RAG agent's OpenAI-compatible /chat/completions endpoint.
+ * Sends ONLY the user message — no system prompt, no knowledge-base block.
+ * The agent already has its own server-side system prompt + KB configured in
+ * the DigitalOcean (or equivalent) console, so duplicating those locally would
+ * waste tokens and dilute the agent's behavior.
+ *
+ * Kept outside PROVIDER_REGISTRY because it isn't a "model" the user can pick;
+ * routing to it is gated by users.can_use_rag_agent + env.RAG_AGENT_*.
+ */
+async function callRagAgent(input: {
+  userMessage: string;
+  promptHint: string;
+  timeoutMs: number;
+  context?: AiRequestContext;
+}): Promise<AIResponse> {
+  const config = resolveRagAgentConfig();
+  if (!config) {
+    // Defensive: callers should have checked already, but throw a clear error
+    // rather than a generic 500 if this is reached without configuration.
+    throw new AppError(
+      500,
+      "RAG_AGENT_NOT_CONFIGURED",
+      "RAG agent is not enabled for this account or platform env is missing."
+    );
+  }
+
+  // The DO agent endpoint sometimes ships with /api/v1 already in the URL,
+  // sometimes not — append only when missing so the operator can configure
+  // either form.
+  const baseUrl = config.url.replace(/\/+$/, "");
+  const endpoint = /\/api\/v\d+$/i.test(baseUrl)
+    ? `${baseUrl}/chat/completions`
+    : `${baseUrl}/api/v1/chat/completions`;
+
+  // promptHint is only set after a structurally-invalid retry; appending it
+  // keeps the agent on-task without re-introducing a system prompt.
+  const userContent = input.promptHint
+    ? `${input.userMessage}\n\n${input.promptHint}`
+    : input.userMessage;
+
+  logInfo("ai", "Calling RAG agent", { endpoint }, input.context?.traceId);
+  const startedAt = Date.now();
+  const response = await fetchWithTimeout({
+    url: endpoint,
+    timeoutMs: input.timeoutMs,
+    requestName: "rag_agent.chat.completions",
+    errorCode: "AI_REQUEST_TIMEOUT",
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`
+      },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: userContent }],
+        stream: false,
+        // We don't surface retrieval / function / guardrail metadata to the
+        // user yet, so don't pay the bandwidth/latency cost of including it.
+        include_retrieval_info: false,
+        include_functions_info: false,
+        include_guardrails_info: false
+      })
+    }
+  });
+
+  logInfo(
+    "ai",
+    "RAG agent call completed",
+    { status: response.status, duration_ms: Date.now() - startedAt },
+    input.context?.traceId
+  );
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new AppError(502, "AI_REQUEST_FAILED", "RAG agent request failed.", {
+      provider: "rag_agent",
+      status: response.status,
+      response_body: truncateForError(details)
+    });
+  }
+
+  const payload = await response.json();
+  if (env.LOG_AI_RAW_RESPONSE) {
+    logDebug("ai", "Raw AI payload (RAG agent)", payload, input.context?.traceId);
+  }
+  return { text: extractMessageText(payload), raw: payload };
+}
 
 const PROVIDER_REGISTRY: Record<RemoteAIProvider, ProviderAdapter> = {
   openai: openaiAdapter,
@@ -1243,6 +1386,158 @@ function uniqueModelPlan(models: string[]): string[] {
   return out;
 }
 
+/**
+ * RAG-agent code path. Mirrors the structure of the regular Anthropic loop:
+ * up to N validation-retry attempts with a `promptHint` describing the previous
+ * failure, but with no model-fallback chain (the agent is the only "model").
+ * Persists each call to ai_interactions so cost/latency stay observable.
+ */
+async function generateWorkflowViaRagAgent(
+  message: string,
+  context?: AiRequestContext
+): Promise<AiWorkflowOutput> {
+  const deadline = Date.now() + env.AI_WORKFLOW_TOTAL_TIMEOUT_MS;
+  const attemptErrors: Array<{ model: string; details: unknown }> = [];
+  let promptHint = "";
+  // Tighter retry budget than the full provider chain — there's no other
+  // model to escalate to, so every retry is the same agent re-asked.
+  const MAX_RAG_ATTEMPTS = 3;
+  const PROVIDER_TAG = "rag_agent";
+
+  for (let attempt = 1; attempt <= MAX_RAG_ATTEMPTS; attempt += 1) {
+    try {
+      assertWithinBudget(deadline);
+      const remainingBudgetMs = getRemainingBudgetMs(deadline);
+      const requestTimeoutMs = Math.max(
+        1000,
+        Math.min(env.AI_REQUEST_TIMEOUT_MS, remainingBudgetMs)
+      );
+      logInfo(
+        "ai",
+        "RAG workflow generation attempt",
+        { attempt, request_timeout_ms: requestTimeoutMs, remaining_budget_ms: remainingBudgetMs },
+        context?.traceId
+      );
+
+      const startedAt = Date.now();
+      let response: AIResponse;
+      try {
+        response = await callRagAgent({
+          userMessage: message,
+          promptHint,
+          timeoutMs: requestTimeoutMs,
+          context
+        });
+        // Track the call for observability — same shape as the Anthropic path.
+        persistAIInteraction({
+          userId: context?.userId ?? null,
+          provider: PROVIDER_TAG,
+          model: PROVIDER_TAG,
+          systemPrompt: "",
+          userPrompt: message,
+          response: response.text,
+          rawResponse: response.raw,
+          status: "success",
+          errorMessage: null,
+          tokensUsed: extractTokenCount(response.raw),
+          latencyMs: Date.now() - startedAt
+        });
+      } catch (callError) {
+        persistAIInteraction({
+          userId: context?.userId ?? null,
+          provider: PROVIDER_TAG,
+          model: PROVIDER_TAG,
+          systemPrompt: "",
+          userPrompt: message,
+          response: "",
+          rawResponse: null,
+          status: "error",
+          errorMessage: callError instanceof Error ? callError.message : String(callError),
+          tokensUsed: null,
+          latencyMs: Date.now() - startedAt
+        });
+        throw callError;
+      }
+
+      if (env.LOG_AI_OUTPUT_TEXT) {
+        logDebug(
+          "ai",
+          "AI output_text (rag_agent)",
+          { text: redactJsonTextIfPossible(response.text) },
+          context?.traceId
+        );
+      }
+
+      const candidateRaw = parseJsonFromText(response.text);
+      const candidate = normalizeAiWorkflowCandidate(candidateRaw, context?.traceId);
+      const parsed = validateWorkflowStructure(candidate);
+      if (!parsed.parsed) {
+        attemptErrors.push({ model: PROVIDER_TAG, details: parsed.errors });
+        promptHint = `PREVIOUS_ATTEMPT_FAILED_STRUCTURE:\n${JSON.stringify(parsed.errors)}`;
+        logWarn(
+          "ai",
+          "RAG workflow structure validation failed",
+          { attempt, errors: parsed.errors },
+          context?.traceId
+        );
+        continue;
+      }
+
+      const security = validateWorkflowSecurity(parsed.parsed.workflow);
+      if (!security.valid) {
+        attemptErrors.push({ model: PROVIDER_TAG, details: security.errors });
+        promptHint = `PREVIOUS_ATTEMPT_FAILED_SECURITY:\n${JSON.stringify(security.errors)}`;
+        logWarn(
+          "ai",
+          "RAG workflow security validation failed",
+          { attempt, errors: security.errors },
+          context?.traceId
+        );
+        continue;
+      }
+
+      // Skip intent-coverage check — the agent's own KB is meant to ground
+      // the response on user intent, and adding a second heuristic on top
+      // tends to reject acceptable agent outputs that phrase nodes
+      // differently from the user's wording.
+
+      logInfo(
+        "ai",
+        "RAG workflow generation finished",
+        { attempt, node_count: parsed.parsed.workflow.nodes.length },
+        context?.traceId
+      );
+      return {
+        ...parsed.parsed,
+        required_credentials: extractRequiredCredentialTypesFromWorkflow(parsed.parsed.workflow)
+      };
+    } catch (error) {
+      attemptErrors.push({ model: PROVIDER_TAG, details: error });
+      logWarn(
+        "ai",
+        "RAG workflow attempt failed",
+        { attempt, error: toAttemptErrorDetails(error) },
+        context?.traceId
+      );
+      // For non-validation errors (network/auth/timeout), don't loop — surface
+      // immediately so the user sees the real problem instead of three retries.
+      if (error instanceof AppError && error.code !== "AI_BAD_OUTPUT") {
+        throw buildAiFailureError({
+          fallbackCode: "AI_RAG_AGENT_FAILED",
+          message: "RAG agent request failed.",
+          attempts: attemptErrors
+        });
+      }
+    }
+  }
+
+  throw buildAiFailureError({
+    fallbackCode: "AI_RAG_AGENT_FAILED",
+    message: "RAG agent failed to produce a valid workflow after retries.",
+    attempts: attemptErrors
+  });
+}
+
 export async function generateWorkflowFromMessage(
   message: string,
   context?: AiRequestContext
@@ -1251,6 +1546,16 @@ export async function generateWorkflowFromMessage(
   if (env.AI_PROVIDER === "mock") {
     return buildMockWorkflow(message);
   }
+
+  // Short-circuit users granted access to the platform RAG agent. The agent
+  // already encodes the n8n-engineer system prompt + curated knowledge base
+  // server-side, so we send only the raw message and skip both locally. We
+  // still validate the returned workflow with the same security/structure
+  // checks and use the same retry-with-promptHint loop for self-correction.
+  if (resolveRagAgentConfig()) {
+    return generateWorkflowViaRagAgent(message, context);
+  }
+
   const deadline = Date.now() + env.AI_WORKFLOW_TOTAL_TIMEOUT_MS;
 
   const allModels = uniqueModelPlan([

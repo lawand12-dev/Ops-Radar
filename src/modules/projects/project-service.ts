@@ -3,6 +3,7 @@ import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
+import { getRequestContext } from "../../lib/request-context";
 import { fixRejectedWorkflow } from "../ai/ai-service";
 import { listMessagesByProjectId } from "../chat/chat-repository";
 import { createWorkflowEvent, listRecentEventsByWorkflowId } from "../events/event-repository";
@@ -21,7 +22,41 @@ import {
   type CredentialField,
   type CredentialProvisioningMode
 } from "../n8n/credential-policy";
-import { deleteProjectById, getProjectById, listProjects, updateProjectStatus } from "./project-repository";
+import {
+  deleteProjectById,
+  getProjectById,
+  getProjectByIdForUser,
+  listProjects,
+  listProjectsForUser,
+  updateProjectStatus
+} from "./project-repository";
+
+/**
+ * Returns the user id of the current authenticated request, or throws if the
+ * call wasn't routed through `requireAuth`. Use this at every user-facing
+ * service entry point so we never accidentally serve cross-tenant data.
+ */
+function currentUserIdOrThrow(): string {
+  const ctx = getRequestContext();
+  if (!ctx) {
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required.");
+  }
+  return ctx.userId;
+}
+
+/**
+ * Tenant-aware project fetch used by every user-facing service entry point.
+ * Returns 404 PROJECT_NOT_FOUND for both "doesn't exist" and "exists but
+ * belongs to someone else" so we don't leak project ids across tenants.
+ */
+async function loadProjectOwned(projectId: string) {
+  const userId = currentUserIdOrThrow();
+  const project = await getProjectByIdForUser(projectId, userId);
+  if (!project) {
+    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
+  }
+  return project;
+}
 import { getWorkflowStatus } from "../workflows/workflow-service";
 import {
   attachWorkflowToN8n,
@@ -1178,7 +1213,10 @@ export async function listProjectsSnapshot(
   offset = 0,
   options?: { verifyN8n?: boolean }
 ) {
-  const projects = await listProjects({ limit, offset });
+  // Always scope to the authenticated user. Background callers don't go through
+  // this path (they hit listProjects / listWorkflowsWithN8nWorkflowId directly).
+  const userId = currentUserIdOrThrow();
+  const projects = await listProjectsForUser(userId, { limit, offset });
   const verifyN8n = options?.verifyN8n ?? env.PROJECTS_VERIFY_N8N_ON_LIST;
 
   const records = await Promise.all(
@@ -1336,10 +1374,9 @@ export async function getProjectsAuditReport(
 }
 
 export async function getProjectWithWorkflow(projectId: string) {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  // Tenant-scoped: returns 404 for both "doesn't exist" and "not yours" so we
+  // never leak the existence of another tenant's project ids.
+  const project = await loadProjectOwned(projectId);
 
   const workflow = await getLatestWorkflowByProjectId(projectId);
   const workflowStatus = workflow ? await getWorkflowStatus(workflow.id) : null;
@@ -1363,10 +1400,8 @@ export async function getProjectWorkflowDebugSnapshot(
   projectId: string,
   options?: { verifyN8n?: boolean }
 ): Promise<ProjectWorkflowDebugSnapshot> {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  // Tenant-scoped: ownership check folded into loadProjectOwned (404 on miss).
+  await loadProjectOwned(projectId);
 
   const workflow = await getLatestWorkflowByProjectId(projectId);
   const n8nDashboardBaseUrl = buildN8nDashboardBaseUrl();
@@ -1566,10 +1601,7 @@ export async function getProjectWorkflowDebugSnapshot(
 }
 
 export async function getProjectChatMessages(projectId: string) {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  await loadProjectOwned(projectId);
 
   const messages = await listMessagesByProjectId(projectId);
 
@@ -2093,10 +2125,8 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
 }
 
 export async function deleteProjectAutomation(projectId: string): Promise<DeleteProjectResult> {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  // Tenant-scoped: deleting someone else's project returns 404, never 403.
+  await loadProjectOwned(projectId);
 
   const workflows = await listWorkflowsByProjectId(projectId);
   const n8nWorkflowIds = Array.from(

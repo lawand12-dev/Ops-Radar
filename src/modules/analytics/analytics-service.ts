@@ -1,17 +1,40 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { dbQuery, getDb } from "../../lib/db";
-import { getGlobalHealthBreakdown, getGlobalRunStats } from "../events/event-repository";
+import { AppError } from "../../lib/errors";
+import { getRequestContext } from "../../lib/request-context";
+import { getUserHealthBreakdown, getUserRunStats } from "../events/event-repository";
 
+/**
+ * Returns the dashboard analytics snapshot scoped to the authenticated user.
+ *
+ * Every query here filters on `projects.user_id` (directly or via JOIN) so a
+ * tenant only sees their own projects, workflows, runs, and alerts. The
+ * helpers `getUserRunStats` / `getUserHealthBreakdown` enforce the same scope
+ * on event-level aggregates.
+ */
 export async function getAnalyticsSnapshot() {
+  const ctx = getRequestContext();
+  if (!ctx) {
+    // /analytics is gated by requireAuth, so this only fires if someone wires
+    // the route without the middleware. Better to fail loudly than to silently
+    // return the global view.
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required.");
+  }
+  const userId = ctx.userId;
   const db = getDb();
 
   const [projectCountRows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
     db,
-    `SELECT COUNT(*) AS total FROM projects`
+    `SELECT COUNT(*) AS total FROM projects WHERE user_id = ?`,
+    [userId]
   );
   const [workflowCountRows] = await dbQuery<Array<RowDataPacket & { total: number }>>(
     db,
-    `SELECT COUNT(*) AS total FROM workflows`
+    `SELECT COUNT(*) AS total
+     FROM workflows w
+     INNER JOIN projects p ON p.id = w.project_id
+     WHERE p.user_id = ?`,
+    [userId]
   );
 
   const [topWorkflowRows] = await dbQuery<
@@ -66,16 +89,23 @@ export async function getAnalyticsSnapshot() {
       ) AS unresolved_alerts
     FROM workflows w
     INNER JOIN projects p ON p.id = w.project_id
+    WHERE p.user_id = ?
     ORDER BY unresolved_alerts DESC, failed_runs DESC, total_runs DESC
-    LIMIT 20`
+    LIMIT 20`,
+    [userId]
   );
 
   const [runStats, healthBreakdown, unresolvedAlertRows] = await Promise.all([
-    getGlobalRunStats(),
-    getGlobalHealthBreakdown(),
+    getUserRunStats(userId),
+    getUserHealthBreakdown(userId),
     dbQuery<Array<RowDataPacket & { total: number }>>(
       db,
-      `SELECT COUNT(*) AS total FROM workflow_alerts WHERE status = 'open'`
+      `SELECT COUNT(*) AS total
+       FROM workflow_alerts wa
+       INNER JOIN workflows w ON w.id = wa.workflow_id
+       INNER JOIN projects p ON p.id = w.project_id
+       WHERE wa.status = 'open' AND p.user_id = ?`,
+      [userId]
     )
   ]);
 

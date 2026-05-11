@@ -78,7 +78,30 @@ const envSchema = z.object({
   MONITORING_ENABLED: boolFromEnv(true),
   MONITORING_INTERVAL_SECONDS: z.coerce.number().int().positive().default(300),
   MONITORING_EXECUTION_LIMIT: z.coerce.number().int().positive().default(20),
-  MONITORING_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().positive().default(14)
+  MONITORING_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().positive().default(14),
+
+  // Auth: required so we never silently accept tokens signed by an empty/default secret.
+  // SECRETS_ENCRYPTION_KEY hashes to a 32-byte AES-256 key, but we still demand ≥32 chars
+  // of entropy so a weak input doesn't survive the SHA-256 derivation.
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+  JWT_EXPIRES_IN_SECONDS: z.coerce.number().int().positive().default(86400),
+  SECRETS_ENCRYPTION_KEY: z
+    .string()
+    .min(32, "SECRETS_ENCRYPTION_KEY must be at least 32 characters"),
+
+  // Platform-level RAG agent (DigitalOcean Gen AI agent or any OpenAI-compatible
+  // /chat/completions endpoint). Single shared resource — only users with
+  // users.can_use_rag_agent = 1 are routed to it. Both vars optional so the
+  // feature can be turned off cluster-wide by leaving them empty.
+  RAG_AGENT_URL: z.string().url().optional(),
+  RAG_AGENT_API_KEY: z.string().optional(),
+
+  // Bootstrap admin account. On server start we ensure a user with this email
+  // exists and has is_admin=1. Password is set on first creation only — later
+  // password changes through the UI are not reset by env on every reboot.
+  // Required so a fresh deployment never boots without an admin account.
+  ADMIN_EMAIL: z.string().email("ADMIN_EMAIL must be a valid email"),
+  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters")
 });
 
 const parsed = envSchema.safeParse(process.env);

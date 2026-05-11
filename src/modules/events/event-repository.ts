@@ -311,6 +311,100 @@ export async function getGlobalRunStats(): Promise<{
   };
 }
 
+/**
+ * Per-user run stats. Same shape as getGlobalRunStats but joined on workflows
+ * → projects so we only count events on workflows owned by `userId`.
+ */
+export async function getUserRunStats(userId: string): Promise<{
+  totalRuns: number;
+  failedRuns: number;
+  successRuns: number;
+  successRate: number;
+  averageDurationMs: number;
+}> {
+  const db = getDb();
+  const [rows] = await dbQuery<
+    Array<
+      RowDataPacket & {
+        total_runs: number;
+        failed_runs: number;
+        success_runs: number;
+        avg_duration: number | null;
+      }
+    >
+  >(
+    db,
+    `SELECT
+      COUNT(*) AS total_runs,
+      SUM(CASE WHEN we.event_type IN (${TERMINAL_RUN_FAILURE_TYPES_SQL}) THEN 1 ELSE 0 END) AS failed_runs,
+      SUM(CASE WHEN we.event_type IN (${TERMINAL_RUN_SUCCESS_TYPES_SQL}) THEN 1 ELSE 0 END) AS success_runs,
+      AVG(we.duration_ms) AS avg_duration
+    FROM workflow_events we
+    INNER JOIN workflows w ON w.id = we.workflow_id
+    INNER JOIN projects p ON p.id = w.project_id
+    WHERE p.user_id = ?
+      AND we.event_type IN (${TERMINAL_RUN_TYPES_SQL})`,
+    [userId]
+  );
+
+  const row = rows[0];
+  const totalRuns = Number(row?.total_runs ?? 0);
+  const failedRuns = Number(row?.failed_runs ?? 0);
+  const successRuns = Number(row?.success_runs ?? 0);
+  const averageDurationMs = Number(row?.avg_duration ?? 0);
+  const successRate = totalRuns > 0 ? (successRuns / totalRuns) * 100 : 0;
+
+  return { totalRuns, failedRuns, successRuns, successRate, averageDurationMs };
+}
+
+/** Per-user health breakdown — same logic as getGlobalHealthBreakdown but
+ *  scoped to workflows whose project is owned by `userId`. */
+export async function getUserHealthBreakdown(userId: string): Promise<{
+  healthyWorkflows: number;
+  unhealthyWorkflows: number;
+}> {
+  const db = getDb();
+  const [rows] = await dbQuery<
+    Array<
+      RowDataPacket & {
+        healthy_workflows: number;
+        unhealthy_workflows: number;
+      }
+    >
+  >(
+    db,
+    `SELECT
+      SUM(
+        CASE
+          WHEN w.status IN ('validated', 'deployed_inactive', 'deployed_active')
+            AND COALESCE(open_alerts.cnt, 0) = 0
+          THEN 1 ELSE 0
+        END
+      ) AS healthy_workflows,
+      SUM(
+        CASE
+          WHEN w.status IN ('failed', 'rejected') OR COALESCE(open_alerts.cnt, 0) > 0
+          THEN 1 ELSE 0
+        END
+      ) AS unhealthy_workflows
+    FROM workflows w
+    INNER JOIN projects p ON p.id = w.project_id
+    LEFT JOIN (
+      SELECT workflow_id, COUNT(*) AS cnt
+      FROM workflow_alerts
+      WHERE status = 'open'
+      GROUP BY workflow_id
+    ) open_alerts ON open_alerts.workflow_id = w.id
+    WHERE p.user_id = ?`,
+    [userId]
+  );
+
+  return {
+    healthyWorkflows: Number(rows[0]?.healthy_workflows ?? 0),
+    unhealthyWorkflows: Number(rows[0]?.unhealthy_workflows ?? 0)
+  };
+}
+
 export async function getGlobalHealthBreakdown(): Promise<{
   healthyWorkflows: number;
   unhealthyWorkflows: number;

@@ -6,7 +6,9 @@ import { env } from "./config/env";
 import { AppError, toAppError } from "./lib/errors";
 import { logWarn } from "./lib/logger";
 import { redactSecrets } from "./lib/redact";
+import adminRoutes from "./modules/admin/admin-routes";
 import analyticsRoutes from "./modules/analytics/analytics-routes";
+import authRoutes from "./modules/auth/auth-routes";
 import chatRoutes from "./modules/chat/chat-routes";
 import eventRoutes from "./modules/events/event-routes";
 import n8nRoutes from "./modules/n8n/n8n-routes";
@@ -186,6 +188,8 @@ app.get("/debug/workflow/:projectId/node-versions", async (c) => {
   );
 });
 
+app.route("/auth", authRoutes);
+app.route("/admin", adminRoutes);
 app.route("/chat", chatRoutes);
 app.route("/projects", projectRoutes);
 app.route("/workflows", workflowRoutes);

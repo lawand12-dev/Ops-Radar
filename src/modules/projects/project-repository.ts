@@ -4,15 +4,20 @@ import { dbQuery, getDb } from "../../lib/db";
 import { AppError } from "../../lib/errors";
 import type { ProjectRecord, ProjectStatus } from "../../types/workflow";
 
-type ProjectRow = RowDataPacket &
-  ProjectRecord & {
-    created_at: string | Date;
-    updated_at: string | Date;
-  };
+type ProjectRow = RowDataPacket & {
+  id: string;
+  user_id: string | null;
+  name: string;
+  description: string;
+  status: ProjectStatus;
+  created_at: string | Date;
+  updated_at: string | Date;
+};
 
 function mapProjectRow(row: ProjectRow): ProjectRecord {
   return {
     id: row.id,
+    user_id: row.user_id ?? null,
     name: row.name,
     description: row.description,
     status: row.status,
@@ -21,23 +26,28 @@ function mapProjectRow(row: ProjectRow): ProjectRecord {
   };
 }
 
+const PROJECT_COLUMNS =
+  "id, user_id, name, description, status, created_at, updated_at";
+
 export async function createProject(
   input: {
     name: string;
     description: string;
     status?: ProjectStatus;
+    userId?: string | null;
   },
   connection?: PoolConnection
 ): Promise<ProjectRecord> {
   const id = randomUUID();
   const status = input.status ?? "draft";
   const runner = connection ?? getDb();
+  const userId = input.userId ?? null;
 
   await dbQuery(
     runner,
-    `INSERT INTO projects (id, name, description, status)
-     VALUES (?, ?, ?, ?)`,
-    [id, input.name, input.description, status]
+    `INSERT INTO projects (id, user_id, name, description, status)
+     VALUES (?, ?, ?, ?, ?)`,
+    [id, userId, input.name, input.description, status]
   );
 
   const project = await getProjectById(id, connection);
@@ -48,6 +58,11 @@ export async function createProject(
   return project;
 }
 
+/**
+ * Fetches a project by id with NO ownership check. Used by background tasks
+ * (monitoring scheduler, event ingest) that don't run inside an auth context.
+ * Authenticated read paths must use `getProjectByIdForUser` instead.
+ */
 export async function getProjectById(
   id: string,
   connection?: PoolConnection
@@ -55,22 +70,31 @@ export async function getProjectById(
   const runner = connection ?? getDb();
   const [rows] = await dbQuery<ProjectRow[]>(
     runner,
-    `SELECT id, name, description, status, created_at, updated_at
-     FROM projects
-     WHERE id = ?`,
+    `SELECT ${PROJECT_COLUMNS} FROM projects WHERE id = ?`,
     [id]
   );
-
-  if (rows.length === 0) {
-    return null;
-  }
-
   const row = rows[0];
-  if (!row) {
-    return null;
-  }
+  return row ? mapProjectRow(row) : null;
+}
 
-  return mapProjectRow(row);
+/**
+ * Fetches a project only if it belongs to the given user. Returns null when
+ * the project doesn't exist OR exists but is owned by someone else — the
+ * caller cannot distinguish the two, which prevents id-enumeration leaks.
+ */
+export async function getProjectByIdForUser(
+  id: string,
+  userId: string,
+  connection?: PoolConnection
+): Promise<ProjectRecord | null> {
+  const runner = connection ?? getDb();
+  const [rows] = await dbQuery<ProjectRow[]>(
+    runner,
+    `SELECT ${PROJECT_COLUMNS} FROM projects WHERE id = ? AND user_id = ?`,
+    [id, userId]
+  );
+  const row = rows[0];
+  return row ? mapProjectRow(row) : null;
 }
 
 export async function updateProjectStatus(
@@ -82,6 +106,10 @@ export async function updateProjectStatus(
   await dbQuery(runner, `UPDATE projects SET status = ? WHERE id = ?`, [status, id]);
 }
 
+/**
+ * Lists projects without ownership filter. Reserved for admin / background use.
+ * Tenant-scoped reads should call `listProjectsForUser`.
+ */
 export async function listProjects(
   input: {
     limit?: number;
@@ -94,11 +122,32 @@ export async function listProjects(
 
   const [rows] = await dbQuery<ProjectRow[]>(
     db,
-    `SELECT id, name, description, status, created_at, updated_at
+    `SELECT ${PROJECT_COLUMNS}
      FROM projects
      ORDER BY created_at DESC
      LIMIT ? OFFSET ?`,
     [limit, offset]
+  );
+
+  return rows.map((row) => mapProjectRow(row));
+}
+
+export async function listProjectsForUser(
+  userId: string,
+  input: { limit?: number; offset?: number } = {}
+): Promise<ProjectRecord[]> {
+  const db = getDb();
+  const limit = Math.min(Math.max(input.limit ?? 20, 1), 100);
+  const offset = Math.max(input.offset ?? 0, 0);
+
+  const [rows] = await dbQuery<ProjectRow[]>(
+    db,
+    `SELECT ${PROJECT_COLUMNS}
+     FROM projects
+     WHERE user_id = ?
+     ORDER BY created_at DESC
+     LIMIT ? OFFSET ?`,
+    [userId, limit, offset]
   );
 
   return rows.map((row) => mapProjectRow(row));

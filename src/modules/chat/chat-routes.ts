@@ -4,6 +4,7 @@ import { z } from "zod";
 import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
+import { requireAuth } from "../auth/auth-middleware";
 import { handleChatMessage } from "./chat-service";
 
 const chatBodySchema = z.object({
@@ -11,6 +12,9 @@ const chatBodySchema = z.object({
 });
 
 const chatRoutes = new Hono();
+
+// Auth gate: every chat call creates a project owned by the authenticated user.
+chatRoutes.use("*", requireAuth);
 
 chatRoutes.post("/", async (c) => {
   const traceId = c.req.header("x-trace-id")?.trim() || randomUUID();

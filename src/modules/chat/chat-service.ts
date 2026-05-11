@@ -3,6 +3,7 @@ import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
+import { getRequestContext } from "../../lib/request-context";
 import { generateWorkflowFromMessage } from "../ai/ai-service";
 import { createProject } from "../projects/project-repository";
 import { createWorkflow } from "../workflows/workflow-repository";
@@ -37,7 +38,14 @@ export async function handleChatMessage(
     throw new AppError(400, "INVALID_MESSAGE", "Message must not be empty.");
   }
 
-  const aiOutput = await generateWorkflowFromMessage(message, { traceId });
+  // Forward the requester's userId so ai_interactions rows are attributable
+  // to a specific user in the admin console (it's nullable, so unauthenticated
+  // background callers still work — they just record as anonymous).
+  const ctx = getRequestContext();
+  const aiOutput = await generateWorkflowFromMessage(message, {
+    traceId,
+    userId: ctx?.userId
+  });
   if (logProgress) {
     logInfo(
       "chat",
@@ -65,11 +73,20 @@ export async function handleChatMessage(
     if (logProgress) {
       logInfo("chat", "DB transaction started", undefined, traceId);
     }
+    // Owner is the authenticated user. requireAuth has already validated the
+    // bearer token before reaching here, so getRequestContext() is non-null.
+    // We still defensively read+throw to avoid silently creating unowned rows
+    // if /chat is ever wired without the auth middleware.
+    const requestCtx = getRequestContext();
+    if (!requestCtx?.userId) {
+      throw new AppError(401, "UNAUTHENTICATED", "Authentication required.");
+    }
     const project = await createProject(
       {
         name: aiOutput.project_name,
         description: aiOutput.description,
-        status: "draft"
+        status: "draft",
+        userId: requestCtx.userId
       },
       connection
     );

@@ -1,6 +1,7 @@
 import app from "./server";
 import { env } from "./config/env";
 import { serve as serveNode } from "@hono/node-server";
+import { bootstrapAdmin } from "./modules/auth/admin-bootstrap";
 import { startMonitoringScheduler } from "./modules/monitoring/workflow-health-service";
 
 function startServer() {
@@ -28,4 +29,7 @@ function startServer() {
 
 startServer();
 startMonitoringScheduler();
+// Fire-and-forget: any failure is logged inside bootstrapAdmin and must not
+// block the HTTP listener (which is already accepting traffic by this point).
+void bootstrapAdmin();
 

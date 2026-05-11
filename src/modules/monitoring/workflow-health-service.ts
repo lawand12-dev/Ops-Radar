@@ -12,7 +12,27 @@ import {
   type N8nExecutionDetails,
   type N8nExecutionSummary
 } from "../n8n/n8n-client";
-import { getProjectById } from "../projects/project-repository";
+import { getProjectById, getProjectByIdForUser } from "../projects/project-repository";
+import { getRequestContext } from "../../lib/request-context";
+
+/**
+ * Tenant-aware project loader for monitoring helpers.
+ *
+ *  - In an auth context (user-facing route): require ownership; return 404 on
+ *    miss so a cross-tenant id doesn't leak as 403.
+ *  - With no context (background scheduler): allow any project — the scheduler
+ *    iterates every workflow regardless of owner.
+ */
+async function loadProjectForCallSite(projectId: string) {
+  const ctx = getRequestContext();
+  const project = ctx
+    ? await getProjectByIdForUser(projectId, ctx.userId)
+    : await getProjectById(projectId);
+  if (!project) {
+    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
+  }
+  return project;
+}
 import {
   getLatestWorkflowByProjectId,
   listWorkflowsWithN8nWorkflowId
@@ -472,10 +492,7 @@ export async function getWorkflowHealth(
   projectId: string,
   options?: { forceRefresh?: boolean; executionLimit?: number; status?: string }
 ): Promise<ProjectWorkflowHealthResponse> {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  await loadProjectForCallSite(projectId);
 
   const workflow = await getLatestWorkflowByProjectId(projectId);
   if (!workflow) {
@@ -742,10 +759,7 @@ export async function getProjectExecutions(
   n8n_workflow_id: string;
   executions: ExecutionView[];
 }> {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  await loadProjectForCallSite(projectId);
 
   const workflow = await getLatestWorkflowByProjectId(projectId);
   if (!workflow || !workflow.n8n_workflow_id) {
@@ -817,10 +831,7 @@ export async function getProjectExecutionDetails(
   classified_error: MonitoringErrorClassification | null;
   safe_detail: Record<string, unknown> | null;
 }> {
-  const project = await getProjectById(projectId);
-  if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found.");
-  }
+  await loadProjectForCallSite(projectId);
 
   const workflow = await getLatestWorkflowByProjectId(projectId);
   if (!workflow || !workflow.n8n_workflow_id) {

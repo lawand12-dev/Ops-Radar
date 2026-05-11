@@ -79,6 +79,12 @@ export interface AiWorkflowOutput {
 
 export interface ProjectRecord {
   id: string;
+  /**
+   * Owner of this project. Nullable because rows that pre-date migration 012
+   * have no owner ("legacy unowned") and must remain visible to admin tooling.
+   * All new projects MUST have a user_id set at creation time.
+   */
+  user_id: string | null;
   name: string;
   description: string;
   status: ProjectStatus;

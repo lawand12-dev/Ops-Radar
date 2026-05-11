@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { AppError } from "../../lib/errors";
+import { requireAuth } from "../auth/auth-middleware";
 import {
   getProjectExecutionDetails,
   getProjectExecutions,
@@ -73,6 +74,10 @@ const executionQuerySchema = z.object({
 });
 
 const projectRoutes = new Hono();
+
+// Every /projects/* endpoint is tenant-scoped — gate with requireAuth so the
+// service layer can rely on getRequestContext() returning a valid user.
+projectRoutes.use("*", requireAuth);
 
 projectRoutes.get("/", async (c) => {
   const limitRaw = c.req.query("limit");

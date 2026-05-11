@@ -209,12 +209,60 @@ class ApiError extends Error {
   }
 }
 
-async function request(path, { method = "GET", body, signal, headers } = {}) {
+/* Auth token lifecycle (browser side):
+ *  - stored in localStorage under "opsradar.token" so a hard reload keeps the
+ *    user signed in but a private-window/different-browser starts fresh
+ *  - attached as "Authorization: Bearer <token>" on every request
+ *  - cleared on any 401 response so the UI bounces back to the login screen
+ *    without us having to teach every page to reason about expired tokens
+ */
+const AUTH_TOKEN_KEY = "opsradar.token";
+const AUTH_USER_KEY = "opsradar.user";
+
+function getAuthToken() {
+  try { return localStorage.getItem(AUTH_TOKEN_KEY); } catch { return null; }
+}
+function setAuthToken(token) {
+  try {
+    if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+    else localStorage.removeItem(AUTH_TOKEN_KEY);
+  } catch { /* ignore quota / disabled storage */ }
+}
+function getCachedAuthUser() {
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function setCachedAuthUser(user) {
+  try {
+    if (user) localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    else localStorage.removeItem(AUTH_USER_KEY);
+  } catch { /* ignore */ }
+}
+function clearAuth() {
+  setAuthToken(null);
+  setCachedAuthUser(null);
+}
+
+// Routes that should NOT auto-bounce to login on 401 — namely the auth
+// endpoints themselves, where 401 is the expected outcome of a bad credential.
+const PUBLIC_PATHS = new Set(["/auth/register", "/auth/login", "/health"]);
+
+async function request(path, { method = "GET", body, signal, headers, skipAuthRedirect } = {}) {
   const init = { method, signal, headers: { ...(headers || {}) } };
   if (body !== undefined) {
     init.headers["Content-Type"] = "application/json";
     init.body = JSON.stringify(body);
   }
+
+  // Attach bearer token unless the caller explicitly opted out
+  // (e.g. the login form, which sends an empty Authorization).
+  const token = getAuthToken();
+  if (token && !init.headers["Authorization"] && !init.headers["authorization"]) {
+    init.headers["Authorization"] = `Bearer ${token}`;
+  }
+
   let res;
   try {
     res = await fetch(path, init);
@@ -229,6 +277,14 @@ async function request(path, { method = "GET", body, signal, headers } = {}) {
   }
   if (!res.ok) {
     const errBody = payload?.error || {};
+    // Token expired / revoked / wrong account: drop local auth state and force
+    // a re-login. We skip this for paths that legitimately surface 401 to the
+    // caller (the login form needs the 401 to render its error message).
+    if (res.status === 401 && !skipAuthRedirect && !PUBLIC_PATHS.has(path)) {
+      clearAuth();
+      // Defer so the caller's await chain unwinds before we re-render.
+      queueMicrotask(() => router?.());
+    }
     throw new ApiError(
       errBody.message || `Request failed (${res.status})`,
       errBody.code || `HTTP_${res.status}`,
@@ -312,6 +368,51 @@ const api = {
       request(`/debug/workflow/${encodeURIComponent(projectId)}?verify_n8n=${verifyN8n ? 1 : 0}`),
     nodeVersions: (projectId, { verifyN8n = true } = {}) =>
       request(`/debug/workflow/${encodeURIComponent(projectId)}/node-versions?verify_n8n=${verifyN8n ? 1 : 0}`)
+  },
+
+  auth: {
+    register: (body) =>
+      request("/auth/register", { method: "POST", body, skipAuthRedirect: true }),
+    login: (body) =>
+      request("/auth/login", { method: "POST", body, skipAuthRedirect: true }),
+    me: () => request("/auth/me"),
+    updateCredentials: (body) =>
+      request("/auth/credentials", { method: "PUT", body })
+  },
+
+  admin: {
+    me: () => request("/admin/me"),
+    analytics: () => request("/admin/analytics"),
+    users: {
+      list: ({ limit = 100, offset = 0, q = "" } = {}) => {
+        const sp = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+        if (q) sp.set("q", q);
+        return request(`/admin/users?${sp.toString()}`);
+      },
+      get: (id) => request(`/admin/users/${encodeURIComponent(id)}`),
+      create: (body) => request("/admin/users", { method: "POST", body }),
+      patch: (id, body) => request(`/admin/users/${encodeURIComponent(id)}`, { method: "PATCH", body }),
+      resetPassword: (id, password) =>
+        request(`/admin/users/${encodeURIComponent(id)}/reset-password`, {
+          method: "POST",
+          body: { password }
+        }),
+      delete: (id) => request(`/admin/users/${encodeURIComponent(id)}`, { method: "DELETE" })
+    },
+    interactions: {
+      list: ({ limit = 100, offset = 0, user_id, status, provider } = {}) => {
+        const sp = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+        if (user_id) sp.set("user_id", user_id);
+        if (status) sp.set("status", status);
+        if (provider) sp.set("provider", provider);
+        return request(`/admin/ai-interactions?${sp.toString()}`);
+      },
+      get: (id) => request(`/admin/ai-interactions/${encodeURIComponent(id)}`)
+    },
+    projects: {
+      list: ({ limit = 200, offset = 0 } = {}) =>
+        request(`/admin/projects?limit=${limit}&offset=${offset}`)
+    }
   }
 };
 
@@ -766,6 +867,16 @@ const NAV_ITEMS = [
   { path: "#/diagnostics", label: "Diagnostics", icon: "info" }
 ];
 
+/** Sidebar items rendered ONLY when the cached user has is_admin === true.
+ *  We rebuild the sidebar on every auth state change so demotion/promotion
+ *  hides/shows this section without requiring a full page reload. */
+const ADMIN_NAV_ITEMS = [
+  { path: "#/admin", label: "Admin · Dashboard", icon: "home" },
+  { path: "#/admin/users", label: "Admin · Users", icon: "projects" },
+  { path: "#/admin/interactions", label: "Admin · Prompts log", icon: "builder" },
+  { path: "#/admin/projects", label: "Admin · All projects", icon: "workflows" }
+];
+
 function renderSidebar() {
   const s = getState();
   const root = $("#sidebar");
@@ -801,7 +912,30 @@ function renderSidebar() {
           h("span", { class: "nav-link__icon" }, icon(it.icon, 16)),
           h("span", { class: "nav-link__label" }, it.label)
         )
-      )
+      ),
+      // Admin section — only rendered for users with is_admin=true on the
+      // cached profile. Backend still enforces requireAdmin on every /admin/*
+      // call so this is purely a UX gate, not a security check.
+      getCachedAuthUser()?.is_admin
+        ? h(
+            "div",
+            { class: "col col--gap-1", style: { marginTop: "var(--sp-3)" } },
+            h("div", { class: "sidebar__section-label" }, "Admin"),
+            ...ADMIN_NAV_ITEMS.map((it) =>
+              h(
+                "a",
+                {
+                  class: "nav-link",
+                  href: it.path,
+                  "aria-current": isActiveRoute(currentPath, it.path) ? "page" : null,
+                  onclick: () => closeMobileSidebar()
+                },
+                h("span", { class: "nav-link__icon" }, icon(it.icon, 16)),
+                h("span", { class: "nav-link__label" }, it.label)
+              )
+            )
+          )
+        : null
     ),
     h(
       "div",
@@ -883,7 +1017,25 @@ function renderTopbar(title, sub) {
         },
         icon("refresh", 14),
         "Refresh"
-      )
+      ),
+      // User pill — opens the Account page where the user manages their
+      // per-account API credentials and signs out.
+      (() => {
+        const u = getCachedAuthUser();
+        if (!u) return null;
+        const initials = (u.name || u.email || "?")
+          .split(/\s+|@/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((s) => s[0].toUpperCase())
+          .join("");
+        return h(
+          "a",
+          { class: "user-pill", href: "#/account", title: u.email },
+          h("span", { class: "user-pill__avatar" }, initials || "U"),
+          h("span", { class: "truncate", style: { maxWidth: 140 } }, u.email)
+        );
+      })()
     )
   );
 }
@@ -939,6 +1091,11 @@ function normalizePath(hash) {
 function isActiveRoute(current, target) {
   if (target === "#/") return current === "#/" || current === "" || current === "#";
   if (target === "#/projects") return current === "#/projects" || current.startsWith("#/projects/");
+  // Admin sub-routes (e.g. #/admin/users/:id) should keep the "Admin · Users"
+  // tab highlighted; treat any `target` as a prefix match for nested paths.
+  if (target.startsWith("#/admin")) {
+    return current === target || current.startsWith(target + "/");
+  }
   return current === target;
 }
 
@@ -951,13 +1108,27 @@ const ROUTE_TABLE = [
   { path: /^#\/events\/?$/, render: pageEvents, title: "Events", sub: "Live activity feed" },
   { path: /^#\/analytics\/?$/, render: pageAnalytics, title: "Analytics", sub: "Metrics and trends" },
   { path: /^#\/credentials\/?$/, render: pageCredentials, title: "Credentials", sub: "n8n credential inventory and provisioning" },
-  { path: /^#\/diagnostics\/?$/, render: pageDiagnostics, title: "Diagnostics", sub: "Developer-facing introspection tools" }
+  { path: /^#\/diagnostics\/?$/, render: pageDiagnostics, title: "Diagnostics", sub: "Developer-facing introspection tools" },
+  { path: /^#\/account\/?$/, render: pageAccount, title: "Account", sub: "Your profile and per-account API keys" },
+  { path: /^#\/admin\/?$/, render: pageAdminDashboard, title: "Admin · Dashboard", sub: "Platform-wide overview" },
+  { path: /^#\/admin\/users\/?$/, render: pageAdminUsers, title: "Admin · Users", sub: "Create, edit, promote, delete" },
+  { path: /^#\/admin\/users\/([^/]+)\/?$/, render: pageAdminUserDetail, title: "Admin · User detail" },
+  { path: /^#\/admin\/interactions\/?$/, render: pageAdminInteractions, title: "Admin · Prompts log", sub: "Every AI call across all users" },
+  { path: /^#\/admin\/interactions\/(\d+)\/?$/, render: pageAdminInteractionDetail, title: "Admin · Prompt detail" },
+  { path: /^#\/admin\/projects\/?$/, render: pageAdminProjects, title: "Admin · All projects", sub: "Cross-tenant view" }
 ];
 
 async function router() {
   const hash = normalizePath(location.hash);
   setState((s) => ({ ...s, ui: { ...s.ui, page: hash } }));
   stopAllPollers(); // every page is responsible for restarting its own pollers
+
+  // Hard auth gate — without a token, render only the auth screen and don't
+  // even try to fetch /health or the page data (every protected route will 401).
+  if (!getAuthToken()) {
+    renderAuthScreen();
+    return;
+  }
 
   for (const route of ROUTE_TABLE) {
     const match = hash.match(route.path);
@@ -988,39 +1159,48 @@ async function router() {
    ============================================================ */
 
 async function pageDashboard(root) {
-  // skeleton
-  mount(
-    root,
-    h(
-      "div",
-      { class: "page" },
+  // Skip the skeleton flash on revisits — if state already holds analytics +
+  // report data from a previous load, render that immediately so the user
+  // doesn't see the page collapse to skeleton/refill on every navigation back.
+  const cachedState = getState();
+  const cachedAnalytics = cachedState.analytics?.data || null;
+  const cachedReport = cachedState.report?.data || null;
+  if (cachedAnalytics && cachedReport) {
+    mount(root, renderDashboardBody(cachedAnalytics, cachedReport));
+  } else {
+    mount(
+      root,
       h(
         "div",
-        { class: "page-header" },
+        { class: "page" },
         h(
           "div",
-          null,
-          h("h1", { class: "page-header__title" }, "Dashboard"),
-          h("p", { class: "page-header__sub" }, "System overview · live operational metrics")
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Dashboard"),
+            h("p", { class: "page-header__sub" }, "System overview · live operational metrics")
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h(
+              "a",
+              { class: "btn btn--primary", href: "#/builder" },
+              icon("plus", 14),
+              "Generate workflow"
+            )
+          )
         ),
         h(
           "div",
-          { class: "page-header__actions" },
-          h(
-            "a",
-            { class: "btn btn--primary", href: "#/builder" },
-            icon("plus", 14),
-            "Generate workflow"
-          )
+          { class: "kpi-grid" },
+          Array.from({ length: 4 }).map(() => h("div", { class: "kpi" }, Skeleton({ variant: "title" }), Skeleton({ variant: "block" })))
         )
-      ),
-      h(
-        "div",
-        { class: "kpi-grid" },
-        Array.from({ length: 4 }).map(() => h("div", { class: "kpi" }, h(Skeleton, { variant: "title" }), h(Skeleton, { variant: "block" })))
       )
-    )
-  );
+    );
+  }
 
   let analytics = null, report = null, projectError = null;
   try {
@@ -1039,13 +1219,83 @@ async function pageDashboard(root) {
     return;
   }
 
+  mount(root, renderDashboardBody(analytics, report));
+
+  // periodic refresh — keep this above the unreachable code below
+  startPoller("dashboard", {
+    intervalMs: 30000,
+    fn: () => Promise.all([api.analytics(), api.projects.report({ limit: 200 })]),
+    onResult: ([a, r]) => {
+      setState((s) => ({
+        ...s,
+        analytics: { ...s.analytics, data: a, lastFetched: Date.now() },
+        report: { ...s.report, data: r, lastFetched: Date.now() }
+      }));
+      // Skip the re-render entirely if the user has navigated away or if the
+      // payload is unchanged. The latter is the most common case (analytics
+      // changes only when a workflow runs), so this prevents the visible
+      // flash the user complained about.
+      if (normalizePath(location.hash) !== "#/") return;
+      const lastSig = root.dataset.dashSig || "";
+      const nextSig = dashboardSignature(a, r);
+      if (lastSig === nextSig) return;
+      root.dataset.dashSig = nextSig;
+      mount(root, renderDashboardBody(a, r));
+    },
+    onError: () => {}
+  });
+  // Stamp the initial render's signature so the first poll tick can compare.
+  root.dataset.dashSig = dashboardSignature(analytics, report);
+}
+
+/**
+ * Stable signature of the dashboard payload. We compare this between polls so
+ * we only re-mount the DOM when something actually changed — without it the
+ * 15s tick caused a visible refresh on every interval even when totals,
+ * workflow health, and recommended actions were identical.
+ */
+function dashboardSignature(analytics, report) {
+  const overview = analytics?.overview || {};
+  const items = report?.items || [];
+  const itemsKey = items
+    .map((it) =>
+      [
+        it.project_id,
+        it.lifecycle_state,
+        it.health_status,
+        it.missing_credentials_count || 0,
+        it.recommended_action || ""
+      ].join("|")
+    )
+    .join(";");
+  const wh = Array.isArray(analytics?.workflows_health) ? analytics.workflows_health : [];
+  const whKey = wh
+    .map((w) => [w.project_id, w.is_working ? 1 : 0, w.failed_runs, w.unresolved_alerts].join("|"))
+    .join(";");
+  return [
+    overview.total_projects,
+    overview.total_workflows,
+    overview.total_runs,
+    overview.failed_runs,
+    overview.success_rate,
+    overview.healthy_workflows,
+    overview.unhealthy_workflows,
+    overview.unresolved_alerts,
+    itemsKey,
+    whKey
+  ].join("::");
+}
+
+/**
+ * Pure body renderer for the dashboard. Returns the page element so callers
+ * can mount it without going through pageDashboard's skeleton + fetch flow.
+ * Used by both the initial render (after fetch) and the poller (on data change).
+ */
+function renderDashboardBody(analytics, report) {
   const overview = analytics?.overview || {};
   const items = report?.items || [];
   const workflowsHealth = Array.isArray(analytics?.workflows_health) ? analytics.workflows_health : [];
 
-  // Merge per-project lifecycle data (from /projects/report) with the per-workflow run
-  // health data (from /analytics.workflows_health) so we can render one unified row
-  // per project that answers the question "is this project actually working right now?".
   const projectsHealth = items.map((it) => {
     const wh = workflowsHealth.find((w) => w.project_id === it.project_id) || null;
     const isWorking =
@@ -1068,7 +1318,6 @@ async function pageDashboard(root) {
     };
   });
 
-  // Sort: failing first, then warnings, then healthy.
   projectsHealth.sort((a, b) => {
     const score = (p) => (p.is_working ? 0 : (p.unresolved_alerts > 0 || p.failed_runs > 0 ? 2 : 1));
     return score(b) - score(a);
@@ -1079,16 +1328,13 @@ async function pageDashboard(root) {
     health: it.health_status, lifecycle: it.lifecycle_state
   }] : [])).slice(0, 8);
 
-  // sparkline data: synthesize a stable trend from totals (no time-series endpoint exists)
   const successSeries = items
     .slice(0, 12)
     .map((it) => Math.max(0, Math.round((it.required_credentials_count - it.missing_credentials_count) * 10)));
 
-  mount(
-    root,
-    h(
-      "div",
-      { class: "page" },
+  return h(
+    "div",
+    { class: "page" },
       h(
         "div",
         { class: "page-header" },
@@ -1235,23 +1481,7 @@ async function pageDashboard(root) {
         )
       )
     )
-  );
-
-  // periodic refresh
-  startPoller("dashboard", {
-    intervalMs: 15000,
-    fn: () => Promise.all([api.analytics(), api.projects.report({ limit: 200 })]),
-    onResult: ([a, r]) => {
-      setState((s) => ({
-        ...s,
-        analytics: { ...s.analytics, data: a, lastFetched: Date.now() },
-        report: { ...s.report, data: r, lastFetched: Date.now() }
-      }));
-      // re-render only if still on dashboard
-      if (normalizePath(location.hash) === "#/") pageDashboard(root);
-    },
-    onError: () => {}
-  });
+  ;
 }
 
 /* ============================================================
@@ -1331,7 +1561,18 @@ async function pageBuilder(root) {
         h(
           "div",
           { class: "chat-composer__hint" },
-          "Tip: include the trigger, the actions, and the destination. Avoid pasting credentials."
+          // For RAG-enabled users the agent has its own server-side prompt +
+          // KB, so detailed user-prompt structure matters less. Keep the
+          // credential warning regardless — that's a security rule, not a
+          // prompt-engineering tip.
+          getCachedAuthUser()?.can_use_rag_agent
+            ? h(
+                "span",
+                { class: "row row--gap-3" },
+                Badge({ tone: "accent", text: "RAG agent", dot: true }),
+                h("span", null, "The platform agent handles intent + node selection — describe the goal in plain language. Avoid pasting credentials.")
+              )
+            : "Tip: include the trigger, the actions, and the destination. Avoid pasting credentials."
         ),
         h(
           "div",
@@ -3853,6 +4094,1168 @@ async function pageDiagnostics(root) {
   render();
   await bootstrapProjects();
   render();
+}
+
+/* ============================================================
+   20c) AUTH SCREEN (login + register, full-viewport)
+   ============================================================
+   Renders a centered card over the entire app shell (we hide the sidebar +
+   topbar via CSS while #app[data-auth="locked"] is present). On success the
+   auth token + cached user are persisted to localStorage and we hand off to
+   the normal router by reloading the current hash.
+   ============================================================ */
+
+let authMode = "login"; // "login" | "register"
+
+function renderAuthScreen() {
+  // Hide chrome and stop any pollers from a previous session.
+  document.getElementById("app").dataset.auth = "locked";
+  stopAllPollers();
+  const root = $("#page-root");
+  let busy = false;
+  let errorMsg = null;
+  // Pre-fill email from previous successful login if cached.
+  let formEmail = getCachedAuthUser()?.email || "";
+  let formName = "";
+  let formPassword = "";
+
+  async function submit() {
+    if (busy) return;
+    errorMsg = null;
+    busy = true;
+    render();
+    try {
+      const result =
+        authMode === "register"
+          ? await api.auth.register({
+              email: formEmail.trim(),
+              name: formName.trim(),
+              password: formPassword
+            })
+          : await api.auth.login({
+              email: formEmail.trim(),
+              password: formPassword
+            });
+      setAuthToken(result.token);
+      setCachedAuthUser(result.user);
+      toast(authMode === "register" ? "Account created" : "Welcome back", "success");
+      document.getElementById("app").dataset.auth = "open";
+      // Re-enter the router so the now-authenticated session loads the
+      // dashboard (or whatever hash the user landed on originally).
+      if (!location.hash || location.hash === "#") location.hash = "#/";
+      router();
+    } catch (err) {
+      errorMsg = err;
+      busy = false;
+      render();
+    }
+  }
+
+  function field(label, props) {
+    return h(
+      "div",
+      { class: "field" },
+      h("label", { class: "field__label" }, label),
+      h("input", { class: "input", ...props })
+    );
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        {
+          class: "auth-shell",
+          style: {
+            position: "fixed",
+            inset: 0,
+            display: "grid",
+            placeItems: "center",
+            background: "var(--bg)",
+            padding: "var(--sp-4)",
+            zIndex: 50
+          }
+        },
+        h(
+          "div",
+          { class: "card", style: { width: "100%", maxWidth: 420 } },
+          h(
+            "div",
+            { class: "row", style: { marginBottom: "var(--sp-4)" } },
+            h(
+              "div",
+              {
+                class: "sidebar__brand-mark",
+                style: { width: 36, height: 36, fontSize: 14 }
+              },
+              "OR"
+            ),
+            h(
+              "div",
+              null,
+              h("div", { class: "sidebar__brand-title" }, "OpsRadar"),
+              h("div", { class: "muted text-xs" }, "Sign in to your control panel")
+            )
+          ),
+          h(
+            "form",
+            {
+              onsubmit: (e) => {
+                e.preventDefault();
+                submit();
+              },
+              class: "col col--gap-3"
+            },
+            field("Email", {
+              type: "email",
+              required: true,
+              autocomplete: "email",
+              value: formEmail,
+              oninput: (e) => (formEmail = e.target.value)
+            }),
+            authMode === "register"
+              ? field("Name", {
+                  type: "text",
+                  required: true,
+                  autocomplete: "name",
+                  value: formName,
+                  oninput: (e) => (formName = e.target.value)
+                })
+              : null,
+            field("Password", {
+              type: "password",
+              required: true,
+              autocomplete:
+                authMode === "register" ? "new-password" : "current-password",
+              value: formPassword,
+              oninput: (e) => (formPassword = e.target.value),
+              minlength: 8
+            }),
+            errorMsg ? ErrorBanner({ error: errorMsg }) : null,
+            h(
+              "button",
+              {
+                type: "submit",
+                class: "btn btn--primary btn--block",
+                disabled: busy
+              },
+              busy ? h("span", { class: "spinner" }) : null,
+              authMode === "register" ? "Create account" : "Sign in"
+            ),
+            h(
+              "div",
+              {
+                class: "muted text-sm",
+                style: { textAlign: "center", marginTop: "var(--sp-2)" }
+              },
+              authMode === "register"
+                ? "Already have an account? "
+                : "New here? ",
+              h(
+                "a",
+                {
+                  href: "#",
+                  onclick: (e) => {
+                    e.preventDefault();
+                    authMode = authMode === "register" ? "login" : "register";
+                    errorMsg = null;
+                    render();
+                  }
+                },
+                authMode === "register" ? "Sign in" : "Create account"
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  render();
+}
+
+/* ============================================================
+   20d) PAGE: Account (profile + per-account API credentials)
+   ============================================================ */
+
+async function pageAccount(root) {
+  let user = getCachedAuthUser();
+  let saving = false;
+  let n8nBaseUrl = user?.n8n_base_url || "";
+  // We never reveal stored API keys back to the client — fields stay empty
+  // and an empty submission means "leave unchanged" (we omit the field), while
+  // a non-empty submission overwrites the stored value.
+  let n8nApiKey = "";
+  let anthropicApiKey = "";
+
+  // Always re-fetch /auth/me on entry: localStorage may be stale after a
+  // credential rotation in another tab.
+  try {
+    const fresh = await api.auth.me();
+    user = fresh.user;
+    setCachedAuthUser(user);
+    n8nBaseUrl = user.n8n_base_url || "";
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Account"),
+            h(
+              "p",
+              { class: "page-header__sub" },
+              `Signed in as ${user.email}`
+            )
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h(
+              "button",
+              {
+                class: "btn btn--ghost",
+                onclick: () => {
+                  clearAuth();
+                  location.hash = "#/";
+                  router();
+                  toast("Signed out", "info");
+                }
+              },
+              "Sign out"
+            )
+          )
+        ),
+        h(
+          "div",
+          { class: "card" },
+          h("h3", { style: { marginTop: 0 } }, "Profile"),
+          h(
+            "dl",
+            {
+              class: "col col--gap-2",
+              style: { margin: 0 }
+            },
+            h(
+              "div",
+              { class: "row" },
+              h("dt", { class: "muted text-sm", style: { width: 120 } }, "User ID"),
+              h("dd", { class: "mono text-sm", style: { margin: 0 } }, user.id)
+            ),
+            h(
+              "div",
+              { class: "row" },
+              h("dt", { class: "muted text-sm", style: { width: 120 } }, "Name"),
+              h("dd", { style: { margin: 0 } }, user.name)
+            ),
+            h(
+              "div",
+              { class: "row" },
+              h("dt", { class: "muted text-sm", style: { width: 120 } }, "Email"),
+              h("dd", { style: { margin: 0 } }, user.email)
+            ),
+            h(
+              "div",
+              { class: "row" },
+              h("dt", { class: "muted text-sm", style: { width: 120 } }, "Joined"),
+              h("dd", { style: { margin: 0 } }, fmtDate(user.created_at))
+            ),
+            // Read-only: RAG agent permission is granted by the operator, not
+            // self-served. We only render it when enabled to avoid drawing
+            // attention to a feature most users can't toggle anyway.
+            user.can_use_rag_agent
+              ? h(
+                  "div",
+                  { class: "row" },
+                  h("dt", { class: "muted text-sm", style: { width: 120 } }, "AI mode"),
+                  h(
+                    "dd",
+                    { style: { margin: 0 } },
+                    Badge({ tone: "accent", text: "RAG agent enabled", dot: true }),
+                    h(
+                      "span",
+                      { class: "muted text-xs", style: { marginLeft: 8 } },
+                      "Workflow generation routes through the platform agent — your Anthropic key is not used."
+                    )
+                  )
+                )
+              : null
+          )
+        ),
+        h(
+          "div",
+          { class: "card" },
+          h(
+            "div",
+            { class: "row", style: { marginBottom: "var(--sp-3)" } },
+            h("h3", { style: { margin: 0 } }, "API credentials"),
+            h("span", { class: "muted text-xs flex-1" }, "Encrypted at rest with AES-256-GCM")
+          ),
+          h(
+            "p",
+            { class: "muted text-sm" },
+            "These keys are used by every workflow you create or monitor. Leave a key field empty to keep the stored value unchanged. To clear a stored key, type ",
+            h("code", null, "DELETE"),
+            " into the field."
+          ),
+          h(
+            "form",
+            {
+              onsubmit: (e) => {
+                e.preventDefault();
+                save();
+              },
+              class: "col col--gap-3"
+            },
+            h(
+              "div",
+              { class: "field" },
+              h(
+                "label",
+                { class: "field__label" },
+                "n8n base URL ",
+                h(
+                  "span",
+                  { class: "muted text-xs" },
+                  "e.g. https://n8n.example.com/api/v1"
+                )
+              ),
+              h("input", {
+                class: "input",
+                type: "url",
+                value: n8nBaseUrl,
+                placeholder: "https://your-n8n/api/v1",
+                oninput: (e) => (n8nBaseUrl = e.target.value)
+              })
+            ),
+            h(
+              "div",
+              { class: "field" },
+              h(
+                "label",
+                { class: "field__label" },
+                "n8n API key ",
+                user.has_n8n_api_key
+                  ? Badge({ tone: "ok", text: "set", dot: true })
+                  : Badge({ tone: "warn", text: "not set" })
+              ),
+              h("input", {
+                class: "input",
+                type: "password",
+                placeholder: user.has_n8n_api_key ? "•••••••• (leave blank to keep)" : "Paste your n8n JWT",
+                oninput: (e) => (n8nApiKey = e.target.value)
+              })
+            ),
+            h(
+              "div",
+              { class: "field" },
+              h(
+                "label",
+                { class: "field__label" },
+                "Anthropic API key ",
+                user.has_anthropic_api_key
+                  ? Badge({ tone: "ok", text: "set", dot: true })
+                  : Badge({ tone: "warn", text: "not set" })
+              ),
+              h("input", {
+                class: "input",
+                type: "password",
+                placeholder: user.has_anthropic_api_key
+                  ? "•••••••• (leave blank to keep)"
+                  : "sk-ant-...",
+                oninput: (e) => (anthropicApiKey = e.target.value)
+              })
+            ),
+            h(
+              "div",
+              { class: "row" },
+              h(
+                "button",
+                {
+                  type: "submit",
+                  class: "btn btn--primary",
+                  disabled: saving
+                },
+                saving ? h("span", { class: "spinner" }) : null,
+                "Save credentials"
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  async function save() {
+    saving = true;
+    render();
+    const body = {};
+    // Only send fields the user actually touched. Sentinel "DELETE" clears.
+    if ((n8nBaseUrl || "") !== (user.n8n_base_url || "")) {
+      body.n8n_base_url = n8nBaseUrl.trim() ? n8nBaseUrl.trim() : null;
+    }
+    if (n8nApiKey === "DELETE") body.n8n_api_key = null;
+    else if (n8nApiKey.trim().length > 0) body.n8n_api_key = n8nApiKey.trim();
+    if (anthropicApiKey === "DELETE") body.anthropic_api_key = null;
+    else if (anthropicApiKey.trim().length > 0) body.anthropic_api_key = anthropicApiKey.trim();
+
+    if (Object.keys(body).length === 0) {
+      saving = false;
+      toast("Nothing to save", "info");
+      render();
+      return;
+    }
+    try {
+      const updated = await api.auth.updateCredentials(body);
+      user = updated.user;
+      setCachedAuthUser(user);
+      n8nApiKey = "";
+      anthropicApiKey = "";
+      toast("Credentials saved", "success");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      saving = false;
+      render();
+    }
+  }
+
+  render();
+}
+
+/* ============================================================
+   20e) ADMIN pages
+   ============================================================
+   Every page below relies on the backend `requireAdmin` middleware to gate
+   data access — the UI checks the cached flag only for navigation polish.
+   ============================================================ */
+
+async function pageAdminDashboard(root) {
+  let overview = null, errorMsg = null;
+  try {
+    const r = await api.admin.analytics();
+    overview = r.overview;
+  } catch (err) {
+    errorMsg = err;
+  }
+
+  if (errorMsg) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: errorMsg })));
+    return;
+  }
+  const ok = overview;
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("h1", { class: "page-header__title" }, "Admin · Platform overview"),
+          h("p", { class: "page-header__sub" }, "All tenants, all activity — read-only.")
+        ),
+        h(
+          "div",
+          { class: "page-header__actions" },
+          h("a", { class: "btn btn--ghost", href: "#/admin/users" }, icon("projects", 14), "Manage users"),
+          h("a", { class: "btn btn--ghost", href: "#/admin/interactions" }, icon("builder", 14), "Prompts log")
+        )
+      ),
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({ label: "Users", value: ok.users_total, hint: `${ok.users_admin} admin · ${ok.users_with_rag} with RAG` }),
+        Kpi({ label: "Projects", value: ok.projects_total, hint: `${ok.workflows_total} workflows` }),
+        Kpi({
+          label: "AI calls (24h)",
+          value: ok.ai_interactions_24h,
+          hint: `${ok.ai_errors_24h} errors`,
+          tone: ok.ai_errors_24h > ok.ai_interactions_24h * 0.2 ? "down" : "up"
+        }),
+        Kpi({ label: "Tokens (24h)", value: ok.ai_tokens_24h.toLocaleString(), hint: "across all providers" })
+      ),
+      h(
+        "div",
+        { class: "card" },
+        h("h3", { style: { marginTop: 0 } }, "Quick links"),
+        h(
+          "div",
+          { class: "row row--gap-3" },
+          h("a", { class: "btn btn--primary", href: "#/admin/users" }, "Users"),
+          h("a", { class: "btn btn--ghost", href: "#/admin/projects" }, "All projects"),
+          h("a", { class: "btn btn--ghost", href: "#/admin/interactions" }, "Prompts log")
+        )
+      )
+    )
+  );
+}
+
+async function pageAdminUsers(root) {
+  let users = null;
+  let q = "";
+
+  async function load() {
+    try {
+      users = await api.admin.users.list({ limit: 200, q });
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    }
+  }
+
+  async function patchFlag(id, patch) {
+    try {
+      await api.admin.users.patch(id, patch);
+      toast("User updated", "success");
+      await load();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  function openCreateForm() {
+    let email = "", name = "", password = "", canRag = false, isAdminFlag = false;
+    openModal({
+      title: "Create user",
+      body: h(
+        "div",
+        { class: "col col--gap-3" },
+        h("div", { class: "field" }, h("label", { class: "field__label" }, "Email"),
+          h("input", { class: "input", type: "email", oninput: (e) => (email = e.target.value) })),
+        h("div", { class: "field" }, h("label", { class: "field__label" }, "Name"),
+          h("input", { class: "input", oninput: (e) => (name = e.target.value) })),
+        h("div", { class: "field" }, h("label", { class: "field__label" }, "Initial password (≥ 8 chars)"),
+          h("input", { class: "input", type: "password", oninput: (e) => (password = e.target.value) })),
+        h(
+          "label",
+          { class: "row row--gap-3", style: { cursor: "pointer" } },
+          h("input", { type: "checkbox", onchange: (e) => (canRag = e.target.checked) }),
+          h("span", null, "Grant RAG agent access")
+        ),
+        h(
+          "label",
+          { class: "row row--gap-3", style: { cursor: "pointer" } },
+          h("input", { type: "checkbox", onchange: (e) => (isAdminFlag = e.target.checked) }),
+          h("span", null, "Admin")
+        )
+      ),
+      actions: [
+        h("button", { class: "btn btn--ghost", onclick: closeModal }, "Cancel"),
+        h(
+          "button",
+          {
+            class: "btn btn--primary",
+            onclick: async () => {
+              try {
+                await api.admin.users.create({
+                  email: email.trim(),
+                  name: name.trim(),
+                  password,
+                  can_use_rag_agent: canRag,
+                  is_admin: isAdminFlag
+                });
+                toast("User created", "success");
+                closeModal();
+                await load();
+              } catch (err) {
+                toast(err.message, "error");
+              }
+            }
+          },
+          "Create"
+        )
+      ]
+    });
+  }
+
+  function openResetPassword(u) {
+    let pw = "";
+    openModal({
+      title: `Reset password · ${u.email}`,
+      body: h(
+        "div",
+        { class: "col col--gap-3" },
+        h(
+          "p",
+          { class: "muted text-sm" },
+          "The user will need this new password on their next sign-in. They are not signed out automatically."
+        ),
+        h("div", { class: "field" }, h("label", { class: "field__label" }, "New password (≥ 8 chars)"),
+          h("input", { class: "input", type: "password", oninput: (e) => (pw = e.target.value) }))
+      ),
+      actions: [
+        h("button", { class: "btn btn--ghost", onclick: closeModal }, "Cancel"),
+        h(
+          "button",
+          {
+            class: "btn btn--primary",
+            onclick: async () => {
+              try {
+                await api.admin.users.resetPassword(u.id, pw);
+                toast("Password reset", "success");
+                closeModal();
+              } catch (err) {
+                toast(err.message, "error");
+              }
+            }
+          },
+          "Set password"
+        )
+      ]
+    });
+  }
+
+  function confirmDelete(u) {
+    openModal(
+      ConfirmDialog({
+        title: "Delete user?",
+        message: `Permanently delete ${u.email}? Their projects become orphaned (user_id set to NULL).`,
+        confirmLabel: "Delete",
+        danger: true,
+        onConfirm: async () => {
+          try {
+            await api.admin.users.delete(u.id);
+            toast("User deleted", "success");
+            await load();
+          } catch (err) {
+            toast(err.message, "error");
+          }
+        }
+      })
+    );
+  }
+
+  function render() {
+    if (!users) {
+      mount(root, h("div", { class: "page" }, Skeleton({ variant: "block" })));
+      return;
+    }
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Admin · Users"),
+            h("p", { class: "page-header__sub" }, `${users.count} user(s)`)
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h("button", { class: "btn btn--ghost", onclick: load }, icon("refresh", 14), "Refresh"),
+            h("button", { class: "btn btn--primary", onclick: openCreateForm }, icon("plus", 14), "Create user")
+          )
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h(
+            "div",
+            { class: "input-wrap", style: { width: 320 } },
+            h("span", { class: "input-wrap__icon" }, icon("search", 14)),
+            h("input", {
+              class: "input input--with-icon",
+              placeholder: "Search email or name…",
+              value: q,
+              oninput: (e) => { q = e.target.value; },
+              onkeydown: (e) => { if (e.key === "Enter") load(); }
+            })
+          ),
+          h("button", { class: "btn btn--ghost btn--sm", onclick: load }, "Apply")
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          users.items.length === 0
+            ? Empty({ title: "No users", hint: "Create the first one with the button above." })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table" },
+                  h(
+                    "thead",
+                    null,
+                    h(
+                      "tr",
+                      null,
+                      h("th", null, "Email"),
+                      h("th", null, "Name"),
+                      h("th", null, "Roles"),
+                      h("th", null, "Credentials"),
+                      h("th", null, "Joined"),
+                      h("th", { style: { width: 1 } }, "")
+                    )
+                  ),
+                  h(
+                    "tbody",
+                    null,
+                    users.items.map((u) =>
+                      h(
+                        "tr",
+                        null,
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "a",
+                            { href: `#/admin/users/${encodeURIComponent(u.id)}` },
+                            u.email
+                          )
+                        ),
+                        h("td", null, u.name),
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "div",
+                            { class: "row row--gap-2" },
+                            u.is_admin ? Badge({ tone: "bad", text: "admin", dot: true }) : null,
+                            u.can_use_rag_agent ? Badge({ tone: "accent", text: "RAG", dot: true }) : null,
+                            !u.is_admin && !u.can_use_rag_agent ? Badge({ tone: "neutral", text: "user" }) : null
+                          )
+                        ),
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "div",
+                            { class: "row row--gap-2" },
+                            u.has_n8n_api_key ? Badge({ tone: "ok", text: "n8n" }) : Badge({ tone: "neutral", text: "no n8n" }),
+                            u.has_anthropic_api_key ? Badge({ tone: "ok", text: "anth" }) : Badge({ tone: "neutral", text: "no anth" })
+                          )
+                        ),
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(u.created_at))),
+                        h(
+                          "td",
+                          null,
+                          h(
+                            "div",
+                            { class: "row row--gap-2" },
+                            h(
+                              "button",
+                              { class: "btn btn--ghost btn--sm", onclick: () => patchFlag(u.id, { can_use_rag_agent: !u.can_use_rag_agent }) },
+                              u.can_use_rag_agent ? "Revoke RAG" : "Grant RAG"
+                            ),
+                            h(
+                              "button",
+                              { class: "btn btn--ghost btn--sm", onclick: () => patchFlag(u.id, { is_admin: !u.is_admin }) },
+                              u.is_admin ? "Demote" : "Promote"
+                            ),
+                            h("button", { class: "btn btn--ghost btn--sm", onclick: () => openResetPassword(u) }, "Reset pw"),
+                            h(
+                              "button",
+                              { class: "btn btn--ghost btn--sm", onclick: () => confirmDelete(u) },
+                              icon("trash", 12)
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  render();
+  await load();
+}
+
+async function pageAdminUserDetail(root, userId) {
+  let detail = null;
+  try {
+    detail = await api.admin.users.get(userId);
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+
+  const u = detail.user;
+  const stats = detail.ai_interactions;
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h(
+            "div",
+            { class: "row row--gap-3" },
+            h("a", { class: "muted text-sm", href: "#/admin/users" }, "Users"),
+            icon("chevronRight", 12),
+            h("span", null, u.email)
+          ),
+          h("h1", { class: "page-header__title", style: { marginTop: 6 } }, u.name),
+          h("p", { class: "page-header__sub" }, u.email)
+        ),
+        h(
+          "div",
+          { class: "page-header__actions" },
+          u.is_admin ? Badge({ tone: "bad", text: "admin", dot: true }) : null,
+          u.can_use_rag_agent ? Badge({ tone: "accent", text: "RAG enabled", dot: true }) : null
+        )
+      ),
+      h(
+        "div",
+        { class: "kpi-grid" },
+        Kpi({ label: "Projects", value: detail.projects_count, tone: "small" }),
+        Kpi({ label: "AI calls", value: stats.total, hint: `${stats.success} ok · ${stats.error} err`, tone: "small" }),
+        Kpi({ label: "Tokens", value: stats.tokens_total.toLocaleString(), tone: "small" }),
+        Kpi({ label: "Joined", value: fmtRelative(u.created_at), tone: "small" })
+      ),
+      h(
+        "div",
+        { class: "card card--flush" },
+        h(
+          "div",
+          { class: "card__head" },
+          h("h3", { class: "card__title" }, "Recent prompts"),
+          h("a", { class: "btn btn--ghost btn--sm", href: `#/admin/interactions?user_id=${encodeURIComponent(u.id)}` }, "View all", icon("chevronRight", 14))
+        ),
+        detail.recent_prompts.length === 0
+          ? Empty({ title: "No prompts yet" })
+          : h(
+              "ul",
+              null,
+              detail.recent_prompts.map((p) =>
+                h(
+                  "li",
+                  { style: { padding: "12px 20px", borderTop: "1px solid var(--border)" } },
+                  h(
+                    "div",
+                    { class: "row row--gap-3" },
+                    Badge({ tone: p.status === "success" ? "ok" : "bad", text: p.status, dot: true }),
+                    Badge({ tone: "accent", text: p.provider }),
+                    h("span", { class: "muted text-xs flex-1" }, p.model),
+                    h("span", { class: "muted text-xs" }, `${p.latency_ms ?? "?"} ms · ${p.tokens_used ?? "?"} tok`),
+                    h("span", { class: "muted text-xs" }, fmtRelative(p.created_at)),
+                    h("a", { class: "btn btn--ghost btn--sm", href: `#/admin/interactions/${p.id}` }, "Open")
+                  ),
+                  h(
+                    "div",
+                    { class: "text-sm", style: { marginTop: 6 } },
+                    h("strong", { class: "muted" }, "Prompt: "),
+                    p.user_prompt_excerpt
+                  ),
+                  p.response_excerpt
+                    ? h(
+                        "div",
+                        { class: "text-sm", style: { marginTop: 4 } },
+                        h("strong", { class: "muted" }, "Response: "),
+                        h("span", { class: "muted" }, p.response_excerpt)
+                      )
+                    : null
+                )
+              )
+            )
+      )
+    )
+  );
+}
+
+async function pageAdminInteractions(root) {
+  // Filters are read from query-string segment of hash so admins can deep-link
+  // (e.g. #/admin/interactions?user_id=abc&status=error).
+  const qs = location.hash.includes("?") ? location.hash.split("?")[1] : "";
+  const initial = Object.fromEntries(new URLSearchParams(qs));
+  let filters = {
+    user_id: initial.user_id || "",
+    status: initial.status || "",
+    provider: initial.provider || ""
+  };
+  let data = null;
+
+  async function load() {
+    try {
+      data = await api.admin.interactions.list({
+        limit: 100,
+        ...(filters.user_id ? { user_id: filters.user_id } : {}),
+        ...(filters.status ? { status: filters.status } : {}),
+        ...(filters.provider ? { provider: filters.provider } : {})
+      });
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    }
+  }
+
+  function render() {
+    if (!data) { mount(root, h("div", { class: "page" }, Skeleton({ variant: "block" }))); return; }
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, "Admin · Prompts log"),
+            h("p", { class: "page-header__sub" }, `${data.count} call(s) shown`)
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h("button", { class: "btn btn--ghost", onclick: load }, icon("refresh", 14), "Refresh")
+          )
+        ),
+        h(
+          "div",
+          { class: "toolbar" },
+          h("input", {
+            class: "input",
+            placeholder: "Filter by user_id…",
+            value: filters.user_id,
+            style: { width: 280 },
+            oninput: (e) => (filters.user_id = e.target.value)
+          }),
+          h(
+            "select",
+            { class: "select", style: { width: 160 }, onchange: (e) => (filters.status = e.target.value) },
+            h("option", { value: "" }, "All statuses"),
+            h("option", { value: "success", selected: filters.status === "success" }, "success"),
+            h("option", { value: "error", selected: filters.status === "error" }, "error")
+          ),
+          h("input", {
+            class: "input",
+            placeholder: "Provider (e.g. anthropic, rag_agent)…",
+            value: filters.provider,
+            style: { width: 240 },
+            oninput: (e) => (filters.provider = e.target.value)
+          }),
+          h("button", { class: "btn btn--primary btn--sm", onclick: load }, "Apply")
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          data.items.length === 0
+            ? Empty({ title: "No matching prompts" })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table" },
+                  h("thead", null, h("tr", null,
+                    h("th", null, "Time"),
+                    h("th", null, "Status"),
+                    h("th", null, "Provider/Model"),
+                    h("th", null, "User"),
+                    h("th", null, "Prompt"),
+                    h("th", null, "Tokens"),
+                    h("th", null, "Latency"),
+                    h("th", { style: { width: 1 } }, ""))),
+                  h(
+                    "tbody",
+                    null,
+                    data.items.map((it) =>
+                      h(
+                        "tr",
+                        null,
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(it.created_at))),
+                        h("td", null, Badge({ tone: it.status === "success" ? "ok" : "bad", text: it.status, dot: true })),
+                        h("td", null, h("div", null,
+                          h("div", null, it.provider),
+                          h("div", { class: "muted text-xs mono" }, it.model))),
+                        h("td", null, it.user_id
+                          ? h("a", { class: "mono text-xs", href: `#/admin/users/${encodeURIComponent(it.user_id)}` }, it.user_id.slice(0, 8))
+                          : h("span", { class: "muted text-xs" }, "—")),
+                        h("td", null, h("span", { class: "muted text-sm truncate", style: { maxWidth: 360, display: "inline-block" } }, it.user_prompt_excerpt)),
+                        h("td", null, h("span", { class: "mono text-xs" }, it.tokens_used ?? "—")),
+                        h("td", null, h("span", { class: "mono text-xs" }, `${it.latency_ms ?? "—"} ms`)),
+                        h("td", null, h("a", { class: "btn btn--ghost btn--sm", href: `#/admin/interactions/${it.id}` }, "Open"))
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  render();
+  await load();
+}
+
+async function pageAdminInteractionDetail(root, id) {
+  let it = null;
+  try {
+    it = await api.admin.interactions.get(id);
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h(
+            "div",
+            { class: "row row--gap-3" },
+            h("a", { class: "muted text-sm", href: "#/admin/interactions" }, "Prompts log"),
+            icon("chevronRight", 12),
+            h("span", null, `#${it.id}`)
+          ),
+          h("h1", { class: "page-header__title", style: { marginTop: 6 } }, `${it.provider} · ${it.model}`),
+          h(
+            "p",
+            { class: "page-header__sub" },
+            `${fmtDate(it.created_at)} · ${it.latency_ms ?? "?"} ms · ${it.tokens_used ?? "?"} tokens`
+          )
+        ),
+        h(
+          "div",
+          { class: "page-header__actions" },
+          Badge({ tone: it.status === "success" ? "ok" : "bad", text: it.status, dot: true }),
+          it.user_id ? h("a", { class: "btn btn--ghost btn--sm", href: `#/admin/users/${encodeURIComponent(it.user_id)}` }, "Open user") : null
+        )
+      ),
+      it.error_message ? h("div", { class: "card" }, h("h3", { style: { marginTop: 0, color: "var(--danger)" } }, "Error"), ErrorDetail({ raw: it.error_message })) : null,
+      it.system_prompt
+        ? h(
+            "div",
+            { class: "card" },
+            h("h3", { style: { marginTop: 0 } }, "System prompt"),
+            h("pre", { class: "code-block", style: { whiteSpace: "pre-wrap" } }, it.system_prompt)
+          )
+        : null,
+      h(
+        "div",
+        { class: "card" },
+        h("h3", { style: { marginTop: 0 } }, "User prompt"),
+        h("pre", { class: "code-block", style: { whiteSpace: "pre-wrap" } }, it.user_prompt || "—")
+      ),
+      h(
+        "div",
+        { class: "card" },
+        h("h3", { style: { marginTop: 0 } }, "Response"),
+        it.response
+          ? h("pre", { class: "code-block", style: { whiteSpace: "pre-wrap" } }, it.response)
+          : h("p", { class: "muted" }, "(empty)")
+      ),
+      it.raw_response
+        ? h(
+            "details",
+            null,
+            h("summary", { style: { cursor: "pointer" } }, "Raw provider payload"),
+            jsonHighlight(it.raw_response)
+          )
+        : null
+    )
+  );
+}
+
+async function pageAdminProjects(root) {
+  let data = null;
+  try {
+    data = await api.admin.projects.list({ limit: 500 });
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("h1", { class: "page-header__title" }, "Admin · All projects"),
+          h("p", { class: "page-header__sub" }, `${data.count} project(s) across all tenants`)
+        )
+      ),
+      h(
+        "div",
+        { class: "card card--flush" },
+        data.items.length === 0
+          ? Empty({ title: "No projects yet" })
+          : h(
+              "div",
+              { class: "table-wrap" },
+              h(
+                "table",
+                { class: "table" },
+                h("thead", null, h("tr", null,
+                  h("th", null, "Project"),
+                  h("th", null, "Owner"),
+                  h("th", null, "Status"),
+                  h("th", null, "Workflow"),
+                  h("th", null, "n8n"),
+                  h("th", null, "Created"))),
+                h(
+                  "tbody",
+                  null,
+                  data.items.map((p) =>
+                    h(
+                      "tr",
+                      null,
+                      h("td", null, h("div", null,
+                        h("strong", null, p.name),
+                        h("div", { class: "muted text-xs mono" }, p.id.slice(0, 8)))),
+                      h(
+                        "td",
+                        null,
+                        p.user_email
+                          ? h("a", { href: `#/admin/users/${encodeURIComponent(p.user_id)}` }, p.user_email)
+                          : h("span", { class: "muted text-xs" }, "unowned")
+                      ),
+                      h("td", null, Badge({ tone: "neutral", text: p.status })),
+                      h("td", null, p.workflow_status ? Badge({ tone: "accent", text: p.workflow_status }) : h("span", { class: "muted text-xs" }, "—")),
+                      h("td", null, p.n8n_workflow_id ? h("span", { class: "mono text-xs" }, p.n8n_workflow_id) : h("span", { class: "muted text-xs" }, "—")),
+                      h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(p.created_at)))
+                    )
+                  )
+                )
+              )
+            )
+      )
+    )
+  );
 }
 
 /* ============================================================

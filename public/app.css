@@ -129,6 +129,43 @@ ul { list-style: none; margin: 0; padding: 0; }
 hr { border: 0; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
 code, pre { font-family: var(--font-mono); font-size: var(--fs-sm); }
 
+/* Auth-locked state — hides the app shell so the centered auth card owns
+   the viewport. We can't unmount the shell DOM (router() needs to mount the
+   auth screen into #page-root), so we hide it via CSS and reflow the grid. */
+.app-root[data-auth="locked"] .sidebar,
+.app-root[data-auth="locked"] .topbar {
+  display: none;
+}
+.app-root[data-auth="locked"] {
+  grid-template-columns: 1fr;
+}
+
+/* User pill in the topbar */
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px 10px 4px 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background var(--t-fast);
+}
+.user-pill:hover { background: var(--surface-3); text-decoration: none; }
+.user-pill__avatar {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #9b6cff);
+  display: grid; place-items: center;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 /* =========================================================
    Layout
    ========================================================= */
