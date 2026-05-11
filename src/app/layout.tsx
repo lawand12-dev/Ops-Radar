@@ -3,6 +3,7 @@ import { Inter_Tight, Instrument_Serif, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/react";
 import { headers } from "next/headers";
 import { SITE_URL } from "<npm>/lib/constants";
+import { Toaster } from "<npm>/components/ui/toast";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -82,6 +83,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <Toaster />
         <Analytics />
       </body>
     </html>

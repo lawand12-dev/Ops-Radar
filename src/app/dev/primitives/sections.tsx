@@ -65,6 +65,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
 } from "<npm>/components/ui/dropdown-menu";
+import { toast } from "<npm>/components/ui/toast";
 
 export function Showcase() {
   return (
@@ -91,6 +92,7 @@ export function Showcase() {
       <SelectSection />
       <CheckboxRadioSwitchSection />
       <TooltipTabsDropdownSection />
+      <ToastSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -449,6 +451,21 @@ function TooltipTabsDropdownSection() {
             <DropdownMenuItem className="text-[var(--color-danger)]">Delete<DropdownMenuShortcut>⌫</DropdownMenuShortcut></DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+    </section>
+  );
+}
+
+function ToastSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Toast</p>
+      <div className="flex gap-2 flex-wrap">
+        <Button variant="outline" onClick={() => toast("Workflow saved")}>Default</Button>
+        <Button variant="outline" onClick={() => toast.success("Workflow saved", { description: "lead-router-v2 deployed to production." })}>Success</Button>
+        <Button variant="outline" onClick={() => toast.error("Connection lost", { description: "Could not reach n8n at api.n8n.cloud." })}>Error</Button>
+        <Button variant="outline" onClick={() => toast.warning("Approaching rate limit", { description: "9 of 10 OpenAI requests used this minute." })}>Warn</Button>
+        <Button variant="outline" onClick={() => toast.info("Audit ready", { description: "Your report is in the inbox." })}>Info</Button>
       </div>
     </section>
   );
