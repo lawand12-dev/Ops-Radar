@@ -7,116 +7,56 @@ import { SiteFooter } from "<npm>/components/marketing/site-footer";
 import { Button } from "<npm>/components/ui/button";
 import { Badge } from "<npm>/components/ui/badge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "<npm>/components/ui/accordion";
-import { Table, THead, TR, TH, TD } from "<npm>/components/ui/data-table";
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Services — OpsRadar",
+  title: "What's in AIOS — OpsRadar",
   description:
-    "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
+    "AIOS is four parts: OPERATE runs your workflows, OBSERVE shows everything on one dashboard, BRAIN remembers how your agency works, and GUARD watches it overnight. Built specifically for your agency.",
   openGraph: {
-    title: "Services — OpsRadar",
+    title: "What's in AIOS — OpsRadar",
     description:
-      "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Services — OpsRadar" }],
+      "AIOS is four parts: OPERATE runs your workflows, OBSERVE shows everything on one dashboard, BRAIN remembers how your agency works, and GUARD watches it overnight.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "What's in AIOS — OpsRadar" }],
   },
   twitter: {
-    title: "Services — OpsRadar",
+    title: "What's in AIOS — OpsRadar",
     description:
-      "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
+      "AIOS is four parts: OPERATE runs your workflows, OBSERVE shows everything on one dashboard, BRAIN remembers how your agency works, and GUARD watches it overnight.",
     images: ["/og-image.png"],
   },
 };
 
-// ── Data ──────────────────────────────────────────────────────────────────────
-
-const WHAT_WE_BUILD = [
-  {
-    n: "01",
-    title: "Automated Reporting",
-    desc: "We pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it, format it, and deliver branded client reports automatically — every week, with zero manual work.",
-  },
-  {
-    n: "02",
-    title: "Lead Qualification & Routing",
-    desc: "New leads are scored the moment they arrive, then routed to the right rep with context pre-filled. Hot leads get a follow-up within 90 seconds — no human in the loop.",
-  },
-  {
-    n: "03",
-    title: "Client Onboarding",
-    desc: "One form submission triggers contracts, tool access, welcome sequences, Slack notifications, and project setup. Your team does nothing.",
-  },
-  {
-    n: "04",
-    title: "Email & Follow-up Sequences",
-    desc: "Follow-ups based on deal stage, days since last contact, and prior interactions. Leads stop going cold because the system tracks what your team forgets.",
-  },
-  {
-    n: "05",
-    title: "Invoice & Payment Processing",
-    desc: "Project completion triggers invoice generation, delivery, and follow-up if unpaid. Your team gets notified when it clears — not before.",
-  },
-  {
-    n: "06",
-    title: "Data Sync Between Tools",
-    desc: "HubSpot, Airtable, Notion, Stripe — one update propagates everywhere. No duplicate entry, no data drift between tools.",
-  },
-];
-
-const PROCESS_STEPS = [
-  {
-    range: "Day 0–2",
-    title: "Scope & price",
-    desc: "You run the audit, we have a kickoff call, and our team sends a written fixed-price proposal within 48 hours.",
-  },
-  {
-    range: "Day 3–9",
-    title: "Build & walk-through",
-    desc: "We build in a dev environment, walk you through the live workflow on Day 9, and you approve before it touches production.",
-  },
-  {
-    range: "Day 10+",
-    title: "Deploy & maintain",
-    desc: "Deploy to your n8n account, documentation delivered, monitoring runs in the background. You go back to your clients.",
-  },
-];
-
-const WHAT_IS_INCLUDED = [
-  { feature: "Custom n8n workflow builds", audit: false, build: true, managed: true },
-  { feature: "Fixed-price proposal within 48 h", audit: false, build: true, managed: true },
-  { feature: "Video walkthrough before deploy", audit: false, build: true, managed: true },
-  { feature: "30-day post-delivery bug fix", audit: false, build: true, managed: true },
-  { feature: "24/7 monitoring & proactive fixes", audit: false, build: false, managed: true },
-  { feature: "API breakage recovery (Meta, Google)", audit: false, build: false, managed: true },
-  { feature: "Monthly retainer (flat fee)", audit: false, build: false, managed: true },
-  { feature: "Self-serve operations audit", audit: true, build: false, managed: false },
-  { feature: "Dollar-figure ROI estimate", audit: true, build: false, managed: false },
-];
+// ── FAQ data ──────────────────────────────────────────────────────────────────
 
 const FAQS = [
   {
-    q: "What tools can you connect?",
-    a: "Any tool with an API or webhook support. That includes HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Calendly, Mailchimp, ActiveCampaign, and hundreds more via n8n’s native node library.",
+    q: "What tools can AIOS connect to?",
+    a: "Anything with an API or webhook. That includes HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Calendly, Mailchimp, ActiveCampaign, Meta, Google Ads, GA4, Ahrefs, Semrush, Triple Whale — and hundreds more through n8n's native node library. If your stack touches a specific platform, we'll know it.",
   },
   {
-    q: "How long does it take to build?",
-    a: "Most single-workflow builds take 5–10 business days. More complex multi-workflow systems take 2–4 weeks. We give you a specific timeline in the proposal before you commit.",
+    q: "What does it mean that AIOS runs on my credentials?",
+    a: "Every workflow lives in your n8n account, not ours. Your API keys, OAuth tokens, and service credentials stay in your vault. OpsRadar never stores client data. If AIOS ever stopped running, you'd keep every workflow, every log, every piece of business logic — because you always owned it.",
   },
   {
-    q: "What if something breaks?",
-    a: "On the Managed plan, our team monitors every workflow 24/7 and fixes it before you notice. On the One-Time Build plan, we include 30 days of free bug fixes after delivery.",
+    q: "How does BRAIN get built?",
+    a: "During Discovery, we map how your agency actually operates — your clients, your team, your recurring patterns, the things only insiders know. That context is structured and ingested so BRAIN can answer operational questions: what's running, what's stalled, what a specific client's history looks like. It sharpens each week the system runs.",
   },
   {
-    q: "Is technical knowledge required?",
-    a: "No. Describe your problem in plain English — our team handles the implementation. You’ll review the workflow in a walkthrough, but you won’t touch any code.",
+    q: "What does GUARD actually watch?",
+    a: "GUARD monitors for silent failures that cost agencies money before anyone notices: Meta API schema changes, Triple Whale response drift, expired OAuth tokens, stalled workflow queues, credential rotation mismatches. When it catches something, it retries automatically where it can and escalates where it can't.",
   },
   {
-    q: "Can the workflow be reviewed before it goes live?",
-    a: "Always. We record a walkthrough video showing exactly how it works. Nothing gets deployed without your explicit sign-off.",
+    q: "What comes out of the audit?",
+    a: "A PDF report that names the workflows worth automating first and the dollar figures behind them — hours per week, approximate value at your blended rate, priority order. It's generated by AI against your answers. Free. No card, no pitch.",
   },
   {
-    q: "What happens after cancellation?",
-    a: "Cancel anytime with 30 days notice. Your workflows already live in your own n8n account — you never lose access because you always owned them. We just stop maintaining them.",
+    q: "Is the Discovery call a sales pitch?",
+    a: "No. We use it to understand your agency before writing a single line. We go deeper than the audit — your tools, your clients, your team shape, the patterns the audit can't see. We then take roughly a week to evaluate and reason before we send a Blueprint. If it's not a fit, we'll say so.",
+  },
+  {
+    q: "What happens after the Blueprint?",
+    a: "The Blueprint gives you a buy-or-don't decision with full visibility: what AIOS will do, what gets built first, and what the build will cost. No surprises, no nine-page MSAs. You decide whether to proceed on that information.",
   },
 ];
 
@@ -128,10 +68,12 @@ export default function ServicesPage() {
       <SiteNav activeHref="/services" />
 
       <PageHeader />
-      <FlagshipSection />
-      <WhatWeBuildSection />
-      <ProcessSection />
-      <ComparisonSection />
+      <OperateSection />
+      <ObserveSection />
+      <BrainSection />
+      <GuardSection />
+      <HowAIOSGetsBuilt />
+      <PhilosophySection />
       <FaqSection />
       <FinalCTA />
 
@@ -148,27 +90,29 @@ function PageHeader() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-5xl px-6 pt-14 md:pt-20 pb-20 md:pb-24">
-        <p className="text-label text-[var(--color-fg-subtle)]">Services</p>
+        <p className="text-label text-[var(--color-fg-subtle)]">What&apos;s in AIOS</p>
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
-          What we build for{" "}
-          <span className="text-[var(--color-primary)]">agencies</span>.
+          Four parts. One platform.
         </h1>
         <p className="mt-6 max-w-2xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          Six types of automation that fix the manual work burning your team: client reporting,
-          ad platform handoffs, HubSpot/CRM routing, onboarding, invoicing, and data sync.
-          Built for paid-media, SEO, and full-service agencies under 25 people. All on n8n.
-          All maintained by our team.
+          <span className="font-mono text-[var(--color-fg)]">OPERATE</span> runs your workflows.{" "}
+          <span className="font-mono text-[var(--color-fg)]">OBSERVE</span> shows everything in one dashboard.{" "}
+          <span className="font-mono text-[var(--color-fg)]">BRAIN</span> remembers how your agency operates.{" "}
+          <span className="font-mono text-[var(--color-fg)]">GUARD</span> watches it overnight. AIOS is not a
+          template — it is built specifically for your business.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a free 20-min call
+            <Link href="/audit">
+              Start the audit
               <ArrowRight className="size-4" />
-            </a>
+            </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/audit">Run the self-serve audit</Link>
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
           </Button>
         </div>
       </div>
@@ -177,106 +121,142 @@ function PageHeader() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Flagship — Automated Reporting                                             */
+/*  OPERATE                                                                    */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function FlagshipSection() {
-  return (
-    <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
-          {/* Sticky sidebar */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-primary)]">The automation every agency asks about first</p>
-            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Automated Client Reporting.
-            </h2>
-            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              Pull data from Google Ads, Meta, GA4, and your CRM on schedule. Merge it,
-              format it, and deliver branded client reports automatically — every week,
-              zero manual work.
-            </p>
-            <div className="mt-8">
-              <Button asChild size="lg">
-                <Link href="/audit">
-                  See if this fits your agency
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
+function OperateSection() {
+  const examples = [
+    {
+      name: "invoice-reminders",
+      desc: "Flags overdue invoices, sends a follow-up sequence, notifies the account lead when a client goes 14 days past due.",
+    },
+    {
+      name: "client-monthly-recap",
+      desc: "Pulls from Google Ads, Meta, GA4, and the CRM every month. Builds a branded PDF and delivers it without anyone touching a spreadsheet.",
+    },
+    {
+      name: "lead-router-v2",
+      desc: "Scores new leads on arrival, routes to the right rep with context pre-filled, triggers a follow-up if no response in 90 minutes.",
+    },
+    {
+      name: "onboarding-sequence",
+      desc: "One form submission kicks off contracts, tool access, welcome emails, Slack notifications, and project setup — in sequence, without gaps.",
+    },
+    {
+      name: "rank-digest-weekly",
+      desc: "Aggregates Ahrefs, GSC, and Semrush data each Friday. Delivers a digest with rank movements, AI Overview appearances, and alerts for technical regressions.",
+    },
+    {
+      name: "data-sync-hubspot",
+      desc: "One update in HubSpot propagates to Airtable, Notion, and Stripe. No duplicate entry, no data drift across tools.",
+    },
+  ];
 
-          {/* Stats panel */}
-          <div className="space-y-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
-            {[
-              {
-                label: "Typical impact",
-                value: "Replaces 20–40 hours/week of manual reporting at 10–20 person agencies",
-              },
-              {
-                label: "Payback",
-                value: "A 10-person shop running this breaks even in roughly 6 weeks at standard blended rates",
-              },
-              {
-                label: "Delivery",
-                value: "Built in your n8n account in 7–14 days",
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="bg-[var(--color-surface)] p-8 md:p-10 grid grid-cols-[auto_1fr] gap-6 md:gap-10 items-start"
-              >
-                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1 min-w-[80px]">
-                  {item.label}
-                </p>
-                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/*  What We Build — editorial numbered list                                    */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-function WhatWeBuildSection() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
         <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
-          {/* Sticky sidebar */}
-          <div className="lg:sticky lg:top-24">
-            <p className="text-label text-[var(--color-fg-subtle)]">The full menu</p>
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">OPERATE</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Other things we build.
+              The engine running your agency.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              Reporting is the most common, but not the only one. Here are the other five.
+              Automations doing the manual work. Your workflows run inside your n8n,
+              on your credentials, under your control. AIOS ships with 120+ workflows
+              across the tools agencies actually use — and every one is adapted to
+              how your specific shop operates.
             </p>
           </div>
 
-          {/* Numbered editorial list */}
+          <div>
+            <ul className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+              {examples.map((ex) => (
+                <li
+                  key={ex.name}
+                  className="grid grid-cols-[auto_1fr] gap-6 md:gap-10 py-8 items-start"
+                >
+                  <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1 min-w-[16px]">
+                    —
+                  </p>
+                  <div>
+                    <p className="font-mono text-body-sm text-[var(--color-fg)]">{ex.name}</p>
+                    <p className="mt-2 text-body leading-[1.6] text-[var(--color-fg-muted)]">{ex.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-8 text-body-sm text-[var(--color-fg-subtle)]">
+              These are examples. The workflows AIOS runs for your agency come out of
+              Discovery — not a preset list.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  OBSERVE                                                                    */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function ObserveSection() {
+  const dashItems = [
+    {
+      label: "Workflow status",
+      detail: "Every workflow running under AIOS — status, last run, run count, and whether anything is degraded. Pulled live from your n8n, never from a cache older than 60 seconds.",
+    },
+    {
+      label: "Hours reclaimed",
+      detail: "Each workflow ships with a baseline cost-to-run and an hours-saved target. The dashboard tracks actual reclaim week over week and tells you whether AIOS is still earning its keep.",
+    },
+    {
+      label: "Run cost",
+      detail: "How much each workflow costs to run at current volume. Surfaced per workflow and in aggregate, so the ROI number is always visible alongside the operational one.",
+    },
+    {
+      label: "KPI roll-ups",
+      detail: "Ad spend, leads, pipeline value, or the metrics that matter to your agency — pulled from your connected tools and shown without any manual export.",
+    },
+    {
+      label: "GUARD incidents",
+      detail: "Every alert GUARD raised, what it did about it, and whether anything still needs attention. One place to see the entire health of your automation layer.",
+    },
+  ];
+
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">OBSERVE</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              The dashboard showing everything.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              One screen. Real data. Every morning. OpsRadar reads live from your
+              connected tools — nothing is batched overnight, nothing is stored on
+              our side. You see the same world your team sees.
+            </p>
+          </div>
+
           <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
-            {WHAT_WE_BUILD.map((item) => (
+            {dashItems.map((item, i) => (
               <li
-                key={item.n}
+                key={item.label}
                 className="grid grid-cols-[auto_1fr] gap-8 md:gap-10 py-10 items-start"
               >
                 <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1">
-                  — {item.n}
+                  — 0{i + 1}
                 </p>
                 <div>
-                  <h3 className="font-serif text-h2 text-[var(--color-fg)] tracking-[-0.02em]">
-                    {item.title}.
+                  <h3 className="font-serif text-h3 text-[var(--color-fg)] tracking-[-0.015em]">
+                    {item.label}
                   </h3>
-                  <p className="mt-3 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-prose">
-                    {item.desc}
+                  <p className="mt-3 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+                    {item.detail}
                   </p>
                 </div>
               </li>
@@ -289,119 +269,251 @@ function WhatWeBuildSection() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  The process                                                                */
+/*  BRAIN                                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function ProcessSection() {
+function BrainSection() {
+  const inputs = [
+    {
+      source: "Your Blueprint",
+      detail: "The written map of how your agency operates — your tools, your clients, your team structure, your recurring work. Ingested and structured during the build.",
+    },
+    {
+      source: "Audit history",
+      detail: "Every OpsRadar audit your agency has run, indexed against your actual results over time. BRAIN tracks whether what the system predicted matches what actually happened.",
+    },
+    {
+      source: "Client documents",
+      detail: "Briefs, SOWs, monthly reports — anything you feed in becomes context BRAIN can query. Ask what you sent a specific client in Q3; BRAIN knows.",
+    },
+    {
+      source: "Workflow telemetry",
+      detail: "Every workflow run creates a data point. Over time, BRAIN recognizes patterns — which workflows run late, which clients generate the most edge cases, where the team loses hours.",
+    },
+  ];
+
   return (
-    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+    <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <div className="max-w-2xl mb-16">
-          <p className="text-label text-[var(--color-fg-subtle)]">The process</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            From audit to running workflow in ~10 business days.
-          </h2>
-        </div>
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">BRAIN</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              The AI that knows your company.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Your data. Your history. Your patterns. Queried through Claude.
+              BRAIN is not a general-purpose AI assistant — it is built from what
+              your agency actually does, and it gets sharper every week the
+              system runs.
+            </p>
+          </div>
 
-        <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
-          {PROCESS_STEPS.map((step, i) => (
-            <li
-              key={step.title}
-              className="grid grid-cols-[auto_1fr] gap-8 md:gap-16 py-10 md:py-12 items-start"
-            >
-              <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2 min-w-[80px]">
-                — 0{i + 1}
-              </p>
-              <div>
-                <p className="text-label text-[var(--color-primary)] mb-2">{step.range}</p>
-                <h3 className="font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em]">
-                  {step.title}.
-                </h3>
-                <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-                  {step.desc}
-                </p>
+          <div className="space-y-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+            {inputs.map((inp) => (
+              <div
+                key={inp.source}
+                className="bg-[var(--color-surface)] p-8 md:p-10"
+              >
+                <div className="flex items-start gap-4">
+                  <Badge variant="default" className="mt-0.5 shrink-0">Input</Badge>
+                  <div>
+                    <p className="font-serif text-h3 text-[var(--color-fg)] tracking-[-0.015em]">
+                      {inp.source}
+                    </p>
+                    <p className="mt-3 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+                      {inp.detail}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </li>
-          ))}
-        </ol>
-
-        <p className="mt-10">
-          <Link
-            href="/how-it-works"
-            className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
-          >
-            See the full 6-phase breakdown
-            <ArrowRight className="size-3.5" />
-          </Link>
-        </p>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Comparison table                                                           */
+/*  GUARD                                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function ComparisonSection() {
+function GuardSection() {
+  const incidents = [
+    {
+      flag: "warn",
+      incident: "Meta API schema drift",
+      detail: "Meta pushes an undocumented field rename. Reporting workflows start returning null values. GUARD catches the response mismatch, retries with the new schema, and surfaces the change before any client report fails.",
+    },
+    {
+      flag: "warn",
+      incident: "Triple Whale response change",
+      detail: "A Triple Whale endpoint starts returning a different structure after a platform update. GUARD detects the delta, flags the affected workflows, and holds them from running until the mapping is corrected.",
+    },
+    {
+      flag: "warn",
+      incident: "OAuth token expiry",
+      detail: "A Google Ads refresh token expires. The affected workflows queue silently instead of failing loudly. GUARD catches the 401 pattern, escalates to your team with the specific credential and the affected workflow list.",
+    },
+    {
+      flag: "warn",
+      incident: "Stalled workflow queue",
+      detail: "A workflow that normally runs every 15 minutes hasn't fired in 2 hours. GUARD identifies the backlog, checks whether the trigger is healthy, and either clears the queue or escalates with the root cause.",
+    },
+  ];
+
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">GUARD</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              The system watching while you sleep.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Silent failures caught before they cost you. Ad platforms push
+              breaking changes every quarter. GUARD knows by the time the
+              next workflow fires — not the time your Monday recap fails.
+            </p>
+          </div>
+
+          <ul className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+            {incidents.map((inc) => (
+              <li
+                key={inc.incident}
+                className="py-10 grid grid-cols-[auto_1fr] gap-8 md:gap-10 items-start"
+              >
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-1 min-w-[16px]">
+                  —
+                </p>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="warn" dot>Incident</Badge>
+                    <p className="font-mono text-body-sm text-[var(--color-fg)]">{inc.incident}</p>
+                  </div>
+                  <p className="mt-4 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+                    {inc.detail}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  How AIOS gets built                                                        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function HowAIOSGetsBuilt() {
+  const steps = [
+    {
+      n: "01",
+      tag: "Audit",
+      title: "13 questions. A real picture of where your hours go.",
+      body: "The audit is free and takes three minutes. You answer questions about your tools, your team, and how work actually flows. AIOS runs that against its workflow library and produces a report: which automations would recover the most time, what the dollar figures look like, what to build first.",
+      takeaway: "What the system produces: a PDF with a prioritized automation shortlist and the ROI numbers behind it.",
+    },
+    {
+      n: "02",
+      tag: "Discovery",
+      title: "AIOS is not built until we understand the business.",
+      body: "On a call, we go deeper than the audit can reach — your specific clients, your team shape, your recurring edge cases, the things that only operators know. AIOS is not a template; it is built for how your shop actually works. We take roughly a week to reason through what we learn before writing anything down.",
+      takeaway: "What we produce: a real map of your operations. No deliverable at this stage — that comes next.",
+    },
+    {
+      n: "03",
+      tag: "Blueprint",
+      title: "A written plan. A real decision.",
+      body: "The Blueprint is a PDF that shows what is actually happening to your operations today, what AIOS will do about it, which workflows get built first, and what the build will cost. You read it, ask questions, and decide. The Blueprint exists so you can make a fully informed call — not to pressure you into one.",
+      takeaway: "What you walk away with: a buy-or-don't decision with full visibility. No surprises, no nine-page MSAs.",
+    },
+    {
+      n: "04",
+      tag: "Build",
+      title: "Your AIOS goes live.",
+      body: "Workflows run inside your n8n, on your credentials. BRAIN ingests your Blueprint and starts learning your patterns. OBSERVE comes online. GUARD begins watching. OpsRadar can run the system for you or hand it to your team — the choice is yours.",
+      takeaway: "What stays with you: every workflow, every log, every credential. In your accounts, under your control, from day one.",
+    },
+  ];
+
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <div className="max-w-2xl mb-14">
-          <p className="text-label text-[var(--color-fg-subtle)]">What&rsquo;s included</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            Pick the level of support you need.
-          </h2>
-          <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-lg">
-            Every engagement starts with the free, 3-minute audit. Build and Managed add
-            progressively more hands-on coverage from there.
-          </p>
-        </div>
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="text-label text-[var(--color-fg-subtle)]">How it happens</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              From audit to live AIOS in four steps.
+            </h2>
+            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+              Free at the front. Honest in the middle. Real ownership at the end.
+            </p>
+          </div>
 
-        <Table density="medium">
-          <THead>
-            <TR>
-              <TH>Feature</TH>
-              <TH className="text-center">
-                <span className="font-mono text-caption text-[var(--color-fg-subtle)]">Audit</span>
-              </TH>
-              <TH className="text-center">
-                <span className="font-mono text-caption text-[var(--color-fg-subtle)]">One-Time Build</span>
-              </TH>
-              <TH className="text-center">
-                <span className="font-mono text-caption text-[var(--color-primary)]">Managed</span>
-              </TH>
-            </TR>
-          </THead>
-          <tbody>
-            {WHAT_IS_INCLUDED.map((row) => (
-              <TR key={row.feature}>
-                <TD>{row.feature}</TD>
-                <TD className="text-center">
-                  {row.audit ? (
-                    <Badge variant="success">Included</Badge>
-                  ) : (
-                    <span className="text-[var(--color-fg-faint)]">—</span>
-                  )}
-                </TD>
-                <TD className="text-center">
-                  {row.build ? (
-                    <Badge variant="success">Included</Badge>
-                  ) : (
-                    <span className="text-[var(--color-fg-faint)]">—</span>
-                  )}
-                </TD>
-                <TD className="text-center">
-                  {row.managed ? (
-                    <Badge variant="success">Included</Badge>
-                  ) : (
-                    <span className="text-[var(--color-fg-faint)]">—</span>
-                  )}
-                </TD>
-              </TR>
+          <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+            {steps.map((s) => (
+              <li key={s.n} className="grid grid-cols-[auto_1fr] gap-8 md:gap-12 py-10 md:py-12 items-start">
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
+                  — {s.n}
+                </p>
+                <div>
+                  <p className="text-label text-[var(--color-primary)]">{s.tag}</p>
+                  <h3 className="mt-3 font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em] text-balance">
+                    {s.title}
+                  </h3>
+                  <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
+                    {s.body}
+                  </p>
+                  <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-subtle)] max-w-2xl italic">
+                    {s.takeaway}
+                  </p>
+                </div>
+              </li>
             ))}
-          </tbody>
-        </Table>
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Philosophy                                                                 */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function PhilosophySection() {
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="border-l-2 border-[var(--color-primary)] pl-8 md:pl-10">
+          <p className="text-label text-[var(--color-primary)]">On how we work</p>
+          <blockquote className="mt-6 font-serif text-[clamp(1.75rem,3vw+0.5rem,2.75rem)] leading-[1.1] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            We don&apos;t build for shops we don&apos;t understand.
+          </blockquote>
+          <div className="mt-8 space-y-5 text-body-lg leading-[1.65] text-[var(--color-fg-muted)] max-w-3xl">
+            <p>
+              Every agency that comes to us has different tools, different clients,
+              different team structures, different failure modes. The workflows that
+              save 30 hours a week at a paid-media shop with 8 people are not the same
+              ones that save 30 hours at a full-service shop with 22.
+            </p>
+            <p>
+              AIOS is built after we understand the business. Not from a template, not
+              from a menu, not by dropping in a workflow catalog and calling it custom.
+              We do a Discovery call. We take a week to reason about what we learn.
+              We write a Blueprint. Then we build.
+            </p>
+            <p>
+              That is the only honest way to build a system for a business.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -441,29 +553,31 @@ function FinalCTA() {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          See what we&apos;d automate for you.
+          See what your AIOS looks like.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          3-minute audit. Instant results. No commitment.
+          13 questions. Three minutes. An AI-generated report on where your operations
+          are bleeding hours — and which workflows are worth automating first.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a free 20-min call
+            <Link href="/audit">
+              Start the audit
               <ArrowRight className="size-4" />
-            </a>
+            </Link>
           </Button>
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/audit">Or run a self-serve audit</Link>
+          <Button asChild variant="outline" size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Talk to founders
+            </a>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No credit card. No sales pitch. The shortlist of workflows
-          burning the most hours in your agency right now.
+          Free · No card · No pitch · 3 minutes to the report.
         </p>
       </div>
     </section>
