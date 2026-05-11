@@ -23,6 +23,12 @@ import {
   DialogFooter,
   DialogClose,
 } from "<npm>/components/ui/dialog";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "<npm>/components/ui/accordion";
 
 export function Showcase() {
   return (
@@ -43,8 +49,9 @@ export function Showcase() {
       <InputSection />
       <CardSection />
       <DialogSection />
+      <AccordionSection />
 
-      {/* Sections will be added by Tasks 12–22 (Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 13–22 (Badge, Metric, Table, etc.) */}
     </main>
   );
 }
@@ -171,6 +178,41 @@ function DialogSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </section>
+  );
+}
+
+function AccordionSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Accordion</p>
+      <Accordion type="single" collapsible className="max-w-2xl">
+        <AccordionItem value="a">
+          <AccordionTrigger>What does OpsRadar audit?</AccordionTrigger>
+          <AccordionContent>
+            <p>
+              Every workflow you already run — manually or partially automated.
+              We map them to ROI categories and surface the highest-leverage
+              automations first.
+            </p>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="b">
+          <AccordionTrigger>How long does the audit take?</AccordionTrigger>
+          <AccordionContent>
+            <p>About 8 minutes if you know your tools and headcount.</p>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="c">
+          <AccordionTrigger>What happens after the audit?</AccordionTrigger>
+          <AccordionContent>
+            <p>
+              You receive a tailored report with a build queue. Top-priority
+              automations can be deployed within a week.
+            </p>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </section>
   );
 }

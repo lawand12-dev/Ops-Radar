@@ -181,6 +181,21 @@
 [data-state="open"].ds-anim-zoom-in       { animation: ds-fade-in var(--duration-base) var(--ease-out), ds-zoom-in var(--duration-base) var(--ease-out); }
 [data-state="closed"].ds-anim-zoom-out    { animation: ds-fade-out var(--duration-base) var(--ease-out), ds-zoom-out var(--duration-base) var(--ease-out); }
 
+/* =====================================================================
+   Accordion motion (hand-rolled, no tw-animate-css)
+   ===================================================================== */
+@keyframes ds-accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes ds-accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
+}
+
+[data-state="open"].ds-anim-accordion-down  { animation: ds-accordion-down var(--duration-base) var(--ease-out); }
+[data-state="closed"].ds-anim-accordion-up { animation: ds-accordion-up   var(--duration-base) var(--ease-out); }
+
 @layer base {
   html {
     font-family: var(--font-sans);
