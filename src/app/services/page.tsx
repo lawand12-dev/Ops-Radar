@@ -13,17 +13,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 export const metadata: Metadata = {
   title: "Services — OpsRadar",
   description:
-    "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
+    "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
   openGraph: {
     title: "Services — OpsRadar",
     description:
-      "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
+      "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Services — OpsRadar" }],
   },
   twitter: {
     title: "Services — OpsRadar",
     description:
-      "OpsRadar builds the Agency Brain, workflows, and AI Operating System for paid-media, SEO, and full-service agencies. All on n8n. Maintained by our team.",
+      "Six types of automation for paid-media, SEO, and full-service agencies: reporting, lead routing, onboarding, follow-ups, invoicing, and data sync. All on n8n. Maintained by our team.",
     images: ["/og-image.png"],
   },
 };
@@ -39,27 +39,27 @@ const WHAT_WE_BUILD = [
   {
     n: "02",
     title: "Lead Qualification & Routing",
-    desc: "New leads are scored against your criteria the moment they arrive, then routed to the right rep with context already filled in. Hot leads get a follow-up within 90 seconds — automatically.",
+    desc: "New leads are scored the moment they arrive, then routed to the right rep with context pre-filled. Hot leads get a follow-up within 90 seconds — no human in the loop.",
   },
   {
     n: "03",
     title: "Client Onboarding",
-    desc: "A single form submission triggers contracts, tool access provisioning, welcome email sequences, Slack notifications, and project setup — all without anyone on your team lifting a finger.",
+    desc: "One form submission triggers contracts, tool access, welcome sequences, Slack notifications, and project setup. Your team does nothing.",
   },
   {
     n: "04",
     title: "Email & Follow-up Sequences",
-    desc: "Context-aware follow-ups that write themselves based on deal stage, time since last contact, and prior interactions. Leads stop going cold because the system never forgets.",
+    desc: "Follow-ups based on deal stage, days since last contact, and prior interactions. Leads stop going cold because the system tracks what your team forgets.",
   },
   {
     n: "05",
     title: "Invoice & Payment Processing",
-    desc: "Project completion triggers invoice generation, sends it to the client, follows up if unpaid, and notifies your team when it clears — no one has to chase payments manually.",
+    desc: "Project completion triggers invoice generation, delivery, and follow-up if unpaid. Your team gets notified when it clears — not before.",
   },
   {
     n: "06",
     title: "Data Sync Between Tools",
-    desc: "We keep your CRM, project management, invoicing, and communication tools in sync automatically. One update propagates everywhere — no duplicate entry, no data drift.",
+    desc: "HubSpot, Airtable, Notion, Stripe — one update propagates everywhere. No duplicate entry, no data drift between tools.",
   },
 ];
 
@@ -108,7 +108,7 @@ const FAQS = [
   },
   {
     q: "Is technical knowledge required?",
-    a: "No. You describe your problem in plain English — our team handles all the technical implementation. You’ll review the workflow in a walkthrough session, but you won’t need to touch any code.",
+    a: "No. Describe your problem in plain English — our team handles the implementation. You’ll review the workflow in a walkthrough, but you won’t touch any code.",
   },
   {
     q: "Can the workflow be reviewed before it goes live?",
@@ -150,8 +150,8 @@ function PageHeader() {
       <div className="mx-auto max-w-5xl px-6 pt-14 md:pt-20 pb-20 md:pb-24">
         <p className="text-label text-[var(--color-fg-subtle)]">Services</p>
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
-          What specifically do we build for{" "}
-          <span className="text-[var(--color-primary)]">agencies</span>?
+          What we build for{" "}
+          <span className="text-[var(--color-primary)]">agencies</span>.
         </h1>
         <p className="mt-6 max-w-2xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Six types of automation that fix the manual work burning your team: client reporting,
@@ -211,11 +211,11 @@ function FlagshipSection() {
             {[
               {
                 label: "Typical impact",
-                value: "Designed to replace 20–40 hours/week of manual reporting at 10–20 person agencies",
+                value: "Replaces 20–40 hours/week of manual reporting at 10–20 person agencies",
               },
               {
                 label: "Payback",
-                value: "At typical blended rates, a 10-person shop running this would break even in roughly 6 weeks",
+                value: "A 10-person shop running this breaks even in roughly 6 weeks at standard blended rates",
               },
               {
                 label: "Delivery",
@@ -353,8 +353,8 @@ function ComparisonSection() {
             Pick the level of support you need.
           </h2>
           <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-lg">
-            Every engagement starts with the audit — free, self-serve, 3 minutes. The Build
-            and Managed tiers layer on progressively more hands-on support.
+            Every engagement starts with the free, 3-minute audit. Build and Managed add
+            progressively more hands-on coverage from there.
           </p>
         </div>
 
@@ -462,8 +462,8 @@ function FinalCTA() {
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No credit card. No sales pitch. Just the shortlist of workflows
-          burning the most money in your agency right now.
+          No credit card. No sales pitch. The shortlist of workflows
+          burning the most hours in your agency right now.
         </p>
       </div>
     </section>
