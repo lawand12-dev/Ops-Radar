@@ -208,3 +208,171 @@
   }
   html { scroll-behavior: auto; }
 }
+
+/* =====================================================================
+   Legacy class stubs — kept until Phase 1 redesigns each surface.
+   Goal: preserve layout, drop contradictory visuals (glow/gradient/
+   particle/shader effects). Remove individual rules in Phase 1 as
+   pages are rewritten.
+   ===================================================================== */
+
+/* Section tags / titles — flatten to plain text with token colors */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-fg-subtle);
+}
+.section-title {
+  color: var(--color-fg);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.section-copy {
+  max-width: 42rem;
+  color: var(--color-fg-muted);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* Surfaces — flatten gradients/blur/shadows to plain bordered cards */
+.surface-panel,
+.surface-card,
+.surface-card-strong,
+.hardware-card,
+.glass-card,
+.glass-panel,
+.hero-partner-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.surface-divider { height: 1px; background: var(--color-border); }
+.footer-shell, .header-shell { background: var(--color-bg); border: none; backdrop-filter: none; }
+.header-nav-pill, .header-link-active, .header-cta, .header-menu-button,
+.header-mobile-link, .header-mobile-link-active, .hero-secondary-button {
+  background: transparent; box-shadow: none;
+}
+.header-link, .header-mobile-link { color: var(--color-fg-muted); }
+.header-link:hover, .header-mobile-link:hover { color: var(--color-fg); background: transparent; }
+.header-link-active { color: var(--color-fg); }
+.header-link-active::before, .header-link-active::after { display: none; }
+
+/* Hero animations & decoration — neutralize */
+.hero-bg, .mesh-gradient, .radial-fade, .grid-bg, .grid-texture,
+.dot-grid-overlay, .grid-overlay-v2, .noise-texture,
+.hero-particle, .orb-v2, .orb-v2-1, .orb-v2-2, .orb-v2-3, .orbit-dot,
+.orbit-dot-outer, .float-dot, .badge-blink, .ring-glow, .scroll-cue,
+.locked-overlay, .locked-overlay-animated {
+  background: none; animation: none; filter: none;
+  -webkit-mask-image: none; mask-image: none;
+}
+.hero-headline {
+  background: none; -webkit-text-fill-color: currentColor; color: var(--color-fg);
+}
+
+/* Gradient text → plain accent or fg */
+.gradient-text, .text-gradient-animated, .text-white-gradient, .text-blue-gradient {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--color-fg);
+}
+
+/* Glow effects → none */
+.glow-blue, .glow-hover, .cta-pulse, .btn-spring, .btn-press, .btn-main-v2,
+.btn-main-sheen {
+  box-shadow: none;
+  transform: none;
+}
+.hover-card:hover, .hover-chip:hover {
+  box-shadow: none;
+  transform: none;
+}
+.btn-main-sheen::before { display: none; }
+
+/* Reveal / fade-up — show immediately (animation cut) */
+.fade-up, .reveal { opacity: 1; transform: none; transition: none; }
+.fade-up.is-visible, .reveal.visible { opacity: 1; transform: none; }
+.hero-slide-badge, .hero-slide-h1, .hero-slide-desc,
+.hero-slide-cta, .hero-slide-social, .page-enter { opacity: 1; animation: none; }
+.animate-fade-slide-in-1, .animate-fade-slide-in-2,
+.animate-fade-slide-in-3, .animate-fade-slide-in-4 { animation: none; opacity: 1; }
+
+/* Step transitions kept but linear, no easing flourish */
+.step-forward, .step-backward { animation: none; opacity: 1; transform: none; }
+
+/* Showcase card variants → plain bordered card */
+.show-card-v2 { position: relative; }
+.show-card-v2::before { display: none; }
+.show-card-blue, .show-card-cyan, .show-card-purple, .show-card-green {
+  border: 1px solid var(--color-border);
+}
+.show-tag-t-blue, .show-tag-t-cyan, .show-tag-t-purple, .show-tag-t-green {
+  background: var(--color-surface-sunken);
+  color: var(--color-fg-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* Outfit font alias → maps to sans */
+.font-outfit { font-family: var(--font-sans); }
+
+/* Option selection ring → uses focus ring style */
+.option-selected { box-shadow: 0 0 0 2px var(--color-accent-500); }
+
+/* Waste calculator slider — keep functional, retoken */
+.waste-slider {
+  -webkit-appearance: none; appearance: none;
+  height: 6px; border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  outline: none; cursor: pointer;
+}
+.waste-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  background: var(--color-primary);
+  cursor: grab;
+}
+.waste-slider::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  background: var(--color-primary); border: none; cursor: grab;
+}
+
+/* prose-readable kept as a width/line-height helper */
+.prose-readable { line-height: 1.78; letter-spacing: 0.008em; max-width: 68ch; }
+
+/* Hero badge / partner icons — flatten to neutral chip */
+.hero-badge, .hero-partner-icon, .hero-partner-label {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-fg);
+}
+
+/* ── Additional legacy stubs not in the base list above ─────────────
+   Found via grep of TSX files during Task 5 implementation.
+   font-headline / font-body / text-on-surface are Tailwind @theme
+   utilities from the old design system; they need CSS class stubs
+   since the new @theme no longer defines those tokens.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Font utility stubs — old Tailwind @theme tokens no longer present */
+.font-headline { font-family: var(--font-serif); }
+.font-body     { font-family: var(--font-sans); }
+
+/* Semantic color utility stubs — old @theme color tokens no longer present */
+.text-on-surface         { color: var(--color-fg); }
+.text-on-surface-variant { color: var(--color-fg-muted); }
+.bg-surface-container          { background-color: var(--color-surface); }
+.bg-surface-container-low      { background-color: var(--color-surface); }
+.bg-surface-container-high     { background-color: var(--color-surface); }
+.bg-surface-container-lowest   { background-color: var(--color-surface-sunken); }
+.border-outline-variant { border-color: var(--color-border); }
