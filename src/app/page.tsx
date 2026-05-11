@@ -606,8 +606,8 @@ function FinalCTA() {
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No credit card. No sales pitch. Just the shortlist of workflows
-          burning the most money in your agency right now.
+          No card. No sales pitch. Just the shortlist of workflows burning the
+          most hours in your agency this week.
         </p>
       </div>
     </section>
