@@ -9,6 +9,9 @@ import HoneypotField from '../components/HoneypotField'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { Input } from '<npm>/components/ui/input'
 import { Button } from '<npm>/components/ui/button'
+import { Label } from '<npm>/components/ui/label'
+import { Textarea } from '<npm>/components/ui/textarea'
+import { Progress } from '<npm>/components/ui/progress'
 import { getOrCreateAuditSessionId, sendFunnelEvent } from '../../lib/funnel'
 import { track } from '@vercel/analytics'
 
@@ -315,15 +318,58 @@ type Answers = {
   twoWeekChange: string
 }
 
+// ─── Step eyebrow labels ──────────────────────────────────────────────────────
+
+const STEP_EYEBROWS: Record<number, string> = {
+  0:  'Agency profile',
+  1:  'Team size',
+  2:  'Revenue',
+  3:  'Client load',
+  4:  'Tech stack',
+  5:  'Operations',
+  6:  'Your details',
+  7:  'Time lost',
+  8:  'Failure modes',
+  9:  'Top pain',
+  10: 'Frequency',
+  11: 'Cost of inaction',
+  12: 'Vision',
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
+
+function StepEyebrow({ label }: { label: string }) {
+  return (
+    <p className="text-label uppercase tracking-[0.12em] text-[var(--color-fg-subtle)] mb-3">
+      {label}
+    </p>
+  )
+}
 
 function StepHeader({ question, hint }: { question: string; hint?: string }) {
   return (
     <div className="mb-8">
-      <h2 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight leading-snug mb-2 text-on-surface">
+      <h2 className="text-h2 font-serif font-normal tracking-tight leading-snug text-[var(--color-fg)] mb-3">
         {question}
       </h2>
-      {hint && <p className="text-sm text-on-surface-variant">{hint}</p>}
+      {hint && (
+        <p className="text-body text-[var(--color-fg-muted)]">
+          {hint}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function InsightNote({ text }: { text: string }) {
+  return (
+    <div className="mb-6 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
+      <p className="text-label uppercase tracking-[0.12em] text-[var(--color-fg-subtle)] mb-1.5">
+        Why I ask
+      </p>
+      <p className="text-body-sm leading-relaxed text-[var(--color-fg-muted)]">
+        {text}
+      </p>
     </div>
   )
 }
@@ -336,25 +382,30 @@ function SingleSelect({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {options.map((opt, i) => {
+    <div className="flex flex-col gap-2">
+      {options.map((opt) => {
         const selected = value === opt
         return (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            style={{ animationDelay: `${i * 35}ms` }}
-            className={`step-forward px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all duration-150 ${
+            className={[
+              'w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-md)] border text-left text-body transition-colors duration-[var(--duration-fast)]',
               selected
-                ? 'border-primary/60 bg-primary/10 text-on-surface option-selected'
-                : 'border-outline-variant/20 bg-surface-container text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface hover:bg-surface-container-high'
-            }`}
+                ? 'border-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-fg)] option-selected'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-fg-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)]',
+            ].join(' ')}
           >
-            {selected && (
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-secondary mr-2 align-middle" />
-            )}
-            {opt}
+            <span
+              className={[
+                'flex-shrink-0 w-4 h-4 rounded-full border-2 transition-colors duration-[var(--duration-fast)]',
+                selected
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary)]'
+                  : 'border-[var(--color-border-strong)] bg-transparent',
+              ].join(' ')}
+            />
+            <span>{opt}</span>
           </button>
         )
       })}
@@ -370,80 +421,28 @@ function MultiSelect({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="flex flex-wrap gap-2.5">
-      {options.map((opt, i) => {
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
         const selected = values.includes(opt)
         return (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            style={{ animationDelay: `${i * 30}ms` }}
-            className={`step-forward px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-150 active:scale-95 ${
+            className={[
+              'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-full)] border text-body-sm font-medium transition-colors duration-[var(--duration-fast)] active:scale-95',
               selected
-                ? 'border-primary/60 bg-primary/10 text-secondary option-selected'
-                : 'border-outline-variant/20 bg-surface-container text-on-surface-variant hover:border-outline-variant/40 hover:text-on-surface hover:bg-surface-container-high'
-            }`}
+                ? 'border-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-fg)] option-selected'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-fg-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)]',
+            ].join(' ')}
           >
             {selected && (
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-secondary mr-2 align-middle" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] flex-shrink-0" />
             )}
             {opt}
           </button>
         )
       })}
-    </div>
-  )
-}
-
-function TextArea({
-  value, onChange, placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-}) {
-  return (
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={5}
-      className="w-full px-4 py-3.5 rounded-xl border border-outline-variant/20 bg-surface-container text-on-surface text-sm leading-relaxed placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-high resize-none transition-all duration-200"
-    />
-  )
-}
-
-function TextInput({
-  value, onChange, placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-}) {
-  return (
-    <Input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="px-4 py-3 h-auto rounded-xl border-outline-variant/20 bg-surface-container text-on-surface text-sm placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 focus-visible:bg-surface-container-high"
-    />
-  )
-}
-
-function InsightNote({ text }: { text: string }) {
-  return (
-    <div
-      className="mb-6 rounded-2xl border px-4 py-3.5"
-      style={{ background: 'rgba(173,198,255,0.05)', borderColor: 'rgba(173,198,255,0.12)' }}
-    >
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
-        Why I Ask
-      </p>
-      <p className="text-[13px] leading-[1.65] text-on-surface-variant">
-        {text}
-      </p>
     </div>
   )
 }
@@ -765,50 +764,42 @@ export default function AuditPage() {
   // ── Loading screen ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center px-6 gap-10 page-enter">
-        <div className="fixed inset-0 grid-texture pointer-events-none" />
-
-        <div className="relative z-10 w-32 h-32 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-primary/20" />
-          <div
-            className="absolute w-24 h-24 rounded-full border border-primary/40 animate-spin"
-            style={{ animationDuration: '3s' }}
-          />
-          <div
-            className="absolute w-20 h-20 rounded-full border border-secondary/20 animate-spin"
-            style={{ animationDuration: '5s', animationDirection: 'reverse' }}
-          />
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary opacity-90" style={{ boxShadow: '0 0 30px rgba(173,198,255,0.4)' }} />
-          <span className="orbit-dot" />
-          <span className="orbit-dot-outer" style={{ animationDelay: '-2s' }} />
-          <div className="absolute inset-0 rounded-full pointer-events-none" style={{ boxShadow: '0 0 80px 15px rgba(173,198,255,0.12)' }} />
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col items-center justify-center px-6 gap-10">
+        {/* Wordmark */}
+        <div className="absolute top-0 left-0 right-0 flex justify-center pt-6">
+          <Link href="/" className="flex items-center gap-2.5 text-[var(--color-fg)] opacity-60 hover:opacity-100 transition-opacity">
+            <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="h-7 w-7 rounded-lg object-cover" />
+            <span className="font-serif font-normal text-lg tracking-tight">OpsRadar</span>
+          </Link>
         </div>
 
-        <div className="relative z-10 w-32 h-8 pointer-events-none">
-          {[
-            { left: '10%', animationDelay: '0s',    animationDuration: '2.8s' },
-            { left: '30%', animationDelay: '-1s',   animationDuration: '3.2s' },
-            { left: '55%', animationDelay: '-0.5s', animationDuration: '2.5s' },
-            { left: '80%', animationDelay: '-1.8s', animationDuration: '3.5s' },
-          ].map((style, i) => (
-            <span key={i} className="float-dot" style={{ top: '50%', ...style }} />
-          ))}
+        {/* Spinner — minimal ring */}
+        <div className="relative w-12 h-12 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-2 border-[var(--color-border)]" />
+          <div
+            className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--color-primary)] animate-spin"
+            style={{ animationDuration: '0.8s' }}
+          />
         </div>
 
-        <div className="relative z-10 text-center -mt-4">
-          <p key={loadingMsgIndex} className="text-lg font-medium text-on-surface step-forward">
+        <div className="text-center max-w-xs">
+          <p key={loadingMsgIndex} className="text-body font-medium text-[var(--color-fg)]">
             {LOADING_MESSAGES[loadingMsgIndex]}
           </p>
-          <p className="mt-2 text-sm text-on-surface-variant/40">This takes about 20–30 seconds</p>
+          <p className="mt-1.5 text-body-sm text-[var(--color-fg-subtle)]">This takes about 20–30 seconds</p>
         </div>
 
-        <div className="relative z-10 flex gap-2.5">
+        {/* Progress dots */}
+        <div className="flex gap-2">
           {LOADING_MESSAGES.map((_, i) => (
             <div
               key={i}
-              className={`h-1 rounded-full transition-all duration-500 ${
-                i <= loadingMsgIndex ? 'w-8 bg-primary' : 'w-2 bg-surface-container-high'
-              }`}
+              className={[
+                'h-1 rounded-full transition-all duration-500',
+                i <= loadingMsgIndex
+                  ? 'w-6 bg-[var(--color-primary)]'
+                  : 'w-1.5 bg-[var(--color-border-strong)]',
+              ].join(' ')}
             />
           ))}
         </div>
@@ -817,134 +808,40 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface overflow-x-hidden page-enter">
-      <div className="fixed inset-0 grid-texture pointer-events-none opacity-60" />
-      {/* Floating particles */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
-        {[
-          { left: '8%',  top: '20%', delay: '0s',    dur: '3.1s' },
-          { left: '20%', top: '60%', delay: '-1.2s', dur: '2.8s' },
-          { left: '35%', top: '35%', delay: '-0.5s', dur: '3.5s' },
-          { left: '55%', top: '70%', delay: '-2s',   dur: '2.6s' },
-          { left: '70%', top: '25%', delay: '-0.8s', dur: '3.2s' },
-          { left: '85%', top: '55%', delay: '-1.6s', dur: '2.9s' },
-          { left: '92%', top: '80%', delay: '-0.3s', dur: '3.4s' },
-        ].map((p, i) => (
-          <span
-            key={i}
-            className="float-dot"
-            style={{ left: p.left, top: p.top, animationDelay: p.delay, animationDuration: p.dur }}
-          />
-        ))}
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+
+      {/* ── Thin wordmark nav ─────────────────────────────────────────────── */}
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+        <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 text-[var(--color-fg)] hover:text-[var(--color-fg-muted)] transition-colors">
+            <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="h-7 w-7 rounded-lg object-cover" />
+            <span className="font-serif font-normal text-lg tracking-tight">OpsRadar</span>
+          </Link>
+          <span className="text-mono text-[var(--color-fg-subtle)] tabular-nums">
+            {currentStep + 1} / {TOTAL_STEPS}
+          </span>
+        </div>
+      </header>
+
+      {/* ── Progress bar ─────────────────────────────────────────────────── */}
+      <div className="border-b border-[var(--color-border)]">
+        <Progress
+          value={progressPct}
+          className="rounded-none h-0.5 bg-[var(--color-border)]"
+        />
       </div>
 
-      {/* Nav */}
-      <div className="relative z-10 px-6 pt-4">
-        <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-          <div className="flex items-center justify-between gap-4 px-3 py-1">
-            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
-              <Image src="/logo.png" alt="OpsRadar" width={36} height={36} className="h-9 w-9 rounded-xl object-cover" />
-              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
-                OpsRadar
-              </span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
-                {currentStep + 1} / {TOTAL_STEPS}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="relative z-10 max-w-3xl mx-auto px-6 pt-4">
-        <div className="relative h-1 bg-surface-container-high/80 rounded-full">
-          <div
-            className="h-full rounded-full transition-all duration-500 ease-out"
-            style={{
-              width: `${progressPct}%`,
-              background: 'linear-gradient(90deg, #adc6ff, #4cd7f6, rgba(255,255,255,0.4) 95%, transparent 100%)',
-              boxShadow: '0 0 8px 2px rgba(173,198,255,0.45), 0 0 2px rgba(76,215,246,0.6)',
-            }}
-          />
-        </div>
-        <div className="flex justify-between mt-2 px-0.5">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div
-              key={i}
-              className={`w-1 h-1 rounded-full transition-all duration-300 ${
-                i <= currentStep ? 'bg-primary' : 'bg-outline-variant'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Step content */}
-      <main className="relative z-10 max-w-3xl mx-auto px-6 pt-12 pb-8">
+      {/* ── Step content ─────────────────────────────────────────────────── */}
+      <main className="max-w-2xl mx-auto px-6 pt-12 pb-24">
         <div
           key={animKey}
           className={direction === 'forward' ? 'step-forward' : 'step-backward'}
           style={{ willChange: 'transform, opacity' }}
         >
-          {/* Step 6 — Lead capture */}
-          {currentStep === 6 && (
-            <>
-              <StepHeader
-                question="Your audit is being prepared — where should I send it?"
-                hint="I'll deliver your full report to your inbox in about 3 minutes. No spam, no list."
-              />
-              <div className="space-y-4">
-                <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
-                <div>
-                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
-                    Your name
-                  </label>
-                  <Input
-                    type="text"
-                    value={leadName}
-                    onChange={(e) => setLeadName(e.target.value)}
-                    placeholder="Alex Johnson"
-                    autoFocus
-                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
-                    Work email
-                    <span className="ml-1.5 text-on-surface-variant/40 font-normal">I use this to send your report and nothing else</span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={leadEmail}
-                    onChange={(e) => setLeadEmail(e.target.value)}
-                    placeholder="alex@youragency.com"
-                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
-                  />
-                  {leadEmail.length > 0 && !isValidEmail && (
-                    <p className="mt-1.5 text-xs text-on-surface-variant/50">Enter a valid email address</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-on-surface-variant mb-1.5">
-                    Your agency's name
-                  </label>
-                  <Input
-                    type="text"
-                    value={leadCompany}
-                    onChange={(e) => setLeadCompany(e.target.value)}
-                    placeholder="Acme Agency"
-                    className="bg-surface-container border-outline-variant/20 text-on-surface placeholder:text-on-surface-variant/40 focus-visible:border-primary/40 focus-visible:ring-primary/20 h-11 rounded-xl px-4"
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
           {/* Step 0 — Agency type */}
           {currentStep === 0 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[0]} />
               <StepHeader
                 question="What kind of business are you running?"
                 hint="I tailor benchmarks, workflow assumptions, and stack recommendations around your operating model."
@@ -957,15 +854,21 @@ export default function AuditPage() {
               />
               {answers.agencyType === 'Other' && (
                 <div className="mt-4">
-                  <TextInput
+                  <Label htmlFor="agencyTypeOther" className="mb-1.5 text-[var(--color-fg-muted)]">
+                    Describe your agency type
+                  </Label>
+                  <Input
+                    id="agencyTypeOther"
+                    type="text"
                     value={answers.agencyTypeOther}
-                    onChange={(v) => setAnswers((p) => ({ ...p, agencyTypeOther: v }))}
-                    placeholder="Describe your agency type..."
+                    onChange={(e) => setAnswers((p) => ({ ...p, agencyTypeOther: e.target.value }))}
+                    placeholder="e.g. Legal ops consultancy"
+                    className="mt-1"
                   />
                 </div>
               )}
               {needsAgencyTypeDetail && answers.agencyTypeOther.trim().length > 0 && answers.agencyTypeOther.trim().length < 3 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so I can tailor the audit.</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Add a little more detail so I can tailor the audit.</p>
               )}
             </>
           )}
@@ -973,6 +876,7 @@ export default function AuditPage() {
           {/* Step 1 — Team size */}
           {currentStep === 1 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[1]} />
               <StepHeader question="How large is your team?" />
               <SingleSelect
                 options={TEAM_SIZES}
@@ -985,6 +889,7 @@ export default function AuditPage() {
           {/* Step 2 — Revenue */}
           {currentStep === 2 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[2]} />
               <StepHeader question="What's your approximate monthly revenue?" />
               <SingleSelect
                 options={REVENUE_OPTIONS}
@@ -997,6 +902,7 @@ export default function AuditPage() {
           {/* Step 3 — Active clients */}
           {currentStep === 3 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[3]} />
               <StepHeader question="How many active clients do you manage at a time?" />
               <SingleSelect
                 options={CLIENT_COUNTS}
@@ -1009,6 +915,7 @@ export default function AuditPage() {
           {/* Step 4 — Tools (adaptive by agency type) */}
           {currentStep === 4 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[4]} />
               <StepHeader
                 question="What tools does your team use daily?"
                 hint={agencyCopy.toolsHint}
@@ -1021,25 +928,31 @@ export default function AuditPage() {
               />
               {answers.tools.includes('Other') && (
                 <div className="mt-4">
-                  <TextInput
+                  <Label htmlFor="toolsOther" className="mb-1.5 text-[var(--color-fg-muted)]">
+                    Other tools
+                  </Label>
+                  <Input
+                    id="toolsOther"
+                    type="text"
                     value={answers.toolsOther}
-                    onChange={(v) => setAnswers((p) => ({ ...p, toolsOther: v }))}
+                    onChange={(e) => setAnswers((p) => ({ ...p, toolsOther: e.target.value }))}
                     placeholder="List any other tools your team uses..."
+                    className="mt-1"
                   />
                 </div>
               )}
               {needsToolDetail && answers.toolsOther.trim().length > 0 && answers.toolsOther.trim().length < 3 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Name the extra tool so I can factor it into the diagnosis.</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Name the extra tool so I can factor it into the diagnosis.</p>
               )}
               {needsToolSignalFollowup && (
-                <div className="mt-6 rounded-[20px] border border-primary/12 bg-primary/5 p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-2">
+                <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+                  <p className="text-label uppercase tracking-[0.12em] text-[var(--color-fg-subtle)] mb-2">
                     Smart follow-up
                   </p>
-                  <p className="font-headline text-[17px] font-bold tracking-[-0.02em] text-on-surface mb-2">
+                  <p className="text-h4 font-sans font-medium text-[var(--color-fg)] mb-2">
                     Based on your stack, what still gets stitched together by hand?
                   </p>
-                  <p className="text-[13px] leading-[1.65] text-on-surface-variant mb-4">
+                  <p className="text-body-sm text-[var(--color-fg-muted)] mb-4">
                     Pick the handoffs that feel painfully familiar. This helps the diagnosis catch contradictions between your tool stack and your lived operational reality.
                   </p>
                   <MultiSelect
@@ -1048,19 +961,20 @@ export default function AuditPage() {
                     onChange={toggleMulti('toolSignals')}
                   />
                   <div className="mt-4">
-                    <TextInput
+                    <Input
+                      type="text"
                       value={answers.toolSignalsDetail}
-                      onChange={(v) => setAnswers((p) => ({ ...p, toolSignalsDetail: v }))}
+                      onChange={(e) => setAnswers((p) => ({ ...p, toolSignalsDetail: e.target.value }))}
                       placeholder="Optional: name another tool-to-tool handoff that breaks often..."
                     />
                   </div>
                   {answers.toolSignals.length === 0 && answers.toolSignalsDetail.trim().length > 0 && answers.toolSignalsDetail.trim().length < 10 && (
-                    <p className="mt-2 text-xs text-on-surface-variant/50">Add a little more detail so the workflow pain is clear.</p>
+                    <p className="mt-2 text-body-sm text-[var(--color-danger)]">Add a little more detail so the workflow pain is clear.</p>
                   )}
                 </div>
               )}
               {needsToolSignalFollowup && answers.toolSignals.length === 0 && answers.toolSignalsDetail.trim().length === 0 && (
-                <p className="mt-3 text-xs text-on-surface-variant/50">Choose at least one stack pain point or write your own before continuing.</p>
+                <p className="mt-3 text-body-sm text-[var(--color-fg-muted)]">Choose at least one stack pain point or write your own before continuing.</p>
               )}
             </>
           )}
@@ -1068,6 +982,7 @@ export default function AuditPage() {
           {/* Step 5 — Operations state */}
           {currentStep === 5 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[5]} />
               <StepHeader
                 question="Which of these best describes your current operations?"
               />
@@ -1080,9 +995,65 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 8 — Hours lost */}
+          {/* Step 6 — Lead capture */}
+          {currentStep === 6 && (
+            <>
+              <StepEyebrow label={STEP_EYEBROWS[6]} />
+              <StepHeader
+                question="Your audit is being prepared — where should I send it?"
+                hint="I'll deliver your full report to your inbox in about 3 minutes. No spam, no list."
+              />
+              <div className="space-y-4">
+                <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
+                <div>
+                  <Label htmlFor="leadName">Your name</Label>
+                  <Input
+                    id="leadName"
+                    type="text"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    placeholder="Alex Johnson"
+                    autoFocus
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="leadEmail">
+                    Work email
+                    <span className="ml-1.5 text-[var(--color-fg-subtle)] font-normal text-body-sm">— used only to send your report</span>
+                  </Label>
+                  <Input
+                    id="leadEmail"
+                    type="email"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    placeholder="alex@youragency.com"
+                    className="mt-1.5"
+                    aria-invalid={leadEmail.length > 0 && !isValidEmail}
+                  />
+                  {leadEmail.length > 0 && !isValidEmail && (
+                    <p className="mt-1.5 text-body-sm text-[var(--color-danger)]" role="alert">Enter a valid email address</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="leadCompany">Your agency&apos;s name</Label>
+                  <Input
+                    id="leadCompany"
+                    type="text"
+                    value={leadCompany}
+                    onChange={(e) => setLeadCompany(e.target.value)}
+                    placeholder="Acme Agency"
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Step 7 — Hours lost */}
           {currentStep === 7 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[7]} />
               <StepHeader
                 question="How many hours per week does your team lose to work that feels 'beneath' their pay grade?"
               />
@@ -1095,9 +1066,10 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 9 — Breakage response */}
+          {/* Step 8 — Breakage response */}
           {currentStep === 8 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[8]} />
               <StepHeader
                 question="When something breaks in your operations, what happens?"
               />
@@ -1110,27 +1082,31 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 10 — Top pain process */}
+          {/* Step 9 — Top pain process */}
           {currentStep === 9 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[9]} />
               <StepHeader
                 question="What's the #1 process that, when it fails, hurts your business the most?"
               />
               <InsightNote text="This is the anchor for the diagnosis. The stronger this answer is, the sharper the urgency and waste ranking becomes." />
-              <TextArea
+              <Textarea
                 value={answers.topPainProcess}
-                onChange={(v) => setAnswers((p) => ({ ...p, topPainProcess: v }))}
+                onChange={(e) => setAnswers((p) => ({ ...p, topPainProcess: e.target.value }))}
                 placeholder={agencyCopy.automationPlaceholder}
+                rows={5}
+                className="resize-none"
               />
               {answers.topPainProcess.trim().length > 0 && answers.topPainProcess.trim().length < 20 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]" role="alert">Add a bit more detail to continue</p>
               )}
             </>
           )}
 
-          {/* Step 11 — Frequency */}
+          {/* Step 10 — Frequency */}
           {currentStep === 10 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[10]} />
               <StepHeader
                 question="How often does this process happen?"
               />
@@ -1143,50 +1119,59 @@ export default function AuditPage() {
             </>
           )}
 
-          {/* Step 12 — Six-month cost */}
+          {/* Step 11 — Six-month cost */}
           {currentStep === 11 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[11]} />
               <StepHeader
                 question="What's the real cost if this process keeps running manually for another 6 months?"
               />
               <InsightNote text="Think about the real business cost: wasted hours, lost clients, missed growth, team burnout, or the founder staying trapped in low-leverage work." />
-              <TextArea
+              <Textarea
                 value={answers.sixMonthCost}
-                onChange={(v) => setAnswers((p) => ({ ...p, sixMonthCost: v }))}
+                onChange={(e) => setAnswers((p) => ({ ...p, sixMonthCost: e.target.value }))}
                 placeholder="Think about: hours wasted, clients lost, team burnout, missed growth"
+                rows={5}
+                className="resize-none"
               />
               {answers.sixMonthCost.trim().length > 0 && answers.sixMonthCost.trim().length < 20 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]" role="alert">Add a bit more detail to continue</p>
               )}
             </>
           )}
 
-          {/* Step 13 — Desired change */}
+          {/* Step 12 — Desired change */}
           {currentStep === 12 && (
             <>
+              <StepEyebrow label={STEP_EYEBROWS[12]} />
               <StepHeader
                 question="If I could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
               />
               <InsightNote text="This gives the diagnosis emotional contrast. I want to know what relief, speed, or growth would actually look like on the other side." />
-              <TextArea
+              <Textarea
                 value={answers.twoWeekChange}
-                onChange={(v) => setAnswers((p) => ({ ...p, twoWeekChange: v }))}
+                onChange={(e) => setAnswers((p) => ({ ...p, twoWeekChange: e.target.value }))}
                 placeholder={agencyCopy.futureVisionPlaceholder}
+                rows={5}
+                className="resize-none"
               />
               {answers.twoWeekChange.trim().length > 0 && answers.twoWeekChange.trim().length < 20 && (
-                <p className="mt-2 text-xs text-on-surface-variant/50">Add a bit more detail to continue</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]" role="alert">Add a bit more detail to continue</p>
               )}
 
-              <div className="mt-8 pt-6 border-t border-white/6">
-                <label className="block text-sm font-medium text-on-surface mb-1">
-                  Got a website? <span className="text-on-surface-variant/60 font-normal">(optional)</span>
-                </label>
-                <p className="text-xs text-on-surface-variant/55 mb-3">
+              <div className="mt-8 pt-6 border-t border-[var(--color-border)]">
+                <Label htmlFor="websiteUrl">
+                  Got a website?
+                  <span className="ml-1.5 text-[var(--color-fg-subtle)] font-normal">Optional</span>
+                </Label>
+                <p className="mt-1 mb-3 text-body-sm text-[var(--color-fg-muted)]">
                   Share your URL and I&apos;ll tailor the report to your specific stack and services. Your website isn&apos;t graded — it just helps me be more accurate about your operations.
                 </p>
-                <TextInput
+                <Input
+                  id="websiteUrl"
+                  type="text"
                   value={answers.websiteUrl}
-                  onChange={(v) => setAnswers((p) => ({ ...p, websiteUrl: v }))}
+                  onChange={(e) => setAnswers((p) => ({ ...p, websiteUrl: e.target.value }))}
                   placeholder="https://youragency.com"
                 />
               </div>
@@ -1194,15 +1179,15 @@ export default function AuditPage() {
           )}
         </div>
 
-        {/* Navigation */}
+        {/* ── Navigation ─────────────────────────────────────────────────── */}
         <div className="mt-10 flex items-center justify-between">
           <Button
             type="button"
             variant="ghost"
             onClick={goBack}
-            className="flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface hover:bg-transparent px-0 py-2 h-auto"
+            className="flex items-center gap-1.5 text-body-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] px-0 h-auto"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {currentStep === 0 ? 'Back to home' : 'Back'}
@@ -1213,10 +1198,10 @@ export default function AuditPage() {
               type="button"
               onClick={goNext}
               disabled={!canProceed()}
-              className="px-7 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
+              className="gap-2"
             >
               Start my audit
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Button>
@@ -1225,10 +1210,10 @@ export default function AuditPage() {
               type="button"
               onClick={goNext}
               disabled={!canProceed()}
-              className="px-6 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring shadow-[0_0_20px_rgba(173,198,255,0.25)]"
+              className="gap-2"
             >
               Continue
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Button>
@@ -1237,10 +1222,10 @@ export default function AuditPage() {
               type="button"
               onClick={handleSubmit}
               disabled={!canProceed()}
-              className="px-7 py-3 h-auto rounded-full font-semibold text-sm gap-2 btn-spring cta-pulse shadow-[0_0_30px_rgba(173,198,255,0.3)]"
+              className="gap-2"
             >
               Generate My Audit
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Button>
@@ -1249,15 +1234,18 @@ export default function AuditPage() {
 
         {/* Error */}
         {loadingError && (
-          <div className="mt-4 p-3.5 rounded-xl border border-red-500/20 bg-red-500/10 text-sm text-red-400 text-center">
+          <div
+            className="mt-4 p-3.5 rounded-[var(--radius-md)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/8 text-body-sm text-[var(--color-danger)] text-center"
+            role="alert"
+          >
             {loadingError}
           </div>
         )}
       </main>
 
-      {/* Bottom hint */}
-      <div className="relative z-10 text-center pb-10">
-        <p className="text-xs text-on-surface-variant/30">
+      {/* ── Bottom hint ─────────────────────────────────────────────────── */}
+      <div className="text-center pb-10">
+        <p className="text-body-sm text-[var(--color-fg-faint)]">
           Free · Results sent to your inbox
         </p>
       </div>
