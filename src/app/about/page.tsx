@@ -10,17 +10,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: 'About — OpsRadar',
   description:
-    'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
+    'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
   openGraph: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
+      'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'About — OpsRadar' }],
   },
   twitter: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
+      'OpsRadar audits how your agency actually works, builds the automation layer, and keeps it running. Agency operators, not generic devs.',
     images: ['/og-image.png'],
   },
 }
@@ -67,7 +67,7 @@ const WHY_TRUST = [
   {
     kind: 'On experience',
     quote: 'Agency operators, not generic devs.',
-    body: 'We came up inside agency ops. We watched smart teams bleed margin to broken handoffs, duplicate entry, and automations no one trusted two weeks after launch. OpsRadar exists because operational debt keeps getting dressed up as process.',
+    body: 'We came up inside agency ops. Smart teams bleeding margin to broken handoffs, duplicate entry, and automations nobody trusted two weeks after launch. OpsRadar exists because operational debt keeps getting dressed up as process.',
   },
   {
     kind: 'On ownership',
@@ -115,9 +115,9 @@ function PageHeader() {
             We build the system your agency should already have.
           </h1>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-            Most agencies do not have an operations problem. They have a system problem.
-            OpsRadar diagnoses how your work actually flows, builds the system that runs it,
-            and keeps it running.
+            Most agencies don&apos;t have an operations problem. They have a system problem.
+            OpsRadar maps how your work actually flows, builds the automation layer on top of it,
+            and keeps that layer running.
           </p>
         </div>
       </div>
@@ -137,23 +137,22 @@ function ShortVersion() {
           <div className="lg:sticky lg:top-24 lg:self-start">
             <p className="text-label text-[var(--color-fg-subtle)]">What we do</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              The brain, the workflows, and the interface.
+              Workflows, intelligence, and the interface to run them.
             </h2>
           </div>
 
           <div className="space-y-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
             <p>
-              We build the brain, the workflows, and the interface your team uses to ask
-              how the business is actually running.
+              We build the automation layer that sits between your tools — Slack, HubSpot,
+              Meta, Google Ads, Klaviyo, n8n — and the work your team does every day.
             </p>
             <p>
-              OpsRadar is not a tool your team has to learn. It is the layer that connects
-              the tools you already use, captures the knowledge in your team&apos;s heads,
-              and runs the work that should never have been manual.
+              OpsRadar is not a tool your team has to learn. It connects the tools you already use,
+              captures the knowledge in your team&apos;s heads, and runs the work that should never
+              have been manual.
             </p>
             <p className="font-serif text-h3 tracking-[-0.015em] text-[var(--color-fg)] text-balance">
-              We turn how your agency really operates into a system that runs itself —
-              and gets sharper every week.
+              Your agency&apos;s real operations, turned into a system that gets sharper every week.
             </p>
           </div>
         </div>
@@ -225,19 +224,17 @@ function OriginNote() {
           <p>
             OpsRadar exists because we kept watching the same thing happen. Agencies hire to fix
             problems that should be automated. They build process docs no one reads. They lose
-            Friday afternoons to reports a script could ship in seconds. We built OpsRadar to end
-            that loop.
+            Friday afternoons to reports a script could ship in seconds.
           </p>
           <p>
-            We spent years inside agencies watching good teams lose margin to broken handoffs,
-            spreadsheet rituals, and automations that looked clever in demos but collapsed in
-            production. OpsRadar is the response: an operator-minded team designing systems that
+            We spent years inside agencies watching good teams bleed margin to broken handoffs,
+            spreadsheet rituals, and automations that looked clever in demos but broke in
+            production. OpsRadar is the response: an operator-minded team building systems that
             stay useful after launch.
           </p>
           <p>
-            We exist because the gap between AI capability and operational reality is still
-            enormous. Most agencies have the tools. Almost none have the system connecting them.
-            We are building that system.
+            Most agencies have the tools — HubSpot, Meta, GA4, Klaviyo, Slack. Almost none have
+            the layer connecting them. That&apos;s what we build.
           </p>
         </div>
       </div>
@@ -256,7 +253,7 @@ function WhySection() {
         <div className="max-w-2xl mb-12">
           <p className="text-label text-[var(--color-fg-subtle)]">Why trust us</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
-            Why this model works where retainers fail.
+            Why this works where retainers don&apos;t.
           </h2>
         </div>
 
@@ -294,16 +291,16 @@ function VisionCallout() {
           <p className="text-label text-[var(--color-primary)]">The vision</p>
           <div className="mt-6 space-y-6 text-body-lg leading-[1.65] text-[var(--color-fg-muted)] max-w-3xl">
             <p>
-              Every agency that runs on OpsRadar gets their own AI Operating System —
-              built from their real operations, their tools, their data, their history.
+              Every agency that runs on OpsRadar gets an operations layer built from
+              their real workflows, their tools, their data, their history.
             </p>
             <p>
-              Their team queries it through Claude. Their workflows run on it through
-              n8n. Their brain gets richer every week.
+              Their team queries it through Claude. Their automations run through n8n.
+              The system gets sharper every week without anyone maintaining it manually.
             </p>
             <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
-              We are not building another automation tool. We are building the
-              operating system that runs the agency.
+              Not another automation tool. The layer that makes the tools you already
+              have actually work together.
             </p>
           </div>
         </div>
