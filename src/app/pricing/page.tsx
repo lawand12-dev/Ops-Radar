@@ -6,7 +6,6 @@ import { ArrowRight, Check, X } from "lucide-react";
 import { SiteNav } from "<npm>/components/marketing/site-nav";
 import { SiteFooter } from "<npm>/components/marketing/site-footer";
 import { Button } from "<npm>/components/ui/button";
-import { Badge } from "<npm>/components/ui/badge";
 import {
   Card,
   CardHeader,
@@ -33,11 +32,11 @@ const PRICING_PAGE_VISIBLE =
 export const metadata: Metadata = {
   title: "Pricing — OpsRadar",
   description:
-    "Flat retainers. No per-run fees. OpsRadar builds and maintains your agency's n8n automations — from a free audit to a fully managed system.",
+    "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees, no task-volume surprises. Starts with a free 3-minute audit.",
   openGraph: {
     title: "Pricing — OpsRadar",
     description:
-      "Flat retainers. No per-run fees. Three tiers: free audit, one-time build, fully managed.",
+      "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees.",
     url: "https://www.opsradar.co/pricing",
     siteName: "OpsRadar",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Pricing" }],
@@ -48,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pricing — OpsRadar",
     description:
-      "Flat retainers. No per-run fees. Three tiers: free audit, one-time build, fully managed.",
+      "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees.",
     images: ["/og-image.png"],
   },
   robots: { index: false, follow: false },
@@ -56,79 +55,96 @@ export const metadata: Metadata = {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const TIERS = [
+const FUNNEL_STEPS = [
   {
+    n: "01",
+    tag: "Audit",
     name: "Audit",
-    tagline: "Know exactly what to automate first.",
-    price: "$0",
-    priceNote: "Free. No card required.",
+    tagline: "Start here. Three minutes. No card.",
+    priceLabel: "Free",
+    priceNote: "Always.",
     highlight: false,
     bullets: [
-      "3-minute questionnaire. Real numbers, not ranges.",
+      "13 questions about your tools, team, and operations",
+      "AI-generated PDF report delivered instantly",
+      "Identifies the workflows worth automating first",
       "Dollar-figure ROI estimate per workflow",
-      "Shortlist of the 3 highest-leverage automations",
-      "Recommendations tied to your actual tool stack",
-      "Instant delivery — no waiting on a sales call",
+      "No sales call required to get the report",
     ],
     cta: { label: "Run the free audit", href: "/audit", external: false },
-    badge: null,
   },
   {
-    name: "Build",
-    tagline: "We build the workflows. You own them.",
-    price: "$4,500–$18,000",
-    priceNote: "One-time, fixed price.",
+    n: "02",
+    tag: "Discovery",
+    name: "Discovery",
+    tagline: "A call. We learn your shop. We don't pitch.",
+    priceLabel: "Free",
+    priceNote: "No obligation.",
     highlight: false,
     bullets: [
-      "Fixed-price proposal within 48 h of kickoff",
-      "Workflows built in your n8n account — you own the code",
-      "Delivered in 5–14 business days depending on scope",
-      "Video walkthrough before anything goes live",
-      "30-day bug fix guarantee after delivery",
-      "Covers 1–8 workflows depending on complexity",
+      "Deep diagnosis beyond the audit questions",
+      "We map your tools, clients, team, and patterns",
+      "We tell you honestly if AIOS is the right fit",
+      "No demo, no deck, no nine-page MSA",
+      "We walk away understanding how your shop actually works",
     ],
-    cta: { label: "Talk to founders", href: CALENDLY_STRATEGY_CALL_URL, external: true },
-    badge: null,
+    cta: { label: "Book a discovery call", href: CALENDLY_STRATEGY_CALL_URL, external: true },
   },
   {
-    name: "Managed",
-    tagline: "We run it. You stop thinking about it.",
-    price: "$3,500/mo",
-    priceNote: "Flat. No overage. Cancel with 30 days notice.",
+    n: "03",
+    tag: "Blueprint",
+    name: "Blueprint",
+    tagline: "A written plan for your AIOS. With the build price inside.",
+    priceLabel: "Paid engagement",
+    priceNote: "Quoted on the discovery call.",
     highlight: true,
     bullets: [
-      "Everything in Build, recurring",
-      "24/7 monitoring — we see failures before you do",
-      "API breakage recovery when Meta or Google changes something",
-      "Monthly performance review with numbers, not anecdotes",
-      "New workflow requests included (queue-based, not hourly)",
-      "Credentials and logs stay in your infrastructure — always",
-      "Your team queries Claude directly against your own data",
+      "Current-state diagnosis of your operations",
+      "Full plan for what AIOS will do in your shop",
+      "Which workflows get built first and why",
+      "The build price — fixed, in writing",
+      "A buy-or-don't decision with full visibility",
     ],
-    cta: { label: "Talk to founders", href: CALENDLY_STRATEGY_CALL_URL, external: true },
-    badge: "Most popular",
+    cta: { label: "Book a discovery call", href: CALENDLY_STRATEGY_CALL_URL, external: true },
+  },
+  {
+    n: "04",
+    tag: "Build",
+    name: "Build",
+    tagline: "Your AIOS goes live. Flat retainer. No volume surprises.",
+    priceLabel: "Custom-scoped",
+    priceNote: "Price is in your Blueprint PDF.",
+    highlight: false,
+    bullets: [
+      "Workflows run in your n8n — you own the code",
+      "OPERATE, OBSERVE, BRAIN, and GUARD all live",
+      "Flat monthly retainer once the system is running",
+      "No per-run fees, no task-volume tiers",
+      "Every credential, every log — in your accounts",
+    ],
+    cta: { label: "Start with the audit", href: "/audit", external: false },
   },
 ];
 
 const FLAT_RETAINER_POINTS = [
   {
     label: "No per-run fees",
-    copy: "Zapier charges per task. We charge per month. Run 1,000 automations or 1,000,000 — the invoice is the same.",
+    copy: "Zapier charges per task. AIOS charges per month. Run 1,000 automations or 1,000,000 — the invoice is the same.",
   },
   {
     label: "No surprise bills",
-    copy: "Scope is fixed before we start. You see the full price in writing before we write a line of code.",
+    copy: "Scope is fixed before build begins. The price lives in your Blueprint PDF. Nothing changes after you say yes.",
   },
   {
     label: "No volume punishment",
-    copy: "As your agency grows, your automation runs more. That's the point. We don't penalise you for it.",
+    copy: "As your agency grows, AIOS runs more. That is the point. The retainer does not penalise you for using the system.",
   },
 ];
 
 const NOT_INCLUDED = [
-  "Training your team to use n8n",
   "Hourly consulting or ad-hoc advisory",
-  "Dashboards you want to own and maintain yourself",
+  "Training your team to use n8n",
+  "BI dashboards you want to own and maintain yourself",
   "Data warehousing or business intelligence setup",
   "IT infrastructure or cloud hosting",
   "Integrations with tools that have no public API",
@@ -136,36 +152,36 @@ const NOT_INCLUDED = [
 
 const FAQS = [
   {
-    q: "What's actually different about flat pricing?",
-    a: "Most automation tools charge per task, per run, or per seat. Zapier's Business plan runs $103/mo for 2,000 tasks — a single report workflow can burn through that in a week. OpsRadar charges one flat number regardless of how many times your workflows execute.",
+    q: "How much does AIOS cost?",
+    a: "Build cost is set in your Blueprint PDF after OpsRadar understands your shop. There is no list price because there is no list AIOS — every one is built for the business it runs inside. The Blueprint is where the number lives.",
   },
   {
-    q: "What tools can you connect?",
-    a: "Anything with an API or webhook: HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Triple Whale, Klaviyo, Meta Ads, Google Ads, GA4, Calendly, and hundreds more via n8n's native library. If it has an API, we can reach it.",
+    q: "What is the Blueprint, and why is the price there?",
+    a: "The Blueprint is a paid engagement delivered as a PDF. It shows the current-state diagnosis of your operations, the full plan for your AIOS, what gets built first, and the fixed build price. The price belongs there — not on a webpage — because scope determines cost, and scope comes from understanding your shop, not guessing at it.",
   },
   {
-    q: "How long does a build take?",
-    a: "A single workflow takes 5–10 business days. A multi-workflow system takes 2–4 weeks. You get a specific timeline in the proposal before committing — not a range after you've paid.",
+    q: "What does flat retainer actually mean?",
+    a: "Once AIOS is live, you pay one flat number each month. Your workflows can execute as many times as they need to. There are no per-run fees, no task-volume tiers, and no usage-based surcharges. The invoice is the same whether the system runs ten times or ten thousand times.",
   },
   {
-    q: "What if a workflow breaks after delivery?",
-    a: "On Managed, our team is monitoring 24/7 and fixes it before you notice. On Build, every delivery includes 30 days of free bug fixes. After 30 days, you can upgrade to Managed or handle it yourself — you own the code either way.",
+    q: "How is AIOS different from Zapier or ad-hoc consulting?",
+    a: "Zapier charges per task — it punishes you for growing. Consulting charges by the hour — you pay for time whether or not anything ships. AIOS is a built system, delivered to your infrastructure, running on a flat retainer. You pay for outcomes, not inputs.",
   },
   {
-    q: "Do I need to understand n8n to work with you?",
-    a: "No. You describe the problem in plain English. We build it, walk you through the logic on a recorded video, and deploy it. You'll understand what it does — you won't need to touch the code.",
-  },
-  {
-    q: "What happens if I cancel Managed?",
-    a: "Cancel with 30 days notice. Your workflows keep running in your n8n account — we just stop maintaining them. Nothing breaks on cancellation because we never held your code hostage.",
+    q: "What tools can AIOS connect?",
+    a: "Anything with an API or webhook: HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Triple Whale, Klaviyo, Meta Ads, Google Ads, GA4, Calendly, and hundreds more via n8n's native library. If it has an API, AIOS can reach it.",
   },
   {
     q: "Do you store my clients' data?",
-    a: "No. Client data from your connected tools (HubSpot, Google Ads, etc.) is never written to OpsRadar's database. Workflows read your data live through your credentials. Your data stays on your infrastructure.",
+    a: "No. Client data from your connected tools is never written to OpsRadar's database. Workflows read your data live through your credentials. Your data stays on your infrastructure, not ours.",
   },
   {
-    q: "How is the Build price calculated?",
-    a: "$4,500 covers a straightforward single-workflow build (e.g. a lead router or invoice reminder). Complex multi-step, multi-tool systems with branching logic can reach $18,000. You'll have a fixed number in writing within 48 hours of the kickoff call.",
+    q: "What happens to my workflows if I stop working with OpsRadar?",
+    a: "Every workflow lives in your n8n account, on your credentials, under your control from day one. If OpsRadar ever disappeared, nothing would break. The code is yours and always has been.",
+  },
+  {
+    q: "How long does a build take?",
+    a: "Timeline is part of the Blueprint. OpsRadar gives you a specific delivery window in writing before you commit — not a range after you have paid.",
   },
 ];
 
@@ -181,7 +197,7 @@ export default function PricingPage() {
       <SiteNav activeHref="/pricing" />
 
       <PageHeader />
-      <TierGrid />
+      <FunnelSection />
       <FlatRetainerSection />
       <NotIncludedSection />
       <FaqSection />
@@ -202,11 +218,13 @@ function PageHeader() {
       <div className="mx-auto max-w-5xl px-6 pt-14 md:pt-20 pb-20 md:pb-24">
         <p className="text-label text-[var(--color-fg-subtle)]">Pricing</p>
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-2xl">
-          Flat retainers. No per-run fees.
+          Built to your shop. Priced to your Blueprint.
         </h1>
         <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          You pay one number per month. Your workflows run as many times as they
-          need to. Zapier charges for every task. We never do.
+          AIOS is not a template with a price tag. It is built for the specific
+          operations of your agency. The build price lives in your Blueprint PDF
+          — after OpsRadar has understood your shop. Flat retainer once live.
+          No per-run fees. No Zapier-style task-volume punishment.
         </p>
       </div>
     </section>
@@ -214,16 +232,28 @@ function PageHeader() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Tier cards                                                                 */
+/*  Funnel — 4 steps as cards                                                  */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function TierGrid() {
+function FunnelSection() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <div className="grid md:grid-cols-3 gap-6 items-start">
-          {TIERS.map((tier) => (
-            <TierCard key={tier.name} tier={tier} />
+        <div className="max-w-2xl mb-14">
+          <p className="text-label text-[var(--color-fg-subtle)]">How OpsRadar works</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            Free at the front. Priced at the Blueprint.
+          </h2>
+          <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
+            Every engagement follows the same four steps. The price is not a
+            number on this page — it is a fixed line in a document written
+            specifically for your business.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+          {FUNNEL_STEPS.map((step) => (
+            <FunnelCard key={step.name} step={step} />
           ))}
         </div>
       </div>
@@ -231,41 +261,43 @@ function TierGrid() {
   );
 }
 
-function TierCard({ tier }: { tier: (typeof TIERS)[number] }) {
+function FunnelCard({ step }: { step: (typeof FUNNEL_STEPS)[number] }) {
   return (
     <Card
       className={
-        tier.highlight
+        step.highlight
           ? "border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]"
           : ""
       }
     >
       <CardHeader className="border-b border-[var(--color-border)]">
         <div className="flex items-start justify-between gap-3 mb-1">
-          <CardTitle className="font-serif text-h3 tracking-[-0.02em]">
-            {tier.name}
-          </CardTitle>
-          {tier.badge && (
-            <Badge variant="default" className="shrink-0 mt-0.5">
-              {tier.badge}
-            </Badge>
-          )}
+          <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em]">
+            — {step.n}
+          </p>
         </div>
-        <CardDescription>{tier.tagline}</CardDescription>
+        <p className="text-label text-[var(--color-primary)] mb-1">{step.tag}</p>
+        <CardTitle className="font-serif text-h3 tracking-[-0.02em]">
+          {step.name}
+        </CardTitle>
+        <CardDescription>{step.tagline}</CardDescription>
         <div className="pt-4">
           <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-fg)] tracking-[-0.02em]">
-            {tier.price}
+            {step.priceLabel}
           </p>
           <p className="mt-1 text-caption text-[var(--color-fg-subtle)]">
-            {tier.priceNote}
+            {step.priceNote}
           </p>
         </div>
       </CardHeader>
 
       <CardContent className="pt-6">
         <ul className="space-y-3">
-          {tier.bullets.map((bullet) => (
-            <li key={bullet} className="flex gap-3 text-body-sm leading-[1.55] text-[var(--color-fg-muted)]">
+          {step.bullets.map((bullet) => (
+            <li
+              key={bullet}
+              className="flex gap-3 text-body-sm leading-[1.55] text-[var(--color-fg-muted)]"
+            >
               <Check
                 className="size-4 shrink-0 mt-0.5 text-[var(--color-success)]"
                 aria-hidden
@@ -277,29 +309,29 @@ function TierCard({ tier }: { tier: (typeof TIERS)[number] }) {
       </CardContent>
 
       <CardFooter className="pt-2 pb-2">
-        {tier.cta.external ? (
+        {step.cta.external ? (
           <Button
             asChild
-            variant={tier.highlight ? "default" : "outline"}
+            variant={step.highlight ? "default" : "outline"}
             className="w-full"
           >
             <a
-              href={tier.cta.href}
+              href={step.cta.href}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {tier.cta.label}
+              {step.cta.label}
               <ArrowRight className="size-4" />
             </a>
           </Button>
         ) : (
           <Button
             asChild
-            variant={tier.highlight ? "default" : "outline"}
+            variant={step.highlight ? "default" : "outline"}
             className="w-full"
           >
-            <Link href={tier.cta.href}>
-              {tier.cta.label}
+            <Link href={step.cta.href}>
+              {step.cta.label}
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -324,8 +356,8 @@ function FlatRetainerSection() {
               One number. Every month.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              Automation tools tax your growth. We price against the system, not
-              the runs.
+              Automation tools tax your growth. AIOS prices against the system,
+              not the runs.
             </p>
           </div>
 
@@ -349,12 +381,12 @@ function FlatRetainerSection() {
         {/* Pull-quote */}
         <div className="mt-20 border-l-2 border-[var(--color-primary)] pl-8 md:pl-10 max-w-3xl">
           <blockquote className="font-serif text-[clamp(1.5rem,2.6vw+0.4rem,2.25rem)] leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            We price systems, not task volume.
+            AIOS prices systems, not task volume.
           </blockquote>
           <p className="mt-4 text-body text-[var(--color-fg-muted)] max-w-xl leading-[1.6]">
-            Zapier punishes you when your agency grows. We are aligned with your
-            growth — we benefit when you use the system more, not when we bill
-            you more for it.
+            Zapier punishes you when your agency grows. AIOS is aligned with
+            your growth — the system runs more because it is earning its keep,
+            not because we found another line item to charge.
           </p>
         </div>
       </div>
@@ -377,8 +409,8 @@ function NotIncludedSection() {
               What&rsquo;s out of scope.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              We do three things well. We don&rsquo;t pretend to do everything.
-              Here is what falls outside our work.
+              AIOS does a specific set of things very well. It does not pretend
+              to do everything. Here is what falls outside the work.
             </p>
           </div>
 
@@ -436,30 +468,34 @@ function FinalCTA() {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          Talk to founders.
+          The price is in the Blueprint.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          A 20-minute call. We start with a real diagnosis, not a demo.
-          Bring your tool stack or just show up — no prep needed.
+          The audit takes three minutes and costs nothing. It tells you which
+          workflows are worth automating first. Everything else — the Blueprint,
+          the build price, the plan — follows from what OpsRadar learns about
+          your shop.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
+            <Link href="/audit">
+              Start the audit
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
             <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
+              Book a discovery call
               <ArrowRight className="size-4" />
             </a>
-          </Button>
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/audit">Run the audit first</Link>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No credit card. No pitch. Just the shortlist of workflows
-          burning the most money in your agency right now.
+          13 questions · Free · No card, no pitch · 3 minutes to the report.
         </p>
       </div>
     </section>
