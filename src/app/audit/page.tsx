@@ -333,7 +333,7 @@ const STEP_EYEBROWS: Record<number, string> = {
   9:  'Top pain',
   10: 'Frequency',
   11: 'Cost of inaction',
-  12: 'Vision',
+  12: 'Desired outcome',
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -365,7 +365,7 @@ function InsightNote({ text }: { text: string }) {
   return (
     <div className="mb-6 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
       <p className="text-label uppercase tracking-[0.12em] text-[var(--color-fg-subtle)] mb-1.5">
-        Why I ask
+        Why this matters
       </p>
       <p className="text-body-sm leading-relaxed text-[var(--color-fg-muted)]">
         {text}
@@ -846,7 +846,7 @@ export default function AuditPage() {
                 question="What kind of business are you running?"
                 hint="I tailor benchmarks, workflow assumptions, and stack recommendations around your operating model."
               />
-              <InsightNote text="A recruiting shop, a creative studio, and an e-commerce team break in totally different places. This is where I stop the audit from feeling generic." />
+              <InsightNote text="A recruiting agency, a creative studio, and an e-commerce team break in completely different places. This is what stops the diagnosis from feeling generic." />
               <SingleSelect
                 options={AGENCY_TYPES}
                 value={answers.agencyType}
@@ -868,7 +868,7 @@ export default function AuditPage() {
                 </div>
               )}
               {needsAgencyTypeDetail && answers.agencyTypeOther.trim().length > 0 && answers.agencyTypeOther.trim().length < 3 && (
-                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Add a little more detail so I can tailor the audit.</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Add a little more detail so OpsRadar can tailor the diagnosis.</p>
               )}
             </>
           )}
@@ -920,7 +920,7 @@ export default function AuditPage() {
                 question="What tools does your team use daily?"
                 hint={agencyCopy.toolsHint}
               />
-              <InsightNote text="This tells us where your team is context-switching, what APIs can be connected, and which recommendations are actually realistic for your stack." />
+              <InsightNote text="This tells OpsRadar where your team is context-switching, which integrations are already possible, and which findings are actually grounded in your stack." />
               <MultiSelect
                 options={toolOptions}
                 values={answers.tools}
@@ -942,18 +942,18 @@ export default function AuditPage() {
                 </div>
               )}
               {needsToolDetail && answers.toolsOther.trim().length > 0 && answers.toolsOther.trim().length < 3 && (
-                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Name the extra tool so I can factor it into the diagnosis.</p>
+                <p className="mt-2 text-body-sm text-[var(--color-danger)]">Name the extra tool so it factors into the diagnosis.</p>
               )}
               {needsToolSignalFollowup && (
                 <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
                   <p className="text-label uppercase tracking-[0.12em] text-[var(--color-fg-subtle)] mb-2">
-                    Smart follow-up
+                    Stack signals
                   </p>
                   <p className="text-h4 font-sans font-medium text-[var(--color-fg)] mb-2">
                     Based on your stack, what still gets stitched together by hand?
                   </p>
                   <p className="text-body-sm text-[var(--color-fg-muted)] mb-4">
-                    Pick the handoffs that feel painfully familiar. This helps the diagnosis catch contradictions between your tool stack and your lived operational reality.
+                    Pick the handoffs that feel familiar. This helps the diagnosis surface friction that tool lists alone don&apos;t show.
                   </p>
                   <MultiSelect
                     options={toolSignalOptions}
@@ -986,7 +986,7 @@ export default function AuditPage() {
               <StepHeader
                 question="Which of these best describes your current operations?"
               />
-              <InsightNote text="This gives the diagnosis a baseline. It also helps surface contradictions between how systematized you feel and how fragmented the day-to-day reality sounds." />
+              <InsightNote text="This sets the baseline. It also helps surface the gap between how systematized the agency feels and how fragmented the day-to-day reality actually is." />
               <SingleSelect
                 options={OPERATIONS_STATE_OPTIONS}
                 value={answers.operationsState}
@@ -1000,8 +1000,8 @@ export default function AuditPage() {
             <>
               <StepEyebrow label={STEP_EYEBROWS[6]} />
               <StepHeader
-                question="Your audit is being prepared — where should I send it?"
-                hint="I'll deliver your full report to your inbox in about 3 minutes. No spam, no list."
+                question="Where should OpsRadar send your diagnosis?"
+                hint="Your report lands in your inbox in about 3 minutes. No spam, no list."
               />
               <div className="space-y-4">
                 <HoneypotField value={companyWebsite} onChange={setCompanyWebsite} />
@@ -1057,7 +1057,7 @@ export default function AuditPage() {
               <StepHeader
                 question="How many hours per week does your team lose to work that feels 'beneath' their pay grade?"
               />
-              <InsightNote text="This is the input that turns frustration into a believable waste estimate. The goal is conservative math, not inflated math." />
+              <InsightNote text="This is what turns a feeling into a number. OpsRadar uses conservative math — the goal is a believable waste estimate, not an inflated one." />
               <SingleSelect
                 options={HOURS_LOST_OPTIONS}
                 value={answers.hoursLost}
@@ -1073,7 +1073,7 @@ export default function AuditPage() {
               <StepHeader
                 question="When something breaks in your operations, what happens?"
               />
-              <InsightNote text="This tells the diagnosis how visible the damage is and how quickly small failures turn into client-facing pain." />
+              <InsightNote text="This shows how visible the damage is — and how quickly small operational failures become client-facing ones." />
               <SingleSelect
                 options={BREAKAGE_RESPONSE_OPTIONS}
                 value={answers.breakageResponse}
@@ -1087,9 +1087,9 @@ export default function AuditPage() {
             <>
               <StepEyebrow label={STEP_EYEBROWS[9]} />
               <StepHeader
-                question="What's the #1 process that, when it fails, hurts your business the most?"
+                question="What's the one process that, when it fails, costs you the most?"
               />
-              <InsightNote text="This is the anchor for the diagnosis. The stronger this answer is, the sharper the urgency and waste ranking becomes." />
+              <InsightNote text="This anchors the diagnosis. The more specific the answer, the sharper the waste estimate becomes." />
               <Textarea
                 value={answers.topPainProcess}
                 onChange={(e) => setAnswers((p) => ({ ...p, topPainProcess: e.target.value }))}
@@ -1110,7 +1110,7 @@ export default function AuditPage() {
               <StepHeader
                 question="How often does this process happen?"
               />
-              <InsightNote text="Frequency changes urgency. A weekly pain and a daily pain may hurt differently even when the same people touch them." />
+              <InsightNote text="Frequency shapes the waste math. A daily drag and a monthly one have very different costs even when the same people touch them." />
               <SingleSelect
                 options={PROCESS_FREQUENCY_OPTIONS}
                 value={answers.processFrequency}
@@ -1124,9 +1124,9 @@ export default function AuditPage() {
             <>
               <StepEyebrow label={STEP_EYEBROWS[11]} />
               <StepHeader
-                question="What's the real cost if this process keeps running manually for another 6 months?"
+                question="What does another 6 months of running this manually actually cost you?"
               />
-              <InsightNote text="Think about the real business cost: wasted hours, lost clients, missed growth, team burnout, or the founder staying trapped in low-leverage work." />
+              <InsightNote text="Put it in real terms: hours drained, clients at risk, growth delayed, team burned out, or the founder stuck in work nobody should own." />
               <Textarea
                 value={answers.sixMonthCost}
                 onChange={(e) => setAnswers((p) => ({ ...p, sixMonthCost: e.target.value }))}
@@ -1145,9 +1145,9 @@ export default function AuditPage() {
             <>
               <StepEyebrow label={STEP_EYEBROWS[12]} />
               <StepHeader
-                question="If I could eliminate your top 3 operational pains in 2 weeks, what would change for your business?"
+                question="If your top operational drags were gone, what would actually change?"
               />
-              <InsightNote text="This gives the diagnosis emotional contrast. I want to know what relief, speed, or growth would actually look like on the other side." />
+              <InsightNote text="This gives the diagnosis contrast. Describe what relief, speed, or headroom would look like — not the fix, just the outcome." />
               <Textarea
                 value={answers.twoWeekChange}
                 onChange={(e) => setAnswers((p) => ({ ...p, twoWeekChange: e.target.value }))}
@@ -1165,7 +1165,7 @@ export default function AuditPage() {
                   <span className="ml-1.5 text-[var(--color-fg-subtle)] font-normal">Optional</span>
                 </Label>
                 <p className="mt-1 mb-3 text-body-sm text-[var(--color-fg-muted)]">
-                  Share your URL and I&apos;ll tailor the report to your specific stack and services. Your website isn&apos;t graded — it just helps me be more accurate about your operations.
+                  Share your URL and OpsRadar will tailor the diagnosis to your actual stack and services. Your site isn&apos;t graded — it just makes the findings more accurate.
                 </p>
                 <Input
                   id="websiteUrl"
@@ -1224,7 +1224,7 @@ export default function AuditPage() {
               disabled={!canProceed()}
               className="gap-2"
             >
-              Generate My Audit
+              Run My Diagnosis
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
