@@ -6,6 +6,21 @@ import {
   isValidAdminSessionToken,
 } from './lib/admin-session'
 
+const DARK_ROUTE_PREFIXES = ['/dashboard', '/admin', '/aios'] as const
+
+function themeForPath(pathname: string): 'light' | 'dark' {
+  return DARK_ROUTE_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  )
+    ? 'dark'
+    : 'light'
+}
+
+function withTheme(response: NextResponse, pathname: string): NextResponse {
+  response.headers.set('x-theme', themeForPath(pathname))
+  return response
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -18,9 +33,9 @@ export async function proxy(request: NextRequest) {
   if (isAdminRoute && !isAdminLoginPage) {
     const cookie = request.cookies.get(ADMIN_SESSION_COOKIE)
     if (!cookie?.value || !isValidAdminSessionToken(cookie.value)) {
-      return new NextResponse(null, { status: 404 })
+      return withTheme(new NextResponse(null, { status: 404 }), pathname)
     }
-    return NextResponse.next()
+    return withTheme(NextResponse.next(), pathname)
   }
 
   // /dashboard/* (pages) and /api/dashboard/* (data endpoints) — both gated
@@ -35,7 +50,7 @@ export async function proxy(request: NextRequest) {
 
     // Missing env vars in dev → skip the guard so the DEV_CLIENT_ID
     // fallback handles auth-context routes.
-    if (!url || !key) return res
+    if (!url || !key) return withTheme(res, pathname)
 
     const supabase = createServerClient(url, key, {
       cookies: {
@@ -59,12 +74,12 @@ export async function proxy(request: NextRequest) {
     // Hard-gated to non-production. A leaked DEV_CLIENT_ID env var must NEVER
     // turn the dashboard into an open route in prod.
     if (!user && process.env.NODE_ENV !== 'production' && process.env.DEV_CLIENT_ID) {
-      return res
+      return withTheme(res, pathname)
     }
 
     if (!user) {
       if (isDashboardApi) {
-        return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+        return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname)
       }
       const target = request.nextUrl.clone()
       target.pathname = '/login'
@@ -72,20 +87,18 @@ export async function proxy(request: NextRequest) {
         'redirectTo',
         request.nextUrl.pathname + request.nextUrl.search,
       )
-      return NextResponse.redirect(target)
+      return withTheme(NextResponse.redirect(target), pathname)
     }
 
-    return res
+    return withTheme(res, pathname)
   }
 
-  return NextResponse.next()
+  return withTheme(NextResponse.next(), pathname)
 }
 
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/api/admin/:path*',
-    '/dashboard/:path*',
-    '/api/dashboard/:path*',
+    // Match all routes except: _next, static files, common assets
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|otf|eot|map)$).*)',
   ],
 }
