@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { Button } from "<npm>/components/ui/button";
+
 export function Showcase() {
   return (
     <main className="min-h-screen bg-bg text-fg p-12 space-y-12">
@@ -17,8 +19,9 @@ export function Showcase() {
       </header>
 
       <ThemeToggle />
+      <ButtonSection />
 
-      {/* Sections will be added by Tasks 8–22 (Button, Input, Card, Badge, Metric, Table, etc.) */}
+      {/* Sections will be added by Tasks 9–22 (Input, Card, Badge, Metric, Table, etc.) */}
     </main>
   );
 }
@@ -45,5 +48,31 @@ function ThemeToggle() {
         Force dark
       </button>
     </div>
+  );
+}
+
+function ButtonSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Button</p>
+      <div className="space-y-3">
+        <div className="flex gap-3 flex-wrap">
+          <Button>Default</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="destructive">Destructive</Button>
+          <Button variant="link">Link</Button>
+          <Button disabled>Disabled</Button>
+        </div>
+        <div className="flex gap-3 flex-wrap items-center">
+          <Button size="xs">XS</Button>
+          <Button size="sm">SM</Button>
+          <Button size="default">Default</Button>
+          <Button size="lg">LG</Button>
+          <Button size="icon" aria-label="Icon"><span>×</span></Button>
+        </div>
+      </div>
+    </section>
   );
 }
