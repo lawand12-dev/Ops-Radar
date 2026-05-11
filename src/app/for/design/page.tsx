@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AIOS for Design Agencies — OpsRadar',
     description:
-      'Feedback consolidated. Status in one digest. Utilization weekly. OPERATE runs the handoffs; OBSERVE keeps your studio visible. Built inside your n8n account.',
+      'Feedback consolidated. Status in one digest. Utilization weekly. OPERATE runs the handoffs; OBSERVE keeps your studio visible. Built on your accounts.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Design Agencies' }],
   },
   twitter: {
@@ -112,21 +112,21 @@ export default function ForDesignPage() {
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Figma feedback, Frame.io revisions, and Loom replies all land in different places.
           Status meetings reconstruct state from memory. OpsRadar is AIOS — the system that
-          closes all three gaps, runs inside your n8n account, and gets sharper every week
+          closes all three gaps, runs on your accounts, and gets sharper every week
           your studio operates.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
       </section>
@@ -227,7 +227,7 @@ export default function ForDesignPage() {
             &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
           </blockquote>
           <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
-            — Design studio founder · 8-person shop · 4 h/week back per designer
+            — Design studio founder · 8-person agency · 4 h/week back per designer
           </p>
         </div>
       </section>
@@ -240,27 +240,26 @@ export default function ForDesignPage() {
             See what your design studio AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            13 questions. Three minutes. An AI-generated report on the hours your studio
-            loses to feedback triage, status meetings, and late-night handoffs — and which
-            workflows are worth automating first.
+            A 30-minute call. We listen to how your studio runs, ask the questions
+            only operators would ask, and tell you on the call whether AIOS belongs.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/audit">
-                Start the audit
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a call with founders
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Talk to founders
-              </a>
+              <Link href="/audit">
+                Or try the 3-minute audit
+              </Link>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            13 questions · Free · No card, no pitch · 3 minutes to the report.
+            30 minutes · No pitch · We tell you if it&apos;s not a fit.
           </p>
         </div>
       </section>

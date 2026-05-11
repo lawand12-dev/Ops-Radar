@@ -10,17 +10,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: 'About — OpsRadar',
   description:
-    'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
+    'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your agency actually operates.',
   openGraph: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
+      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your agency actually operates.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'About — OpsRadar' }],
   },
   twitter: {
     title: 'About — OpsRadar',
     description:
-      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your shop actually operates.',
+      'OpsRadar is AIOS — the AI Operating System for agencies. Four surfaces, one platform, built for how your agency actually operates.',
     images: ['/og-image.png'],
   },
 }
@@ -40,19 +40,19 @@ const CREDIBILITY_MARKERS = [
     label: 'Ownership',
     value: 'You own everything.',
     detail:
-      'Workflows live in your n8n account, on your infrastructure, with your credentials. If you ever leave, you keep the entire system — workflows, logic, and logs.',
+      'Workflows run on your accounts, on your infrastructure, with your credentials. If you ever leave, you keep the entire system — workflows, logic, and logs.',
   },
   {
     n: '03',
     label: 'Stack depth',
-    value: '40+ tools connected.',
+    value: 'Most tools connected.',
     detail:
-      'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — 120+ workflows ready inside the AIOS library.',
+      'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — and most tools your agency already pays for.',
   },
   {
     n: '04',
     label: 'How we build',
-    value: 'We don\'t build for shops we don\'t understand.',
+    value: 'We don\'t build for agencies we don\'t understand.',
     detail:
       'Discovery comes before design. We learn your real operations — your tools, your clients, your team, your patterns — before a single workflow is written.',
   },
@@ -61,8 +61,8 @@ const CREDIBILITY_MARKERS = [
 const WHY_TRUST = [
   {
     kind: 'On philosophy',
-    quote: 'We don\'t build for shops we don\'t understand.',
-    body: 'AIOS is not a template. Discovery comes before every build. We go deeper than the audit — your tools, your clients, your team, your patterns, the things only operators know. That is the only honest way to build a system for a business.',
+    quote: 'We don\'t build for agencies we don\'t understand.',
+    body: 'AIOS is not a template. Discovery comes before every build. We go deeper than any questionnaire — your tools, your clients, your team, your patterns, the things only operators know. That is the only honest way to build a system for a business.',
   },
   {
     kind: 'On why this exists',
@@ -72,12 +72,12 @@ const WHY_TRUST = [
   {
     kind: 'On ownership',
     quote: 'You own everything. No lock-in.',
-    body: 'Every workflow runs inside your n8n. Credentials live in your vault. Logs stay on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the history.',
+    body: 'Every workflow runs on your accounts. Credentials live in your vault. Logs stay on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the history.',
   },
   {
     kind: 'On intelligence',
     quote: 'The system gets sharper every week.',
-    body: 'BRAIN learns your shop over time — your data, your history, your patterns — queried through Claude. The longer AIOS runs, the more it knows about how your agency actually operates.',
+    body: 'BRAIN learns your agency over time — your data, your history, your patterns — queried in plain English from inside the dashboard. The longer AIOS runs, the more it knows about how your agency actually operates.',
   },
 ]
 
@@ -117,7 +117,7 @@ function PageHeader() {
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
             Most agencies have the tools. Almost none have a system connecting them.
             OpsRadar is AIOS — one platform that runs your workflows, watches them while you sleep,
-            shows everything in one dashboard, and remembers how your shop actually operates.
+            shows everything in one dashboard, and remembers how your agency actually operates.
           </p>
         </div>
       </div>
@@ -297,8 +297,8 @@ function VisionCallout() {
               a template, not a category average.
             </p>
             <p>
-              The team queries institutional knowledge through Claude. Automations run
-              inside their n8n. GUARD watches the stack overnight. The system gets
+              The team queries institutional knowledge through an AI that lives in the dashboard. Automations run
+              on their accounts. GUARD watches the stack overnight. The system gets
               sharper every week without manual upkeep.
             </p>
             <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
@@ -322,30 +322,30 @@ function FinalCTA() {
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
         <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          See what your AIOS looks like.
+          Talk to us about your AIOS.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          13 questions. Three minutes. An AI-generated report on where your
-          operations are bleeding hours — and which workflows are worth
-          automating first.
+          A 30-minute call. We listen to how your agency runs, ask the questions
+          only operators would ask, and tell you on the call whether AIOS
+          belongs at your agency.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)]">
-          13 questions · Free · No card, no pitch · 3 minutes to the report.
+          30 minutes · No pitch · We tell you if it&apos;s not a fit.
         </p>
       </div>
     </section>

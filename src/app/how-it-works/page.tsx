@@ -16,17 +16,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 export const metadata: Metadata = {
   title: 'How it works — OpsRadar',
   description:
-    'The four steps from free audit to live AIOS: Audit, Discovery, Blueprint, Build. Each step explained in full — what happens, what you get, what comes next.',
+    'The four steps from first call to live AIOS: Call, Discovery, Blueprint, Build. Each step explained in full — what happens, what you get, what comes next.',
   openGraph: {
     title: 'How it works — OpsRadar',
     description:
-      'Free audit to live AIOS in four steps. Here is exactly what each one looks like.',
+      'Call to live AIOS in four steps. Here is exactly what each one looks like.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'How it works — OpsRadar' }],
   },
   twitter: {
     title: 'How it works — OpsRadar',
     description:
-      'Free audit to live AIOS in four steps. Here is exactly what each one looks like.',
+      'Call to live AIOS in four steps. Here is exactly what each one looks like.',
     images: ['/og-image.png'],
   },
 }
@@ -49,42 +49,42 @@ type Step = {
 
 const STEPS: Step[] = [
   {
-    id: 'audit',
+    id: 'call',
     n: '01',
-    tag: 'Audit',
-    headline: 'Tell us what your agency runs on. Get a real diagnosis back.',
-    body: `The audit is 13 questions. Free. No card, no pitch. It takes about three minutes. The AI reads your answers — agency type, headcount, tools in the stack, the workflows that eat the most hours, and where the pain is sharpest — and generates a report on the operations underneath your business.`,
+    tag: 'Call',
+    headline: 'We talk. No pitch.',
+    body: `A 30-minute conversation. You explain how your agency runs. We listen and ask the questions only operators would ask. By the end of the call, both sides know if AIOS belongs at your agency.`,
     yourSide: [
-      'Answer 13 questions: what you do, how many people, which tools you rely on, which workflows your team does by hand, and where the hours disappear.',
-      'Get a personalized report: a ranked list of workflows worth automating, the dollar and hour figures behind each, and an honest readiness read.',
+      'Walk us through your tools, your clients, your team structure, your repeating workflows.',
+      'Tell us the things no questionnaire can ask: the client that always fires edge cases, the team member carrying three jobs, the platform that breaks every quarter.',
     ],
     ourSide: [
-      'The AI evaluates your answers alongside public signals about your business and maps them to the AIOS workflow library.',
-      'No human is in this step. Fully automated, fully private.',
+      'We listen, ask sharp questions, and build a picture of how your agency actually operates — the parts that are visible and the parts that only operators know.',
+      'We evaluate fit honestly. If AIOS is not the right call for your agency right now, we say so. No pitch, no follow-up sequence.',
     ],
     youGet:
-      'A PDF-quality results page with a workflow shortlist, annual waste estimate, and a prioritized automation roadmap. Yours to keep and share — no login required.',
+      'A clear yes-or-no on fit. If we are not the right system for you, we say so on the call.',
     note:
-      "What you don't get from the audit: a specific implementation plan. That is what Blueprint is for. The audit tells you what is worth fixing. Blueprint tells you exactly how AIOS will fix it.",
+      'The 3-minute on-site audit is a marketing diagnostic — it shows you where you may be leaking hours and dollars. The real path starts here, with a conversation.',
   },
   {
     id: 'discovery',
     n: '02',
     tag: 'Discovery',
-    headline: 'We sit with you to understand the business before anything gets built.',
-    body: `AIOS is not a template. It is a system built for the specific operations of your shop — and the only way to build that correctly is to understand your shop first. The Discovery call is that step. This is the gate before a Blueprint engagement starts.`,
+    headline: 'We go deep on the business before anything gets built.',
+    body: `AIOS is not a template. It is a system built for the specific operations of your agency — and the only way to build that correctly is to understand your agency first. If the call confirms a fit, we move into discovery. This is the gate before a Blueprint engagement starts.`,
     yourSide: [
-      'Join a call with the founders. Walk through your tools, your clients, your team structure, your repeating workflows.',
-      'Tell us the things the audit cannot ask: the client that always fires edge cases, the team member carrying three jobs, the platform that breaks every quarter.',
+      'Complete structured forms about your tools, workflows, clients, and recurring patterns.',
+      'Join working sessions where we map the things that only insiders know.',
     ],
     ourSide: [
-      'We listen, ask sharp questions, and build a picture of how your agency actually operates — the parts that show up on the audit and the parts that only operators know.',
-      'We evaluate fit honestly. If AIOS is not the right call for your shop right now, we say so. No pitch, no follow-up sequence.',
+      'We evaluate and reason through everything Discovery surfaces — your tools, your patterns, the workflows worth automating first.',
+      'We do not build AIOS for agencies we do not understand. We take roughly a week to reason through what we learn before writing anything down.',
     ],
     youGet:
-      'A clear answer on whether AIOS makes sense for your business — and if it does, a shared understanding of your operations that becomes the foundation for the Blueprint.',
+      'A shared understanding of your operations that becomes the foundation for the Blueprint.',
     note:
-      'We do not build AIOS for shops we do not understand. This call is not a sales step. It is the diagnostic step. If you are not a fit, we tell you directly.',
+      'We do not build AIOS for agencies we do not understand. Discovery is not a sales step — it is the diagnostic step. If you are not a fit, we tell you directly.',
   },
   {
     id: 'blueprint',
@@ -98,7 +98,7 @@ const STEPS: Step[] = [
     ],
     ourSide: [
       'Take roughly a week to evaluate what Discovery surfaced — your tools, your patterns, the workflows worth automating first.',
-      'Produce a PDF that covers: current-state diagnosis (what is actually happening in your ops today), why your shop needs AIOS, what AIOS will do about it, what gets built first, and what the build will cost.',
+      'Produce a PDF that covers: current-state diagnosis (what is actually happening in your ops today), why your agency needs AIOS, what AIOS will do about it, what gets built first, and what the build will cost.',
     ],
     youGet:
       'A Blueprint PDF with full visibility into what AIOS will do, what gets built in what order, and what the build engagement costs. A decision you can make with confidence.',
@@ -110,15 +110,15 @@ const STEPS: Step[] = [
     n: '04',
     tag: 'Build',
     headline: 'Your AIOS goes live. All four pillars online.',
-    body: `Build is where AIOS comes to life in your stack. All four pillars activate: OPERATE runs your workflows inside your n8n. OBSERVE shows everything on opsradar.co/dashboard. BRAIN starts ingesting your data and building memory of how your shop works. GUARD watches the system and catches what breaks.`,
+    body: `Build is where AIOS comes to life in your stack. All four pillars activate: OPERATE runs your workflows on your accounts. OBSERVE shows everything on opsradar.co/dashboard — revenue, ad spend, leads, workflow status, hours reclaimed. BRAIN starts ingesting your data and building memory of how your agency works. GUARD watches the system and catches what breaks.`,
     yourSide: [
       'Confirm tool access and credentials. Nothing runs on our infrastructure.',
       'Choose how you want to operate it: we run it for you (managed), you run it with your team (self-serve), or both.',
     ],
     ourSide: [
-      'Build workflows inside your n8n account — not ours, never ours.',
+      'Build workflows on your accounts — not ours, never ours.',
       'Activate OBSERVE on opsradar.co/dashboard so you see real status, real run counts, and real hours reclaimed from day one.',
-      'Wire BRAIN to your data sources. It starts learning your shop immediately and gets sharper every week.',
+      'Wire BRAIN to your data sources. It starts learning your agency immediately and gets sharper every week.',
       'Set GUARD to watch for silent failures: platform API changes, credential expirations, the things that break at 3 a.m. and compound by morning.',
     ],
     youGet:
@@ -140,6 +140,7 @@ const CONCERNS: Concern[] = [
     question: 'What if we go through Discovery and we are not a fit?',
     answer:
       'We tell you directly — no follow-up sequence, no pitch. AIOS is built for agencies we understand. If the operations are too early-stage, too large, or just a bad match for the system, the honest answer is the right one. You walk away with a clearer picture of what you actually need.',
+
   },
   {
     id: 'blueprint-no-build',
@@ -151,7 +152,7 @@ const CONCERNS: Concern[] = [
     id: 'ownership',
     question: 'What do we actually own after Build?',
     answer:
-      'Everything. Workflows run inside your n8n account, on your credentials, connected to your tools. The OBSERVE dashboard reads your stack live — nothing sits in our database. If you stop working with OpsRadar, all four pillars keep running. BRAIN stays connected to your data. GUARD keeps watching. You or anyone you hire can maintain the system from that point.',
+      'Everything. Workflows run on your accounts, on your credentials, connected to your tools. The OBSERVE dashboard reads your stack live — nothing sits in our database. If you stop working with OpsRadar, all four pillars keep running. BRAIN stays connected to your data. GUARD keeps watching. You or anyone you hire can maintain the system from that point.',
   },
   {
     id: 'managed-vs-selfserve',
@@ -197,12 +198,12 @@ function PageHeader() {
       <div className="mx-auto max-w-5xl px-6 pt-12 pb-16 md:pt-20 md:pb-20">
         <p className="text-label text-[var(--color-fg-subtle)]">How it works</p>
         <h1 className="mt-5 font-serif text-[clamp(2.25rem,3.8vw+0.5rem,4rem)] leading-[1.04] tracking-[-0.025em] text-balance">
-          From free audit to live{' '}
+          From first call to live{' '}
           <span className="text-[var(--color-primary)]">AIOS</span>{' '}
           in four steps.
         </h1>
         <p className="mt-6 max-w-2xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          Free at the front. Honest in the middle. Real ownership at the end.
+          The real path starts with a conversation. Honest in the middle. Real ownership at the end.
           Here is what each step actually looks like — what happens, what you get, and what comes next.
         </p>
       </div>
@@ -344,7 +345,7 @@ function OwnershipPanel() {
           </h2>
           <div className="space-y-4 max-w-3xl text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
             <p>
-              Every workflow AIOS builds runs inside your n8n account, on credentials you control,
+              Every workflow AIOS builds runs on your accounts, on credentials you control,
               connected to infrastructure you own. OBSERVE reads your stack live — nothing is cached
               in our database. BRAIN ingests your data into your environment.
             </p>
@@ -400,29 +401,30 @@ function FinalCTA() {
       <div className="mx-auto max-w-3xl px-6 py-24 md:py-32 text-center">
         <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.5rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          The audit is step one.
+          The call is step one.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          13 questions. Three minutes. An AI-generated report on where your operations are bleeding hours
-          and which workflows are worth automating first. Free, no card, no pitch.
+          A 30-minute call. We listen to how your agency runs, ask the questions
+          only operators would ask, and tell you on the call whether AIOS
+          belongs at your agency.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders first
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          13 questions · Free · No card, no pitch · 3 minutes to the report.
+          30 minutes · No pitch · We tell you if it&apos;s not a fit.
         </p>
       </div>
     </section>

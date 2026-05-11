@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AIOS for Full-Service Digital Agencies — OpsRadar',
     description:
-      'Cross-channel reporting, utilization alerts, and scope-creep flagging — OPERATE runs the workflows, OBSERVE shows the gaps. Built inside your n8n account.',
+      'Cross-channel reporting, utilization alerts, and scope-creep flagging — OPERATE runs the workflows, OBSERVE shows the gaps. Built on your accounts.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Full-Service Agencies' }],
   },
   twitter: {
@@ -112,21 +112,21 @@ export default function ForFullServicePage() {
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Cross-channel reporting eats your senior time. Utilization dips go unnoticed until
           quarter-end. Scope creep absorbs retainer silently. OpsRadar is AIOS — the system
-          that closes all three leaks, runs inside your n8n account, and gets sharper every
+          that closes all three leaks, runs on your accounts, and gets sharper every
           week the data flows through it.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
       </section>
@@ -192,7 +192,7 @@ export default function ForFullServicePage() {
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            What your shop looks like after OpsRadar lands.
+            What your agency looks like after OpsRadar lands.
           </h2>
 
           <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
@@ -240,27 +240,26 @@ export default function ForFullServicePage() {
             See what your full-service AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            13 questions. Three minutes. An AI-generated report on what your shop loses
-            to cross-channel reporting, scope creep, and invisible utilization gaps —
-            and which workflows are worth automating first.
+            A 30-minute call. We listen to how your agency runs, ask the questions
+            only operators would ask, and tell you on the call whether AIOS belongs.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/audit">
-                Start the audit
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a call with founders
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Talk to founders
-              </a>
+              <Link href="/audit">
+                Or try the 3-minute audit
+              </Link>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            13 questions · Free · No card, no pitch · 3 minutes to the report.
+            30 minutes · No pitch · We tell you if it&apos;s not a fit.
           </p>
         </div>
       </section>
