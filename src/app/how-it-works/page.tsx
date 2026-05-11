@@ -57,8 +57,8 @@ const PHASES: Phase[] = [
       'Get a personalized report: annual waste estimate, top 4 workflow opportunities, your automation readiness score.',
     ],
     ourSide: [
-      'The AI synthesizes your answers + public website signals into a diagnosis tuned for your segment (paid-media / SEO / full-service / other).',
-      'No human in this step yet. Fully automated, fully private.',
+      'The AI reads your answers alongside public website signals and produces a diagnosis tuned for your segment: paid-media, SEO, full-service, or other.',
+      'No human in this step. Fully automated, fully private.',
     ],
     youGet:
       'A results page you can forward to your team. A share link. A concrete number for how much manual ops is costing you annually.',
@@ -93,9 +93,9 @@ const PHASES: Phase[] = [
       'Respond to one mid-build check-in (async Slack or email — takes 5 minutes on your end).',
     ],
     ourSide: [
-      "We build the workflow in an isolated dev n8n instance. Every node connected to real APIs — no mock data, no \"we'll figure it out in production.\"",
-      "We test every edge case: what happens when the Meta API times out, when Klaviyo rate-limits, when a field is missing. Error handling is built in from day one.",
-      "We send you one mid-build update so you know it's on track. No status meetings, no check-in theater.",
+      "We build in an isolated dev n8n instance. Every node connected to real APIs — no mock data, no surprises in production.",
+      "We test edge cases: Meta API timeouts, Klaviyo rate limits, missing fields. Error handling is built in from day one.",
+      "One mid-build async update so you know it's on track. No status meetings.",
     ],
     youGet: 'A tested, production-ready workflow waiting for your review — not a demo.',
     timeCost: '~5 minutes of your time total during the build.',
@@ -142,15 +142,15 @@ const PHASES: Phase[] = [
     phaseTitle: 'It runs',
     headline: "You stop thinking about it. That's the whole point.",
     yourSide: [
-      'Do the strategy work you actually got into this business for.',
-      "Tell us when something changes (new tool, new client structure, new goal) — we adapt the workflow.",
+      'Do the strategy work you got into this for.',
+      "Tell us when something changes — new tool, new client structure, new goal. We adapt the workflow.",
     ],
     ourSide: [
-      "We monitor 24/7. If an API deprecates, a vendor changes auth, or anything breaks, we fix it before you notice.",
-      'Monthly check-in email with performance metrics: hours saved, errors caught, edge cases hit.',
+      "We monitor 24/7. API deprecations, auth changes, anything that breaks — fixed before you notice.",
+      'Monthly email with performance metrics: hours saved, errors caught, edge cases handled.',
     ],
     youGet:
-      "Your Sunday nights back. Your strategy hours back. An ops layer that compounds silently instead of breaking loudly.",
+      "Your Sunday nights back. Your strategy hours back. An ops layer that runs quietly and breaks rarely.",
     timeCost: 'Near zero, ongoing.',
   },
 ]
@@ -166,7 +166,7 @@ const CONCERNS: Concern[] = [
     id: 'slammed',
     question: 'What if our team is slammed with client work mid-build?',
     answer:
-      "You won't derail the timeline. The build is self-contained — we need about 5 minutes of your time total during Day 3–8 for one async check-in. If you're heads-down, just reply when you can. We build, you serve your clients.",
+      "The timeline holds. The build is self-contained — we need 5 minutes of your time total during Day 3–8 for one async check-in. Reply when you can. We build; you serve your clients.",
   },
   {
     id: 'miss',
@@ -178,7 +178,7 @@ const CONCERNS: Concern[] = [
     id: 'stop-day0',
     question: 'What if we want to stop after Day 0?',
     answer:
-      "You stop. The audit is free. There's no follow-up pressure, no \"but wait.\" You keep the results. If you want to use them to hire someone else or DIY, that's fine — the report is yours.",
+      "You stop. The audit is free, with no follow-up pressure. You keep the results. Use them to hire someone else, DIY it, or do nothing — the report is yours either way.",
   },
   {
     id: 'stop-deploy',
@@ -228,12 +228,8 @@ function PageHeader() {
           <span className="text-[var(--color-primary)]">10 business days.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          No mystery, no &ldquo;we&apos;ll figure it out as we go.&rdquo; Every phase is concrete — what
-          you do, what we do, what you get at the end, and how much of your time it
-          actually costs.
-        </p>
-        <p className="mt-4 text-body text-[var(--color-fg-muted)]">
-          Here&apos;s exactly what that looks like on your side.
+          Every phase is concrete: what you do, what we do, what you get, and how
+          much of your time it costs. No vague retainer work, no &ldquo;we&apos;ll scope it after kickoff.&rdquo;
         </p>
       </div>
     </header>
@@ -371,15 +367,15 @@ function OwnershipPanel() {
           </h2>
           <div className="space-y-4 max-w-3xl text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
             <p>
-              When we build for you, it goes into a n8n instance you own, with credentials you control,
-              on infrastructure you pay for (or self-host). If you ever want to stop working with
-              OpsRadar, you keep everything. The workflows. The documentation. The entire system.
-              We just stop maintaining it.
+              When we build for you, the workflow goes into an n8n instance you own, with credentials
+              you control, on infrastructure you pay for (or self-host). If you stop working with
+              OpsRadar, you keep everything — workflows, documentation, the whole system. We just
+              stop maintaining it.
             </p>
             <p>
-              No vendor lock-in. No &ldquo;your data is hostage.&rdquo; No per-task pricing that scales
-              against you. That&apos;s the single biggest reason we built OpsRadar this way instead of
-              running a Zapier-retainer model or a locked automation subscription.
+              No data held hostage. No per-task pricing that compounds against you. We chose this
+              model over a Zapier-retainer or locked subscription because it&apos;s the only one that
+              survives contact with a real ops decision-maker.
             </p>
           </div>
         </div>
@@ -398,7 +394,7 @@ function ConcernsSection() {
       <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
         <p className="text-label text-[var(--color-fg-subtle)] mb-4">Realistic concerns</p>
         <h2 className="font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance mb-12">
-          What actually worries agency founders before they start.
+          What agency founders ask before they start.
         </h2>
 
         <Accordion type="multiple" className="border-y border-[var(--color-border)]">
@@ -447,8 +443,8 @@ function FinalCTA() {
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          No credit card. No sales pitch. Just the shortlist of workflows burning the most
-          money in your agency right now.
+          No credit card. No sales pitch. The shortlist of workflows burning the most
+          hours in your agency right now.
         </p>
       </div>
     </section>
