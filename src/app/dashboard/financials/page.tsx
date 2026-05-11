@@ -24,13 +24,13 @@ const invoices = [
 
 const statusColors: Record<string, { color: string; bg: string }> = {
   Paid:    { color: '#4ADE80', bg: 'rgba(34,197,94,0.12)' },
-  Sent:    { color: '#60A5FA', bg: 'rgba(59,130,246,0.12)' },
+  Sent:    { color: '#60A5FA', bg: 'rgba(129,140,248,0.12)' },
   Overdue: { color: '#F87171', bg: 'rgba(239,68,68,0.12)'  },
   Draft:   { color: '#94A3B8', bg: 'rgba(148,163,184,0.12)' },
 };
 
 const expenseBreakdown = [
-  { label: 'Salaries',          amount: 22400, color: '#3B82F6' },
+  { label: 'Salaries',          amount: 22400, color: '#818CF8' },
   { label: 'Software & Tools',  amount: 4820,  color: '#818CF8' },
   { label: 'Marketing',         amount: 5300,  color: '#A78BFA' },
   { label: 'Office',            amount: 2400,  color: '#22C55E' },
@@ -92,7 +92,7 @@ export default function FinancialsPage() {
           <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
             <div style={{ fontSize: 12, color: C.sub, marginBottom: 10, fontWeight: 500 }}>Profit margin</div>
             <div style={{ height: 10, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden', display: 'flex' }}>
-              <div style={{ width: '71%', background: 'linear-gradient(90deg, #2563EB, #3B82F6)' }} />
+              <div style={{ width: '71%', background: 'linear-gradient(90deg, #6366F1, #818CF8)' }} />
               <div style={{ width: '29%', background: 'rgba(239,68,68,0.4)' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>

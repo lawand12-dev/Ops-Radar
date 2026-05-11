@@ -13,19 +13,19 @@ const stats = [
 ];
 
 const clients = [
-  { name: 'Acme Corp',     industry: 'SaaS',          contact: 'Sarah Chen',    email: 'sarah@acme.io',     projects: 4, revenue: '$48,200', tier: 'Enterprise', initials: 'AC', color: 'linear-gradient(135deg, #3B82F6, #6366F1)' },
+  { name: 'Acme Corp',     industry: 'SaaS',          contact: 'Sarah Chen',    email: 'sarah@acme.io',     projects: 4, revenue: '$48,200', tier: 'Enterprise', initials: 'AC', color: 'linear-gradient(135deg, #818CF8, #6366F1)' },
   { name: 'BrightLab',     industry: 'Marketing',     contact: 'Marcus Webb',   email: 'marcus@brightlab.com', projects: 2, revenue: '$22,800', tier: 'Growth',     initials: 'BL', color: 'linear-gradient(135deg, #8B5CF6, #EC4899)' },
   { name: 'Northwind',     industry: 'E-commerce',    contact: 'Priya Patel',   email: 'priya@northwind.co',   projects: 3, revenue: '$31,500', tier: 'Growth',     initials: 'NW', color: 'linear-gradient(135deg, #22C55E, #14B8A6)' },
   { name: 'Crest Finance', industry: 'Fintech',       contact: 'David Liu',     email: 'd.liu@crest.fi',       projects: 2, revenue: '$62,800', tier: 'Enterprise', initials: 'CF', color: 'linear-gradient(135deg, #F59E0B, #EF4444)' },
   { name: 'GreenPlex',     industry: 'Sustainability', contact: 'Elena Rossi',  email: 'elena@greenplex.co',   projects: 1, revenue: '$14,200', tier: 'Starter',    initials: 'GP', color: 'linear-gradient(135deg, #10B981, #06B6D4)' },
   { name: 'Pulse Media',   industry: 'Media',         contact: 'Tom Hayes',     email: 'tom@pulsemedia.tv',    projects: 2, revenue: '$18,600', tier: 'Growth',     initials: 'PM', color: 'linear-gradient(135deg, #EC4899, #F43F5E)' },
   { name: 'ScaleUp',       industry: 'B2B',           contact: 'Anika Mehta',   email: 'anika@scaleup.app',    projects: 1, revenue: '$9,200',  tier: 'Starter',    initials: 'SU', color: 'linear-gradient(135deg, #6366F1, #8B5CF6)' },
-  { name: 'Nova Tech',     industry: 'Hardware',      contact: 'Ryan Park',     email: 'ryan@novatech.io',     projects: 3, revenue: '$28,400', tier: 'Growth',     initials: 'NT', color: 'linear-gradient(135deg, #06B6D4, #3B82F6)' },
+  { name: 'Nova Tech',     industry: 'Hardware',      contact: 'Ryan Park',     email: 'ryan@novatech.io',     projects: 3, revenue: '$28,400', tier: 'Growth',     initials: 'NT', color: 'linear-gradient(135deg, #06B6D4, #818CF8)' },
 ];
 
 const tierColors: Record<string, { color: string; bg: string }> = {
   Enterprise: { color: '#FCD34D', bg: 'rgba(245,158,11,0.12)'  },
-  Growth:     { color: '#60A5FA', bg: 'rgba(59,130,246,0.12)'  },
+  Growth:     { color: '#60A5FA', bg: 'rgba(129,140,248,0.12)'  },
   Starter:    { color: '#94A3B8', bg: 'rgba(148,163,184,0.12)' },
 };
 

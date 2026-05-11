@@ -114,7 +114,7 @@ export function Sidebar() {
               width: 34,
               height: 34,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #3B82F6, #6366F1)',
+              background: 'linear-gradient(135deg, var(--color-accent-400), var(--color-accent-600))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

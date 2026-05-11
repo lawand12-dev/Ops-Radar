@@ -63,7 +63,7 @@ function RevenueByMonth() {
           {
             label: 'Revenue',
             data: [35, 55, 72, 88, 95, 105, 128],
-            backgroundColor: 'rgba(59,130,246,0.6)',
+            backgroundColor: 'rgba(129,140,248,0.6)',
             borderRadius: 6,
             borderSkipped: false,
           },
@@ -82,8 +82,8 @@ function RevenueByMonth() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1E293B',
-            borderColor: 'rgba(59,130,246,0.4)',
+            backgroundColor: '#15151A',
+            borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
             titleColor: '#94A3B8',
             bodyColor: '#F0F4FF',
@@ -110,7 +110,7 @@ function RevenueByMonth() {
       action={
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.sub }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#3B82F6' }} /> Revenue
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#818CF8' }} /> Revenue
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.sub }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#8B5CF6' }} /> Expenses
@@ -127,7 +127,7 @@ function RevenueByMonth() {
 }
 
 const projectMixData = [
-  { label: 'Web Development', value: 38, color: '#3B82F6' },
+  { label: 'Web Development', value: 38, color: '#818CF8' },
   { label: 'Branding',        value: 22, color: '#8B5CF6' },
   { label: 'SEO & Content',   value: 18, color: '#22C55E' },
   { label: 'Paid Ads',        value: 14, color: '#F59E0B' },
@@ -161,8 +161,8 @@ function ProjectMix() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1E293B',
-            borderColor: 'rgba(59,130,246,0.4)',
+            backgroundColor: '#15151A',
+            borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
             titleColor: '#94A3B8',
             bodyColor: '#F0F4FF',
@@ -225,7 +225,7 @@ function TopClients() {
             </span>
           </div>
           <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden' }}>
-            <div style={{ width: `${c.pct}%`, height: '100%', background: 'linear-gradient(90deg, #2563EB, #3B82F6)', borderRadius: 99 }} />
+            <div style={{ width: `${c.pct}%`, height: '100%', background: 'linear-gradient(90deg, #6366F1, #818CF8)', borderRadius: 99 }} />
           </div>
         </div>
       ))}
