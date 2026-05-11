@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Sparkles, ArrowUp } from 'lucide-react';
-import { C } from '<npm>/app/dashboard/_lib/theme';
+import { cn } from '<npm>/lib/utils';
 import { PillarTag } from './pillar-tag';
 
 const SUGGESTIONS = [
@@ -21,100 +21,50 @@ const SUGGESTIONS = [
  */
 export function BrainAskBox() {
   const [value, setValue] = useState('');
+  const enabled = value.trim().length > 0;
 
   return (
-    <div
-      style={{
-        background: C.card,
-        border: `1px solid ${C.border}`,
-        borderRadius: 12,
-        padding: '16px 18px 14px',
-        marginBottom: 18,
-      }}
-    >
-      <PillarTag
-        name="BRAIN"
-        subtitle="Ask anything about your agency"
-      />
+    <div className="mb-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 pt-3.5 pb-3">
+      <PillarTag name="BRAIN" subtitle="Ask anything about your agency" />
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           // TODO: wire to LLM endpoint. Phase 2.5.
         }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: C.cardHover,
-          border: `1px solid ${C.border}`,
-          borderRadius: 10,
-          padding: '4px 6px 4px 12px',
-        }}
+        className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)] pl-3 pr-1 py-1"
       >
-        <Sparkles size={14} color={C.accent} style={{ flexShrink: 0 }} />
+        <Sparkles size={14} className="shrink-0 text-[var(--color-primary)]" />
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Which client lost the most margin this month?"
-          style={{
-            flex: 1,
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            color: C.text,
-            fontSize: 14,
-            padding: '8px 4px',
-            fontFamily: 'inherit',
-          }}
+          className="flex-1 border-none bg-transparent px-1 py-2 text-body text-[var(--color-fg)] placeholder:text-[var(--color-fg-faint)] outline-none"
         />
         <button
           type="submit"
           aria-label="Ask BRAIN"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 30,
-            height: 30,
-            background: value.trim() ? C.accent : C.cardHover,
-            border: value.trim() ? 'none' : `1px solid ${C.border}`,
-            borderRadius: 8,
-            color: value.trim() ? '#1E1B4B' : C.muted,
-            cursor: value.trim() ? 'pointer' : 'not-allowed',
-            transition: 'background 0.15s',
-            flexShrink: 0,
-          }}
-          disabled={!value.trim()}
+          disabled={!enabled}
+          className={cn(
+            'flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[var(--radius)]',
+            'transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+            enabled
+              ? 'bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:bg-[var(--color-primary-hover)] cursor-pointer'
+              : 'border border-[var(--color-border)] bg-[var(--color-surface-sunken)] text-[var(--color-fg-faint)] cursor-not-allowed',
+          )}
         >
           <ArrowUp size={14} strokeWidth={2.4} />
         </button>
       </form>
 
-      <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setValue(s)}
-            style={{
-              padding: '5px 10px',
-              background: 'transparent',
-              border: `1px solid ${C.border}`,
-              borderRadius: 999,
-              color: C.sub,
-              fontSize: 11.5,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'border-color 0.15s, color 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = C.text;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = C.sub;
-            }}
+            className="rounded-full border border-[var(--color-border)] bg-transparent px-2.5 py-1 text-[11.5px] text-[var(--color-fg-muted)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)]"
           >
             {s}
           </button>

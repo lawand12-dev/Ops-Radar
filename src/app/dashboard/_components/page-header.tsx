@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { C } from '<npm>/app/dashboard/_lib/theme';
 
 export function PageHeader({
   title,
@@ -11,27 +10,17 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        marginBottom: 22,
-        gap: 16,
-      }}
-    >
-      <div style={{ minWidth: 0 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 5, lineHeight: 1.2 }}>
+    <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="font-serif text-[28px] font-normal leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)]">
           {title}
         </h1>
         {subtitle && (
-          <p style={{ fontSize: 13.5, color: C.sub, margin: 0 }}>{subtitle}</p>
+          <p className="mt-1.5 text-body-sm text-[var(--color-fg-muted)]">{subtitle}</p>
         )}
       </div>
       {actions && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 4, flexShrink: 0 }}>
-          {actions}
-        </div>
+        <div className="flex shrink-0 items-center gap-2.5 pt-1">{actions}</div>
       )}
     </div>
   );

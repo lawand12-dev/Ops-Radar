@@ -1,36 +1,30 @@
-import type { ReactNode } from 'react';
-import { C } from '<npm>/app/dashboard/_lib/theme';
+import type { CSSProperties, ReactNode } from 'react';
+import { cn } from '<npm>/lib/utils';
 
 type Pillar = 'OPERATE' | 'OBSERVE' | 'BRAIN' | 'GUARD';
 
 /**
- * Small monospace caps label that marks a dashboard section as one of the
- * four AIOS pillars. Matches the eyebrow style used across marketing.
+ * Small monospace caps label that marks a dashboard section as one of
+ * the four AIOS pillars. Matches the eyebrow style used across marketing.
  */
 export function PillarTag({
   name,
   subtitle,
+  className,
   style,
 }: {
   name: Pillar;
   subtitle?: ReactNode;
-  style?: React.CSSProperties;
+  className?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10, ...style }}>
-      <span
-        style={{
-          fontFamily: '"JetBrains Mono", ui-monospace, SF Mono, monospace',
-          fontSize: 10.5,
-          fontWeight: 600,
-          letterSpacing: '0.16em',
-          color: C.accent,
-        }}
-      >
+    <div className={cn('mb-2.5 flex items-baseline gap-2.5', className)} style={style}>
+      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
         {name}
       </span>
       {subtitle && (
-        <span style={{ fontSize: 12, color: C.sub }}>{subtitle}</span>
+        <span className="text-caption text-[var(--color-fg-muted)]">{subtitle}</span>
       )}
     </div>
   );
