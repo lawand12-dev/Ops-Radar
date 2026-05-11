@@ -66,9 +66,9 @@ function Hero() {
               <span className="text-[var(--color-primary)]">agency operations</span>.
             </h1>
             <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-              OpsRadar audits every workflow you already run, then builds and
-              monitors the automations that replace them. One pane of glass for
-              tools, runs, and ROI.
+              Every workflow your agency runs has a cost. OpsRadar finds the
+              leak, ships the n8n automation that closes it in 5 to 14 days,
+              and keeps it running when Meta breaks its API.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -87,13 +87,13 @@ function Hero() {
 
             <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-caption text-[var(--color-fg-subtle)]">
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />3-minute self-serve audit
+                <Check className="size-3.5 text-[var(--color-success)]" />Audit in 3 minutes
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />Real dollar figures, not vibes
+                <Check className="size-3.5 text-[var(--color-success)]" />Real dollar figures
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />No credit card, no sales pitch
+                <Check className="size-3.5 text-[var(--color-success)]" />No card, no pitch
               </li>
             </ul>
           </div>
@@ -116,10 +116,10 @@ function Hero() {
 
 function MetricStrip() {
   const metrics = [
-    { label: "Avg hours reclaimed", value: "31 hr / mo", note: "per operator" },
+    { label: "Hours reclaimed", value: "31 / mo", note: "per operator" },
     { label: "Time to first workflow", value: "5 days", note: "from audit complete" },
     { label: "Workflows live", value: "1,200+", note: "across customers" },
-    { label: "Pricing model", value: "Flat retainer", note: "no per-run fees" },
+    { label: "Avg agency ROI", value: "14×", note: "in year one" },
   ];
 
   return (
@@ -181,11 +181,11 @@ function SystemSection() {
           <div className="lg:sticky lg:top-24 lg:self-start">
             <p className="text-label text-[var(--color-fg-subtle)]">The system</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Three things we operate. Nothing else.
+              Three things we do. Nothing else.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
               Not hourly consulting. Not training. Not dashboards you have to
-              maintain. Just these three, end to end.
+              maintain yourself.
             </p>
           </div>
 
@@ -229,12 +229,12 @@ function DashboardSection() {
         <div className="max-w-2xl">
           <p className="text-label text-[var(--color-fg-subtle)]">Dashboard</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            One pane of glass. Live, by default.
+            What&apos;s running, what&apos;s broken, what it saved you.
           </h2>
           <p className="mt-5 text-body-lg text-[var(--color-fg-muted)]">
-            Every workflow you run, every credential connected, every dollar
-            reclaimed — visible the moment it changes. No nightly batches. No
-            client data stored in our DB.
+            Every workflow, every credential, every dollar reclaimed — visible
+            the second it changes. No nightly batches. No client data stored in
+            our database. Just your n8n, read live.
           </p>
         </div>
 
@@ -342,9 +342,9 @@ function SegmentSection() {
     {
       href: "/for/full-service",
       tag: "Full-service",
-      headline: "Defend your delivery margin while scaling across ad ops, SEO, and content.",
+      headline: "Hold your margin as you scale across ad ops, SEO, and content.",
       bullets: [
-        "Unified reporting across ad + organic + content",
+        "Unified reporting across ad, organic, and content",
         "Utilization alerts before scope creep eats margin",
         "Cross-channel attribution your clients actually believe",
       ],
