@@ -17,7 +17,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Calendar, ChevronDown, Download } from 'lucide-react';
-import { C } from '../_lib/theme';
+import { CHART_COLORS } from '../_lib/theme';
 import { PageHeader } from '../_components/page-header';
 import { StatCard } from '../_components/stat-card';
 import { Card } from '../_components/card';
@@ -39,10 +39,10 @@ Chart.register(
 );
 
 const stats = [
-  { label: 'Avg Project Value', value: '$11,840', delta: '8.4%',  trend: 'up' as const   },
-  { label: 'Utilization',       value: '78%',      delta: '3.2%',  trend: 'up' as const   },
-  { label: 'Win Rate',          value: '62%',      delta: '4.1%',  trend: 'up' as const   },
-  { label: 'Avg Project Time',  value: '24 days',  delta: '2.6%',  trend: 'down' as const },
+  { label: 'Avg Project Value', value: '$11,840', delta: '8.4%', trend: 'up'   as const },
+  { label: 'Utilization',       value: '78%',     delta: '3.2%', trend: 'up'   as const },
+  { label: 'Win Rate',          value: '62%',     delta: '4.1%', trend: 'up'   as const },
+  { label: 'Avg Project Time',  value: '24 days', delta: '2.6%', trend: 'down' as const },
 ];
 
 function RevenueByMonth() {
@@ -82,20 +82,20 @@ function RevenueByMonth() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#15151A',
+            backgroundColor: CHART_COLORS.surfaceSunken,
             borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
-            titleColor: '#94A3B8',
-            bodyColor: '#F0F4FF',
+            titleColor: CHART_COLORS.fgMuted,
+            bodyColor: CHART_COLORS.fg,
             callbacks: { label: (i) => ` ${i.dataset.label}: $${(i.parsed.y ?? 0)}K` },
           },
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#4B5F7A', font: { size: 11 } } },
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: CHART_COLORS.fgSubtle, font: { size: 11 } } },
           y: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
+            grid: { color: CHART_COLORS.primaryAlpha04 },
             border: { display: false },
-            ticks: { color: '#4B5F7A', font: { size: 11 }, callback: (v) => `$${v}K` },
+            ticks: { color: CHART_COLORS.fgSubtle, font: { size: 11 }, callback: (v) => `$${v}K` },
           },
         },
       },
@@ -106,20 +106,20 @@ function RevenueByMonth() {
 
   return (
     <Card
-      title="Revenue vs Expenses"
+      title="Revenue vs expenses"
       action={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.sub }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#818CF8' }} /> Revenue
+        <div className="flex items-center gap-3.5">
+          <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--color-fg-muted)]">
+            <span className="size-[9px] rounded-full bg-[var(--color-primary)]" /> Revenue
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: C.sub }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#8B5CF6' }} /> Expenses
+          <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--color-fg-muted)]">
+            <span className="size-[9px] rounded-full bg-[#8B5CF6]" /> Expenses
           </span>
         </div>
       }
       style={{ flex: '0 0 60%' }}
     >
-      <div style={{ height: 260 }}>
+      <div className="h-[260px]">
         <canvas ref={ref} />
       </div>
     </Card>
@@ -129,9 +129,9 @@ function RevenueByMonth() {
 const projectMixData = [
   { label: 'Web Development', value: 38, color: '#818CF8' },
   { label: 'Branding',        value: 22, color: '#8B5CF6' },
-  { label: 'SEO & Content',   value: 18, color: '#22C55E' },
-  { label: 'Paid Ads',        value: 14, color: '#F59E0B' },
-  { label: 'Other',           value: 8,  color: '#94A3B8' },
+  { label: 'SEO & Content',   value: 18, color: '#34D399' },
+  { label: 'Paid Ads',        value: 14, color: '#FBBF24' },
+  { label: 'Other',           value: 8,  color: '#71717A' },
 ];
 
 function ProjectMix() {
@@ -161,11 +161,11 @@ function ProjectMix() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#15151A',
+            backgroundColor: CHART_COLORS.surfaceSunken,
             borderColor: 'rgba(129,140,248,0.4)',
             borderWidth: 1,
-            titleColor: '#94A3B8',
-            bodyColor: '#F0F4FF',
+            titleColor: CHART_COLORS.fgMuted,
+            bodyColor: CHART_COLORS.fg,
           },
         },
         scales: {
@@ -183,19 +183,19 @@ function ProjectMix() {
   }, []);
 
   return (
-    <Card title="Project Mix" style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-        <div style={{ width: 180, height: 180, flexShrink: 0 }}>
+    <Card title="Project mix" className="flex-1">
+      <div className="flex items-center gap-4">
+        <div className="h-[180px] w-[180px] shrink-0">
           <canvas ref={ref} />
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="flex-1">
           {projectMixData.map((d) => (
-            <div key={d.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 11 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-                <span style={{ fontSize: 12.5, color: C.sub }}>{d.label}</span>
+            <div key={d.label} className="mb-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full" style={{ background: d.color }} />
+                <span className="text-[12.5px] text-[var(--color-fg-muted)]">{d.label}</span>
               </div>
-              <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{d.value}%</span>
+              <span className="text-[12.5px] font-semibold text-[var(--color-fg)]">{d.value}%</span>
             </div>
           ))}
         </div>
@@ -215,17 +215,20 @@ function TopClients() {
   ];
 
   return (
-    <Card title="Top Clients by Revenue" style={{ flex: 1 }}>
+    <Card title="Top clients by revenue" className="flex-1">
       {top.map((c) => (
-        <div key={c.name} style={{ marginBottom: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12.5, color: C.text, fontWeight: 500 }}>{c.name}</span>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, fontVariantNumeric: 'tabular-nums' }}>
+        <div key={c.name} className="mb-3.5">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[12.5px] font-medium text-[var(--color-fg)]">{c.name}</span>
+            <span className="font-mono text-[12.5px] font-semibold tabular-nums text-[var(--color-fg)]">
               ${c.revenue.toLocaleString()}
             </span>
           </div>
-          <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden' }}>
-            <div style={{ width: `${c.pct}%`, height: '100%', background: 'linear-gradient(90deg, #6366F1, #818CF8)', borderRadius: 99 }} />
+          <div className="h-[5px] overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-primary)]"
+              style={{ width: `${c.pct}%` }}
+            />
           </div>
         </div>
       ))}
@@ -254,16 +257,16 @@ export default function ReportsPage() {
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="mb-5 grid grid-cols-4 gap-3">
         {stats.map((s) => <StatCard key={s.label} {...s} />)}
       </div>
 
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <div className="mb-4 flex gap-3.5">
         <RevenueByMonth />
         <ProjectMix />
       </div>
 
-      <div style={{ display: 'flex', gap: 14 }}>
+      <div className="flex gap-3.5">
         <TopClients />
       </div>
     </>

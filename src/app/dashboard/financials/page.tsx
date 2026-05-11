@@ -1,40 +1,40 @@
 import { Plus, Download, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { C } from '../_lib/theme';
+import { cn } from '<npm>/lib/utils';
 import { PageHeader } from '../_components/page-header';
 import { StatCard } from '../_components/stat-card';
 import { Card } from '../_components/card';
 import { PrimaryButton, SecondaryButton } from '../_components/buttons';
 
 const stats = [
-  { label: 'Revenue MTD',     value: '$128,540', delta: '18.6%', trend: 'up' as const   },
-  { label: 'Expenses MTD',    value: '$36,720',  delta: '4.2%',  trend: 'down' as const },
-  { label: 'Net Profit',      value: '$91,820',  delta: '24.1%', trend: 'up' as const   },
-  { label: 'Pending Invoices', value: '$32,110', delta: '8',     trend: 'up' as const   },
+  { label: 'Revenue MTD',      value: '$128,540', delta: '18.6%', trend: 'up'   as const },
+  { label: 'Expenses MTD',     value: '$36,720',  delta: '4.2%',  trend: 'down' as const },
+  { label: 'Net Profit',       value: '$91,820',  delta: '24.1%', trend: 'up'   as const },
+  { label: 'Pending Invoices', value: '$32,110',  delta: '8',     trend: 'up'   as const },
 ];
 
 const invoices = [
-  { id: 'INV-0321', client: 'Acme Corp',     amount: '$18,250', due: 'Aug 14, 2024', status: 'Sent'      },
-  { id: 'INV-0320', client: 'Crest Finance', amount: '$24,800', due: 'Aug 12, 2024', status: 'Paid'      },
-  { id: 'INV-0319', client: 'Northwind',     amount: '$14,300', due: 'Aug 10, 2024', status: 'Paid'      },
-  { id: 'INV-0318', client: 'BrightLab',     amount: '$9,800',  due: 'Aug 22, 2024', status: 'Sent'      },
-  { id: 'INV-0317', client: 'Pulse Media',   amount: '$11,200', due: 'Aug 05, 2024', status: 'Overdue'   },
-  { id: 'INV-0316', client: 'GreenPlex',     amount: '$6,400',  due: 'Aug 28, 2024', status: 'Draft'     },
-  { id: 'INV-0315', client: 'ScaleUp',       amount: '$7,650',  due: 'Aug 18, 2024', status: 'Sent'      },
+  { id: 'INV-0321', client: 'Acme Corp',     amount: '$18,250', due: 'Aug 14, 2024', status: 'Sent'    },
+  { id: 'INV-0320', client: 'Crest Finance', amount: '$24,800', due: 'Aug 12, 2024', status: 'Paid'    },
+  { id: 'INV-0319', client: 'Northwind',     amount: '$14,300', due: 'Aug 10, 2024', status: 'Paid'    },
+  { id: 'INV-0318', client: 'BrightLab',     amount: '$9,800',  due: 'Aug 22, 2024', status: 'Sent'    },
+  { id: 'INV-0317', client: 'Pulse Media',   amount: '$11,200', due: 'Aug 05, 2024', status: 'Overdue' },
+  { id: 'INV-0316', client: 'GreenPlex',     amount: '$6,400',  due: 'Aug 28, 2024', status: 'Draft'   },
+  { id: 'INV-0315', client: 'ScaleUp',       amount: '$7,650',  due: 'Aug 18, 2024', status: 'Sent'    },
 ];
 
-const statusColors: Record<string, { color: string; bg: string }> = {
-  Paid:    { color: '#4ADE80', bg: 'rgba(34,197,94,0.12)' },
-  Sent:    { color: '#60A5FA', bg: 'rgba(129,140,248,0.12)' },
-  Overdue: { color: '#F87171', bg: 'rgba(239,68,68,0.12)'  },
-  Draft:   { color: '#94A3B8', bg: 'rgba(148,163,184,0.12)' },
+const STATUS_BADGE: Record<string, string> = {
+  Paid:    'bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)] text-[var(--color-success)]',
+  Sent:    'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]',
+  Overdue: 'bg-[color-mix(in_srgb,var(--color-danger)_12%,transparent)] text-[var(--color-danger)]',
+  Draft:   'bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)]',
 };
 
 const expenseBreakdown = [
   { label: 'Salaries',          amount: 22400, color: '#818CF8' },
-  { label: 'Software & Tools',  amount: 4820,  color: '#818CF8' },
+  { label: 'Software & Tools',  amount: 4820,  color: '#A5B4FC' },
   { label: 'Marketing',         amount: 5300,  color: '#A78BFA' },
-  { label: 'Office',            amount: 2400,  color: '#22C55E' },
-  { label: 'Other',             amount: 1800,  color: '#F59E0B' },
+  { label: 'Office',            amount: 2400,  color: '#34D399' },
+  { label: 'Other',             amount: 1800,  color: '#FBBF24' },
 ];
 
 export default function FinancialsPage() {
@@ -53,70 +53,70 @@ export default function FinancialsPage() {
             </SecondaryButton>
             <PrimaryButton>
               <Plus size={14} />
-              New Invoice
+              New invoice
             </PrimaryButton>
           </>
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="mb-5 grid grid-cols-4 gap-3">
         {stats.map((s) => <StatCard key={s.label} {...s} />)}
       </div>
 
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <div className="mb-4 flex gap-3.5">
         {/* Cash flow summary */}
-        <Card title="Cash Flow" style={{ flex: '0 0 60%' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-            <div style={{ background: C.bg, borderRadius: 10, padding: '16px 18px', border: `1px solid ${C.border}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: C.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ArrowUpRight size={14} color={C.green} />
+        <Card title="Cash flow" style={{ flex: '0 0 60%' }}>
+          <div className="grid grid-cols-2 gap-3.5">
+            <div className="rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-4.5 py-4">
+              <div className="mb-2.5 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)]">
+                  <ArrowUpRight size={14} className="text-[var(--color-success)]" />
                 </div>
-                <span style={{ fontSize: 12, color: C.sub, fontWeight: 500 }}>Inflow</span>
+                <span className="text-caption font-medium text-[var(--color-fg-muted)]">Inflow</span>
               </div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 4 }}>$128,540</div>
-              <div style={{ fontSize: 11, color: C.muted }}>From 14 paid invoices</div>
+              <div className="mb-1 text-[22px] font-bold text-[var(--color-fg)]">$128,540</div>
+              <div className="text-[11px] text-[var(--color-fg-subtle)]">From 14 paid invoices</div>
             </div>
-            <div style={{ background: C.bg, borderRadius: 10, padding: '16px 18px', border: `1px solid ${C.border}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: C.redBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ArrowDownRight size={14} color={C.red} />
+            <div className="rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] px-4.5 py-4">
+              <div className="mb-2.5 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)]">
+                  <ArrowDownRight size={14} className="text-[var(--color-danger)]" />
                 </div>
-                <span style={{ fontSize: 12, color: C.sub, fontWeight: 500 }}>Outflow</span>
+                <span className="text-caption font-medium text-[var(--color-fg-muted)]">Outflow</span>
               </div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 4 }}>$36,720</div>
-              <div style={{ fontSize: 11, color: C.muted }}>Across 28 expenses</div>
+              <div className="mb-1 text-[22px] font-bold text-[var(--color-fg)]">$36,720</div>
+              <div className="text-[11px] text-[var(--color-fg-subtle)]">Across 28 expenses</div>
             </div>
           </div>
 
-          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: 12, color: C.sub, marginBottom: 10, fontWeight: 500 }}>Profit margin</div>
-            <div style={{ height: 10, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden', display: 'flex' }}>
-              <div style={{ width: '71%', background: 'linear-gradient(90deg, #6366F1, #818CF8)' }} />
-              <div style={{ width: '29%', background: 'rgba(239,68,68,0.4)' }} />
+          <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+            <div className="mb-2.5 text-caption font-medium text-[var(--color-fg-muted)]">Profit margin</div>
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
+              <div className="bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-primary)]" style={{ width: '71%' }} />
+              <div className="bg-[color-mix(in_srgb,var(--color-danger)_40%,transparent)]" style={{ width: '29%' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-              <span style={{ fontSize: 11.5, color: C.sub }}>Profit: <span style={{ color: C.text, fontWeight: 600 }}>$91,820 (71%)</span></span>
-              <span style={{ fontSize: 11.5, color: C.sub }}>Costs: <span style={{ color: C.text, fontWeight: 600 }}>$36,720 (29%)</span></span>
+            <div className="mt-2 flex justify-between">
+              <span className="text-[11.5px] text-[var(--color-fg-muted)]">Profit: <span className="font-semibold text-[var(--color-fg)]">$91,820 (71%)</span></span>
+              <span className="text-[11.5px] text-[var(--color-fg-muted)]">Costs: <span className="font-semibold text-[var(--color-fg)]">$36,720 (29%)</span></span>
             </div>
           </div>
         </Card>
 
         {/* Expense breakdown */}
-        <Card title="Expense Breakdown" style={{ flex: 1 }}>
+        <Card title="Expense breakdown" className="flex-1">
           {expenseBreakdown.map((e) => {
             const pct = ((e.amount / totalExpenses) * 100).toFixed(1);
             return (
-              <div key={e.label} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: e.color }} />
-                    <span style={{ fontSize: 12.5, color: C.sub }}>{e.label}</span>
+              <div key={e.label} className="mb-3.5">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full" style={{ background: e.color }} />
+                    <span className="text-[12.5px] text-[var(--color-fg-muted)]">{e.label}</span>
                   </div>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>${e.amount.toLocaleString()}</span>
+                  <span className="text-[12.5px] font-semibold text-[var(--color-fg)]">${e.amount.toLocaleString()}</span>
                 </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 99, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: e.color, borderRadius: 99 }} />
+                <div className="h-1 overflow-hidden rounded-full bg-[var(--color-surface-sunken)]">
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: e.color }} />
                 </div>
               </div>
             );
@@ -124,23 +124,24 @@ export default function FinancialsPage() {
         </Card>
       </div>
 
-      <Card title="Recent Invoices" action={<span style={{ fontSize: 12.5, color: C.accent, cursor: 'pointer', fontWeight: 500 }}>View all</span>}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <Card
+        title="Recent invoices"
+        action={
+          <button
+            type="button"
+            className="cursor-pointer text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
+          >
+            View all
+          </button>
+        }
+      >
+        <table className="w-full border-collapse">
           <thead>
             <tr>
               {['Invoice', 'Client', 'Amount', 'Due Date', 'Status'].map((h) => (
                 <th
                   key={h}
-                  style={{
-                    textAlign: 'left',
-                    fontSize: 11,
-                    color: C.muted,
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    paddingBottom: 10,
-                    borderBottom: `1px solid ${C.border}`,
-                  }}
+                  className="border-b border-[var(--color-border)] pb-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]"
                 >
                   {h}
                 </th>
@@ -150,24 +151,23 @@ export default function FinancialsPage() {
           <tbody>
             {invoices.map((inv, i) => {
               const isLast = i === invoices.length - 1;
-              const border = isLast ? 'none' : `1px solid ${C.border}`;
-              const sc = statusColors[inv.status] ?? statusColors.Sent;
+              const cellBorder = !isLast && 'border-b border-[var(--color-border)]';
               return (
                 <tr key={inv.id}>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text, fontVariantNumeric: 'tabular-nums' }}>{inv.id}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="font-mono text-body-sm font-semibold tabular-nums text-[var(--color-fg)]">{inv.id}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.sub }}>{inv.client}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] text-[var(--color-fg-muted)]">{inv.client}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{inv.amount}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] font-semibold text-[var(--color-fg)]">{inv.amount}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 12.5, color: C.sub }}>{inv.due}</span>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className="text-[12.5px] text-[var(--color-fg-muted)]">{inv.due}</span>
                   </td>
-                  <td style={{ padding: '11px 0', borderBottom: border }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: sc.color, background: sc.bg, padding: '3px 8px', borderRadius: 20 }}>
+                  <td className={cn('py-2.5', cellBorder)}>
+                    <span className={cn('inline-flex rounded-full px-2 py-[3px] text-[11px] font-semibold', STATUS_BADGE[inv.status] ?? STATUS_BADGE.Sent)}>
                       {inv.status}
                     </span>
                   </td>
