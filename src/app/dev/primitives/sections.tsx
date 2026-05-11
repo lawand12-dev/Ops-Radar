@@ -30,6 +30,8 @@ import {
   AccordionContent,
 } from "<npm>/components/ui/accordion";
 import { Badge } from "<npm>/components/ui/badge";
+import { Label } from "<npm>/components/ui/label";
+import { Textarea } from "<npm>/components/ui/textarea";
 
 export function Showcase() {
   return (
@@ -52,6 +54,7 @@ export function Showcase() {
       <DialogSection />
       <AccordionSection />
       <BadgeSection />
+      <LabelTextareaSection />
 
       {/* Sections will be added by Tasks 14–22 (Metric, Table, etc.) */}
     </main>
@@ -238,6 +241,28 @@ function BadgeSection() {
           <Badge variant="destructive" dot>Failed</Badge>
           <Badge variant="accent" dot>New</Badge>
           <Badge variant="secondary" dot>Idle</Badge>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LabelTextareaSection() {
+  return (
+    <section>
+      <p className="text-label text-fg-subtle mb-3">Label + Textarea</p>
+      <div className="space-y-3 max-w-sm">
+        <div className="space-y-1.5">
+          <Label htmlFor="ds-textarea-1">Build request</Label>
+          <Textarea
+            id="ds-textarea-1"
+            placeholder="Describe the workflow you want automated..."
+            rows={4}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ds-textarea-2">Disabled</Label>
+          <Textarea id="ds-textarea-2" placeholder="Disabled" disabled />
         </div>
       </div>
     </section>
