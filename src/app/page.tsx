@@ -12,17 +12,17 @@ import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 export const metadata: Metadata = {
   title: "OpsRadar — The AI Operating System for agencies",
   description:
-    "OpsRadar is AIOS. One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
+    "OpsRadar is AIOS. One platform that runs the manual work, connects every tool your agency already pays for, shows it all in one dashboard with AI that knows your business, and watches it while you sleep.",
   openGraph: {
     title: "OpsRadar — The AI Operating System for agencies",
     description:
-      "One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
+      "One platform that runs the manual work, connects every tool your agency uses, shows it all in one dashboard with AI that knows your business, and watches it while you sleep.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar" }],
   },
   twitter: {
     title: "OpsRadar — The AI Operating System for agencies",
     description:
-      "One platform that runs your workflows, watches them while you sleep, shows everything in one dashboard, and remembers how your shop actually operates.",
+      "One platform that runs the manual work, connects every tool your agency uses, shows it all in one dashboard with AI that knows your business, and watches it while you sleep.",
     images: ["/og-image.png"],
   },
 };
@@ -65,34 +65,34 @@ function Hero() {
               <span className="text-[var(--color-primary)]">agencies</span>.
             </h1>
             <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-              One platform that runs your workflows, watches them while you
-              sleep, shows everything in one dashboard, and remembers how your
-              shop actually operates. Built specifically for your business.
+              One platform that runs the manual work, connects every tool your
+              agency already pays for, shows it all in one dashboard with AI
+              that knows your business, and watches it while you sleep.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
-                <Link href="/audit">
-                  Start the 3-minute audit
+                <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                  Book a call with founders
                   <ArrowRight className="size-4" />
-                </Link>
+                </a>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                  Talk to founders
-                </a>
+                <Link href="/audit">
+                  Or try the 3-minute audit
+                </Link>
               </Button>
             </div>
 
             <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-caption text-[var(--color-fg-subtle)]">
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />13 questions
+                <Check className="size-3.5 text-[var(--color-success)]" />30 minutes
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />Free
+                <Check className="size-3.5 text-[var(--color-success)]" />No pitch
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[var(--color-success)]" />No card, no pitch
+                <Check className="size-3.5 text-[var(--color-success)]" />We tell you if it&apos;s not a fit
               </li>
             </ul>
           </div>
@@ -100,7 +100,7 @@ function Hero() {
           <div className="relative">
             <DashboardPreview />
             <p className="mt-4 text-caption text-[var(--color-fg-subtle)] font-mono">
-              ↑ The OBSERVE dashboard. One screen, every morning.
+              ↑ OBSERVE + BRAIN. Every tool surfaced, AI in the corner.
             </p>
           </div>
         </div>
@@ -115,9 +115,9 @@ function Hero() {
 
 function MetricStrip() {
   const metrics = [
-    { label: "Audit length", value: "13 Q · 3 min", note: "free, no card" },
-    { label: "Tools connected", value: "40+", note: "across n8n + Claude" },
-    { label: "Workflows ready", value: "120+", note: "in the AIOS library" },
+    { label: "Tools connected", value: "Most", note: "ads, revenue, CRM, ops" },
+    { label: "AI in the dashboard", value: "Always", note: "ask anything, in plain English" },
+    { label: "Pricing model", value: "Flat", note: "no per-run fees, no tiers" },
     { label: "Hours reclaimed", value: "31 / mo", note: "per operator" },
   ];
 
@@ -159,22 +159,22 @@ function PillarsSection() {
     {
       name: "OPERATE",
       title: "The engine running your agency.",
-      body: "Automations doing the manual work. Your workflows run inside your n8n, on your credentials, under your control.",
+      body: "Automations doing the manual work in the background. Reporting, onboarding, lead routing, follow-ups, invoicing — running quietly on your accounts, under your control.",
     },
     {
       name: "OBSERVE",
-      title: "The dashboard showing everything.",
-      body: "One screen. Real data. Every morning. What's running, what's broken, what it saved you this week.",
+      title: "Every tool, one screen.",
+      body: "Revenue, ad spend, leads, deliverables, workflow status, hours reclaimed — every tool you already pay for, surfaced in one dashboard. Your agency at a glance, every morning.",
     },
     {
       name: "BRAIN",
-      title: "The AI that knows your company.",
-      body: "Your data. Your history. Your patterns. Queried through Claude. Gets sharper every week the system runs.",
+      title: "The AI that knows your business.",
+      body: "An LLM lives inside your dashboard and answers questions in plain English. Your data, your history, your patterns. Gets sharper every week the system runs.",
     },
     {
       name: "GUARD",
       title: "The system watching while you sleep.",
-      body: "Silent failures caught before they cost you. Meta breaks something at 3 a.m.; GUARD knows by 3:01.",
+      body: "Silent failures caught before they cost you. An ad platform breaks something at 3 a.m.; GUARD knows by 3:01 and routes the fix before your Monday recap runs.",
     },
   ];
 
@@ -229,14 +229,15 @@ function DashboardSection() {
     >
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-2xl">
-          <p className="text-label text-[var(--color-fg-subtle)]">OBSERVE</p>
+          <p className="text-label text-[var(--color-fg-subtle)]">OBSERVE + BRAIN</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            Your agency, on one screen.
+            Every tool you use, on one screen.
           </h2>
           <p className="mt-5 text-body-lg text-[var(--color-fg-muted)]">
-            Every workflow, every credential, every dollar reclaimed — visible
-            the second it changes. No nightly batches. No client data in our
-            database. Just your stack, read live.
+            Revenue from your billing tools. Ad spend from your ad platforms.
+            Leads from your CRM. Workflow status. Hours reclaimed. All of it
+            surfaced live, in one dashboard — with an AI in the corner that
+            knows your business and answers questions in plain English.
           </p>
         </div>
 
@@ -251,10 +252,10 @@ function DashboardSection() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--color-border)] border-b border-[var(--color-border)]">
               {[
+                { label: "Revenue · 30d", value: "$240k", trend: "+12%", up: true },
+                { label: "Ad spend · 30d", value: "$48k", trend: "MER 5.0", up: true },
                 { label: "Hours reclaimed", value: "2,431", trend: "+18%", up: true },
-                { label: "Active workflows", value: "87", trend: "+6", up: true },
-                { label: "Runs / 24h", value: "12.4k", trend: "+2.1k", up: true },
-                { label: "Avg run cost", value: "$0.018", trend: "−12%", up: true },
+                { label: "Active workflows", value: "87", trend: "1 degraded", up: true },
               ].map((m) => (
                 <div key={m.label} className="bg-[var(--color-surface)] px-5 py-4">
                   <p className="text-label text-[var(--color-fg-subtle)]">{m.label}</p>
@@ -296,9 +297,9 @@ function DashboardSection() {
           </div>
 
           <aside className="space-y-6">
-            <Card title="Live, not nightly" body="Workflow status comes straight from your n8n. Nothing is cached longer than 60 seconds. You see the same world your team sees." />
-            <Card title="Your data stays yours" body="OpsRadar never stores client data. Workflows run inside your n8n; credentials live in your vault; logs stay on your infrastructure." />
-            <Card title="ROI, not vanity charts" body="Every workflow ships with a baseline cost-to-run and an hours-saved target. The dashboard tells you whether AIOS is still earning its keep." />
+            <Card title="Every tool, surfaced" body="Revenue, ad spend, CRM pipeline, deliverables, workflow status. Every tool your agency already pays for, pulled into one place — read live." />
+            <Card title="AI in the corner" body="Ask anything in plain English. The AI knows your data, your history, your patterns. It gets sharper every week the system runs." />
+            <Card title="Your accounts. Your data." body="OpsRadar never stores client data. Workflows run on your accounts; credentials stay in your vault; logs stay on your infrastructure." />
           </aside>
         </div>
       </div>
@@ -323,30 +324,30 @@ function HowItWorksSection() {
   const steps = [
     {
       n: "01",
-      tag: "Audit",
-      title: "Tell us what your agency runs on.",
-      body: "13 questions about your tools, your team, and your operations. Free. Three minutes. You get an AI-generated report on where the hours are bleeding out.",
-      side: "What you walk away with: a PDF that names the workflows worth automating first, and the dollar figures behind them.",
+      tag: "Call",
+      title: "We talk. No pitch.",
+      body: "A 30-minute conversation. You explain how your agency runs. We listen and ask the questions only operators would ask. By the end of the call, both sides know if AIOS belongs at your agency.",
+      side: "What you walk away with: a clear yes-or-no on fit. If we are not the right system for you, we say so on the call.",
     },
     {
       n: "02",
       tag: "Discovery",
-      title: "We sit with you to understand the business.",
-      body: "We do not build AIOS for shops we do not understand. On a call, we go deeper than the audit — your tools, your clients, your team, your patterns, the things only operators know.",
-      side: "What we walk away with: a real picture of how your shop actually works. We take roughly a week to evaluate and reason about it.",
+      title: "We go deep on the business.",
+      body: "If the call confirms a fit, we move into discovery — your tools, your clients, your team, your patterns, the workflows that live in someone&apos;s head. This is the part we will not skip. We do not build AIOS for agencies we do not understand.",
+      side: "Format: structured forms, working sessions, and access to the tools you already pay for. Length: about a week of evaluation on our side.",
     },
     {
       n: "03",
       tag: "Blueprint",
       title: "A written plan for your AIOS.",
-      body: "We send you a PDF that shows what's actually happening to your operations today, what the system will do about it, what gets built first, and what the build will cost.",
-      side: "What you walk away with: a buy-or-don't decision with full visibility. No surprises, no nine-page MSAs.",
+      body: "You receive a PDF that names what is actually happening to your operations today, why this matters now, what the system will do about it, what gets built first, and what the build will cost.",
+      side: "What you walk away with: a buy-or-don&apos;t decision with full visibility. No surprises, no nine-page MSAs.",
     },
     {
       n: "04",
       tag: "Build",
       title: "Your AIOS goes live.",
-      body: "Workflows run in your n8n. The BRAIN learns your shop. OBSERVE shows you everything. GUARD watches it overnight. We can run it for you, or hand it over to your team.",
+      body: "OPERATE runs the manual work in the background. OBSERVE surfaces every tool in one dashboard. BRAIN learns your business. GUARD watches it overnight. We can run the platform for you, or hand it to your team.",
       side: "What stays with you: every workflow, every credential, every log — in your accounts, under your control, from day one.",
     },
   ];
@@ -356,12 +357,13 @@ function HowItWorksSection() {
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-fg-subtle)]">How OpsRadar happens</p>
+            <p className="text-label text-[var(--color-fg-subtle)]">How AIOS gets built</p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              From audit to live AIOS in four steps.
+              From first call to live AIOS in four steps.
             </h2>
             <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              Free at the front. Honest in the middle. Real ownership at the end.
+              The real path starts with a conversation. The 3-minute audit on the
+              site is a marketing diagnostic — useful, but not the map.
             </p>
           </div>
 
@@ -436,11 +438,11 @@ function SegmentSection() {
         <div className="max-w-2xl mb-14">
           <p className="text-label text-[var(--color-fg-subtle)]">Working inside agencies like</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
-            AIOS, shaped to your shop.
+            AIOS, shaped to your agency.
           </h2>
           <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
             AIOS is not a template. Each one is built for the specific
-            operations of the agency it runs inside. Here&apos;s what it looks
+            operations of the agency it runs inside. Here is what it looks
             like for the three shapes we see most.
           </p>
         </div>
@@ -487,13 +489,13 @@ function WhySection() {
   const quotes = [
     {
       kind: "On understanding",
-      quote: "We don’t build for shops we don’t understand.",
+      quote: "We don’t build for agencies we don’t understand.",
       body: "AIOS is not a template you drop into your stack. We diagnose your real operations — your tools, your clients, your team, your patterns — before a single workflow is written. That is the only honest way to build a system for a business.",
     },
     {
       kind: "On ownership",
       quote: "You own all of it. Day one.",
-      body: "Every workflow lives in your n8n account, on your Google Drive, running on your credentials. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the logs.",
+      body: "Every workflow lives on your accounts, on your storage, running on your credentials. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the logs.",
     },
     {
       kind: "On reliability",
@@ -554,8 +556,9 @@ function CloserSection() {
             <p>
               AIOS is the platform that ends that. Your data, your history,
               your patterns — fed into a system built specifically for your
-              shop. It runs the work. It watches the work. It remembers how
-              you operate, and gets sharper every week.
+              agency. It runs the work. It surfaces every tool in one screen.
+              It watches the platforms. It remembers how you operate, and
+              gets sharper every week.
             </p>
             <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
               We are not building another automation tool. We are building the
@@ -578,30 +581,31 @@ function FinalCTA() {
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
         <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
         <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-          See what your AIOS looks like.
+          Talk to us about your AIOS.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          13 questions. Three minutes. An AI-generated report on where your
-          operations are bleeding hours — and which workflows are worth
-          automating first.
+          A 30-minute call. We listen to how your agency runs, ask the questions
+          only operators would ask, and tell you on the call whether AIOS
+          belongs at your agency.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Or talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          13 questions · Free · No card, no pitch · 3 minutes to the report.
+          30 minutes · No pitch · We tell you if it&apos;s not a fit. The
+          on-site audit is a marketing diagnostic, not the real map.
         </p>
       </div>
     </section>
