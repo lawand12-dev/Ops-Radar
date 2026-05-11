@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AIOS for E-commerce Agencies — OpsRadar',
     description:
-      'Product feed sync, daily revenue roll-up, and low-stock alerts — OPERATE runs the feeds, GUARD watches the inventory. Built inside your n8n account.',
+      'Product feed sync, daily revenue roll-up, and low-stock alerts — OPERATE runs the feeds, GUARD watches the inventory. Built on your accounts.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for E-commerce Agencies' }],
   },
   twitter: {
@@ -112,21 +112,21 @@ export default function ForEcommercePage() {
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Product feed drift burns ad spend. Revenue numbers live across Shopify, Klaviyo,
           and GA4. Out-of-stock SKUs keep running traffic until someone checks. OpsRadar
-          is AIOS — the system that closes all three, runs inside your n8n account, and
+          is AIOS — the system that closes all three, runs on your accounts, and
           watches your inventory while you sleep.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
       </section>
@@ -192,7 +192,7 @@ export default function ForEcommercePage() {
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            What your shop looks like after OpsRadar lands.
+            What your agency looks like after OpsRadar lands.
           </h2>
 
           <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
@@ -227,7 +227,7 @@ export default function ForEcommercePage() {
             &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
           </blockquote>
           <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
-            — E-commerce agency founder · 14-person shop · feed sync live in week one
+            — E-commerce agency founder · 14-person agency · feed sync live in week one
           </p>
         </div>
       </section>
@@ -240,27 +240,26 @@ export default function ForEcommercePage() {
             See what your e-commerce AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            13 questions. Three minutes. An AI-generated report on the hours your agency
-            loses to feed drift, manual reporting, and inventory blind spots — and which
-            workflows are worth automating first.
+            A 30-minute call. We listen to how your agency runs, ask the questions
+            only operators would ask, and tell you on the call whether AIOS belongs.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/audit">
-                Start the audit
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a call with founders
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Talk to founders
-              </a>
+              <Link href="/audit">
+                Or try the 3-minute audit
+              </Link>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            13 questions · Free · No card, no pitch · 3 minutes to the report.
+            30 minutes · No pitch · We tell you if it&apos;s not a fit.
           </p>
         </div>
       </section>

@@ -12,17 +12,17 @@ import SegmentPageAnalytics from '../SegmentPageAnalytics'
 export const metadata: Metadata = {
   title: 'AIOS for Paid-Media Agencies — OpsRadar',
   description:
-    'OpsRadar is AIOS for paid-media shops under 20 people. Meta + Google + Klaviyo reports that build themselves. Pacing alerts tied to MER, not last-click ROAS. Onboarding that runs itself from signed contract.',
+    'OpsRadar is AIOS for paid-media agencies under 20 people. Meta + Google + Klaviyo reports that build themselves. Pacing alerts tied to MER, not last-click ROAS. Onboarding that runs itself from signed contract.',
   openGraph: {
     title: 'AIOS for Paid-Media Agencies — OpsRadar',
     description:
-      'Reports that build themselves. Pacing alerts tied to MER. OPERATE runs the reporting; GUARD catches the API drift. Built inside your n8n account.',
+      'Reports that build themselves. Pacing alerts tied to MER. OPERATE runs the reporting; GUARD catches the API drift. Built on your accounts.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Paid-Media Agencies' }],
   },
   twitter: {
     title: 'AIOS for Paid-Media Agencies — OpsRadar',
     description:
-      'Reports that build themselves. Pacing alerts tied to MER. GUARD catches the API drift. Built inside your n8n account.',
+      'Reports that build themselves. Pacing alerts tied to MER. GUARD catches the API drift. Built on your accounts.',
     images: ['/og-image.png'],
   },
 }
@@ -111,21 +111,21 @@ export default function ForPaidMediaPage() {
 
         <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           Reports eat your Sundays. Pacing alerts come too late. BM access takes 3 weeks.
-          OpsRadar is AIOS — the system that fixes all three inside your n8n account,
+          OpsRadar is AIOS — the system that fixes all three on your accounts,
           running under your credentials, owned by you from day one.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a call with founders
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Talk to founders
-            </a>
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
       </section>
@@ -191,7 +191,7 @@ export default function ForPaidMediaPage() {
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
           <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            What your shop looks like after OpsRadar lands.
+            What your agency looks like after OpsRadar lands.
           </h2>
 
           <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
@@ -226,7 +226,7 @@ export default function ForPaidMediaPage() {
             &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
           </blockquote>
           <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
-            — Paid-media agency founder · 12-person shop · replaced Zapier + VA
+            — Paid-media agency founder · 12-person agency · replaced Zapier + VA
           </p>
         </div>
       </section>
@@ -239,26 +239,26 @@ export default function ForPaidMediaPage() {
             See what your paid-media AIOS looks like.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            13 questions. Three minutes. An AI-generated report on what your shop is losing
-            to manual reporting and late alerts — and which workflows are worth automating first.
+            A 30-minute call. We listen to how your agency runs, ask the questions
+            only operators would ask, and tell you on the call whether AIOS belongs.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/audit">
-                Start the audit
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a call with founders
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Talk to founders
-              </a>
+              <Link href="/audit">
+                Or try the 3-minute audit
+              </Link>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            13 questions · Free · No card, no pitch · 3 minutes to the report.
+            30 minutes · No pitch · We tell you if it&apos;s not a fit.
           </p>
         </div>
       </section>

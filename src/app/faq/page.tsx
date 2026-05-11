@@ -41,19 +41,19 @@ const CATEGORIES = [
     items: [
       {
         q: "What is OpsRadar?",
-        a: "OpsRadar is AIOS — the AI Operating System for agencies. Four pillars: OPERATE runs your workflows, OBSERVE watches them around the clock, BRAIN remembers how your shop works, GUARD catches breakage before it hits your reports. Everything lives in your accounts, not ours.",
+        a: "OpsRadar is AIOS — the AI Operating System for agencies. Four pillars: OPERATE runs your workflows, OBSERVE shows every tool in one dashboard, BRAIN remembers how your agency works, GUARD catches breakage before it hits your reports. Everything lives in your accounts, not ours.",
       },
       {
         q: "Who is this for?",
-        a: "Agencies under 30 people losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team is rebuilding the same client decks every Monday, this is for you.",
+        a: "Agencies under 30 people losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team rebuilds the same client decks every Monday, this is for you.",
       },
       {
         q: "Who is this NOT for?",
-        a: "Solo operators where the math doesn't land yet. Enterprise shops that need a larger transformation program. Agencies that want shrinkwrap software — AIOS is custom-built for your specific stack and workflows.",
+        a: "Solo operators where the math doesn't land yet. Large enterprise programs that need a different scale. Agencies that want shrinkwrap software — AIOS is custom-built for your specific stack and workflows.",
       },
       {
         q: "Why does \"you own it\" matter?",
-        a: "Yes, ownership matters. Every workflow lives in your n8n, every credential in your vault, every log on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the BRAIN.",
+        a: "Yes, ownership matters. Every workflow runs on your accounts, every credential in your vault, every log on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the BRAIN.",
       },
     ],
   },
@@ -63,7 +63,7 @@ const CATEGORIES = [
     items: [
       {
         q: "What does it cost?",
-        a: "Build cost is set in your Blueprint PDF after we understand your shop. There is no list price — every AIOS is scoped for the agency it runs inside. The audit is free. The discovery call is free. Scope and cost are locked before any build starts.",
+        a: "Build cost is set in your Blueprint PDF after we understand your agency. There is no list price — every AIOS is scoped for the agency it runs inside. The discovery call is free. Scope and cost are locked before any build starts.",
       },
       {
         q: "How does payment work?",
@@ -74,8 +74,8 @@ const CATEGORIES = [
         a: "No. You can take the Blueprint and run it yourself. Most agencies want ongoing care because Meta, Google, and Shopify push breaking API changes every quarter — GUARD catches those, but someone still has to ship the fix.",
       },
       {
-        q: "How is n8n cheaper than Zapier at scale?",
-        a: "Zapier charges per task. Agency reporting workflows run hundreds of times a day — the bill compounds fast. n8n runs on flat-rate cloud pricing with unlimited executions. For agencies running data at volume, n8n is the only math that holds.",
+        q: "How is AIOS cheaper than Zapier at scale?",
+        a: "Zapier charges per task. Agency reporting workflows run hundreds of times a day — the bill compounds fast. The automation layer AIOS runs on uses flat-rate cloud pricing with unlimited executions. For agencies running data at volume, that is the only math that holds.",
       },
     ],
   },
@@ -85,7 +85,7 @@ const CATEGORIES = [
     items: [
       {
         q: "How long does a build take?",
-        a: "Blueprint is roughly a week of evaluation after the discovery call. Build timelines are scoped in the Blueprint, sized to your shop. We don't build AIOS for agencies we don't understand — the evaluation exists so the scope is real.",
+        a: "Blueprint is roughly a week of evaluation after the discovery call. Build timelines are scoped in the Blueprint, sized to your agency. We don't build AIOS for agencies we don't understand — the evaluation exists so the scope is real.",
       },
       {
         q: "What happens after I submit the audit?",
@@ -93,7 +93,7 @@ const CATEGORIES = [
       },
       {
         q: "What's required from me during the build?",
-        a: "Mostly access. You connect the tools you already use — Meta, Google, Slack, and so on — review the Blueprint once, and test the final system before it goes live. We do the heavy lifting; you verify it fits your shop.",
+        a: "Mostly access. You connect the tools you already use — Meta, Google, Slack, and so on — review the Blueprint once, and test the final system before it goes live. We do the heavy lifting; you verify it fits your agency.",
       },
       {
         q: "What if something breaks after the build?",
@@ -110,12 +110,12 @@ const CATEGORIES = [
         a: "Anything with an API or webhook. Most common: Meta Ads, Google Ads, GA4, Triple Whale, Klaviyo, HubSpot, Ahrefs, Semrush, Slack, Notion, Google Sheets, Looker Studio. If your tool isn't listed, note it in the audit — it likely still works.",
       },
       {
-        q: "Why n8n instead of Zapier, Make, or a SaaS tool?",
-        a: "Three reasons: flat monthly cost instead of per-task fees. The workflows live in your account, not ours. And n8n is powerful enough for the AI nodes, branching logic, and custom code that AIOS requires. OPERATE is built on n8n because nothing else holds at agency scale.",
+        q: "Why not Zapier, Make, or a SaaS tool?",
+        a: "Three reasons: flat monthly cost instead of per-task fees. The workflows live in your account, not ours. And the automation layer AIOS runs on is powerful enough for the AI nodes, branching logic, and custom code that AIOS requires — nothing else holds at agency scale.",
       },
       {
-        q: "Can n8n be self-hosted?",
-        a: "Yes. You can run n8n on their cloud or self-host on your own server. We build in either environment. Self-hosting is free but requires someone to manage a server — most agencies just use n8n Cloud.",
+        q: "Can the automation platform be self-hosted?",
+        a: "Yes. Workflows can run on cloud infrastructure or self-hosted on your own server. We build in either environment. Self-hosting requires someone to manage a server — most agencies use cloud hosting.",
       },
       {
         q: "Can you work with my existing automations?",

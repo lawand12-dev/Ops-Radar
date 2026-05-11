@@ -32,11 +32,11 @@ const PRICING_PAGE_VISIBLE =
 export const metadata: Metadata = {
   title: "Pricing — OpsRadar",
   description:
-    "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees, no task-volume surprises. Starts with a free 3-minute audit.",
+    "AIOS is built to your agency and priced to your Blueprint. Flat retainer once live. No per-run fees, no task-volume surprises. Starts with a call.",
   openGraph: {
     title: "Pricing — OpsRadar",
     description:
-      "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees.",
+      "AIOS is built to your agency and priced to your Blueprint. Flat retainer once live. No per-run fees.",
     url: "https://www.opsradar.co/pricing",
     siteName: "OpsRadar",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Pricing" }],
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pricing — OpsRadar",
     description:
-      "AIOS is built to your shop and priced to your Blueprint. Flat retainer once live. No per-run fees.",
+      "AIOS is built to your agency and priced to your Blueprint. Flat retainer once live. No per-run fees.",
     images: ["/og-image.png"],
   },
   robots: { index: false, follow: false },
@@ -58,37 +58,37 @@ export const metadata: Metadata = {
 const FUNNEL_STEPS = [
   {
     n: "01",
-    tag: "Audit",
-    name: "Audit",
-    tagline: "Start here. Three minutes. No card.",
+    tag: "Call",
+    name: "Call",
+    tagline: "Start here. 30 minutes. No pitch.",
     priceLabel: "Free",
     priceNote: "Always.",
     highlight: false,
     bullets: [
-      "13 questions about your tools, team, and operations",
-      "AI-generated PDF report delivered instantly",
-      "Identifies the workflows worth automating first",
-      "Dollar-figure ROI estimate per workflow",
-      "No sales call required to get the report",
+      "30-minute conversation with the founders",
+      "You walk through how your agency runs",
+      "We ask the questions only operators would ask",
+      "Both sides know if AIOS is a fit by the end",
+      "We tell you if it's not a fit — on the call",
     ],
-    cta: { label: "Run the free audit", href: "/audit", external: false },
+    cta: { label: "Book a call with founders", href: CALENDLY_STRATEGY_CALL_URL, external: true },
   },
   {
     n: "02",
     tag: "Discovery",
     name: "Discovery",
-    tagline: "A call. We learn your shop. We don't pitch.",
+    tagline: "We go deep on your agency before anything gets built.",
     priceLabel: "Free",
     priceNote: "No obligation.",
     highlight: false,
     bullets: [
-      "Deep diagnosis beyond the audit questions",
+      "Structured forms and working sessions",
       "We map your tools, clients, team, and patterns",
       "We tell you honestly if AIOS is the right fit",
       "No demo, no deck, no nine-page MSA",
-      "We walk away understanding how your shop actually works",
+      "We walk away understanding how your agency actually works",
     ],
-    cta: { label: "Book a discovery call", href: CALENDLY_STRATEGY_CALL_URL, external: true },
+    cta: { label: "Book a call with founders", href: CALENDLY_STRATEGY_CALL_URL, external: true },
   },
   {
     n: "03",
@@ -100,7 +100,7 @@ const FUNNEL_STEPS = [
     highlight: true,
     bullets: [
       "Current-state diagnosis of your operations",
-      "Full plan for what AIOS will do in your shop",
+      "Full plan for what AIOS will do in your agency",
       "Which workflows get built first and why",
       "The build price — fixed, in writing",
       "A buy-or-don't decision with full visibility",
@@ -116,13 +116,13 @@ const FUNNEL_STEPS = [
     priceNote: "Price is in your Blueprint PDF.",
     highlight: false,
     bullets: [
-      "Workflows run in your n8n — you own the code",
+      "Workflows run on your accounts — you own the code",
       "OPERATE, OBSERVE, BRAIN, and GUARD all live",
       "Flat monthly retainer once the system is running",
       "No per-run fees, no task-volume tiers",
       "Every credential, every log — in your accounts",
     ],
-    cta: { label: "Start with the audit", href: "/audit", external: false },
+    cta: { label: "Book a call with founders", href: CALENDLY_STRATEGY_CALL_URL, external: true },
   },
 ];
 
@@ -143,7 +143,7 @@ const FLAT_RETAINER_POINTS = [
 
 const NOT_INCLUDED = [
   "Hourly consulting or ad-hoc advisory",
-  "Training your team to use n8n",
+  "Training your team to manage the automation platform",
   "BI dashboards you want to own and maintain yourself",
   "Data warehousing or business intelligence setup",
   "IT infrastructure or cloud hosting",
@@ -153,11 +153,11 @@ const NOT_INCLUDED = [
 const FAQS = [
   {
     q: "How much does AIOS cost?",
-    a: "Build cost is set in your Blueprint PDF after OpsRadar understands your shop. There is no list price because there is no list AIOS — every one is built for the business it runs inside. The Blueprint is where the number lives.",
+    a: "Build cost is set in your Blueprint PDF after OpsRadar understands your agency. There is no list price because there is no list AIOS — every one is built for the business it runs inside. The Blueprint is where the number lives.",
   },
   {
     q: "What is the Blueprint, and why is the price there?",
-    a: "The Blueprint is a paid engagement delivered as a PDF. It shows the current-state diagnosis of your operations, the full plan for your AIOS, what gets built first, and the fixed build price. The price belongs there — not on a webpage — because scope determines cost, and scope comes from understanding your shop, not guessing at it.",
+    a: "The Blueprint is a paid engagement delivered as a PDF. It shows the current-state diagnosis of your operations, the full plan for your AIOS, what gets built first, and the fixed build price. The price belongs there — not on a webpage — because scope determines cost, and scope comes from understanding your agency, not guessing at it.",
   },
   {
     q: "What does flat retainer actually mean?",
@@ -169,7 +169,7 @@ const FAQS = [
   },
   {
     q: "What tools can AIOS connect?",
-    a: "Anything with an API or webhook: HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Triple Whale, Klaviyo, Meta Ads, Google Ads, GA4, Calendly, and hundreds more via n8n's native library. If it has an API, AIOS can reach it.",
+    a: "Anything with an API or webhook: HubSpot, Salesforce, GoHighLevel, Slack, Google Workspace, Notion, Airtable, Stripe, QuickBooks, Triple Whale, Klaviyo, Meta Ads, Google Ads, GA4, Calendly, and most tools your agency already pays for. If it has an API, AIOS can reach it.",
   },
   {
     q: "Do you store my clients' data?",
@@ -177,7 +177,7 @@ const FAQS = [
   },
   {
     q: "What happens to my workflows if I stop working with OpsRadar?",
-    a: "Every workflow lives in your n8n account, on your credentials, under your control from day one. If OpsRadar ever disappeared, nothing would break. The code is yours and always has been.",
+    a: "Every workflow runs on your accounts, on your credentials, under your control from day one. If OpsRadar ever disappeared, nothing would break. The code is yours and always has been.",
   },
   {
     q: "How long does a build take?",
@@ -218,12 +218,12 @@ function PageHeader() {
       <div className="mx-auto max-w-5xl px-6 pt-14 md:pt-20 pb-20 md:pb-24">
         <p className="text-label text-[var(--color-fg-subtle)]">Pricing</p>
         <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-2xl">
-          Built to your shop. Priced to your Blueprint.
+          Built to your agency. Priced to your Blueprint.
         </h1>
         <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
           AIOS is not a template with a price tag. It is built for the specific
           operations of your agency. The build price lives in your Blueprint PDF
-          — after OpsRadar has understood your shop. Flat retainer once live.
+          — after OpsRadar has understood your agency. Flat retainer once live.
           No per-run fees. No Zapier-style task-volume punishment.
         </p>
       </div>
@@ -242,12 +242,12 @@ function FunnelSection() {
         <div className="max-w-2xl mb-14">
           <p className="text-label text-[var(--color-fg-subtle)]">How OpsRadar works</p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            Free at the front. Priced at the Blueprint.
+            Call → Discovery → Blueprint → Build.
           </h2>
           <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
             Every engagement follows the same four steps. The price is not a
             number on this page — it is a fixed line in a document written
-            specifically for your business.
+            specifically for your agency.
           </p>
         </div>
 
@@ -385,8 +385,8 @@ function FlatRetainerSection() {
           </blockquote>
           <p className="mt-4 text-body text-[var(--color-fg-muted)] max-w-xl leading-[1.6]">
             Zapier punishes you when your agency grows. AIOS is aligned with
-            your growth — the system runs more because it is earning its keep,
-            not because we found another line item to charge.
+            your growth — the system runs more because it is earning its keep.
+            Not because we found another line item to charge.
           </p>
         </div>
       </div>
@@ -473,29 +473,27 @@ function FinalCTA() {
           The price is in the Blueprint.
         </h2>
         <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          The audit takes three minutes and costs nothing. It tells you which
-          workflows are worth automating first. Everything else — the Blueprint,
-          the build price, the plan — follows from what OpsRadar learns about
-          your shop.
+          A 30-minute call. We listen to how your agency runs, ask the questions
+          only operators would ask, and tell you on the call whether AIOS
+          belongs at your agency.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/audit">
-              Start the audit
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
             <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a discovery call
+              Book a call with founders
               <ArrowRight className="size-4" />
             </a>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/audit">
+              Or try the 3-minute audit
+            </Link>
           </Button>
         </div>
 
         <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          13 questions · Free · No card, no pitch · 3 minutes to the report.
+          30 minutes · No pitch · We tell you if it&apos;s not a fit.
         </p>
       </div>
     </section>
