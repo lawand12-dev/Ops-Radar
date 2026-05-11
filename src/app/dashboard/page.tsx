@@ -21,8 +21,9 @@ import {
   FileText,
   FolderOpen,
   Clock,
+  type LucideIcon,
 } from 'lucide-react';
-import { C, CHART_COLORS } from './_lib/theme';
+import { CHART_COLORS } from './_lib/theme';
 import { PageHeader } from './_components/page-header';
 import { StatCard } from './_components/stat-card';
 import { Card } from './_components/card';
@@ -35,6 +36,7 @@ import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-
 import { MarketingCard } from '<npm>/components/dashboard/marketing-card';
 import { FinancialsCard } from '<npm>/components/dashboard/financials-card';
 import { DeliveryCard } from '<npm>/components/dashboard/delivery-card';
+import { cn } from '<npm>/lib/utils';
 
 Chart.register(
   LineController,
@@ -66,18 +68,18 @@ const fmtCurrency = (n: number) =>
 const FALLBACK_METRICS = [
   { label: 'Revenue',         value: '$128,540', delta: '18.6%' },
   { label: 'Profit Margin',   value: '32.4%',    delta: '6.3%'  },
-  { label: 'Active Projects', value: '24',        delta: '4'     },
-  { label: 'Hours Tracked',   value: '347h',      delta: '12.4%' },
-  { label: 'Invoiced',        value: '$96,430',   delta: '9.2%'  },
+  { label: 'Active Projects', value: '24',       delta: '4'     },
+  { label: 'Hours Tracked',   value: '347h',     delta: '12.4%' },
+  { label: 'Invoiced',        value: '$96,430',  delta: '9.2%'  },
 ];
 
 const revenueLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 const revenueData   = [35000, 55000, 72000, 88000, 95000, 105000, 128540];
 
 const taskData = [
-  { label: 'Completed',   count: 182, color: CHART_COLORS.primary },          // indigo
-  { label: 'In Progress', count: 48,  color: CHART_COLORS.success },          // success-green
-  { label: 'To Do',       count: 22,  color: CHART_COLORS.trackOnSurface },   // muted track
+  { label: 'Completed',   count: 182, color: CHART_COLORS.primary },
+  { label: 'In Progress', count: 48,  color: CHART_COLORS.success },
+  { label: 'To Do',       count: 22,  color: CHART_COLORS.trackOnSurface },
 ];
 
 const projects = [
@@ -88,31 +90,38 @@ const projects = [
   { name: 'Social Media Mgmt', client: 'GreenPlex',  progress: 60, hours: 32,  revenue: '$6,400'  },
 ];
 
-const activityItems = [
-  {
-    color: CHART_COLORS.success, bg: 'rgba(52,211,153,0.12)',  icon: CheckCircle,
-    titleColor: CHART_COLORS.success, title: 'Task completed',
-    sub: 'Homepage design approved',
-    project: 'Website Redesign', time: '2h ago',
+type ActivityItem = {
+  icon: LucideIcon;
+  iconTint: 'success' | 'primary' | 'warn';
+  title: string;
+  sub: string;
+  project: string;
+  time: string;
+};
+
+const ICON_TINT: Record<ActivityItem['iconTint'], { wrap: string; icon: string; title: string }> = {
+  success: {
+    wrap:  'bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)]',
+    icon:  'text-[var(--color-success)]',
+    title: 'text-[var(--color-success)]',
   },
-  {
-    color: CHART_COLORS.primary, bg: 'rgba(129,140,248,0.12)', icon: Clock,
-    titleColor: CHART_COLORS.primary, title: 'Time logged',
-    sub: '3h 20m logged on SEO Audit',
-    project: 'SEO Campaign', time: '4h ago',
+  primary: {
+    wrap:  'bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]',
+    icon:  'text-[var(--color-primary)]',
+    title: 'text-[var(--color-primary)]',
   },
-  {
-    color: CHART_COLORS.primary, bg: 'rgba(129,140,248,0.18)', icon: FileText,
-    titleColor: CHART_COLORS.primary, title: 'Invoice sent',
-    sub: 'Invoice #INV-0321 sent to Acme Corp',
-    project: 'Website Redesign', time: '6h ago',
+  warn: {
+    wrap:  'bg-[color-mix(in_srgb,var(--color-warn)_14%,transparent)]',
+    icon:  'text-[var(--color-warn)]',
+    title: 'text-[var(--color-warn)]',
   },
-  {
-    color: CHART_COLORS.warn, bg: 'rgba(251,191,36,0.12)', icon: FolderOpen,
-    titleColor: CHART_COLORS.warn, title: 'Project created',
-    sub: 'New project "Brand Strategy" created',
-    project: 'Brand Strategy', time: '1d ago',
-  },
+};
+
+const activityItems: ActivityItem[] = [
+  { icon: CheckCircle, iconTint: 'success', title: 'Task completed',    sub: 'Homepage design approved',       project: 'Website Redesign', time: '2h ago' },
+  { icon: Clock,       iconTint: 'primary', title: 'Time logged',       sub: '3h 20m logged on SEO Audit',     project: 'SEO Campaign',     time: '4h ago' },
+  { icon: FileText,    iconTint: 'primary', title: 'Invoice sent',      sub: 'Invoice #INV-0321 sent to Acme', project: 'Website Redesign', time: '6h ago' },
+  { icon: FolderOpen,  iconTint: 'warn',    title: 'Project created',   sub: 'New project "Brand Strategy" created', project: 'Brand Strategy', time: '1d ago' },
 ];
 
 function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?: string[]; data?: number[] }) {
@@ -181,8 +190,8 @@ function RevenueChart({ labels = revenueLabels, data = revenueData }: { labels?:
   }, [labels, data]);
 
   return (
-    <Card title="Revenue Overview" style={{ flex: '0 0 59%' }}>
-      <div style={{ height: 220 }}>
+    <Card title="Revenue overview" style={{ flex: '0 0 59%' }}>
+      <div className="h-[220px]">
         <canvas ref={canvasRef} />
       </div>
     </Card>
@@ -234,47 +243,32 @@ function TasksChart() {
   const total = taskData.reduce((s, t) => s + t.count, 0);
 
   return (
-    <Card title="Tasks Overview" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ position: 'relative', width: 150, height: 150, flexShrink: 0 }}>
+    <Card title="Tasks overview" className="flex-1">
+      <div className="flex items-center gap-5">
+        <div className="relative h-[150px] w-[150px] shrink-0">
           <canvas ref={canvasRef} />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <div style={{ fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1 }}>72%</div>
-            <div style={{ fontSize: 11, color: C.sub, marginTop: 3 }}>Completed</div>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-[26px] font-bold leading-none text-[var(--color-fg)]">72%</div>
+            <div className="mt-0.5 text-caption text-[var(--color-fg-muted)]">Completed</div>
           </div>
         </div>
 
-        <div style={{ flex: 1 }}>
+        <div className="flex-1">
           {taskData.map(({ label, count, color }) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <div style={{ width: 9, height: 9, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: C.sub }}>{label}</span>
+            <div key={label} className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="block size-[9px] shrink-0 rounded-full"
+                  style={{ background: color }}
+                />
+                <span className="text-body-sm text-[var(--color-fg-muted)]">{label}</span>
               </div>
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>{count}</span>
+              <span className="text-[13.5px] font-semibold text-[var(--color-fg)]">{count}</span>
             </div>
           ))}
-          <div
-            style={{
-              borderTop: `1px solid ${C.border}`,
-              paddingTop: 12,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ fontSize: 13, color: C.sub }}>Total Tasks</span>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>{total}</span>
+          <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+            <span className="text-body-sm text-[var(--color-fg-muted)]">Total tasks</span>
+            <span className="text-[13.5px] font-bold text-[var(--color-fg)]">{total}</span>
           </div>
         </div>
       </div>
@@ -285,26 +279,24 @@ function TasksChart() {
 function ProjectsTable() {
   return (
     <Card
-      title="Top Projects"
-      action={<span style={{ fontSize: 12.5, color: C.accent, cursor: 'pointer', fontWeight: 500 }}>View all</span>}
+      title="Top projects"
+      action={
+        <button
+          type="button"
+          className="cursor-pointer text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
+        >
+          View all
+        </button>
+      }
       style={{ flex: '0 0 57%' }}
     >
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table className="w-full border-collapse">
         <thead>
           <tr>
             {['Project', 'Client', 'Progress', 'Hours', 'Revenue'].map((h) => (
               <th
                 key={h}
-                style={{
-                  textAlign: 'left',
-                  fontSize: 11,
-                  color: C.muted,
-                  fontWeight: 500,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  paddingBottom: 10,
-                  borderBottom: `1px solid ${C.border}`,
-                }}
+                className="border-b border-[var(--color-border)] pb-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]"
               >
                 {h}
               </th>
@@ -314,35 +306,30 @@ function ProjectsTable() {
         <tbody>
           {projects.map(({ name, client, progress, hours, revenue }, i) => {
             const isLast = i === projects.length - 1;
-            const border = isLast ? 'none' : `1px solid ${C.border}`;
             return (
               <tr key={name}>
-                <td style={{ padding: '11px 0', borderBottom: border }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{name}</span>
+                <td className={cn('py-2.5', !isLast && 'border-b border-[var(--color-border)]')}>
+                  <span className="text-body-sm font-medium text-[var(--color-fg)]">{name}</span>
                 </td>
-                <td style={{ padding: '11px 0', borderBottom: border }}>
-                  <span style={{ fontSize: 12.5, color: C.sub }}>{client}</span>
+                <td className={cn('py-2.5', !isLast && 'border-b border-[var(--color-border)]')}>
+                  <span className="text-[12.5px] text-[var(--color-fg-muted)]">{client}</span>
                 </td>
-                <td style={{ padding: '11px 16px 11px 0', borderBottom: border }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ flex: 1, height: 5, background: 'rgba(129,140,248,0.1)', borderRadius: 99, overflow: 'hidden' }}>
+                <td className={cn('py-2.5 pr-4', !isLast && 'border-b border-[var(--color-border)]')}>
+                  <div className="flex items-center gap-2">
+                    <div className="relative h-[5px] flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]">
                       <div
-                        style={{
-                          height: '100%',
-                          width: `${progress}%`,
-                          background: 'linear-gradient(90deg, var(--color-accent-500), var(--color-primary))',
-                          borderRadius: 99,
-                        }}
+                        className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-primary)]"
+                        style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <span style={{ fontSize: 11.5, color: C.sub, minWidth: 30 }}>{progress}%</span>
+                    <span className="min-w-[30px] text-[11.5px] text-[var(--color-fg-muted)]">{progress}%</span>
                   </div>
                 </td>
-                <td style={{ padding: '11px 0', borderBottom: border }}>
-                  <span style={{ fontSize: 12.5, color: C.sub }}>{hours}h</span>
+                <td className={cn('py-2.5', !isLast && 'border-b border-[var(--color-border)]')}>
+                  <span className="text-[12.5px] text-[var(--color-fg-muted)]">{hours}h</span>
                 </td>
-                <td style={{ padding: '11px 0', borderBottom: border }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{revenue}</span>
+                <td className={cn('py-2.5', !isLast && 'border-b border-[var(--color-border)]')}>
+                  <span className="text-[12.5px] font-semibold text-[var(--color-fg)]">{revenue}</span>
                 </td>
               </tr>
             );
@@ -356,34 +343,40 @@ function ProjectsTable() {
 function ActivityFeed() {
   return (
     <Card
-      title="Recent Activity"
-      action={<span style={{ fontSize: 12.5, color: C.accent, cursor: 'pointer', fontWeight: 500 }}>View all</span>}
-      style={{ flex: 1 }}
+      title="Recent activity & alerts"
+      action={
+        <button
+          type="button"
+          className="cursor-pointer text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
+        >
+          View all
+        </button>
+      }
+      className="flex-1"
     >
       <div>
-        {activityItems.map(({ color, bg, icon: Icon, title, titleColor, sub, project, time }, i) => {
+        {activityItems.map((item, i) => {
           const isLast = i === activityItems.length - 1;
+          const tint = ICON_TINT[item.iconTint];
+          const Icon = item.icon;
           return (
             <div
               key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '10px 0',
-                borderBottom: isLast ? 'none' : `1px solid ${C.border}`,
-              }}
+              className={cn(
+                'flex items-center gap-3 py-2.5',
+                !isLast && 'border-b border-[var(--color-border)]',
+              )}
             >
-              <div style={{ width: 34, height: 34, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon size={15} color={color} strokeWidth={1.8} />
+              <div className={cn('flex size-[34px] shrink-0 items-center justify-center rounded-full', tint.wrap)}>
+                <Icon size={15} strokeWidth={1.8} className={tint.icon} />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: titleColor }}>{title}</div>
-                <div style={{ fontSize: 11.5, color: C.sub, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>
+              <div className="min-w-0 flex-1">
+                <div className={cn('text-[12.5px] font-semibold', tint.title)}>{item.title}</div>
+                <div className="mt-0.5 truncate text-[11.5px] text-[var(--color-fg-muted)]">{item.sub}</div>
               </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontSize: 11.5, color: C.sub }}>{project}</div>
-                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{time}</div>
+              <div className="shrink-0 text-right">
+                <div className="text-[11.5px] text-[var(--color-fg-muted)]">{item.project}</div>
+                <div className="mt-0.5 text-[11px] text-[var(--color-fg-subtle)]">{item.time}</div>
               </div>
             </div>
           );
@@ -422,10 +415,10 @@ function MetricStatCards() {
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="mb-5 grid grid-cols-5 gap-3">
         {displayMetrics.map((m) => <StatCard key={m.label} {...m} />)}
       </div>
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <div className="mb-4 flex gap-3.5">
         <RevenueChart labels={chartLabels} data={chartData} />
         <TasksChart />
       </div>
@@ -463,25 +456,25 @@ export default function DashboardPage() {
 
       <MarketingCard />
 
-      <PillarTag name="OBSERVE" subtitle="Every tool, surfaced in one screen" style={{ marginTop: 20 }} />
+      <PillarTag name="OBSERVE" subtitle="Every tool, surfaced in one screen" className="mt-5" />
       <MetricStatCards />
 
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <div className="mb-4 flex gap-3.5">
         <SalesCard />
       </div>
 
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <div className="mb-4 flex gap-3.5">
         <FinancialsCard />
         <DeliveryCard />
       </div>
 
-      <PillarTag name="OPERATE" subtitle="Active project work" style={{ marginTop: 20 }} />
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+      <PillarTag name="OPERATE" subtitle="Active project work" className="mt-5" />
+      <div className="mb-4 flex gap-3.5">
         <ProjectsTable />
       </div>
 
       <PillarTag name="GUARD" subtitle="Recent activity & alerts across the system" />
-      <div style={{ display: 'flex', gap: 14 }}>
+      <div className="flex gap-3.5">
         <ActivityFeed />
       </div>
     </>
