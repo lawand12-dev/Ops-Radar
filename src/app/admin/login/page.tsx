@@ -6,16 +6,25 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { safeInternalRedirect } from '<npm>/lib/security'
+import { Button } from '<npm>/components/ui/button'
+import { Input } from '<npm>/components/ui/input'
+import { Label } from '<npm>/components/ui/label'
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginContent />
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+          <p className="text-body-sm text-[var(--color-fg-subtle)]">Loading…</p>
+        </div>
+      }
+    >
+      <AdminLoginContent />
     </Suspense>
   )
 }
 
-function LoginContent() {
+function AdminLoginContent() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -49,52 +58,100 @@ function LoginContent() {
     setLoading(false)
   }
 
+  const year = new Date().getFullYear()
+
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface">
-      <div className="px-6 pt-4">
-        <div className="mx-auto max-w-7xl rounded-[30px] border border-white/12 bg-slate-950/72 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-          <div className="flex items-center justify-between gap-4 px-3 py-1">
-            <Link href="/" className="flex items-center gap-3 rounded-full px-2 py-1 text-white transition-opacity hover:opacity-90">
-              <Image src="/logo.png" alt="OpsRadar" width={36} height={36} className="h-9 w-9 rounded-xl object-cover" />
-              <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-400 bg-clip-text font-headline text-xl font-bold tracking-tight text-transparent sm:text-2xl">
-                OpsRadar
-              </span>
-            </Link>
-            <span className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold text-white/82">
-              Admin
-            </span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col">
+      {/* Minimal auth header */}
+      <div className="flex justify-center pt-10 pb-0 px-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[var(--color-fg)]"
+          aria-label="OpsRadar home"
+        >
+          <Image
+            src="/logo.png"
+            alt="OpsRadar"
+            width={22}
+            height={22}
+            className="h-[22px] w-auto rounded-[4px]"
+          />
+          <span className="font-serif text-[1.0625rem] tracking-[-0.01em]">OpsRadar</span>
+        </Link>
       </div>
 
-      <div className="flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-surface-container p-8 shadow-[0_30px_90px_rgba(2,6,23,0.24)]">
-          <h1 className="mb-2 text-2xl font-bold text-on-surface">Admin Login</h1>
-          <p className="mb-6 text-sm text-on-surface-variant">Secure access to the internal dashboard.</p>
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleLogin}>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Admin Password"
-            className="mb-6 w-full rounded-lg border border-outline-variant/20 bg-surface-container-high px-3 py-2 text-on-surface"
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary py-2 text-white hover:bg-primary/90 disabled:opacity-50"
+      {/* Form area */}
+      <main className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md">
+          <p className="text-label text-[var(--color-fg-subtle)] mb-4">OpsRadar · Admin</p>
+          <h1 className="font-serif text-h1 tracking-[-0.025em] text-[var(--color-fg)] text-balance">
+            Operator sign-in.
+          </h1>
+          <p className="mt-2 text-body text-[var(--color-fg-muted)]">
+            This is the operator console. Customers sign in at{' '}
+            <Link
+              href="/login"
+              className="text-[var(--color-primary)] hover:underline underline-offset-4 transition-colors"
+            >
+              /login
+            </Link>
+            .
+          </p>
+
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 rounded-[var(--radius)] border border-[var(--color-danger)] bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3 py-2.5"
+            >
+              <p className="text-body-sm text-[var(--color-danger)]">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="mt-8 flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="admin-password">Password</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full mt-1"
+              disabled={loading}
+            >
+              {loading ? 'Signing in…' : 'Sign in.'}
+            </Button>
+          </form>
+        </div>
+      </main>
+
+      {/* Minimal auth footer */}
+      <footer className="flex justify-center pb-10 px-6">
+        <p className="text-caption text-[var(--color-fg-subtle)]">
+          © {year} OpsRadar&nbsp;&nbsp;·&nbsp;&nbsp;
+          <Link
+            href="/privacy"
+            className="hover:text-[var(--color-fg)] transition-colors"
           >
-            {loading ? 'Loading...' : 'Sign In'}
-          </button>
-        </form>
-      </div>
-      </div>
+            Privacy
+          </Link>
+          &nbsp;&nbsp;·&nbsp;&nbsp;
+          <Link
+            href="/terms"
+            className="hover:text-[var(--color-fg)] transition-colors"
+          >
+            Terms
+          </Link>
+        </p>
+      </footer>
     </div>
   )
 }
