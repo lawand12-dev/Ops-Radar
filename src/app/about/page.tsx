@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '<npm>/components/ui/button'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background-lazy'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
@@ -91,7 +89,6 @@ export default function AboutPage() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <BeamsBackground intensity="subtle" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
       </div>
       <SiteHeader sticky navLinks={NAV_LINKS} />
@@ -115,7 +112,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── The Short Version ────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-3xl mx-auto px-6 py-24">
           <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
@@ -139,10 +136,10 @@ export default function AboutPage() {
           </div>
           <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Credibility markers ──────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-5xl mx-auto px-6 py-24">
           <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
@@ -170,7 +167,7 @@ export default function AboutPage() {
 
           <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Founder card (existing component) ────────────────────────── */}
       <FounderPhilosophySection
@@ -178,7 +175,7 @@ export default function AboutPage() {
       />
 
       {/* ── Why Trust Me ─────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="max-w-3xl mx-auto px-6 py-24">
           <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
@@ -207,7 +204,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── Bottom CTA ───────────────────────────────────────────────── */}
       <section className="py-32 px-6 text-center">

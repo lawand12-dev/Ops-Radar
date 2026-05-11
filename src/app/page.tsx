@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import ResponsiveHeroBanner from '<npm>/components/ui/responsive-hero-banner'
 import SiteHeader from '<npm>/components/ui/site-header'
-import BeamsBackground from '<npm>/components/ui/beams-background'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
 import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
 import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
@@ -118,7 +116,6 @@ export default function Home() {
 
       {/* ── 1. Hero ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pb-14">
-        <BeamsBackground intensity="full" />
         <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
 
         <ResponsiveHeroBanner
@@ -180,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* ── The System ──────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section id="architecture" className="py-24 px-6 max-w-6xl mx-auto scroll-mt-28">
           <div className="text-center mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
@@ -213,12 +210,12 @@ export default function Home() {
             Powered by OpsRadar.
           </p>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       <OpsRadar />
 
       {/* ── Segment picker ──────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="py-24 px-6 max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
@@ -258,10 +255,10 @@ export default function Home() {
             ))}
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── 2. Who ───────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="py-32 px-6 max-w-4xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Who
@@ -326,11 +323,11 @@ export default function Home() {
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
 
       {/* ── 3. What ──────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="py-32 px-6 max-w-6xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             What
@@ -414,13 +411,13 @@ export default function Home() {
             </div>
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       <RhythmBreak />
 
 
       {/* ── 4. Why ───────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="py-32 px-6 max-w-4xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
             Why
@@ -472,14 +469,14 @@ export default function Home() {
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       <FounderPhilosophySection
         summary={HOMEPAGE_FOUNDER_SUMMARY}
       />
 
       {/* ── Vision ──────────────────────────────────────────────────── */}
-      <FadeInOnScroll>
+      <div>
         <section className="px-6 py-24 max-w-4xl mx-auto">
           <div className="border-l-[3px] border-[#06B6A4] bg-white/[0.015] px-7 py-8 md:px-10 md:py-10">
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#06B6A4] mb-6">
@@ -504,7 +501,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-      </FadeInOnScroll>
+      </div>
 
       {/* ── 5. Final CTA ─────────────────────────────────────────────── */}
       <section className="relative py-40 px-6 overflow-hidden">

@@ -10,12 +10,7 @@ import RevealSection from '../components/RevealSection'
 import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { motion } from 'framer-motion'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
-import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
-import GlowCard from '<npm>/components/animations/GlowCard'
 import { devLog, devWarn } from '<npm>/lib/dev-log'
-import TypewriterText from '<npm>/components/animations/TypewriterText'
-import CountUp from '<npm>/components/animations/CountUp'
 import WorkflowDiagram from '<npm>/components/WorkflowDiagram'
 import Footer from '<npm>/components/Footer'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
@@ -1004,7 +999,7 @@ function MagicMomentPanel({
                   </p>
                   <div className="flex items-end gap-1.5">
                     <p className="font-headline text-[32px] font-extrabold leading-none tabular-nums" style={{ color: stat.color }}>
-                      <CountUp target={stat.value} duration={1.2} />
+                      {stat.value}
                     </p>
                     <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/45">
                       {stat.suffix}
@@ -1974,7 +1969,7 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
   const opsBad = ops ? ops.their_ratio_percent > ops.healthy_ratio_percent : false
 
   return (
-    <FadeInOnScroll>
+    <div>
       <RevealSection>
         <section>
           <SectionLabel num="03" text="Industry Benchmarks" />
@@ -2068,7 +2063,7 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
                     className="font-headline text-[48px] font-extrabold leading-none tabular-nums"
                     style={{ color: matColor, textShadow: `0 0 24px ${matColor}60` }}
                   >
-                    <CountUp target={mat.their_score} duration={1.4} />
+                    {mat.their_score}
                   </span>
                   <span className="text-[14px] text-on-surface-variant/40 mb-1">/100</span>
                 </div>
@@ -2106,7 +2101,7 @@ function BenchmarkSection({ data }: { data: Benchmarks }) {
           </div>
         </section>
       </RevealSection>
-    </FadeInOnScroll>
+    </div>
   )
 }
 
@@ -3036,7 +3031,7 @@ function ResultsContent() {
           )}
 
           <h1 className="font-headline font-extrabold text-[clamp(24px,3.8vw,44px)] leading-[1.1] tracking-[-0.03em] mt-8 max-w-[680px] text-on-surface">
-            <TypewriterText text={headline} speed={28} delay={400} />
+            {headline}
           </h1>
 
           <MagicMomentPanel
@@ -3129,7 +3124,7 @@ function ResultsContent() {
         {/* 01 · Executive Summary */}
         {a.executive_summary && (
           <div id="executive-summary" data-report-section>
-            <FadeInOnScroll>
+            <div>
               <section>
                 <SectionLabel num="01" text="Executive Summary" />
                 <div className="rounded-[20px] overflow-hidden bg-surface-container border border-outline-variant/10">
@@ -3163,14 +3158,14 @@ function ResultsContent() {
                   </div>
                 </div>
               </section>
-            </FadeInOnScroll>
+            </div>
           </div>
         )}
 
         {/* 02 · Readiness Score */}
         {readiness != null && (
         <div id="readiness-score" data-report-section>
-          <FadeInOnScroll>
+          <div>
             <section>
               <SectionLabel num="02" text="Readiness Score" />
               <div className="rounded-[20px] p-10 flex flex-col items-center relative overflow-hidden bg-surface-container border border-outline-variant/10">
@@ -3186,7 +3181,7 @@ function ResultsContent() {
                 )}
               </div>
             </section>
-          </FadeInOnScroll>
+          </div>
         </div>
         )}
 
@@ -3229,15 +3224,15 @@ function ResultsContent() {
               </span>
             </div>
           </RevealSection>
-          <StaggerChildren className="space-y-5">
+          <div className="space-y-5">
             {opportunities.map((opp) => (
-              <StaggerItem key={opp.rank}>
-                <GlowCard glowColor={`${RANK_COLORS[opp.rank] ?? '#6b7280'}0d`} className="rounded-[18px]">
+              <div key={opp.rank}>
+                <div className="rounded-[18px]">
                   <OpportunityCard opp={opp} onCallClick={trackStrategyCallClick} />
-                </GlowCard>
-              </StaggerItem>
+                </div>
+              </div>
             ))}
-          </StaggerChildren>
+          </div>
         </section>
 
         {/* 06 · Onboarding Assessment */}

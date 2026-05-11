@@ -1,7 +1,4 @@
 import { Card, CardContent } from '<npm>/components/ui/card'
-import FadeInOnScroll from '<npm>/components/animations/FadeInOnScroll'
-import StaggerChildren, { StaggerItem } from '<npm>/components/animations/StaggerChildren'
-import GlowCard from '<npm>/components/animations/GlowCard'
 
 type Specialty = {
   tag: string
@@ -86,7 +83,7 @@ export default function FounderPhilosophySection({
 }: FounderPhilosophySectionProps) {
   return (
     <section id="founder" className="max-w-6xl mx-auto px-6 py-24">
-      <FadeInOnScroll className="max-w-3xl">
+      <div className="max-w-3xl">
         <span className="uppercase tracking-[0.2em] text-secondary font-bold text-xs">Team & Philosophy</span>
         <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight mt-4 text-on-surface">
           The team behind the systems.
@@ -94,11 +91,11 @@ export default function FounderPhilosophySection({
         <p className="mt-5 max-w-2xl text-base md:text-lg leading-relaxed text-on-surface-variant">
           OpsRadar is intentionally built like an engineering dossier: accountable operators, clear specialties, and a bias toward systems that survive real operating pressure.
         </p>
-      </FadeInOnScroll>
+      </div>
 
       <div className="mt-12 space-y-6">
-        <FadeInOnScroll delay={0.08}>
-          <GlowCard glowColor="rgba(76,215,246,0.08)" className="rounded-[26px]">
+        <div>
+          <div className="rounded-[26px]">
             <Card className="overflow-hidden rounded-[26px] border border-outline-variant/10 bg-surface-container-low/80 py-0 ring-0 shadow-none backdrop-blur-xl">
               <div
                 className="h-px w-full"
@@ -136,13 +133,13 @@ export default function FounderPhilosophySection({
                 </div>
               </CardContent>
             </Card>
-          </GlowCard>
-        </FadeInOnScroll>
+          </div>
+        </div>
 
-        <StaggerChildren className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {specialties.map((specialty) => (
-            <StaggerItem key={specialty.title}>
-              <GlowCard glowColor={`${specialty.color}10`} className="h-full rounded-[22px]">
+            <div key={specialty.title}>
+              <div className="h-full rounded-[22px]">
                 <Card className="h-full rounded-[22px] border border-outline-variant/10 bg-surface-container/80 py-0 ring-0 shadow-none backdrop-blur-xl">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between gap-3">
@@ -179,10 +176,10 @@ export default function FounderPhilosophySection({
                     </div>
                   </CardContent>
                 </Card>
-              </GlowCard>
-            </StaggerItem>
+              </div>
+            </div>
           ))}
-        </StaggerChildren>
+        </div>
       </div>
     </section>
   )
