@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Mic, Send, Bot, X } from 'lucide-react'
+import { Mic, Send, X, Sparkles } from 'lucide-react'
 import { getAbuseProtectionPayload } from '../../lib/abuse-protection'
 import { devLog, devError } from '<npm>/lib/dev-log'
 
@@ -29,7 +29,7 @@ type ConversationBootstrapResponse = {
 function makeWelcome(): Message {
   return {
     role: 'assistant',
-    content: "Hi, this is the OpsRadar assistant. Ask about what we build, how much it costs, or how OpsRadar's AI Operating System works.\n\nOr ask anything about agency automation.",
+    content: "We don't build for agencies we don't understand. Ask me what AIOS does, how the audit works, or what it costs — and I'll give you a straight answer.",
     timestamp: new Date().toISOString(),
   }
 }
@@ -63,18 +63,35 @@ const VISITOR_KEY = 'opsradar_visitor_id'
 const EMAIL_KEY = 'opsradar_visitor_email'
 
 const QUICK_ACTIONS = [
-  { label: 'What does OpsRadar do?', message: 'What does OpsRadar do?' },
+  { label: 'What does AIOS do?', message: 'What does AIOS do?' },
   { label: 'How much does it cost?', message: 'How much does it cost?' },
   { label: 'How does the free audit work?', message: 'How does the free audit work?' },
-  { label: 'Start the free audit', message: 'How does the free audit work?' },
+  { label: 'Is my agency a fit?', message: 'How does the free audit work?' },
 ]
 
 // ── Extend Window for SpeechRecognition ───────────────────────────────────────
 
+type SpeechRecognitionResult = { 0: { transcript: string } }
+type SpeechRecognitionEvent = { results: ArrayLike<SpeechRecognitionResult> }
+type SpeechRecognitionErrorEvent = { error: string }
+interface SpeechRecognitionInstance {
+  start: () => void
+  stop: () => void
+  continuous: boolean
+  interimResults: boolean
+  maxAlternatives: number
+  lang: string
+  onstart: (() => void) | null
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+  onend: (() => void) | null
+}
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance
+
 declare global {
   interface Window {
-    SpeechRecognition: any
-    webkitSpeechRecognition: any
+    SpeechRecognition?: SpeechRecognitionConstructor
+    webkitSpeechRecognition?: SpeechRecognitionConstructor
   }
 }
 
@@ -103,7 +120,7 @@ const FloatingAiAssistant = () => {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
   const leadStartedAtRef = useRef(Date.now())
   const convIdRef = useRef<string | null>(null)
   const visitorIdRef = useRef<string | null>(null)
@@ -405,7 +422,7 @@ const FloatingAiAssistant = () => {
         ...prev.slice(0, -1),
         {
           role: 'assistant',
-          content: "Sorry, the chat could not connect right now. You can email our team or start the free audit to get in touch.",
+          content: "The AI couldn't connect right now. You can email our team directly or start the free audit to get in touch.",
           timestamp: new Date().toISOString(),
         },
       ])
@@ -479,9 +496,9 @@ const FloatingAiAssistant = () => {
       setIsListening(true)
     }
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
+        .map((result) => result[0].transcript)
         .join('')
 
       devLog('Transcript:', transcript)
@@ -491,7 +508,7 @@ const FloatingAiAssistant = () => {
       setCharCount((prev) => prev + transcript.length)
     }
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error)
       setIsListening(false)
       if (event.error === 'not-allowed') {
@@ -526,46 +543,43 @@ const FloatingAiAssistant = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[60]">
-      {/* Floating 3D Glowing AI Logo */}
+      {/* FAB — closed state */}
       <button
-        className={`floating-ai-button relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 transform ${
-          isChatOpen ? 'rotate-90' : 'rotate-0'
-        }`}
+        className="floating-ai-button relative flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary)] border border-[var(--color-accent-700)] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--color-accent-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-accent-500)] focus-visible:outline-offset-2"
         onClick={() => setIsChatOpen(!isChatOpen)}
-        style={{
-          background: 'linear-gradient(135deg, rgba(37,99,235,0.8) 0%, rgba(99,102,241,0.8) 100%)',
-          boxShadow: '0 0 20px rgba(59, 130, 246, 0.7), 0 0 40px rgba(79, 70, 229, 0.5), 0 0 60px rgba(67, 56, 202, 0.3)',
-          border: '2px solid rgba(255, 255, 255, 0.2)',
-        }}
+        aria-label={isChatOpen ? 'Close AIOS assistant' : 'Ask AIOS anything'}
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent opacity-30" />
-        <div className="absolute inset-0 rounded-full border-2 border-white/10" />
-        <div className="relative z-10">
-          {isChatOpen ? <X className="w-7 h-7 text-white" /> : <Bot className="w-8 h-8 text-white" />}
-        </div>
-        <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-blue-500" />
+        {isChatOpen
+          ? <X className="w-5 h-5 text-white" />
+          : <Sparkles className="w-5 h-5 text-white" />
+        }
+        {/* Quiet "live" indicator — single animation allowed per Phase 0 */}
+        {!isChatOpen && (
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[var(--color-success)] border-2 border-[var(--color-bg)]" />
+        )}
       </button>
 
-      {/* Chat Interface */}
+      {/* Chat Panel — open state */}
       {isChatOpen && (
         <div
           ref={chatRef}
-          className="absolute bottom-20 right-0 w-[420px] max-w-[calc(100vw-40px)] transition-all duration-300 origin-bottom-right"
-          style={{
-            animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-          }}
+          className="absolute bottom-16 right-0 w-[400px] max-w-[calc(100vw-32px)]"
+          style={{ animation: 'chat-panel-in var(--duration-slow) var(--ease-out) forwards' }}
         >
-          <div className="relative flex flex-col rounded-3xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/90 border border-zinc-500/50 shadow-2xl backdrop-blur-3xl overflow-hidden" style={{ maxHeight: 'min(640px, calc(100vh - 120px))' }}>
+          <div
+            className="relative flex flex-col rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] shadow-[var(--shadow-md)] overflow-hidden"
+            style={{ maxHeight: 'min(600px, calc(100vh - 110px))' }}
+          >
 
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-zinc-700/40 shrink-0">
+            {/* ── Header ──────────────────────────────────────────────────── */}
+            <div className="flex items-center justify-between px-4 pt-3.5 pb-3 border-b border-[var(--color-border)] shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
-                <Image src="/logo.png" alt="OpsRadar" width={28} height={28} className="rounded-[7px] shrink-0" />
+                <Image src="/logo.png" alt="OpsRadar" width={24} height={24} className="rounded shrink-0" />
                 <div className="min-w-0">
-                  <span className="text-sm font-semibold text-zinc-100">OpsRadar Assistant</span>
+                  <p className="text-body-sm font-semibold text-[var(--color-fg)]">Ask AIOS anything</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] text-zinc-400">Online</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
+                    <span className="text-caption text-[var(--color-fg-subtle)]">OpsRadar AI</span>
                   </div>
                 </div>
               </div>
@@ -575,7 +589,7 @@ const FloatingAiAssistant = () => {
                 <button
                   onClick={startNewConversation}
                   title="New conversation"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700/50 transition-colors duration-150"
+                  className="w-7 h-7 rounded flex items-center justify-center text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] hover:bg-[var(--color-surface-sunken)] transition-colors duration-[var(--duration-fast)]"
                 >
                   <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                     <path d="M6.5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -588,8 +602,10 @@ const FloatingAiAssistant = () => {
                   <button
                     onClick={() => setShowHistory(h => !h)}
                     title="Previous conversations"
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-150 ${
-                      showHistory ? 'text-blue-400 bg-blue-500/10' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700/50'
+                    className={`w-7 h-7 rounded flex items-center justify-center transition-colors duration-[var(--duration-fast)] ${
+                      showHistory
+                        ? 'text-[var(--color-primary)] bg-[var(--color-accent-50)]'
+                        : 'text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] hover:bg-[var(--color-surface-sunken)]'
                     }`}
                   >
                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -602,7 +618,7 @@ const FloatingAiAssistant = () => {
                 {/* Close */}
                 <button
                   onClick={() => setIsChatOpen(false)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700/50 transition-colors duration-150"
+                  className="w-7 h-7 rounded flex items-center justify-center text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] hover:bg-[var(--color-surface-sunken)] transition-colors duration-[var(--duration-fast)]"
                   aria-label="Close chat"
                 >
                   <X className="w-4 h-4" />
@@ -610,14 +626,14 @@ const FloatingAiAssistant = () => {
               </div>
             </div>
 
-            {/* ── History panel overlay ──────────────────────────────────────── */}
+            {/* ── History panel overlay ───────────────────────────────────── */}
             {showHistory && (
-              <div className="absolute inset-x-0 top-[65px] bottom-0 z-10 flex flex-col bg-zinc-900/95 rounded-b-3xl backdrop-blur-xl">
-                <div className="px-5 py-3 border-b border-zinc-700/40 flex items-center justify-between shrink-0">
-                  <p className="text-xs font-semibold text-zinc-200">Previous Conversations</p>
+              <div className="absolute inset-x-0 top-[57px] bottom-0 z-10 flex flex-col bg-[var(--color-surface)] rounded-b-lg border-t border-[var(--color-border)]">
+                <div className="px-4 py-2.5 border-b border-[var(--color-border)] flex items-center justify-between shrink-0">
+                  <p className="text-label text-[var(--color-fg-subtle)]">Previous conversations</p>
                   <button
                     onClick={() => setShowHistory(false)}
-                    className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
                   >
                     Close
                   </button>
@@ -625,21 +641,21 @@ const FloatingAiAssistant = () => {
 
                 <div className="flex-1 overflow-y-auto min-h-0">
                   {convList.length === 0 ? (
-                    <p className="text-[13px] text-zinc-500 text-center mt-8 px-4">No previous conversations yet.</p>
+                    <p className="text-body-sm text-[var(--color-fg-subtle)] text-center mt-8 px-4">No previous conversations yet.</p>
                   ) : (
                     convList.map((conv, i) => (
                       <button
                         key={conv.id}
                         onClick={() => loadConversation(conv.id)}
-                        className={`w-full text-left px-5 py-3.5 hover:bg-zinc-800/60 transition-colors duration-150 ${
-                          i < convList.length - 1 ? 'border-b border-zinc-800/50' : ''
-                        } ${conv.id === convId ? 'bg-blue-500/5' : ''}`}
+                        className={`w-full text-left px-4 py-3 hover:bg-[var(--color-surface-sunken)] transition-colors duration-[var(--duration-fast)] ${
+                          i < convList.length - 1 ? 'border-b border-[var(--color-border)]' : ''
+                        } ${conv.id === convId ? 'bg-[var(--color-accent-50)]' : ''}`}
                       >
-                        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+                        <p className="text-label text-[var(--color-fg-subtle)] mb-1">
                           {fmtDate(conv.updated_at ?? conv.created_at)}
-                          {conv.id === convId && <span className="ml-2 text-blue-400/60">· current</span>}
+                          {conv.id === convId && <span className="ml-2 text-[var(--color-primary)] opacity-60">· current</span>}
                         </p>
-                        <p className="text-[13px] text-zinc-400 leading-snug">{conv.preview}</p>
+                        <p className="text-body-sm text-[var(--color-fg-muted)] leading-snug">{conv.preview}</p>
                       </button>
                     ))
                   )}
@@ -647,10 +663,10 @@ const FloatingAiAssistant = () => {
               </div>
             )}
 
-            {/* ── Messages ──────────────────────────────────────────────────── */}
+            {/* ── Messages ────────────────────────────────────────────────── */}
             <div
               className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0"
-              style={{ maxHeight: '400px', overscrollBehavior: 'contain' }}
+              style={{ maxHeight: '380px', overscrollBehavior: 'contain' }}
             >
               {msgs.map((msg, i) => {
                 const isLast = i === msgs.length - 1
@@ -662,13 +678,12 @@ const FloatingAiAssistant = () => {
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] px-3.5 py-2.5 text-[13px] leading-[1.65] ${
+                      className={`max-w-[82%] px-3.5 py-2.5 text-body-sm leading-[1.6] rounded-md ${
                         msg.role === 'user'
-                          ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white'
-                          : 'bg-zinc-800 border border-zinc-700/50 text-zinc-200'
+                          ? 'bg-[var(--color-primary)] text-white rounded-br-sm'
+                          : 'bg-[var(--color-surface-sunken)] border border-[var(--color-border)] text-[var(--color-fg)] rounded-bl-sm'
                       }`}
                       style={{
-                        borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                         whiteSpace: msg.role === 'assistant' ? 'pre-wrap' : undefined,
                         wordBreak: msg.role === 'assistant' ? 'break-word' : undefined,
                       }}
@@ -678,8 +693,10 @@ const FloatingAiAssistant = () => {
                           {[0, 1, 2].map(d => (
                             <span
                               key={d}
-                              className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce"
-                              style={{ animationDelay: `${d * 160}ms`, animationDuration: '900ms' }}
+                              className="w-1.5 h-1.5 rounded-full bg-[var(--color-fg-faint)]"
+                              style={{
+                                animation: `typing-dot 900ms ease-in-out ${d * 160}ms infinite`,
+                              }}
                             />
                           ))}
                         </span>
@@ -693,20 +710,20 @@ const FloatingAiAssistant = () => {
 
               {/* Quick actions — shown only on a fresh welcome */}
               {showQuickActions && (
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div className="flex flex-wrap gap-1.5 pt-1">
                   {QUICK_ACTIONS.map(({ label, message: msg }) => (
                     <button
                       key={label}
                       onClick={() => sendMessage(msg)}
                       disabled={loading}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-zinc-600/30 text-zinc-400 hover:border-zinc-500/50 hover:text-zinc-200 transition-all duration-150 disabled:opacity-40"
+                      className="px-2.5 py-1.5 rounded text-caption border border-[var(--color-border)] text-[var(--color-fg-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)] hover:bg-[var(--color-surface-sunken)] transition-colors duration-[var(--duration-fast)] disabled:opacity-40"
                     >
                       {label}
                     </button>
                   ))}
                   <Link
                     href="/audit"
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-blue-500/30 text-blue-400 bg-blue-500/5 hover:bg-blue-500/10 transition-all duration-150"
+                    className="px-2.5 py-1.5 rounded text-caption border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-accent-50)] transition-colors duration-[var(--duration-fast)]"
                   >
                     Start free audit &rarr;
                   </Link>
@@ -716,8 +733,8 @@ const FloatingAiAssistant = () => {
               <div ref={bottomRef} />
             </div>
 
-            {/* Input Section */}
-            <div className="relative overflow-hidden border-t border-zinc-700/40">
+            {/* ── Input row ───────────────────────────────────────────────── */}
+            <div className="border-t border-[var(--color-border)]">
               <textarea
                 ref={inputRef}
                 value={message}
@@ -725,101 +742,86 @@ const FloatingAiAssistant = () => {
                 onKeyDown={handleKeyDown}
                 rows={3}
                 disabled={loading}
-                className="w-full px-5 py-3 bg-transparent border-none outline-none resize-none text-sm font-normal leading-relaxed min-h-[80px] text-zinc-100 placeholder-zinc-500 scrollbar-none disabled:opacity-50"
-                placeholder="Ask anything..."
+                className="w-full px-4 py-3 bg-transparent border-none outline-none resize-none text-body-sm leading-relaxed min-h-[72px] text-[var(--color-fg)] placeholder:text-[var(--color-fg-faint)] disabled:opacity-50"
+                placeholder="Ask anything about agency operations..."
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               />
               {isListening && (
-                <div className="px-6 py-2 text-xs text-red-400 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  Listening... speak now
+                <div className="px-4 pb-2 text-caption text-[var(--color-danger)] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" style={{ animation: 'typing-dot 1200ms ease-in-out infinite' }} />
+                  Listening — speak now
                 </div>
               )}
               {voiceError && (
-                <div className="px-6 py-2 text-xs text-amber-400">
+                <div className="px-4 pb-2 text-caption text-[var(--color-warn)]">
                   {voiceError}
                 </div>
               )}
             </div>
 
-            {/* Controls Section */}
-            <div className="px-4 pb-4">
+            {/* ── Controls row ─────────────────────────────────────────────── */}
+            <div className="px-4 pb-3.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {/* Voice Button */}
+                <div className="flex items-center gap-1.5">
+                  {/* Voice button */}
                   <button
                     onClick={handleVoiceInput}
-                    className={`group relative p-2.5 border rounded-lg cursor-pointer transition-all duration-300 transform ${
+                    className={`p-2 rounded border transition-colors duration-[var(--duration-fast)] ${
                       isListening
-                        ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse scale-110'
-                        : 'bg-transparent border-zinc-700/30 text-zinc-500 hover:text-blue-400 hover:bg-zinc-800/80 hover:scale-110 hover:border-blue-500/30'
+                        ? 'bg-[var(--color-danger)]/10 border-[var(--color-danger)]/30 text-[var(--color-danger)]'
+                        : 'bg-transparent border-[var(--color-border)] text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-sunken)]'
                     }`}
                     aria-label={isListening ? "Stop listening" : "Start voice input"}
                   >
-                    <Mic className="w-4 h-4" />
+                    <Mic className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* Character Counter */}
-                  <div className="text-xs font-medium text-zinc-500">
-                    <span>{charCount}</span>/<span className="text-zinc-400">{maxChars}</span>
-                  </div>
+                  {/* Character counter */}
+                  <span className="text-caption font-mono text-[var(--color-fg-faint)]">
+                    {charCount}/{maxChars}
+                  </span>
 
-                  {/* Send Button */}
+                  {/* Send button */}
                   <button
                     onClick={handleSend}
                     disabled={!message.trim() || loading}
-                    className="group relative p-3 bg-gradient-to-r from-blue-600 to-indigo-600 border-none rounded-xl cursor-pointer transition-all duration-300 text-white shadow-lg hover:from-blue-500 hover:to-indigo-500 hover:scale-110 hover:shadow-blue-500/30 hover:shadow-xl active:scale-95 transform disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    style={{
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(59, 130, 246, 0.4)',
-                    }}
+                    className="p-2.5 rounded bg-[var(--color-primary)] text-white transition-colors duration-[var(--duration-fast)] hover:bg-[var(--color-accent-700)] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Send message"
                   >
-                    <Send className="w-5 h-5 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:rotate-12 group-hover:scale-110" />
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-50 transition-opacity duration-300 blur-lg transform scale-110" />
-                    <div className="absolute inset-0 rounded-xl overflow-hidden">
-                      <div className="absolute inset-0 bg-white/20 transform scale-0 group-active:scale-100 transition-transform duration-200 rounded-xl" />
-                    </div>
+                    <Send className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Footer — status only */}
-              <div className="flex items-center justify-end mt-3 pt-3 border-t border-zinc-800/50 text-xs text-zinc-500">
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  <span>All systems operational</span>
+              {/* Status footer */}
+              <div className="flex items-center justify-end mt-2.5 pt-2.5 border-t border-[var(--color-border)] text-caption text-[var(--color-fg-subtle)]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[var(--color-success)] rounded-full" />
+                  <span>OpsRadar AI · always on</span>
                 </div>
               </div>
             </div>
-
-            {/* Floating Overlay */}
-            <div
-              className="absolute inset-0 rounded-3xl pointer-events-none"
-              style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent, rgba(99, 102, 241, 0.05))',
-              }}
-            />
           </div>
         </div>
       )}
 
-      {/* CSS for animations */}
+      {/* Keyframes — functional animations only, no ambient loops */}
       <style jsx>{`
-        @keyframes popIn {
-          0% {
+        @keyframes chat-panel-in {
+          from {
             opacity: 0;
-            transform: scale(0.8) translateY(20px);
+            transform: scale(0.96) translateY(8px);
           }
-          100% {
+          to {
             opacity: 1;
             transform: scale(1) translateY(0);
           }
         }
-
-        .floating-ai-button:hover {
-          transform: scale(1.1) rotate(5deg);
-          box-shadow: 0 0 30px rgba(59, 130, 246, 0.9), 0 0 50px rgba(79, 70, 229, 0.7), 0 0 70px rgba(67, 56, 202, 0.5);
+        @keyframes typing-dot {
+          0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+          40% { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
