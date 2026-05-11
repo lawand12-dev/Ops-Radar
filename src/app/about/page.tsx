@@ -1,236 +1,350 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+
+import { SiteNav } from '<npm>/components/marketing/site-nav'
+import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
-import FounderPhilosophySection from '<npm>/components/FounderPhilosophySection'
-import SiteHeader from '<npm>/components/ui/site-header'
-import Footer from '<npm>/components/Footer'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 
 export const metadata: Metadata = {
-  title: "About",
+  title: 'About — OpsRadar',
   description:
-    "OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.",
+    'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
   openGraph: {
-    title: "About — OpsRadar",
+    title: 'About — OpsRadar',
     description:
-      "OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "About — OpsRadar" }],
+      'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'About — OpsRadar' }],
   },
   twitter: {
-    title: "About — OpsRadar",
+    title: 'About — OpsRadar',
     description:
-      "OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.",
-    images: ["/og-image.png"],
+      'OpsRadar builds the operating system that runs your agency. We diagnose how work actually flows, build the system, and keep it running.',
+    images: ['/og-image.png'],
   },
 }
-
-// ── Nav ───────────────────────────────────────────────────────────────────────
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'AIOS', href: '/aios' },
-  { label: 'About', href: '/about', isActive: true },
-]
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const CREDIBILITY_MARKERS = [
   {
+    n: '01',
     label: 'Delivery model',
     value: 'One team. End to end.',
-    detail: 'Same people scope, build, and maintain. No outsourced handoff. The team that knows your system fixes it when it breaks.',
+    detail:
+      'Same people scope, build, and maintain. No outsourced handoff. The team that knows your system fixes it when it breaks.',
   },
   {
+    n: '02',
     label: 'Ownership',
     value: 'You own everything.',
-    detail: 'Workflows live in your account, on your infrastructure, with your credentials. If you leave, you keep the system. We just stop maintaining it.',
+    detail:
+      'Workflows live in your account, on your infrastructure, with your credentials. If you leave, you keep the system. We just stop maintaining it.',
   },
   {
+    n: '03',
     label: 'Stack depth',
     value: '30+ integrations, hands-on.',
-    detail: 'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — built end-to-end, ready to deploy.',
+    detail:
+      'Meta, Google Ads, GA4, HubSpot, Klaviyo, Triple Whale, Ahrefs, Salesforce, Slack, Notion, Airtable — built end-to-end, ready to deploy.',
   },
   {
+    n: '04',
     label: 'Speed to live',
     value: '5–14 days from kickoff.',
-    detail: 'Most builds ship inside two weeks. You get the proposal in 48 hours, the walkthrough on day 9, production on day 10.',
+    detail:
+      'Most builds ship inside two weeks. You get the proposal in 48 hours, the walkthrough on day 9, production on day 10.',
   },
 ]
 
 const WHY_TRUST = [
   {
-    title: 'One team. Full accountability.',
-    desc: 'Same people scope it, build it, and maintain it. When it breaks, the team that built it fixes it \u2014 not a stranger reading docs at 2am.',
+    kind: 'On accountability',
+    quote: 'One team. Full accountability.',
+    body: 'Same people scope it, build it, and maintain it. When it breaks, the team that built it fixes it — not a stranger reading docs at 2am.',
   },
   {
-    title: 'Agency operators, not generic devs.',
-    desc: 'We came up inside agency ops. We have watched smart teams bleed margin to broken handoffs, duplicate entry, and automations no one trusted two weeks after launch. OpsRadar exists because operational debt keeps getting dressed up as process.',
+    kind: 'On experience',
+    quote: 'Agency operators, not generic devs.',
+    body: 'We came up inside agency ops. We watched smart teams bleed margin to broken handoffs, duplicate entry, and automations no one trusted two weeks after launch. OpsRadar exists because operational debt keeps getting dressed up as process.',
   },
   {
-    title: 'You own everything. No lock-in.',
-    desc: 'Workflows live in your account. Documentation lives with you. Credentials are yours. If you ever want to leave, you keep the entire system \u2014 we just stop maintaining it.',
+    kind: 'On ownership',
+    quote: 'You own everything. No lock-in.',
+    body: 'Workflows live in your account. Documentation lives with you. Credentials are yours. If you ever want to leave, you keep the entire system — we just stop maintaining it.',
   },
   {
-    title: 'AI drafts. Humans verify.',
-    desc: 'AI lets us scope and prototype in hours, not weeks. But nothing touches your live business without a human on our team reviewing it first. Speed without shortcuts.',
+    kind: 'On AI',
+    quote: 'AI drafts. Humans verify.',
+    body: 'AI lets us scope and prototype in hours, not weeks. But nothing touches your live business without a human on our team reviewing it first. Speed without shortcuts.',
   },
 ]
-
-const FOUNDER_PROFILE = {
-  name: 'OpsRadar',
-  title: 'AI Operations Team',
-  summary:
-    'OpsRadar exists because we kept watching the same thing happen. Agencies hire to fix problems that should be automated. They build process docs no one reads. They lose Friday afternoons to reports a script could ship in seconds. We built OpsRadar to end that loop.',
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white font-body overflow-x-hidden">
-      <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]" />
-      </div>
-      <SiteHeader sticky navLinks={NAV_LINKS} />
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
+      <SiteNav activeHref="/about" />
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative px-6 pb-20 pt-16 sm:pt-20">
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-6">
-            About
-          </p>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-[-0.04em] text-white leading-[1.04]">
+      <PageHeader />
+      <ShortVersion />
+      <CredibilitySection />
+      <OriginNote />
+      <WhySection />
+      <VisionCallout />
+      <FinalCTA />
+
+      <SiteFooter />
+    </div>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Page header                                                                */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function PageHeader() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-7xl px-6 pt-14 pb-20 md:pt-20 md:pb-28">
+        <div className="max-w-3xl">
+          <p className="text-label text-[var(--color-fg-subtle)]">About</p>
+          <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance">
             We build the system your agency should already have.
           </h1>
-          <p className="mt-5 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
             Most agencies do not have an operations problem. They have a system problem.
-            <span className="mt-3 block text-white/85">
-              OpsRadar diagnoses how your work actually flows, builds the system that runs it, and keeps it running.
-            </span>
+            OpsRadar diagnoses how your work actually flows, builds the system that runs it,
+            and keeps it running.
           </p>
         </div>
-      </section>
-
-      {/* ── The Short Version ────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-24">
-          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
-            <div className="space-y-6">
-              <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
-                We build the brain, the workflows, and the interface your team uses to ask
-                how the business is actually running.
-              </p>
-              <p className="text-base md:text-lg text-white/[0.65] leading-relaxed">
-                OpsRadar is not a tool your team has to learn. It is the layer that connects
-                the tools you already use, captures the knowledge in your team&apos;s heads,
-                and runs the work that should never have been manual.
-              </p>
-            </div>
-            <div>
-              <p className="text-base md:text-lg text-white/90 leading-relaxed font-medium">
-                We turn how your agency really operates into a system that runs itself —
-                and gets sharper every week.
-              </p>
-            </div>
-          </div>
-          <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-        </section>
       </div>
+    </section>
+  )
+}
 
-      {/* ── Credibility markers ──────────────────────────────────────── */}
-      <div>
-        <section className="max-w-5xl mx-auto px-6 py-24">
-          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            The specifics
-          </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Short version                                                              */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function ShortVersion() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="text-label text-[var(--color-fg-subtle)]">What we do</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              The brain, the workflows, and the interface.
+            </h2>
+          </div>
+
+          <div className="space-y-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+            <p>
+              We build the brain, the workflows, and the interface your team uses to ask
+              how the business is actually running.
+            </p>
+            <p>
+              OpsRadar is not a tool your team has to learn. It is the layer that connects
+              the tools you already use, captures the knowledge in your team&apos;s heads,
+              and runs the work that should never have been manual.
+            </p>
+            <p className="font-serif text-h3 tracking-[-0.015em] text-[var(--color-fg)] text-balance">
+              We turn how your agency really operates into a system that runs itself —
+              and gets sharper every week.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Credibility markers — numbered editorial list                              */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function CredibilitySection() {
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="max-w-2xl mb-16">
+          <p className="text-label text-[var(--color-fg-subtle)]">The specifics</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
             What you&apos;re actually getting.
           </h2>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-            {CREDIBILITY_MARKERS.map((marker) => (
-              <div key={marker.label}>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-400/70 mb-2">
-                  {marker.label}
-                </p>
-                <p className="font-headline text-xl md:text-2xl font-bold text-white mb-3 tracking-[-0.01em]">
-                  {marker.value}
-                </p>
-                <p className="text-[14px] leading-relaxed text-white/60">
-                  {marker.detail}
+        <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+          {CREDIBILITY_MARKERS.map((m) => (
+            <li
+              key={m.n}
+              className="grid grid-cols-[auto_1fr] gap-8 md:gap-16 py-10 md:py-12 items-start"
+            >
+              <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
+                — {m.n}
+              </p>
+              <div>
+                <p className="text-label text-[var(--color-primary)] mb-2">{m.label}</p>
+                <h3 className="font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em]">
+                  {m.value}
+                </h3>
+                <p className="mt-3 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
+                  {m.detail}
                 </p>
               </div>
-            ))}
-          </div>
-
-          <div className="h-px w-full mt-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-        </section>
+            </li>
+          ))}
+        </ol>
       </div>
+    </section>
+  )
+}
 
-      {/* ── Founder card (existing component) ────────────────────────── */}
-      <FounderPhilosophySection
-        summary={FOUNDER_PROFILE.summary}
-      />
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Origin note                                                                */
+/* ────────────────────────────────────────────────────────────────────────── */
 
-      {/* ── Why Trust Me ─────────────────────────────────────────────── */}
-      <div>
-        <section className="max-w-3xl mx-auto px-6 py-24">
-          <div className="h-px w-full mb-16" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mb-4">
-            Why Trust Us
+function OriginNote() {
+  return (
+    <section className="border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-3xl px-6 py-24 md:py-28">
+        <div className="flex items-center gap-3 mb-8">
+          <span className="size-9 rounded-full bg-[var(--color-accent-100)] flex items-center justify-center text-[var(--color-primary)] font-serif text-body-lg">
+            O
+          </span>
+          <div>
+            <p className="text-body-sm font-medium text-[var(--color-fg)]">OpsRadar · AI Operations Team</p>
+            <p className="text-caption text-[var(--color-fg-subtle)]">Why we exist.</p>
+          </div>
+        </div>
+
+        <div className="space-y-5 text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
+          <p>
+            OpsRadar exists because we kept watching the same thing happen. Agencies hire to fix
+            problems that should be automated. They build process docs no one reads. They lose
+            Friday afternoons to reports a script could ship in seconds. We built OpsRadar to end
+            that loop.
           </p>
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-white mb-14">
+          <p>
+            We spent years inside agencies watching good teams lose margin to broken handoffs,
+            spreadsheet rituals, and automations that looked clever in demos but collapsed in
+            production. OpsRadar is the response: an operator-minded team designing systems that
+            stay useful after launch.
+          </p>
+          <p>
+            We exist because the gap between AI capability and operational reality is still
+            enormous. Most agencies have the tools. Almost none have the system connecting them.
+            We are building that system.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Why trust us — pull-quote section                                          */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function WhySection() {
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="max-w-2xl mb-12">
+          <p className="text-label text-[var(--color-fg-subtle)]">Why trust us</p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
             Why this model works where retainers fail.
           </h2>
-
-          <div className="space-y-0">
-            {WHY_TRUST.map(({ title, desc }, i) => (
-              <div key={title}>
-                {i === 0 && (
-                  <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 md:gap-12 py-8 md:py-10">
-                  <h3 className="text-base font-semibold text-white/90 tracking-[-0.01em]">
-                    {title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-white/[0.65]">
-                    {desc}
-                  </p>
-                </div>
-                <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-8 text-white">
-            Stop running your agency on memory.
-          </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild className="px-8 py-4 h-auto rounded-lg font-semibold bg-white text-black hover:bg-white/90 shadow-none border-0 btn-press">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a free 20-min call &rarr;
-              </a>
-            </Button>
-          </div>
-          <Link
-            href="/audit"
-            className="inline-block mt-4 text-[13px] text-white/55 hover:text-white/85 transition-colors underline decoration-white/20 hover:decoration-white/60 underline-offset-4"
-          >
-            Or run a 3-minute self-serve audit
-          </Link>
-          <p className="mt-4 text-xs text-white/20">20 minutes &middot; Free &middot; No commitment</p>
         </div>
-      </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────── */}
-      <Footer />
-    </div>
+        <div className="space-y-16 md:space-y-20">
+          {WHY_TRUST.map((q) => (
+            <div key={q.kind} className="grid lg:grid-cols-[auto_1fr] gap-6 lg:gap-16">
+              <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-3 lg:min-w-[160px]">
+                — {q.kind}
+              </p>
+              <div>
+                <blockquote className="font-serif text-[clamp(1.5rem,2.6vw+0.4rem,2.5rem)] leading-[1.1] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+                  {q.quote}
+                </blockquote>
+                <p className="mt-5 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
+                  {q.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Vision callout                                                             */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function VisionCallout() {
+  return (
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+        <div className="border-l-2 border-[var(--color-primary)] pl-8 md:pl-10">
+          <p className="text-label text-[var(--color-primary)]">The vision</p>
+          <div className="mt-6 space-y-6 text-body-lg leading-[1.65] text-[var(--color-fg-muted)] max-w-3xl">
+            <p>
+              Every agency that runs on OpsRadar gets their own AI Operating System —
+              built from their real operations, their tools, their data, their history.
+            </p>
+            <p>
+              Their team queries it through Claude. Their workflows run on it through
+              n8n. Their brain gets richer every week.
+            </p>
+            <p className="font-serif text-h2 leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)] text-balance pt-2">
+              We are not building another automation tool. We are building the
+              operating system that runs the agency.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Final CTA                                                                  */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function FinalCTA() {
+  return (
+    <section>
+      <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
+        <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+        <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+          Stop running your agency on memory.
+        </h2>
+        <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
+          A 20-minute call. Real numbers on what your agency is losing. The
+          shortlist of workflows worth automating first.
+        </p>
+
+        <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+          <Button asChild size="lg">
+            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+              Book a free 20-min call
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+          <Button asChild variant="ghost" size="lg">
+            <Link href="/audit">Or run a self-serve audit</Link>
+          </Button>
+        </div>
+
+        <p className="mt-10 text-caption text-[var(--color-fg-subtle)]">
+          20 minutes · Free · No commitment
+        </p>
+      </div>
+    </section>
   )
 }
