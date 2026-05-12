@@ -399,8 +399,12 @@ export type Database = {
           client_id: string
           connected_at: string
           encrypted_token: string
+          external_account_id: string | null
           id: string
           iv: string
+          last_error: string | null
+          last_synced_at: string | null
+          status: string
           tool: string
         }
         Insert: {
@@ -408,8 +412,12 @@ export type Database = {
           client_id: string
           connected_at?: string
           encrypted_token: string
+          external_account_id?: string | null
           id?: string
           iv: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          status?: string
           tool: string
         }
         Update: {
@@ -417,8 +425,12 @@ export type Database = {
           client_id?: string
           connected_at?: string
           encrypted_token?: string
+          external_account_id?: string | null
           id?: string
           iv?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          status?: string
           tool?: string
         }
         Relationships: []
