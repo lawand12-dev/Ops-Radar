@@ -6,8 +6,6 @@ const FOOTER_NAV = [
     title: "Product",
     links: [
       { label: "AIOS", href: "/aios" },
-      { label: "Workflows", href: "/workflows" },
-      { label: "Pricing", href: "/pricing" },
       { label: "Audit", href: "/audit" },
     ],
   },

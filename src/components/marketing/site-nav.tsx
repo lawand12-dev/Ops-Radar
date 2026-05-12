@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "<npm>/lib/utils";
 import { Button } from "<npm>/components/ui/button";
@@ -10,8 +11,6 @@ export type NavLink = { label: string; href: string };
 
 const DEFAULT_LINKS: NavLink[] = [
   { label: "Product", href: "/aios" },
-  { label: "Customers", href: "/workflows" },
-  { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];
 
@@ -54,7 +53,14 @@ export function SiteNav({
           className="flex items-center gap-2 text-[var(--color-fg)]"
           aria-label="OpsRadar home"
         >
-          <Logomark />
+          <Image
+            src="/logo.svg"
+            alt=""
+            width={24}
+            height={24}
+            priority
+            className="h-6 w-6"
+          />
           <span className="font-serif text-[1.0625rem] tracking-[-0.01em]">OpsRadar</span>
         </Link>
 
@@ -95,6 +101,7 @@ export function SiteNav({
           className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius)] text-[var(--color-fg)] hover:bg-[var(--color-surface-sunken)]"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
+          aria-controls="site-nav-mobile-drawer"
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -103,7 +110,10 @@ export function SiteNav({
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)]">
+        <div
+          id="site-nav-mobile-drawer"
+          className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)]"
+        >
           <nav className="mx-auto max-w-7xl px-6 py-4 flex flex-col gap-1">
             {links.map((l) => (
               <Link
@@ -130,20 +140,3 @@ export function SiteNav({
   );
 }
 
-function Logomark() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 22 22"
-      fill="none"
-      aria-hidden="true"
-      className="text-[var(--color-primary)]"
-    >
-      <circle cx="11" cy="11" r="10" stroke="currentColor" strokeWidth="1.2" opacity="0.25" />
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
-      <circle cx="11" cy="11" r="3" stroke="currentColor" strokeWidth="1.4" opacity="0.7" />
-      <circle cx="11" cy="11" r="1.4" fill="currentColor" />
-    </svg>
-  );
-}
