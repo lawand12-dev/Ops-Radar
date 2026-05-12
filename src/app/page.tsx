@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 
 import { SiteNav } from "<npm>/components/marketing/site-nav";
 import { SiteFooter } from "<npm>/components/marketing/site-footer";
-import { DashboardPreview } from "<npm>/components/marketing/dashboard-preview";
+import { FullDashboardMock } from "<npm>/components/marketing/full-dashboard-mock";
+import { FunnelPreview } from "<npm>/components/marketing/funnel-preview";
+import { HeroBackdrop } from "<npm>/components/marketing/hero-backdrop";
+import { BrowserFrame } from "<npm>/components/marketing/browser-frame";
+import { IntegrationsStrip } from "<npm>/components/marketing/integrations-strip";
+import { PillarsBento } from "<npm>/components/marketing/pillars-bento";
+import { ProcessStepper } from "<npm>/components/marketing/process-stepper";
+import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
+import { SegmentsBento } from "<npm>/components/marketing/segments-bento";
 import { Button } from "<npm>/components/ui/button";
-import { Badge } from "<npm>/components/ui/badge";
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
@@ -33,14 +40,30 @@ export default function Home() {
       <SiteNav activeHref="/" />
 
       <Hero />
-      <MetricStrip />
-      <PillarsSection />
-      <DashboardSection />
-      <HowItWorksSection />
-      <SegmentSection />
-      <WhySection />
-      <CloserSection />
-      <FinalCTA />
+      <RevealOnScroll>
+        <MetricStrip />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <PillarsSection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <DashboardSection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <HowItWorksSection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <SegmentSection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <WhySection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <CloserSection />
+      </RevealOnScroll>
+      <RevealOnScroll>
+        <FinalCTA />
+      </RevealOnScroll>
 
       <SiteFooter />
     </div>
@@ -53,13 +76,21 @@ export default function Home() {
 
 function Hero() {
   return (
-    <section className="relative">
-      <div className="mx-auto max-w-7xl px-6 pt-12 md:pt-20 pb-20 md:pb-28">
+    <section className="relative overflow-hidden">
+      <HeroBackdrop />
+
+      <div className="relative mx-auto max-w-7xl px-6 pt-14 md:pt-24 pb-20 md:pb-28">
         <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
+          {/* LEFT — copy */}
           <div>
-            <p className="text-label text-[var(--color-fg-subtle)]">
-              AIOS · for agencies under 30 people
-            </p>
+            <div className="inline-flex items-center gap-2 text-label text-[var(--color-fg-subtle)]">
+              <span className="relative inline-flex">
+                <span className="absolute inline-flex h-2 w-2 rounded-full bg-[var(--color-success)] opacity-60 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
+              </span>
+              <span>AIOS · for agencies under 30 people</span>
+            </div>
+
             <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.5rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance">
               The AI Operating System for{" "}
               <span className="text-[var(--color-primary)]">agencies</span>.
@@ -97,12 +128,25 @@ function Hero() {
             </ul>
           </div>
 
-          <div className="relative">
-            <DashboardPreview />
-            <p className="mt-4 text-caption text-[var(--color-fg-subtle)] font-mono">
-              ↑ OBSERVE + BRAIN. Every tool surfaced, AI in the corner.
-            </p>
+          {/* RIGHT — funnel preview spread (the journey, not a product UI).
+              Hidden below lg because the fixed positioning would overflow
+              narrow viewports; mobile/tablet get the copy-only hero. */}
+          <div className="relative hidden lg:block">
+            <div className="mb-4 inline-flex items-center gap-2 text-caption font-mono uppercase tracking-[0.08em] text-[var(--color-fg-subtle)]">
+              <Sparkles
+                className="size-3 text-[var(--color-primary)]"
+                aria-hidden="true"
+              />
+              <span>Call · Discovery · Blueprint · Build</span>
+            </div>
+
+            <FunnelPreview />
           </div>
+        </div>
+
+        {/* INTEGRATIONS STRIP */}
+        <div className="mt-14 md:mt-20 pt-8 border-t border-[var(--color-border)]">
+          <IntegrationsStrip />
         </div>
       </div>
     </section>
@@ -155,62 +199,26 @@ function MetricStrip() {
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function PillarsSection() {
-  const pillars = [
-    {
-      name: "OPERATE",
-      title: "The engine running your agency.",
-      body: "Automations doing the manual work in the background. Reporting, onboarding, lead routing, follow-ups, invoicing — running quietly on your accounts, under your control.",
-    },
-    {
-      name: "OBSERVE",
-      title: "Every tool, one screen.",
-      body: "Revenue, ad spend, leads, deliverables, workflow status, hours reclaimed — every tool you already pay for, surfaced in one dashboard. Your agency at a glance, every morning.",
-    },
-    {
-      name: "BRAIN",
-      title: "The AI that knows your business.",
-      body: "An LLM lives inside your dashboard and answers questions in plain English. Your data, your history, your patterns. Gets sharper every week the system runs.",
-    },
-    {
-      name: "GUARD",
-      title: "The system watching while you sleep.",
-      body: "Silent failures caught before they cost you. An ad platform breaks something at 3 a.m.; GUARD knows by 3:01 and routes the fix before your Monday recap runs.",
-    },
-  ];
-
   return (
-    <section className="border-b border-[var(--color-border)]">
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 mb-14 md:mb-16">
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-fg-subtle)]">What&apos;s in AIOS</p>
-            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Four parts. One platform.
-            </h2>
-            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              AIOS is not a tool. It&apos;s the layer that connects every tool you
-              already pay for — and adds the parts you don&apos;t have yet.
-            </p>
-          </div>
+        {/* Narrow editorial intro */}
+        <div className="max-w-2xl">
+          <p className="text-label text-[var(--color-fg-subtle)]">
+            What&apos;s in AIOS
+          </p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            Four parts. One platform.
+          </h2>
+          <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
+            AIOS is not a tool. It&apos;s the layer that connects every tool
+            you already pay for — and adds the parts you don&apos;t have yet.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
-          {pillars.map((p) => (
-            <article
-              key={p.name}
-              className="bg-[var(--color-surface)] p-8 md:p-10"
-            >
-              <p className="font-mono text-caption text-[var(--color-primary)] tracking-[0.18em]">
-                {p.name}
-              </p>
-              <h3 className="mt-4 font-serif text-h2 text-[var(--color-fg)] tracking-[-0.02em] leading-[1.12] text-balance">
-                {p.title}
-              </h3>
-              <p className="mt-3 text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
-                {p.body}
-              </p>
-            </article>
-          ))}
+        {/* Bento grid */}
+        <div className="mt-14 md:mt-16">
+          <PillarsBento />
         </div>
       </div>
     </section>
@@ -225,169 +233,110 @@ function DashboardSection() {
   return (
     <section
       data-theme="dark"
-      className="bg-[var(--color-bg)] text-[var(--color-fg)] border-b border-[var(--color-border)]"
+      className="relative overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)] border-y border-[var(--color-border)]"
     >
-      <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="max-w-2xl">
-          <p className="text-label text-[var(--color-fg-subtle)]">OBSERVE + BRAIN</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            Every tool you use, on one screen.
-          </h2>
-          <p className="mt-5 text-body-lg text-[var(--color-fg-muted)]">
-            Revenue from your billing tools. Ad spend from your ad platforms.
-            Leads from your CRM. Workflow status. Hours reclaimed. All of it
-            surfaced live, in one dashboard — with an AI in the corner that
-            knows your business and answers questions in plain English.
-          </p>
-        </div>
+      {/* Ambient indigo halo behind the product reveal */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute left-1/2 top-[42%] h-[900px] w-[1400px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
+          style={{
+            background:
+              "radial-gradient(closest-side, var(--color-accent-700) 0%, transparent 70%)",
+            filter: "blur(70px)",
+          }}
+        />
+      </div>
 
-        <div className="mt-14 grid lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden shadow-[var(--shadow-md)]">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
-              <div className="flex items-center gap-3">
-                <span className="text-label text-[var(--color-fg-subtle)]">opsradar.co / dashboard</span>
-              </div>
-              <span className="font-mono text-caption text-[var(--color-fg-subtle)]">last sync · 14s ago</span>
-            </div>
+      {/* Narrow editorial intro */}
+      <div className="relative mx-auto max-w-3xl px-6 pt-24 md:pt-32 pb-12 md:pb-16 text-center">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--color-fg-subtle)]">
+          OBSERVE + BRAIN
+        </p>
+        <h2 className="mt-5 font-serif text-h1 leading-[1.05] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+          Every tool you use, on one screen.
+        </h2>
+        <p className="mt-6 text-body-lg text-[var(--color-fg-muted)] text-balance">
+          Revenue, ad spend, leads, deliverables, workflow status, hours
+          reclaimed — surfaced live in one dashboard, with an AI in the corner
+          that knows your business and answers in plain English.
+        </p>
+      </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--color-border)] border-b border-[var(--color-border)]">
-              {[
-                { label: "Revenue · 30d", value: "$240k", trend: "+12%", up: true },
-                { label: "Ad spend · 30d", value: "$48k", trend: "MER 5.0", up: true },
-                { label: "Hours reclaimed", value: "2,431", trend: "+18%", up: true },
-                { label: "Active workflows", value: "87", trend: "1 degraded", up: true },
-              ].map((m) => (
-                <div key={m.label} className="bg-[var(--color-surface)] px-5 py-4">
-                  <p className="text-label text-[var(--color-fg-subtle)]">{m.label}</p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <p className="font-mono text-h3 font-medium tabular-nums">{m.value}</p>
-                    <p className={m.up ? "text-caption text-[var(--color-success)]" : "text-caption text-[var(--color-danger)]"}>
-                      {m.trend}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-6 py-4 flex items-center justify-between border-b border-[var(--color-border)]">
-              <p className="text-label text-[var(--color-fg-subtle)]">Workflows</p>
-              <p className="text-caption font-mono text-[var(--color-fg-subtle)]">12 running · 1 degraded</p>
-            </div>
-
-            <ul className="divide-y divide-[var(--color-border)]">
-              {[
-                { name: "invoice-reminders", runs: "412", status: "Running", last: "2 min ago", flag: "success" },
-                { name: "lead-router-v2", runs: "87", status: "Running", last: "14 min ago", flag: "success" },
-                { name: "client-monthly-recap", runs: "12", status: "Running", last: "1 hr ago", flag: "success" },
-                { name: "slack-recap-daily", runs: "3", status: "Degraded", last: "1 hr ago", flag: "warn" },
-                { name: "onboarding-emails", runs: "54", status: "Running", last: "4 min ago", flag: "success" },
-                { name: "rank-digest-weekly", runs: "1", status: "Running", last: "11 hr ago", flag: "success" },
-              ].map((r) => (
-                <li
-                  key={r.name}
-                  className="grid grid-cols-[1.4fr_0.6fr_0.8fr_0.8fr] gap-4 px-6 py-3 items-center"
-                >
-                  <p className="text-body-sm font-medium">{r.name}</p>
-                  <p className="font-mono text-body-sm text-[var(--color-fg-muted)] tabular-nums">{r.runs}</p>
-                  <Badge variant={r.flag === "warn" ? "warn" : "success"} dot>{r.status}</Badge>
-                  <p className="font-mono text-caption text-[var(--color-fg-subtle)]">{r.last}</p>
-                </li>
-              ))}
-            </ul>
+      {/* Full-bleed product reveal — tilted, glowing, edge-to-edge */}
+      <div className="relative w-full pb-24 md:pb-32 lg:[perspective:2200px]">
+        <div className="relative mx-auto max-w-[1480px] px-4 md:px-8">
+          <div className="origin-top transform-gpu lg:[transform:rotateX(6deg)_rotateY(-2deg)]">
+            <BrowserFrame
+              url="opsradar.co/dashboard"
+              theme="dark"
+              className="rounded-[18px] shadow-[0_60px_120px_-40px_rgba(2,6,23,0.65),0_24px_60px_-24px_rgba(79,70,229,0.45)]"
+            >
+              <FullDashboardMock />
+            </BrowserFrame>
           </div>
-
-          <aside className="space-y-6">
-            <Card title="Every tool, surfaced" body="Revenue, ad spend, CRM pipeline, deliverables, workflow status. Every tool your agency already pays for, pulled into one place — read live." />
-            <Card title="AI in the corner" body="Ask anything in plain English. The AI knows your data, your history, your patterns. It gets sharper every week the system runs." />
-            <Card title="Your accounts. Your data." body="OpsRadar never stores client data. Workflows run on your accounts; credentials stay in your vault; logs stay on your infrastructure." />
-          </aside>
         </div>
+      </div>
+
+      {/* Three value props — demoted band beneath the dashboard */}
+      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--color-border)] border-t border-[var(--color-border)]">
+        {VALUE_PROPS.map((v) => (
+          <article
+            key={v.title}
+            className="bg-[var(--color-bg)] px-8 py-10 md:px-10 md:py-12"
+          >
+            <p className="font-serif text-h4 tracking-[-0.01em] text-[var(--color-fg)]">
+              {v.title}
+            </p>
+            <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
+              {v.body}
+            </p>
+          </article>
+        ))}
       </div>
     </section>
   );
 }
 
-function Card({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-      <p className="font-serif text-h4 tracking-[-0.01em] text-[var(--color-fg)]">{title}</p>
-      <p className="mt-2 text-body-sm text-[var(--color-fg-muted)] leading-[1.6]">{body}</p>
-    </div>
-  );
-}
+const VALUE_PROPS = [
+  {
+    title: "Every tool, surfaced",
+    body: "Revenue, ad spend, CRM pipeline, deliverables, workflow status. Every tool your agency already pays for, pulled into one place — read live.",
+  },
+  {
+    title: "AI in the corner",
+    body: "Ask anything in plain English. The AI knows your data, your history, your patterns. It gets sharper every week the system runs.",
+  },
+  {
+    title: "Your accounts. Your data.",
+    body: "OpsRadar never stores client data. Workflows run on your accounts; credentials stay in your vault; logs stay on your infrastructure.",
+  },
+] as const;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  How it works — the funnel (audit → discovery → build), no pricing          */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function HowItWorksSection() {
-  const steps = [
-    {
-      n: "01",
-      tag: "Call",
-      title: "We talk. No pitch.",
-      body: "A 30-minute conversation. You explain how your agency runs. We listen and ask the questions only operators would ask. By the end of the call, both sides know if AIOS belongs at your agency.",
-      side: "What you walk away with: a clear yes-or-no on fit. If we are not the right system for you, we say so on the call.",
-    },
-    {
-      n: "02",
-      tag: "Discovery",
-      title: "We go deep on the business.",
-      body: "If the call confirms a fit, we move into discovery — your tools, your clients, your team, your patterns, the workflows that live in someone&apos;s head. This is the part we will not skip. We do not build AIOS for agencies we do not understand.",
-      side: "Format: structured forms, working sessions, and access to the tools you already pay for. Length: about a week of evaluation on our side.",
-    },
-    {
-      n: "03",
-      tag: "Blueprint",
-      title: "A written plan for your AIOS.",
-      body: "You receive a PDF that names what is actually happening to your operations today, why this matters now, what the system will do about it, what gets built first, and what the build will cost.",
-      side: "What you walk away with: a buy-or-don&apos;t decision with full visibility. No surprises, no nine-page MSAs.",
-    },
-    {
-      n: "04",
-      tag: "Build",
-      title: "Your AIOS goes live.",
-      body: "OPERATE runs the manual work in the background. OBSERVE surfaces every tool in one dashboard. BRAIN learns your business. GUARD watches it overnight. We can run the platform for you, or hand it to your team.",
-      side: "What stays with you: every workflow, every credential, every log — in your accounts, under your control, from day one.",
-    },
-  ];
-
   return (
     <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-label text-[var(--color-fg-subtle)]">How AIOS gets built</p>
-            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              From first call to live AIOS in four steps.
-            </h2>
-            <p className="mt-5 text-body text-[var(--color-fg-muted)] max-w-md">
-              The real path starts with a conversation. The 3-minute audit on the
-              site is a marketing diagnostic — useful, but not the map.
-            </p>
-          </div>
+      <div className="mx-auto max-w-7xl px-6 pt-24 md:pt-32 pb-16 md:pb-24">
+        {/* Editorial intro */}
+        <div className="max-w-2xl">
+          <p className="text-label text-[var(--color-fg-subtle)]">
+            How AIOS gets built
+          </p>
+          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+            From first call to live AIOS in four steps.
+          </h2>
+          <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
+            The real path starts with a conversation. The 3-minute audit on
+            the site is a marketing diagnostic — useful, but not the map.
+          </p>
+        </div>
 
-          <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
-            {steps.map((s) => (
-              <li key={s.n} className="grid grid-cols-[auto_1fr] gap-8 md:gap-12 py-10 md:py-12 items-start">
-                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em] pt-2">
-                  — {s.n}
-                </p>
-                <div>
-                  <p className="text-label text-[var(--color-primary)]">{s.tag}</p>
-                  <h3 className="mt-3 font-serif text-h2 text-[var(--color-fg)] leading-[1.12] tracking-[-0.02em] text-balance">
-                    {s.title}
-                  </h3>
-                  <p className="mt-4 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-                    {s.body}
-                  </p>
-                  <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-subtle)] max-w-2xl italic">
-                    {s.side}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+        {/* Sticky-scroll stepper */}
+        <div className="mt-16 md:mt-24">
+          <ProcessStepper />
         </div>
       </div>
     </section>
@@ -399,44 +348,13 @@ function HowItWorksSection() {
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function SegmentSection() {
-  const segments = [
-    {
-      href: "/for/paid-media",
-      tag: "Paid media",
-      headline: "Sunday-night reporting goes away. Pacing alerts find you first.",
-      bullets: [
-        "Monthly client reports that build themselves",
-        "Pacing alerts tied to MER, not last-click ROAS",
-        "BM-access-to-first-report from 3 weeks to 5 days",
-      ],
-    },
-    {
-      href: "/for/seo",
-      tag: "SEO",
-      headline: "Track what matters in 2026 — AI Overviews, LLM mentions, rank.",
-      bullets: [
-        "Weekly rank digests from Ahrefs + GSC + Semrush",
-        "AIO presence tracking across ChatGPT, Perplexity, Google AIO",
-        "Technical audit alerts before Google notices",
-      ],
-    },
-    {
-      href: "/for/full-service",
-      tag: "Full-service",
-      headline: "Hold your margin as you scale across ad ops, SEO, and content.",
-      bullets: [
-        "Unified reporting across ad, organic, and content",
-        "Utilization alerts before scope creep eats margin",
-        "Cross-channel attribution your clients actually believe",
-      ],
-    },
-  ];
-
   return (
-    <section className="border-b border-[var(--color-border)]">
+    <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="max-w-2xl mb-14">
-          <p className="text-label text-[var(--color-fg-subtle)]">Working inside agencies like</p>
+        <div className="max-w-2xl mb-14 md:mb-16">
+          <p className="text-label text-[var(--color-fg-subtle)]">
+            Working inside agencies like
+          </p>
           <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance">
             AIOS, shaped to your agency.
           </h2>
@@ -447,35 +365,7 @@ function SegmentSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
-          {segments.map((seg) => (
-            <Link
-              key={seg.href}
-              href={seg.href}
-              className="group flex flex-col bg-[var(--color-surface)] p-8 md:p-10 hover:bg-[var(--color-surface-sunken)] transition-colors duration-[var(--duration-fast)]"
-            >
-              <p className="text-label text-[var(--color-primary)]">{seg.tag}</p>
-              <h3 className="mt-5 font-serif text-h3 text-[var(--color-fg)] leading-[1.2] tracking-[-0.015em] text-balance">
-                {seg.headline}
-              </h3>
-              <ul className="mt-6 space-y-2.5 flex-1">
-                {seg.bullets.map((b) => (
-                  <li
-                    key={b}
-                    className="flex gap-2.5 text-body-sm leading-[1.55] text-[var(--color-fg-muted)]"
-                  >
-                    <span className="text-[var(--color-fg-faint)] mt-1 shrink-0">—</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-8 inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-muted)] group-hover:text-[var(--color-fg)] transition-colors">
-                See AIOS for {seg.tag.toLowerCase()}
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-              </p>
-            </Link>
-          ))}
-        </div>
+        <SegmentsBento />
       </div>
     </section>
   );
