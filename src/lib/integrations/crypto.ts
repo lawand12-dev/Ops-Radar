@@ -40,7 +40,14 @@ export function decryptApiKey(secret: EncryptedSecret): string {
   const iv = Buffer.from(secret.iv, 'base64');
   const tag = Buffer.from(secret.auth_tag, 'base64');
   const ct = Buffer.from(secret.encrypted_token, 'base64');
-  const decipher = createDecipheriv(ALGO, key, iv);
-  decipher.setAuthTag(tag);
-  return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf8');
+  if (iv.length !== IV_BYTES || tag.length !== 16) {
+    throw new Error('decryption failed');
+  }
+  try {
+    const decipher = createDecipheriv(ALGO, key, iv);
+    decipher.setAuthTag(tag);
+    return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf8');
+  } catch {
+    throw new Error('decryption failed');
+  }
 }
