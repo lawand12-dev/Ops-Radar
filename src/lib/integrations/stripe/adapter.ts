@@ -80,7 +80,10 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
     stripe.invoices.list({ created: { gte: unix(monthStart) }, limit: 100 }),
   ]);
 
-  const invoiced = invoices.data.reduce((s, inv) => s + (inv.amount_due ?? 0), 0) / 100;
+  const INVOICED_STATUSES: ReadonlyArray<Stripe.Invoice.Status> = ['open', 'paid', 'uncollectible'];
+  const invoiced = invoices.data
+    .filter((inv) => inv.status != null && INVOICED_STATUSES.includes(inv.status))
+    .reduce((s, inv) => s + (inv.amount_due ?? 0), 0) / 100;
   const paid =
     invoices.data
       .filter((inv) => inv.status === 'paid')
