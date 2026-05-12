@@ -1,0 +1,47 @@
+import type { ToolName } from '<npm>/lib/integrations';
+import { validateStripeKey } from './stripe/adapter';
+import { validateHubspotToken } from './hubspot/adapter';
+
+export type ToolValidator = (apiKey: string) => Promise<
+  | { ok: true; externalAccountId: string }
+  | { ok: false; reason: 'invalid_key' | 'permission' | 'network'; message: string }
+>;
+
+export type ToolMeta = {
+  tool: ToolName;
+  displayName: string;
+  /** URL of the page in the provider where the customer creates the key. */
+  createKeyDocsUrl: string;
+  /** Short instructions shown above the paste field in the connect dialog. */
+  instructions: string;
+  /** Validator used by the /connect route. */
+  validate: ToolValidator;
+};
+
+const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
+  stripe: {
+    tool: 'stripe',
+    displayName: 'Stripe',
+    createKeyDocsUrl: 'https://dashboard.stripe.com/apikeys',
+    instructions:
+      'In Stripe, go to Developers → API keys → Create restricted key. ' +
+      'Permissions needed: "Read" on Charges, Invoices, Account. ' +
+      'Paste the key (starts with rk_ or sk_) below.',
+    validate: validateStripeKey,
+  },
+  hubspot: {
+    tool: 'hubspot',
+    displayName: 'HubSpot',
+    createKeyDocsUrl:
+      'https://developers.hubspot.com/docs/api/private-apps#create-a-private-app',
+    instructions:
+      'In HubSpot, go to Settings → Integrations → Private Apps → Create a private app. ' +
+      'Scopes needed: crm.objects.deals.read and crm.objects.contacts.read. ' +
+      'Paste the access token (Private App Token) below.',
+    validate: validateHubspotToken,
+  },
+};
+
+export function getToolMeta(tool: string): ToolMeta | null {
+  return REGISTRY[tool as ToolName] ?? null;
+}

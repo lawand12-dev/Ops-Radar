@@ -1,64 +1,95 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { cn } from '<npm>/lib/utils';
+import { useEffect, useState, useCallback } from 'react';
+import { IntegrationCard } from '<npm>/components/dashboard/integration-card';
+import { ConnectKeyDialog } from '<npm>/components/dashboard/connect-key-dialog';
 
-type ConnectedTool = { tool: string; connected_at: string };
+type Connection = {
+  tool: string;
+  connected_at: string;
+  status: 'connected' | 'requires_reconnect' | 'revoked';
+  external_account_id: string | null;
+  last_synced_at: string | null;
+};
 
 type ToolDef = {
   key: string;
   label: string;
   blurb: string;
   cardKey: string;
-  status: 'available' | 'coming_soon';
+  enabled: boolean;
+  instructions: string;
+  createKeyDocsUrl: string;
 };
 
 const TOOL_CATALOG: ToolDef[] = [
-  { key: 'hubspot',  label: 'HubSpot',  blurb: 'CRM — pipeline value, leads, auto-created deals', cardKey: 'Sales',     status: 'available' },
-  { key: 'apollo',   label: 'Apollo',   blurb: 'Cold outreach — emails sent, opens, replies',     cardKey: 'Marketing', status: 'available' },
-  { key: 'calendly', label: 'Calendly', blurb: 'Meetings booked from outreach',                   cardKey: 'Marketing', status: 'available' },
-  { key: 'clickup',  label: 'ClickUp',  blurb: 'Projects, tasks, deadlines',                      cardKey: 'Delivery',  status: 'coming_soon' },
-  { key: 'asana',    label: 'Asana',    blurb: 'Projects, tasks, deadlines',                      cardKey: 'Delivery',  status: 'coming_soon' },
-  { key: 'toggl',    label: 'Toggl',    blurb: 'Hours tracked, utilization',                      cardKey: 'Delivery',  status: 'coming_soon' },
-  { key: 'stripe',   label: 'Stripe',   blurb: 'Invoiced, paid, overdue',                         cardKey: 'Finance',   status: 'coming_soon' },
+  {
+    key: 'stripe',
+    label: 'Stripe',
+    blurb: 'Invoiced, paid, overdue',
+    cardKey: 'Finance',
+    enabled: true,
+    instructions:
+      'In Stripe, go to Developers → API keys → Create restricted key. Permissions: Read on Charges, Invoices, Account. Paste the key (rk_… or sk_…) below.',
+    createKeyDocsUrl: 'https://dashboard.stripe.com/apikeys',
+  },
+  {
+    key: 'hubspot',
+    label: 'HubSpot',
+    blurb: 'CRM — pipeline value, leads, won deals',
+    cardKey: 'Sales',
+    enabled: true,
+    instructions:
+      'In HubSpot, go to Settings → Integrations → Private Apps → Create a private app. Scopes: crm.objects.deals.read + crm.objects.contacts.read. Paste the Private App Token below.',
+    createKeyDocsUrl: 'https://developers.hubspot.com/docs/api/private-apps#create-a-private-app',
+  },
+  { key: 'apollo',   label: 'Apollo',   blurb: 'Cold outreach — emails sent, opens, replies', cardKey: 'Marketing', enabled: false, instructions: '', createKeyDocsUrl: '' },
+  { key: 'calendly', label: 'Calendly', blurb: 'Meetings booked from outreach',               cardKey: 'Marketing', enabled: false, instructions: '', createKeyDocsUrl: '' },
+  { key: 'clickup',  label: 'ClickUp',  blurb: 'Projects, tasks, deadlines',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
+  { key: 'asana',    label: 'Asana',    blurb: 'Projects, tasks, deadlines',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
+  { key: 'toggl',    label: 'Toggl',    blurb: 'Hours tracked, utilization',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
 ];
 
-const fmtDate = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-};
-
 export default function IntegrationsSettingsPage() {
-  const [connected, setConnected] = useState<ConnectedTool[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const [dialogTool, setDialogTool] = useState<ToolDef | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/integrations', { cache: 'no-store' });
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(data.error ?? 'Failed to load');
-          setConnected([]);
-          return;
-        }
-        setConnected(data.connected ?? []);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Network error');
-      } finally {
-        if (!cancelled) setLoading(false);
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch('/api/integrations', { cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to load');
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      setConnections(data.connected ?? []);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  function isConnected(tool: string): ConnectedTool | undefined {
-    return connected.find((c) => c.tool === tool);
+  useEffect(() => { load(); }, [load]);
+
+  async function disconnect(tool: string) {
+    if (!confirm(`Disconnect ${tool}? Your dashboard will stop reading from ${tool}.`)) return;
+    const res = await fetch(`/api/integrations/${tool}/disconnect`, { method: 'POST' });
+    if (res.ok) {
+      setBanner({ kind: 'ok', text: `${tool[0].toUpperCase() + tool.slice(1)} disconnected.` });
+      await load();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setBanner({ kind: 'err', text: data.message ?? data.error ?? 'Disconnect failed.' });
+    }
+  }
+
+  function connectionFor(tool: string): Connection | undefined {
+    return connections.find((c) => c.tool === tool);
   }
 
   return (
@@ -68,10 +99,21 @@ export default function IntegrationsSettingsPage() {
           Connected systems
         </h1>
         <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
-          These are the tools your dashboard reads from. Your OpsRadar account team manages
-          credentials and connections — reach out if you want to add or change anything.
+          Connect the tools you use. We never store the data — we read it live from each tool when your dashboard opens.
         </p>
       </div>
+
+      {banner && (
+        <div
+          className={
+            banner.kind === 'ok'
+              ? 'mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-success)]'
+              : 'mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-warn)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-warn)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-warn)]'
+          }
+        >
+          {banner.text}
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-danger)]">
@@ -79,56 +121,40 @@ export default function IntegrationsSettingsPage() {
         </div>
       )}
 
+      {loading && !connections.length && (
+        <div className="text-[12.5px] text-[var(--color-fg-subtle)]">Loading…</div>
+      )}
+
       <div className="flex flex-col gap-2.5">
-        {TOOL_CATALOG.map((t) => {
-          const conn = isConnected(t.key);
-          const isAvailable = t.status === 'available';
-
-          return (
-            <div
-              key={t.key}
-              className={cn(
-                'flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4',
-                !isAvailable && 'opacity-55',
-              )}
-            >
-              <div className="min-w-0">
-                <div className="mb-1 flex items-center gap-2.5">
-                  <span className="text-body font-semibold text-[var(--color-fg)]">{t.label}</span>
-                  <span className="rounded-[var(--radius-sm)] bg-[var(--color-surface-sunken)] px-1.5 py-[2px] text-[10.5px] tracking-[0.04em] text-[var(--color-fg-subtle)]">
-                    {t.cardKey} card
-                  </span>
-                </div>
-                <div className="text-[12.5px] leading-[1.4] text-[var(--color-fg-muted)]">{t.blurb}</div>
-                {conn && (
-                  <div className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
-                    Tracking since {fmtDate(conn.connected_at)}
-                  </div>
-                )}
-              </div>
-
-              <div className="shrink-0">
-                {!isAvailable && (
-                  <span className="text-caption italic text-[var(--color-fg-subtle)]">Coming soon</span>
-                )}
-                {isAvailable && !loading && (
-                  <span
-                    className={cn(
-                      'rounded-[var(--radius-sm)] px-2.5 py-1 text-[11px] font-semibold',
-                      conn
-                        ? 'bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)] text-[var(--color-success)]'
-                        : 'bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)]',
-                    )}
-                  >
-                    {conn ? 'Tracking' : 'Not yet tracking'}
-                  </span>
-                )}
-                {loading && <span className="text-caption text-[var(--color-fg-subtle)]">Loading…</span>}
-              </div>
-            </div>
-          );
-        })}
+        {TOOL_CATALOG.map((t) => (
+          <IntegrationCard
+            key={t.key}
+            tool={t.key}
+            label={t.label}
+            blurb={t.blurb}
+            cardKey={t.cardKey}
+            enabled={t.enabled}
+            connection={connectionFor(t.key)}
+            onConnect={() => setDialogTool(t)}
+            onDisconnect={() => disconnect(t.key)}
+          />
+        ))}
       </div>
+
+      <ConnectKeyDialog
+        open={dialogTool !== null}
+        tool={dialogTool?.key ?? ''}
+        displayName={dialogTool?.label ?? ''}
+        instructions={dialogTool?.instructions ?? ''}
+        createKeyDocsUrl={dialogTool?.createKeyDocsUrl ?? ''}
+        onClose={() => setDialogTool(null)}
+        onSuccess={() => {
+          const label = dialogTool?.label;
+          setDialogTool(null);
+          setBanner({ kind: 'ok', text: `${label} connected.` });
+          void load();
+        }}
+      />
     </>
   );
 }

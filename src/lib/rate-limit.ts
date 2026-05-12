@@ -13,6 +13,7 @@ type RateLimitName =
   | 'chat-conversations'
   | 'funnel-event'
   | 'generate-audit'
+  | 'integrations-connect'
   | 'notify-chat-lead'
   | 'quick-win-onboarding'
   | 'research-preview'
@@ -29,6 +30,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'chat-conversations': { limit: 120, window: '1 h' },
   'funnel-event': { limit: 240, window: '1 h' },
   'generate-audit': { limit: 3, window: '1 h' },
+  'integrations-connect': { limit: 10, window: '1 h' },
   'notify-chat-lead': { limit: 10, window: '1 h' },
   'quick-win-onboarding': { limit: 10, window: '1 h' },
   'research-preview': { limit: 20, window: '1 h' },
@@ -58,6 +60,7 @@ const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
   'chat',
   'chat-conversations',
   'generate-audit',
+  'integrations-connect',
   'notify-chat-lead',
   'quick-win-onboarding',
   'research-preview',
@@ -131,6 +134,7 @@ function tooManyRequestsResponse(remaining: number, reset: number) {
 export async function applyRateLimit(
   request: Request,
   routeName: RateLimitName,
+  identifier?: string,
 ): Promise<Response | null> {
   const instances = getLimiters()
   const isFailClosed = FAIL_CLOSED_ROUTES.has(routeName)
@@ -153,8 +157,8 @@ export async function applyRateLimit(
 
   // 2. Upstash configured — call it.
   try {
-    const ip = getClientIp(request)
-    const { success, remaining, reset } = await instances[routeName].limit(ip)
+    const key = identifier ?? getClientIp(request)
+    const { success, remaining, reset } = await instances[routeName].limit(key)
 
     if (success) {
       return null
