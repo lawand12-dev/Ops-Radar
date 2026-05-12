@@ -3,6 +3,7 @@ import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { getToolMeta } from '<npm>/lib/integrations/registry';
 import { encryptApiKey } from '<npm>/lib/integrations/crypto';
+import { applyRateLimit } from '<npm>/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -22,6 +23,22 @@ export async function POST(
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const rateLimitResponse = await applyRateLimit(req, 'integrations-connect', userId);
+  if (rateLimitResponse) {
+    if (rateLimitResponse.status === 429) {
+      return NextResponse.json(
+        { error: 'rate_limited', message: 'Too many connection attempts. Try again later.' },
+        { status: 429 },
+      );
+    }
+    // Fail-closed path (e.g. Upstash unavailable) — propagate status + body.
+    const body = await rateLimitResponse.json().catch(() => ({}));
+    return NextResponse.json(body, {
+      status: rateLimitResponse.status,
+      headers: Object.fromEntries(rateLimitResponse.headers),
+    });
   }
 
   const body = (await req.json().catch(() => ({}))) as ConnectBody;
@@ -63,7 +80,7 @@ export async function POST(
   if (upsertErr) {
     console.error('[integrations] upsert failed:', upsertErr);
     return NextResponse.json(
-      { error: 'storage_failed', message: upsertErr.message },
+      { error: 'storage_failed', message: 'Failed to save integration. Please try again.' },
       { status: 500 },
     );
   }
