@@ -37,6 +37,8 @@ import { WorkflowHealthStrip } from '<npm>/components/dashboard/workflow-health-
 import { MarketingCard } from '<npm>/components/dashboard/marketing-card';
 import { FinancialsCard } from '<npm>/components/dashboard/financials-card';
 import { DeliveryCard } from '<npm>/components/dashboard/delivery-card';
+import { FinanceCard } from '<npm>/components/dashboard/finance-card';
+import { SalesLiveCard } from '<npm>/components/dashboard/sales-live-card';
 import { cn } from '<npm>/lib/utils';
 
 Chart.register(
@@ -462,10 +464,12 @@ export default function DashboardPage() {
 
       <div className="mb-4 flex gap-3.5">
         <SalesCard />
+        <SalesLiveCard />
       </div>
 
       <div className="mb-4 flex gap-3.5">
         <FinancialsCard />
+        <FinanceCard />
         <DeliveryCard />
       </div>
 
