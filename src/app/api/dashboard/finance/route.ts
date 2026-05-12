@@ -46,7 +46,10 @@ export async function GET(_req: NextRequest): Promise<NextResponse<FinanceRespon
   if (!row || !row.encrypted_token) {
     return NextResponse.json({ status: 'not_connected' });
   }
-  if (row.status === 'requires_reconnect' || row.status === 'revoked') {
+  if (row.status !== 'connected') {
+    if (row.status !== 'requires_reconnect' && row.status !== 'revoked') {
+      console.warn('[finance] unexpected integration status, treating as requires_reconnect:', row.status);
+    }
     return NextResponse.json({ status: 'requires_reconnect' });
   }
 
