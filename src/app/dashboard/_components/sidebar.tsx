@@ -4,17 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  FolderKanban,
-  CheckSquare,
-  Clock,
+  Activity,
   TrendingUp,
-  Users,
-  BarChart3,
-  UsersRound,
-  Settings,
-  ChevronDown,
   Plug,
-  ShieldCheck,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
@@ -25,39 +18,17 @@ type NavSection = { tag: string | null; items: NavItem[] };
 
 const navSections: NavSection[] = [
   {
-    tag: 'BRAIN',
+    tag: null,
     items: [
-      { label: 'Dashboard', href: '/dashboard',         icon: LayoutDashboard },
-      { label: 'Reports',   href: '/dashboard/reports', icon: BarChart3       },
-    ],
-  },
-  {
-    tag: 'OPERATE',
-    items: [
-      { label: 'Projects',      href: '/dashboard/projects',      icon: FolderKanban },
-      { label: 'Tasks',         href: '/dashboard/tasks',         icon: CheckSquare  },
-      { label: 'Time tracking', href: '/dashboard/time-tracking', icon: Clock        },
-    ],
-  },
-  {
-    tag: 'OBSERVE',
-    items: [
-      { label: 'Financials', href: '/dashboard/financials', icon: TrendingUp },
-      { label: 'Clients',    href: '/dashboard/clients',    icon: Users      },
-    ],
-  },
-  {
-    tag: 'GUARD',
-    items: [
-      { label: 'Workflow Health', href: '/dashboard/workflow-health', icon: ShieldCheck },
+      { label: 'Overview',     href: '/dashboard',             icon: LayoutDashboard },
+      { label: 'Automations',  href: '/dashboard/automations', icon: Activity        },
+      { label: 'Business',     href: '/dashboard/business',    icon: TrendingUp      },
     ],
   },
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Team',         href: '/dashboard/team',                  icon: UsersRound },
-      { label: 'Integrations', href: '/dashboard/settings/integrations', icon: Plug       },
-      { label: 'Settings',     href: '/dashboard/settings',              icon: Settings   },
+      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
     ],
   },
 ];
