@@ -76,7 +76,7 @@ export function SalesLiveCard() {
             Connect HubSpot to see pipeline, leads, and won deals.
           </div>
           <Link
-            href="/dashboard/settings/integrations"
+            href="/dashboard/integrations"
             className="text-[12.5px] font-medium text-[var(--color-primary)] no-underline hover:underline"
           >
             Go to integrations →
@@ -90,7 +90,7 @@ export function SalesLiveCard() {
             HubSpot rejected the token — reconnect required.
           </div>
           <Link
-            href="/dashboard/settings/integrations"
+            href="/dashboard/integrations"
             className="text-[12.5px] font-medium text-[var(--color-warn)] no-underline hover:underline"
           >
             Reconnect HubSpot →
