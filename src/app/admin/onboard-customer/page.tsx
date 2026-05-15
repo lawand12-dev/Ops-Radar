@@ -1,22 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '<npm>/components/ui/button';
 import { Input } from '<npm>/components/ui/input';
 import { Label } from '<npm>/components/ui/label';
 import { Badge } from '<npm>/components/ui/badge';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '<npm>/components/ui/card';
 
 export default function OnboardCustomerPage() {
+  const router = useRouter();
+
   const [adminPassword, setAdminPassword] = useState('');
   const [email, setEmail] = useState('');
   const [n8nBaseUrl, setN8nBaseUrl] = useState('');
@@ -28,6 +23,12 @@ export default function OnboardCustomerPage() {
     | { kind: 'error'; message: string }
     | null
   >(null);
+
+  async function handleSignOut() {
+    await fetch('/api/admin-auth', { method: 'DELETE' });
+    router.replace('/admin/login');
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,76 +61,122 @@ export default function OnboardCustomerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] flex flex-col">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
 
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 px-6 pt-4">
-        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-          <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">
-                <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
-                OpsRadar
-              </Link>
-              <span className="text-[var(--color-border-strong)]">/</span>
-              <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">Admin</Link>
-              <span className="text-[var(--color-border-strong)]">/</span>
-              <span className="text-caption text-[var(--color-fg-muted)]">Onboard customer</span>
-            </div>
+      {/* ── Top nav bar ── */}
+      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+        <div className="mx-auto max-w-[1100px] px-6 h-14 flex items-center justify-between gap-6 flex-wrap">
+
+          {/* Wordmark + breadcrumb + sub-nav */}
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
+            >
+              <Image src="/logo.png" alt="OpsRadar" width={16} height={16} className="h-4 w-auto rounded-[3px]" />
+              OpsRadar
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <Link
+              href="/admin"
+              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
+            >
+              Admin
+            </Link>
+
+            {/* Sub-nav */}
+            <span className="text-[var(--color-border-strong)] text-caption ml-2">/</span>
+            <Link
+              href="/admin"
+              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)] inline-flex items-center gap-1"
+            >
+              Audits
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <Link
+              href="/admin/data"
+              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)] inline-flex items-center gap-1"
+            >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="1" y="5.5" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="1" y="10" width="10" height="1" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+              </svg>
+              Data
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <span className="text-caption text-[var(--color-fg-muted)]">Onboard customer</span>
+          </div>
+
+          {/* Right: sign out */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-px h-8 bg-[var(--color-border)]" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+            >
+              Sign out
+            </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
-      <main className="flex flex-1 items-start justify-center px-6 py-12">
-        <div className="w-full max-w-md">
+      {/* ── Page body ── */}
+      <main className="max-w-[1100px] mx-auto px-6 py-10">
 
-          {/* Page heading */}
-          <div className="mb-6">
-            <p className="text-label text-[var(--color-fg-subtle)] mb-2">Admin · Customer provisioning</p>
-            <h1 className="font-serif text-h2 text-[var(--color-fg)] leading-tight tracking-[-0.02em]">
-              Onboard customer
-            </h1>
-            <p className="mt-2 text-body-sm text-[var(--color-fg-muted)] leading-relaxed">
-              Creates the customer&apos;s Supabase account, links their automation config, and sends a magic-link invite. Atomic&nbsp;&mdash; if anything fails, the whole onboard rolls back.
-            </p>
-          </div>
+        {/* Page heading */}
+        <div className="mb-8">
+          <h1 className="font-serif text-h2 tracking-[-0.02em] text-[var(--color-fg)]">
+            Onboard customer
+          </h1>
+          <p className="mt-1.5 text-body text-[var(--color-fg-muted)]">
+            Provision a new customer account and send their magic-link invite.
+          </p>
+        </div>
 
-          <Card>
-            <CardHeader className="border-b border-[var(--color-border)] pb-4">
-              <CardTitle className="text-body font-medium">New customer details</CardTitle>
-              <CardDescription>All fields required.</CardDescription>
-            </CardHeader>
+        {/* Two-column layout: form left, context right */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_300px] gap-8 items-start">
 
-            <CardContent className="pt-5">
-              <form id="onboard-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* ── Form column ── */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8 max-w-md">
 
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="admin-password">Admin password</Label>
-                  <Input
-                    id="admin-password"
-                    type="password"
-                    required
-                    value={adminPassword}
-                    onChange={e => setAdminPassword(e.target.value)}
-                    autoComplete="current-password"
-                  />
-                </div>
+            {/* Section 1: Admin auth */}
+            <div className="flex flex-col gap-3">
+              <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Admin auth</p>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="admin-password">Admin password</Label>
+                <Input
+                  id="admin-password"
+                  type="password"
+                  required
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+              </div>
+            </div>
 
-                <div className="h-px bg-[var(--color-border)]" />
+            {/* Section 2: Customer */}
+            <div className="flex flex-col gap-3">
+              <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Customer</p>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="customer-email">Customer email</Label>
+                <Input
+                  id="customer-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="agency@example.com"
+                />
+              </div>
+            </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="customer-email">Customer email</Label>
-                  <Input
-                    id="customer-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="agency@example.com"
-                  />
-                </div>
-
+            {/* Section 3: Automation config */}
+            <div className="flex flex-col gap-3">
+              <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Automation config from chatv2</p>
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="n8n-base-url">Automation base URL</Label>
                   <Input
@@ -142,7 +189,6 @@ export default function OnboardCustomerPage() {
                     className="font-mono"
                   />
                 </div>
-
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="n8n-webhook-secret">Webhook secret</Label>
                   <Input
@@ -154,7 +200,6 @@ export default function OnboardCustomerPage() {
                     className="font-mono"
                   />
                 </div>
-
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="n8n-api-key">API key</Label>
                   <Input
@@ -166,14 +211,13 @@ export default function OnboardCustomerPage() {
                     className="font-mono"
                   />
                 </div>
+              </div>
+            </div>
 
-              </form>
-            </CardContent>
-
-            <CardFooter className="flex flex-col items-stretch gap-3 border-t border-[var(--color-border)] pt-4">
+            {/* Submit + result */}
+            <div className="flex flex-col gap-3">
               <Button
                 type="submit"
-                form="onboard-form"
                 disabled={submitting}
                 className="w-full"
               >
@@ -200,8 +244,59 @@ export default function OnboardCustomerPage() {
                   <p className="text-body-sm text-[var(--color-danger)] leading-relaxed">{result.message}</p>
                 </div>
               )}
-            </CardFooter>
-          </Card>
+            </div>
+
+          </form>
+
+          {/* ── Context panel (right column) ── */}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+            <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider mb-4">
+              What happens when you submit
+            </p>
+
+            <ol className="flex flex-col gap-4">
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] text-[var(--color-primary)] flex items-center justify-center text-caption font-bold shrink-0 mt-0.5">
+                  1
+                </span>
+                <div>
+                  <p className="text-body-sm font-medium text-[var(--color-fg)]">Create Supabase user</p>
+                  <p className="text-body-sm text-[var(--color-fg-muted)] mt-0.5">
+                    A new account is created with the customer&apos;s email.
+                  </p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] text-[var(--color-primary)] flex items-center justify-center text-caption font-bold shrink-0 mt-0.5">
+                  2
+                </span>
+                <div>
+                  <p className="text-body-sm font-medium text-[var(--color-fg)]">Link automation config</p>
+                  <p className="text-body-sm text-[var(--color-fg-muted)] mt-0.5">
+                    Their chatv2 project_id, webhook secret, and API key are encrypted and saved to <code className="text-caption font-mono">automation_config</code>.
+                  </p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] text-[var(--color-primary)] flex items-center justify-center text-caption font-bold shrink-0 mt-0.5">
+                  3
+                </span>
+                <div>
+                  <p className="text-body-sm font-medium text-[var(--color-fg)]">Send magic-link invite</p>
+                  <p className="text-body-sm text-[var(--color-fg-muted)] mt-0.5">
+                    Resend delivers a passwordless login email. They click it &rarr; land on <code className="text-caption font-mono">/dashboard</code>.
+                  </p>
+                </div>
+              </li>
+            </ol>
+
+            <div className="mt-5 pt-4 border-t border-[var(--color-border)] flex items-start gap-2">
+              <Badge variant="outline">Atomic</Badge>
+              <p className="text-caption text-[var(--color-fg-subtle)]">
+                If any step fails, the whole onboard rolls back. Nothing partial.
+              </p>
+            </div>
+          </div>
 
         </div>
       </main>
