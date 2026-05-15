@@ -48,7 +48,7 @@ function readCategory(category: string): KnowledgeChunk[] {
 
   let files: string[]
   try {
-    files = (fs.readdirSync(categoryPath, { recursive: true }) as string[])
+    files = fs.readdirSync(categoryPath, { encoding: 'utf-8' })
       .filter(f => f.endsWith('.md') || f.endsWith('.json'))
       .sort()
   } catch {
@@ -88,7 +88,7 @@ function readCategory(category: string): KnowledgeChunk[] {
 
 export async function retrieveRelevantKnowledge(
   query: string,
-  _topK: number = 15,
+  _topK: number = 15, // retained for call-site compatibility; char budget controls output size
   options: RetrievalOptions = {},
 ): Promise<KnowledgeChunk[]> {
   if (!query.trim()) return []

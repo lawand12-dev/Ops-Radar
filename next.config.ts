@@ -18,6 +18,10 @@ const csp = [
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: resolve(rootDir),
+  outputFileTracingIncludes: {
+    '/api/chat': ['./knowledge-base/**/*'],
+    '/api/generate-audit': ['./knowledge-base/**/*'],
+  },
   images: {
     domains: [],
   },
