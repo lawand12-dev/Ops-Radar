@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+env.local*
 
 # vercel
 .vercel
@@ -40,7 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# RAG research library — ingested into Supabase, not tracked in git
+# knowledge-base JSON files — workflow templates, not needed in git
 knowledge-base/*.json
 
 # superpowers workspace — local-only worktrees + brainstorm mockups

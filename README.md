@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpsRadar
+
+AI-powered operations audit tool for agencies. Users complete a multi-step questionnaire and receive a detailed automation audit with ROI calculations and implementation blueprints, powered by GPT-4o.
+
+## Stack
+
+- **Framework:** Next.js 16, React 19, TypeScript
+- **AI:** OpenAI GPT-4o (audit generation + chat)
+- **Database:** Supabase (PostgreSQL)
+- **Email:** Resend
+- **Rate limiting:** Upstash Redis
+- **Hosting:** Vercel
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd opsradar
+npm install
+npm run dev       # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copy `.env.local.example` to `.env.local` and fill in the required keys before starting.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev             # Dev server
+npm run build           # Production build
+npm run lint            # ESLint
+npm run types:supabase  # Regenerate Supabase types
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/          # Next.js App Router — pages and API routes
+  lib/          # Core logic (audit generation, knowledge retrieval, security)
+  components/   # UI components (shadcn-based + custom)
+knowledge-base/ # Static knowledge files read at audit time (no embeddings)
+docs/           # Design specs and implementation plans
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Multi-step audit questionnaire with website intelligence (SSRF-safe scraping)
+- File-based knowledge retrieval — no vector DB, no embeddings
+- Audit KB feedback loop — qualifying submissions saved to `agency_submissions` and injected into future audits
+- PDF report generation
+- Admin dashboard (password-protected)
+- Cron-based follow-up emails (daily at 10:00 UTC)
 
-## Deploy on Vercel
+## Architecture Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [CLAUDE.md](CLAUDE.md) for detailed architecture, route map, and library descriptions intended for AI coding assistants.

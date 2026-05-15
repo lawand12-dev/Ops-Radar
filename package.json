@@ -7,8 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "rag:eval": "npx tsx scripts/rag-eval.ts",
-    "types:supabase": "npx supabase gen types typescript --project-id nbdcrmepvwbfbcjqfubr --schema public > src/lib/database.types.ts"
+"types:supabase": "npx supabase gen types typescript --project-id nbdcrmepvwbfbcjqfubr --schema public > src/lib/database.types.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

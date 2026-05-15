@@ -66,7 +66,8 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 - `rate-limit.ts`, `abuse-protection.ts`, `security.ts` — Security layer (Upstash Redis rate limiting)
 - `constants.ts` — Centralized URLs and config (site URL, Calendly, contact email)
 - `funnel.ts` — Funnel analytics tracking
-- `knowledge-retrieval.ts` — Knowledge base retrieval for chat
+- `knowledge-retrieval.ts` — File-based knowledge retrieval: reads `knowledge-base/` categories matched to audit inputs, plus real agency submissions from Supabase
+- `agency-submissions.ts` — Quality filter + fire-and-forget save of qualifying audit inputs to `agency_submissions` Supabase table
 
 ### Components (`src/components/`)
 
