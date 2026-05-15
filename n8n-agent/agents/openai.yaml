@@ -1,4 +1,0 @@
-interface:
-  display_name: "n8n Agent"
-  short_description: "Monitor, generate, and repair n8n workflows"
-  default_prompt: "Use $n8n-agent to diagnose, generate, repair, or validate an n8n workflow with safe operational guardrails."
