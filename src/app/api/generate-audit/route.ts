@@ -395,7 +395,7 @@ export async function POST(request: Request) {
     }
 
     // Fire-and-forget — never block the response on KB feedback
-    saveAuditSubmission({ agencyType, teamSize, revenue, activeClients, automationWish, websiteUrl: normalizedWebsiteUrl, email })
+    saveAuditSubmission({ agencyType, teamSize, revenue, activeClients, automationWish, websiteUrl: normalizedWebsiteUrl, email, auditId: storedAuditId })
       .catch(err => console.warn('[generate-audit] saveAuditSubmission failed:', err instanceof Error ? err.message : err))
 
     // ── Pre-call briefing email ──────────────────────────────────────────

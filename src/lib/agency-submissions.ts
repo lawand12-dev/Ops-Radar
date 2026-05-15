@@ -8,6 +8,7 @@ export type AuditSubmissionInput = {
   automationWish: string | null | undefined
   websiteUrl: string | null | undefined
   email: string | null | undefined
+  auditId: string | null | undefined   // idempotency key — prevents duplicate rows on retry
 }
 
 const EMAIL_BLOCKLIST = ['test', 'example', 'mailinator', 'yopmail', 'guerrillamail', 'tempmail']
@@ -45,14 +46,18 @@ export async function saveAuditSubmission(input: AuditSubmissionInput): Promise<
   const supabase = getServerSupabaseClient()
   const { error } = await supabase
     .from('agency_submissions')
-    .insert({
-      agency_type: input.agencyType!.trim(),
-      team_size: toInt(input.teamSize),
-      revenue: input.revenue?.trim() || null,
-      active_clients: toInt(input.activeClients),
-      automation_wish: input.automationWish!.trim(),
-      website_url: input.websiteUrl?.trim() || null,
-    })
+    .upsert(
+      {
+        agency_type: input.agencyType!.trim(),
+        team_size: toInt(input.teamSize),
+        revenue: input.revenue?.trim() || null,
+        active_clients: toInt(input.activeClients),
+        automation_wish: input.automationWish!.trim(),
+        website_url: input.websiteUrl?.trim() || null,
+        audit_id: input.auditId ?? null,
+      },
+      { onConflict: 'audit_id', ignoreDuplicates: true },
+    )
 
   if (error) {
     throw new Error(`[agency-submissions] failed to save submission: ${error.message}`)

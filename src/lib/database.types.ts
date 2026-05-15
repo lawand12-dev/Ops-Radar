@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           active_clients: number | null
           agency_type: string
+          audit_id: string | null
           automation_wish: string
           created_at: string
           id: string
@@ -28,6 +29,7 @@ export type Database = {
         Insert: {
           active_clients?: number | null
           agency_type: string
+          audit_id?: string | null
           automation_wish: string
           created_at?: string
           id?: string
@@ -38,6 +40,7 @@ export type Database = {
         Update: {
           active_clients?: number | null
           agency_type?: string
+          audit_id?: string | null
           automation_wish?: string
           created_at?: string
           id?: string
