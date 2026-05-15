@@ -2,7 +2,8 @@ import fs from 'fs'
 import path from 'path'
 
 const KB_ROOT = path.join(process.cwd(), 'knowledge-base')
-const CATEGORY_CHAR_BUDGET = 4000
+const CATEGORY_CHAR_BUDGET = 10000
+const PER_FILE_CHAR_CAP = 2000
 const MAX_CATEGORIES = 3
 
 type RetrievalOptions = {
@@ -28,6 +29,9 @@ function selectCategories(agencyType?: string, automationWish?: string): string[
   if (/fail|break|abandon|stuck|error|crash|timeout/.test(pain))
     return ['n8n-troubleshooting', 'n8n-core', 'failures']
 
+  if (/hubspot|slack|stripe|airtable|google|notion|shopify|linkedin|meta|klaviyo|mailchimp/.test(pain))
+    return ['tools', 'n8n-reference', 'n8n-playbooks']
+
   if (/n8n|zapier|make|workflow|automat|integrat|trigger/.test(pain))
     return ['n8n-playbooks', 'n8n-reference', 'n8n-workflows']
 
@@ -48,8 +52,9 @@ function readCategory(category: string): KnowledgeChunk[] {
 
   let files: string[]
   try {
-    files = fs.readdirSync(categoryPath, { encoding: 'utf-8' })
+    files = (fs.readdirSync(categoryPath, { encoding: 'utf-8' }) as string[])
       .filter(f => f.endsWith('.md') || f.endsWith('.json'))
+      .filter(f => !/^[A-Z_-]+\.md$/.test(path.basename(f)))  // skip meta files like DEVELOPMENT.md
       .sort()
   } catch {
     return []
@@ -69,7 +74,7 @@ function readCategory(category: string): KnowledgeChunk[] {
     }
     if (!content) continue
 
-    const truncated = content.slice(0, remaining)
+    const truncated = content.slice(0, Math.min(remaining, PER_FILE_CHAR_CAP))
     remaining -= truncated.length
 
     chunks.push({
@@ -87,11 +92,11 @@ function readCategory(category: string): KnowledgeChunk[] {
 }
 
 export async function retrieveRelevantKnowledge(
-  query: string,
+  _query: string,
   _topK: number = 15, // retained for call-site compatibility; char budget controls output size
   options: RetrievalOptions = {},
 ): Promise<KnowledgeChunk[]> {
-  if (!query.trim()) return []
+  if (!_query.trim()) return []
 
   const categories = options.category
     ? [options.category]
