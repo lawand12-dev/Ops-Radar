@@ -4,17 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  FolderKanban,
-  CheckSquare,
-  Clock,
+  Activity,
   TrendingUp,
-  Users,
-  BarChart3,
-  UsersRound,
-  Settings,
-  ChevronDown,
   Plug,
-  ShieldCheck,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
@@ -22,47 +15,26 @@ import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
 
 type NavItem = { label: string; href: string; icon: typeof LayoutDashboard };
 type NavSection = { tag: string | null; items: NavItem[] };
+type SidebarProps = { userInitials: string; userName: string; userRole: string };
 
 const navSections: NavSection[] = [
   {
-    tag: 'BRAIN',
+    tag: null,
     items: [
-      { label: 'Dashboard', href: '/dashboard',         icon: LayoutDashboard },
-      { label: 'Reports',   href: '/dashboard/reports', icon: BarChart3       },
-    ],
-  },
-  {
-    tag: 'OPERATE',
-    items: [
-      { label: 'Projects',      href: '/dashboard/projects',      icon: FolderKanban },
-      { label: 'Tasks',         href: '/dashboard/tasks',         icon: CheckSquare  },
-      { label: 'Time tracking', href: '/dashboard/time-tracking', icon: Clock        },
-    ],
-  },
-  {
-    tag: 'OBSERVE',
-    items: [
-      { label: 'Financials', href: '/dashboard/financials', icon: TrendingUp },
-      { label: 'Clients',    href: '/dashboard/clients',    icon: Users      },
-    ],
-  },
-  {
-    tag: 'GUARD',
-    items: [
-      { label: 'Workflow Health', href: '/dashboard/workflow-health', icon: ShieldCheck },
+      { label: 'Overview',     href: '/dashboard',             icon: LayoutDashboard },
+      { label: 'Automations',  href: '/dashboard/automations', icon: Activity        },
+      { label: 'Business',     href: '/dashboard/business',    icon: TrendingUp      },
     ],
   },
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Team',         href: '/dashboard/team',                  icon: UsersRound },
-      { label: 'Integrations', href: '/dashboard/settings/integrations', icon: Plug       },
-      { label: 'Settings',     href: '/dashboard/settings',              icon: Settings   },
+      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
     ],
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -118,11 +90,11 @@ export function Sidebar() {
           className="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-sunken)] px-2.5 py-2 transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
         >
           <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-accent-400)] to-[var(--color-accent-600)] text-[12px] font-bold tracking-[0.5px] text-white">
-            AK
+            {userInitials}
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <div className="truncate text-body-sm font-semibold text-[var(--color-fg)]">Alex Kim</div>
-            <div className="text-caption text-[var(--color-fg-subtle)]">Agency owner</div>
+            <div className="truncate text-body-sm font-semibold text-[var(--color-fg)]">{userName}</div>
+            <div className="text-caption text-[var(--color-fg-subtle)]">{userRole}</div>
           </div>
           <ChevronDown size={13} className="text-[var(--color-fg-faint)]" />
         </button>

@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
   images: {
     domains: [],
   },
+  async redirects() {
+    return [
+      { source: '/dashboard/settings/integrations', destination: '/dashboard/integrations', permanent: true },
+      { source: '/dashboard/workflow-health',       destination: '/dashboard/automations',  permanent: true },
+      { source: '/dashboard/clients',               destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/financials',            destination: '/dashboard/business',     permanent: true },
+      { source: '/dashboard/projects',              destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/reports',               destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/tasks',                 destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/team',                  destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/time-tracking',         destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/settings',              destination: '/dashboard/integrations', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {
