@@ -28,6 +28,7 @@ import {
   retrieveRelevantKnowledge,
   formatKnowledgeContext,
 } from '../../../lib/knowledge-retrieval'
+import { saveAuditSubmission } from '../../../lib/agency-submissions'
 import { Resend } from 'resend'
 import { buildNewAuditNotification } from '../../../lib/emails/new-audit-notification'
 import { generateDraftResponse } from '../../../lib/draft-response'
@@ -392,6 +393,10 @@ export async function POST(request: Request) {
     } else {
       console.error('[generate-audit] missing server Supabase configuration')
     }
+
+    // Fire-and-forget — never block the response on KB feedback
+    saveAuditSubmission({ agencyType, teamSize, revenue, activeClients, automationWish, websiteUrl: normalizedWebsiteUrl, email })
+      .catch(err => console.warn('[generate-audit] saveAuditSubmission failed:', err instanceof Error ? err.message : err))
 
     // ── Pre-call briefing email ──────────────────────────────────────────
     if (storedAuditId && accessToken) {
