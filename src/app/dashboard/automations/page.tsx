@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { NarrativeCard } from '../_components/narrative-card';
-import { OPERATOR_RATE_USD_PER_HOUR } from '<npm>/lib/dashboard-alert-rules';
 import { EmptyStateConnect } from '../_components/empty-state-connect';
 
 // Real shape from /api/dashboard/automation-roi
@@ -289,7 +288,7 @@ function Leaderboard() {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              {['Workflow', 'Runs', 'Success', '$ saved', 'Status'].map((h) => (
+              {['Workflow', 'Runs', 'Success', 'Status'].map((h) => (
                 <th
                   key={h}
                   className="border-b border-[var(--color-border)] pb-2 text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]"
@@ -302,7 +301,6 @@ function Leaderboard() {
           <tbody>
             {rows.map((r) => {
               // $ saved: proportional to run count × rate (no per-workflow hours data available)
-              const dollars = r.runs_7d * OPERATOR_RATE_USD_PER_HOUR * (5 / 60); // ~5min per exec assumption
               const pillCls =
                 r.status === 'healthy'
                   ? 'bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-[var(--color-success)]'
@@ -324,9 +322,6 @@ function Leaderboard() {
                   </td>
                   <td className="py-2 text-[12.5px] text-[var(--color-fg-muted)]">
                     {r.success_pct.toFixed(1)}%
-                  </td>
-                  <td className="py-2 text-[12.5px] font-semibold text-[var(--color-fg)]">
-                    ${Math.round(dollars).toLocaleString()}
                   </td>
                   <td className="py-2">
                     <span

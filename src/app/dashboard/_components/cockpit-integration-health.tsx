@@ -47,8 +47,9 @@ export function CockpitIntegrationHealth() {
         for (const row of json.connected ?? []) {
           if (!row.tool) continue;
           const slug = row.tool.toLowerCase();
+          const canonicalTool = SLOTS.find((s) => s.slug === slug)?.tool ?? row.tool;
           bySlug.set(slug, {
-            tool: row.tool,
+            tool: canonicalTool,
             slug,
             status: toIntegrationStatus(row.status),
             last_synced_at: row.last_synced_at ?? null,
