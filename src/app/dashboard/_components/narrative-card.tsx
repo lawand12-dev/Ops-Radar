@@ -55,13 +55,13 @@ export function NarrativeCard({ section, persona = 'both', title, className = ''
 
   return (
     <div
-      className={`rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 ${className}`}
+      className={`rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)] ${className}`}
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+        <h3 className="text-label text-[var(--color-fg-muted)]">
           {title}
         </h3>
-        <span className="inline-flex items-center gap-1 rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--color-primary)]">
+        <span className="inline-flex items-center gap-1 rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-1.5 py-0.5 text-label text-[var(--color-primary)]">
           <Sparkles size={9} strokeWidth={2} />
           AI · hourly
         </span>
@@ -69,7 +69,7 @@ export function NarrativeCard({ section, persona = 'both', title, className = ''
       {loading ? (
         <p className="text-body-sm text-[var(--color-fg-subtle)]">Generating briefing…</p>
       ) : body ? (
-        <p className="whitespace-pre-line text-[13.5px] leading-[1.55] text-[var(--color-fg-muted)]">
+        <p className="whitespace-pre-line text-body leading-[1.55] text-[var(--color-fg-muted)]">
           {body}
         </p>
       ) : (

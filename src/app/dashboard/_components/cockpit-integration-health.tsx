@@ -68,7 +68,7 @@ export function CockpitIntegrationHealth() {
   if (data === null) {
     return (
       <div
-        className="grid grid-cols-6 gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
+        className="grid grid-cols-6 gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-xs)]"
         aria-hidden
       >
         {SLOTS.map((s) => (
@@ -79,7 +79,7 @@ export function CockpitIntegrationHealth() {
   }
 
   return (
-    <div className="grid grid-cols-6 gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+    <div className="grid grid-cols-6 gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-xs)]">
       {data.map((i) => (
         <Cell key={i.slug} integration={i} />
       ))}
@@ -99,19 +99,19 @@ function Cell({ integration: i }: { integration: Integration }) {
     i.status === 'not_connected' ? (
       <Link
         href={`/dashboard/integrations?tool=${i.slug}`}
-        className="text-[10px] text-[var(--color-primary)] no-underline hover:underline"
+        className="text-caption text-[var(--color-primary)] no-underline hover:underline"
       >
         connect →
       </Link>
     ) : (
-      <span className="text-[10px] text-[var(--color-fg-subtle)]">{humanizeSince(i.last_synced_at)}</span>
+      <span className="text-caption text-[var(--color-fg-subtle)]">{humanizeSince(i.last_synced_at)}</span>
     );
 
   return (
     <div className="flex items-center gap-2">
       <span className={`block size-2 shrink-0 rounded-full ${dotClass}`} />
       <span
-        className={`text-[12.5px] font-medium ${
+        className={`text-body-sm font-medium ${
           i.status === 'not_connected' ? 'text-[var(--color-fg-subtle)]' : 'text-[var(--color-fg)]'
         }`}
       >

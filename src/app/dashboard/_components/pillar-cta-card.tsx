@@ -21,23 +21,23 @@ export function PillarCtaCard({ title, persona, href, stats, cta }: PillarCtaCar
   return (
     <Link
       href={href}
-      className="block rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 no-underline transition-colors hover:border-[color-mix(in_srgb,var(--color-primary)_30%,var(--color-border))]"
+      className="block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 no-underline shadow-[var(--shadow-xs)] transition-colors hover:border-[color-mix(in_srgb,var(--color-primary)_30%,var(--color-border))]"
     >
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-[13.5px] font-semibold text-[var(--color-fg)]">{title}</h2>
-        <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--color-primary)]">
+        <h2 className="text-h4 font-medium text-[var(--color-fg)]">{title}</h2>
+        <span className="text-label text-[var(--color-primary)]">
           {persona}
         </span>
       </div>
       <div className="mb-3 grid grid-cols-3 gap-2">
         {stats.map((s, i) => (
           <div key={i}>
-            <div className="text-[15px] font-semibold text-[var(--color-fg)]">{s.value}</div>
-            <div className="text-[9px] uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">{s.label}</div>
+            <div className="text-h4 font-medium text-[var(--color-fg)]">{s.value}</div>
+            <div className="text-label text-[var(--color-fg-subtle)]">{s.label}</div>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-1 text-[11px] font-medium text-[var(--color-primary)]">
+      <div className="flex items-center gap-1 text-body-sm font-medium text-[var(--color-primary)]">
         <span>{cta}</span>
         <ArrowUpRight size={11} strokeWidth={2} />
       </div>

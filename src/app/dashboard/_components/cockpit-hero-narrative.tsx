@@ -37,22 +37,22 @@ function HeroCard() {
   const usd = typeof hours === 'number' ? hours * OPERATOR_RATE_USD_PER_HOUR : null;
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-sunken)] p-5">
-      <div className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-[var(--color-fg-subtle)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-sunken)] p-5 shadow-[var(--shadow-xs)]">
+      <div className="text-label text-[var(--color-fg-subtle)]">
         Estimated savings · cumulative
       </div>
       {data === null ? (
         <div className="mt-2 h-12 w-48 animate-pulse rounded bg-[var(--color-surface-sunken)]" aria-hidden />
       ) : usd === null ? (
-        <div className="mt-2 text-[13px] text-[var(--color-fg-subtle)]">
+        <div className="mt-2 text-body text-[var(--color-fg-subtle)]">
           No automation data yet — connect n8n via your account manager.
         </div>
       ) : (
         <>
-          <div className="mt-2 text-[48px] font-bold leading-none tracking-[-0.03em] text-[var(--color-fg)]">
+          <div className="mt-2 text-display font-serif text-[var(--color-fg)]">
             ${usd.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
-          <div className="mt-2 text-[12.5px] text-[var(--color-success)]">
+          <div className="mt-2 text-body-sm text-[var(--color-success)]">
             {Math.round(hours ?? 0)} hours automated · workflows carrying their weight
           </div>
         </>

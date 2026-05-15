@@ -67,11 +67,11 @@ export default function BusinessPage() {
 function Topbar() {
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-      <div className="text-[12.5px] text-[var(--color-fg-muted)]">
+      <div className="text-body-sm text-[var(--color-fg-muted)]">
         Dashboard /{' '}
         <span className="font-semibold text-[var(--color-fg)]">Business</span>
       </div>
-      <span className="inline-flex items-center gap-1.5 text-[10.5px] text-[var(--color-fg-subtle)]">
+      <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
         <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
         Live
       </span>
@@ -119,11 +119,11 @@ function Kpis() {
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
-      <div className="mb-1.5 text-[9.5px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
+      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">
         {label}
       </div>
-      <div className="text-[20px] font-bold leading-none tracking-[-0.02em] text-[var(--color-fg)]">
+      <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">
         {value}
       </div>
     </div>
@@ -152,8 +152,8 @@ function BusinessAlerts() {
     .slice(0, 5);
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
         Current alerts
       </h3>
       {resp === null ? (
@@ -165,7 +165,7 @@ function BusinessAlerts() {
           {items.map((a) => (
             <li
               key={a.id}
-              className="border-b border-[var(--color-border)] py-1.5 text-[12.5px] text-[var(--color-fg-muted)] last:border-b-0"
+              className="border-b border-[var(--color-border)] py-1.5 text-body-sm text-[var(--color-fg-muted)] last:border-b-0"
             >
               <span className="font-semibold text-[var(--color-fg)]">{a.label}:</span> {a.message}
             </li>
@@ -374,8 +374,8 @@ function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnect
   }, [endpoint, statusKey]);
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
         {title}
       </h3>
       {state === 'loading' ? (
@@ -396,8 +396,8 @@ function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnect
 function StatMini({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[15px] font-semibold text-[var(--color-fg)]">{value}</div>
-      <div className="text-[9px] uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">{label}</div>
+      <div className="text-h4 font-medium text-[var(--color-fg)]">{value}</div>
+      <div className="text-label text-[var(--color-fg-subtle)]">{label}</div>
     </div>
   );
 }

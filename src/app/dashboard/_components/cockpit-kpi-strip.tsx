@@ -71,8 +71,8 @@ function KpiCard({ label, loader, tool, toolSlug }: {
   }
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
-      <div className="mb-1.5 text-[9.5px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
+      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">
         {label}
       </div>
       {state.kind === 'loading' ? (
@@ -83,11 +83,11 @@ function KpiCard({ label, loader, tool, toolSlug }: {
         <div className="text-body-sm text-[var(--color-fg-subtle)]">Couldn&apos;t reach {state.source}</div>
       ) : (
         <>
-          <div className="text-[20px] font-bold leading-none tracking-[-0.02em] text-[var(--color-fg)]">
+          <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">
             {state.value}
           </div>
           {state.delta && (
-            <div className={`mt-1.5 text-[10.5px] ${state.deltaUp ? 'text-[var(--color-success)]' : 'text-[var(--color-warn)]'}`}>
+            <div className={`mt-1.5 text-body-sm ${state.deltaUp ? 'text-[var(--color-success)]' : 'text-[var(--color-warn)]'}`}>
               {state.delta}
             </div>
           )}

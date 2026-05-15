@@ -26,14 +26,14 @@ export function CockpitActivityFeed() {
   }, []);
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
         Recent activity · cross-pillar
       </h3>
       {events === null ? (
         <FeedSkeleton />
       ) : events.length === 0 ? (
-        <p className="text-[13px] text-[var(--color-fg-subtle)]">
+        <p className="text-body text-[var(--color-fg-subtle)]">
           No recent activity in the last 24 hours.
         </p>
       ) : (
@@ -43,14 +43,14 @@ export function CockpitActivityFeed() {
               key={`${e.type}-${e.timestamp}-${i}`}
               className="flex items-center gap-3 border-b border-[var(--color-border)] py-2 last:border-b-0"
             >
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[11px] text-[var(--color-fg-muted)]">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-body-sm text-[var(--color-fg-muted)]">
                 {e.icon}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[12.5px] text-[var(--color-fg-muted)]">
+              <span className="min-w-0 flex-1 truncate text-body-sm text-[var(--color-fg-muted)]">
                 <strong className="font-semibold text-[var(--color-fg)]">{e.entity_label}</strong>
                 <span className="ml-1.5 text-[var(--color-fg-muted)]">&middot; {e.message}</span>
               </span>
-              <span className="shrink-0 text-[10.5px] text-[var(--color-fg-subtle)]">
+              <span className="shrink-0 text-caption text-[var(--color-fg-subtle)]">
                 {humanizeSince(e.timestamp)}
               </span>
             </li>

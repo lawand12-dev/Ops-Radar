@@ -27,7 +27,7 @@ export function WidgetFallback({ source, onRetry, stale, className = '' }: Widge
   if (stale) {
     const elapsed = humanizeSince(new Date(stale.lastSyncedAt));
     return (
-      <div className={`mt-2 inline-flex items-center gap-1.5 text-[10.5px] text-[var(--color-fg-subtle)] ${className}`}>
+      <div className={`mt-2 inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)] ${className}`}>
         <RefreshCw size={10} strokeWidth={1.6} className="animate-spin-slow" />
         <span>Last synced {elapsed} ago · retrying</span>
       </div>
@@ -35,11 +35,11 @@ export function WidgetFallback({ source, onRetry, stale, className = '' }: Widge
   }
   return (
     <div
-      className={`flex flex-col items-start gap-2.5 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]/40 p-4 ${className}`}
+      className={`flex flex-col items-start gap-2.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-sunken)]/40 p-4 ${className}`}
     >
       <div className="flex items-center gap-2 text-[var(--color-warn)]">
         <AlertTriangle size={14} strokeWidth={1.8} />
-        <span className="text-[11px] font-medium uppercase tracking-[0.06em]">
+        <span className="text-label text-[var(--color-warn)]">
           Temporary issue
         </span>
       </div>
@@ -50,7 +50,7 @@ export function WidgetFallback({ source, onRetry, stale, className = '' }: Widge
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--color-fg)] transition-colors hover:bg-[var(--color-surface-sunken)]"
+          className="inline-flex items-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-body-sm font-medium text-[var(--color-fg)] transition-colors hover:bg-[var(--color-surface-sunken)]"
         >
           <RefreshCw size={11} strokeWidth={1.8} />
           Retry now

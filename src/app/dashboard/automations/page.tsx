@@ -72,11 +72,11 @@ export default function AutomationsPage() {
 function Topbar() {
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-      <div className="text-[12.5px] text-[var(--color-fg-muted)]">
+      <div className="text-body-sm text-[var(--color-fg-muted)]">
         Dashboard /{' '}
         <span className="font-semibold text-[var(--color-fg)]">Automations</span>
       </div>
-      <span className="inline-flex items-center gap-1.5 text-[10.5px] text-[var(--color-fg-subtle)]">
+      <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
         <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
         Live
       </span>
@@ -137,11 +137,11 @@ function Kpis() {
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
-      <div className="mb-1.5 text-[9.5px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
+      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">
         {label}
       </div>
-      <div className="text-[20px] font-bold leading-none tracking-[-0.02em] text-[var(--color-fg)]">
+      <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">
         {value}
       </div>
     </div>
@@ -196,8 +196,8 @@ function IncidentsPanel() {
   }, []);
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
         Recent incidents
       </h3>
       {items === null ? (
@@ -211,11 +211,11 @@ function IncidentsPanel() {
               key={idx}
               className="flex items-center gap-3 border-b border-[var(--color-border)] py-1.5 last:border-b-0"
             >
-              <span className="flex-1 text-[12.5px] text-[var(--color-fg-muted)]">
+              <span className="flex-1 text-body-sm text-[var(--color-fg-muted)]">
                 {incident.message}
               </span>
               <span
-                className={`rounded-[3px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${
+                className={`rounded-[3px] px-1.5 py-0.5 text-label ${
                   incident.recovered
                     ? 'bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-[var(--color-success)]'
                     : 'bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-[var(--color-danger)]'
@@ -276,8 +276,8 @@ function Leaderboard() {
   }
 
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--color-fg-muted)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
         Workflow leaderboard · last 7d
       </h3>
       {rows === null ? (
@@ -291,7 +291,7 @@ function Leaderboard() {
               {['Workflow', 'Runs', 'Success', 'Status'].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-[var(--color-border)] pb-2 text-left text-[10px] font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]"
+                  className="border-b border-[var(--color-border)] pb-2 text-left text-label text-[var(--color-fg-subtle)]"
                 >
                   {h}
                 </th>
@@ -317,15 +317,15 @@ function Leaderboard() {
                   <td className="py-2 text-body-sm font-medium text-[var(--color-fg)]">
                     {r.name}
                   </td>
-                  <td className="py-2 text-[12.5px] text-[var(--color-fg-muted)]">
+                  <td className="py-2 text-body-sm text-[var(--color-fg-muted)]">
                     {r.runs_7d.toLocaleString()}
                   </td>
-                  <td className="py-2 text-[12.5px] text-[var(--color-fg-muted)]">
+                  <td className="py-2 text-body-sm text-[var(--color-fg-muted)]">
                     {r.success_pct.toFixed(1)}%
                   </td>
                   <td className="py-2">
                     <span
-                      className={`rounded-[3px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${pillCls}`}
+                      className={`rounded-[3px] px-1.5 py-0.5 text-label ${pillCls}`}
                     >
                       {r.status}
                     </span>

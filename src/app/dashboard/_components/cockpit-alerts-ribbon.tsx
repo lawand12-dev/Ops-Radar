@@ -40,7 +40,7 @@ export function CockpitAlertsRibbon() {
   if (alerts === null) {
     // Render skeleton so the layout doesn&apos;t jump
     return <div className="grid grid-cols-3 gap-2" aria-hidden>
-      {[0, 1, 2].map((i) => <div key={i} className="h-[60px] animate-pulse rounded-[var(--radius)] bg-[var(--color-surface-sunken)]" />)}
+      {[0, 1, 2].map((i) => <div key={i} className="h-[60px] animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-surface-sunken)]" />)}
     </div>;
   }
 
@@ -54,12 +54,12 @@ export function CockpitAlertsRibbon() {
           <Link
             key={a.id}
             href={a.href}
-            className={`flex flex-col gap-1 rounded-[var(--radius)] border border-[var(--color-border)] border-l-2 ${s.border} bg-[var(--color-surface)] p-3 no-underline transition-colors hover:bg-[var(--color-surface-sunken)]`}
+            className={`flex flex-col gap-1 rounded-[var(--radius-lg)] border border-[var(--color-border)] border-l-2 ${s.border} bg-[var(--color-surface)] p-3 no-underline shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--color-surface-sunken)]`}
           >
-            <span className={`inline-block w-fit rounded-[3px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${s.tagBg} ${s.tagFg}`}>
+            <span className={`inline-block w-fit rounded-[3px] px-1.5 py-0.5 text-label ${s.tagBg} ${s.tagFg}`}>
               {a.label}
             </span>
-            <span className="text-[12.5px] leading-snug text-[var(--color-fg-muted)]">{a.message}</span>
+            <span className="text-body-sm leading-snug text-[var(--color-fg-muted)]">{a.message}</span>
           </Link>
         );
       })}

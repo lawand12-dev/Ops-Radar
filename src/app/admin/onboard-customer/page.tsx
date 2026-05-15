@@ -91,8 +91,7 @@ export default function OnboardCustomerPage() {
               Onboard customer
             </h1>
             <p className="mt-2 text-body-sm text-[var(--color-fg-muted)] leading-relaxed">
-              Creates a Supabase user, inserts their automation config row,
-              and sends a magic-link invite. Atomic&nbsp;&mdash; if either step fails, the user is rolled back.
+              Creates the customer&apos;s Supabase account, links their automation config, and sends a magic-link invite. Atomic&nbsp;&mdash; if anything fails, the whole onboard rolls back.
             </p>
           </div>
 
@@ -182,7 +181,7 @@ export default function OnboardCustomerPage() {
               </Button>
 
               {result?.kind === 'success' && (
-                <div className="rounded-[var(--radius-md)] border border-[var(--color-success)]/30 bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-3.5 py-3">
+                <div className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/30 bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-4 py-3.5">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="success" dot>Onboarded</Badge>
                   </div>
@@ -194,7 +193,7 @@ export default function OnboardCustomerPage() {
               )}
 
               {result?.kind === 'error' && (
-                <div className="rounded-[var(--radius-md)] border border-[var(--color-danger)]/30 bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-3.5 py-3">
+                <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-4 py-3.5">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="destructive" dot>Error</Badge>
                   </div>

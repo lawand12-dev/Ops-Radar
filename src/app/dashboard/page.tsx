@@ -33,7 +33,7 @@ export default function DashboardPage() {
 function Topbar() {
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-      <h1 className="text-[14px] font-medium text-[var(--color-fg)]">Overview</h1>
+      <h1 className="text-body font-medium text-[var(--color-fg)]">Overview</h1>
       <LiveIndicator />
     </div>
   );
@@ -49,7 +49,7 @@ function LiveIndicator() {
   // This indicator is just the cockpit heartbeat.
   void tick;
   return (
-    <span className="inline-flex items-center gap-1.5 text-[10.5px] text-[var(--color-fg-subtle)]">
+    <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
       <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
       Live
     </span>
@@ -62,8 +62,8 @@ function Greeting({ greeting }: { greeting: string }) {
   const week = isoWeek(today);
   return (
     <div className="flex items-baseline justify-between">
-      <h2 className="font-serif text-[22px] tracking-[-0.01em] text-[var(--color-fg)]">{greeting}</h2>
-      <span className="text-[12px] text-[var(--color-fg-subtle)]">{dateStr} · Week {week}</span>
+      <h2 className="font-serif text-h2 text-[var(--color-fg)]">{greeting}</h2>
+      <span className="text-body-sm text-[var(--color-fg-subtle)]">{dateStr} · Week {week}</span>
     </div>
   );
 }
