@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import {
   ADMIN_SESSION_COOKIE,
   isValidAdminSessionToken,
@@ -41,53 +41,49 @@ export async function proxy(request: NextRequest) {
   // /dashboard/* (pages) and /api/dashboard/* (data endpoints) — both gated
   // by the Supabase customer session cookie. Pages redirect to /login on
   // failure; API routes return 401 JSON so client fetches handle it cleanly.
+  // Fail-closed: missing env vars never let a request through unauthed.
+  // No DEV_CLIENT_ID bypass — gate requires a real session in every env (spec §8).
+  // DEV_CLIENT_ID still works inside API routes via getCurrentUserId().
   const isDashboardPage = pathname.startsWith('/dashboard')
   const isDashboardApi = pathname.startsWith('/api/dashboard')
   if (isDashboardPage || isDashboardApi) {
-    const res = NextResponse.next()
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // Missing env vars in dev → skip the guard so the DEV_CLIENT_ID
-    // fallback handles auth-context routes.
-    if (!url || !key) return withTheme(res, pathname)
+    if (!url || !key) {
+      console.error('[proxy] missing Supabase env, redirecting to /login')
+      return withTheme(redirectToLogin(request), pathname)
+    }
 
+    const res = NextResponse.next({ request })
     const supabase = createServerClient(url, key, {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            res.cookies.set(name, value, options)
+            request.cookies.set({ name, value, ...options })
+            res.cookies.set({ name, value, ...options })
           })
         },
       },
     })
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    // Dev fallback: no real session AND DEV_CLIENT_ID set → allow through.
-    // Hard-gated to non-production. A leaked DEV_CLIENT_ID env var must NEVER
-    // turn the dashboard into an open route in prod.
-    if (!user && process.env.NODE_ENV !== 'production' && process.env.DEV_CLIENT_ID) {
-      return withTheme(res, pathname)
-    }
-
-    if (!user) {
+    try {
+      const { data, error } = await supabase.auth.getUser()
+      if (error || !data.user) {
+        if (isDashboardApi) {
+          return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname)
+        }
+        return withTheme(redirectToLogin(request), pathname)
+      }
+    } catch (err) {
+      console.warn('[proxy] auth check threw, fail-closed:', err)
       if (isDashboardApi) {
         return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname)
       }
-      const target = request.nextUrl.clone()
-      target.pathname = '/login'
-      target.searchParams.set(
-        'redirectTo',
-        request.nextUrl.pathname + request.nextUrl.search,
-      )
-      return withTheme(NextResponse.redirect(target), pathname)
+      return withTheme(redirectToLogin(request), pathname)
     }
 
     return withTheme(res, pathname)
@@ -101,4 +97,13 @@ export const config = {
     // Match all routes except: _next, static files, common assets
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|otf|eot|map)$).*)',
   ],
+}
+
+function redirectToLogin(request: NextRequest) {
+  const redirectUrl = new URL('/login', request.url)
+  redirectUrl.searchParams.set(
+    'redirectTo',
+    request.nextUrl.pathname + request.nextUrl.search,
+  )
+  return NextResponse.redirect(redirectUrl)
 }
