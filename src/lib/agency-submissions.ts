@@ -14,9 +14,9 @@ const EMAIL_BLOCKLIST = ['test', 'example', 'mailinator', 'yopmail', 'guerrillam
 const BLOCKED_WEBSITE_PATTERNS = ['localhost', 'example.com', '127.0.0.1']
 
 function toInt(value: string | number | null | undefined): number | null {
-  if (typeof value === 'number') return isNaN(value) ? null : Math.floor(value)
-  const parsed = parseInt(String(value ?? ''), 10)
-  return isNaN(parsed) ? null : parsed
+  if (value === null || value === undefined || value === '') return null
+  const numeric = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(numeric) ? Math.floor(numeric) : null
 }
 
 export function passesQualityFilter(input: AuditSubmissionInput): boolean {
@@ -43,11 +43,7 @@ export async function saveAuditSubmission(input: AuditSubmissionInput): Promise<
   if (!hasServerSupabaseClient()) return
 
   const supabase = getServerSupabaseClient()
-  const { error } = await (supabase as unknown as {
-    from: (table: string) => {
-      insert: (row: Record<string, unknown>) => Promise<{ error: { message: string } | null }>
-    }
-  })
+  const { error } = await supabase
     .from('agency_submissions')
     .insert({
       agency_type: input.agencyType!.trim(),
@@ -59,6 +55,6 @@ export async function saveAuditSubmission(input: AuditSubmissionInput): Promise<
     })
 
   if (error) {
-    console.warn('[agency-submissions] failed to save submission:', error.message)
+    throw new Error(`[agency-submissions] failed to save submission: ${error.message}`)
   }
 }

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_submissions: {
+        Row: {
+          active_clients: number | null
+          agency_type: string
+          automation_wish: string
+          created_at: string
+          id: string
+          revenue: string | null
+          team_size: number | null
+          website_url: string | null
+        }
+        Insert: {
+          active_clients?: number | null
+          agency_type: string
+          automation_wish: string
+          created_at?: string
+          id?: string
+          revenue?: string | null
+          team_size?: number | null
+          website_url?: string | null
+        }
+        Update: {
+          active_clients?: number | null
+          agency_type?: string
+          automation_wish?: string
+          created_at?: string
+          id?: string
+          revenue?: string | null
+          team_size?: number | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       audit_events: {
         Row: {
           audit_id: string | null
@@ -435,45 +468,6 @@ export type Database = {
         }
         Relationships: []
       }
-      knowledge_base: {
-        Row: {
-          category: string | null
-          content: string
-          created_at: string
-          embedding: string | null
-          id: string
-          links: string[] | null
-          metadata: Json | null
-          slug: string | null
-          source_file: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string | null
-          content: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          links?: string[] | null
-          metadata?: Json | null
-          slug?: string | null
-          source_file: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string | null
-          content?: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          links?: string[] | null
-          metadata?: Json | null
-          slug?: string | null
-          source_file?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       quick_win_onboarding_requests: {
         Row: {
           created_at: string | null
@@ -586,38 +580,7 @@ export type Database = {
       }
     }
     Functions: {
-      match_knowledge_base:
-        | {
-            Args: {
-              match_count?: number
-              match_threshold?: number
-              query_embedding: string
-            }
-            Returns: {
-              content: string
-              id: string
-              metadata: Json
-              similarity: number
-              source_file: string
-            }[]
-          }
-        | {
-            Args: {
-              filter_category?: string
-              match_count?: number
-              match_threshold?: number
-              query_embedding: string
-            }
-            Returns: {
-              category: string
-              content: string
-              id: string
-              metadata: Json
-              similarity: number
-              slug: string
-              source_file: string
-            }[]
-          }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
