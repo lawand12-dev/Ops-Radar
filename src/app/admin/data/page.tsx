@@ -650,42 +650,43 @@ export default function AdminDataPage() {
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 px-6 pt-4">
-        <div className="mx-auto max-w-[1100px] rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 p-2 shadow-[0_24px_90px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-          <div className="flex flex-col gap-3 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Link href="/" className="flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">
-                  <Image src="/logo.png" alt="OpsRadar" width={18} height={18} className="h-[18px] w-auto rounded-[4px]" />
-                  OpsRadar
-                </Link>
-                <span className="text-[var(--color-border-strong)]">/</span>
-                <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] transition-colors">Admin</Link>
-                <span className="text-[var(--color-border-strong)]">/</span>
-                <span className="text-caption text-[var(--color-fg-muted)]">Data</span>
-              </div>
-              <h1 className="font-serif text-h3 font-medium tracking-[-0.015em]">Data Management</h1>
-            </div>
+      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+        <div className="mx-auto max-w-[1100px] px-6 h-14 flex items-center justify-between gap-6">
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadAll}
-              >
-                Refresh
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </Button>
+          {/* Left: wordmark + breadcrumb + sub-nav */}
+          <div className="flex items-center gap-2 min-w-0">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
+              <Image src="/logo.png" alt="OpsRadar" width={16} height={16} className="h-4 w-auto rounded-[3px]" />
+              OpsRadar
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <span className="text-caption text-[var(--color-fg-muted)]">Admin</span>
+            <span className="text-[var(--color-border-strong)] text-caption ml-2">/</span>
+            <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
+              Audits
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <Link href="/admin/onboard-customer" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
+              Onboard
+            </Link>
+            <span className="text-[var(--color-border-strong)] text-caption">/</span>
+            <span className="text-caption text-[var(--color-fg-muted)]">Data</span>
+          </div>
+
+          {/* Right: KPI strip + sign out */}
+          <div className="flex items-center gap-5 shrink-0">
+            {/* Total rows KPI */}
+            <div className="text-right hidden sm:block">
+              <p className="text-label text-[var(--color-fg-subtle)]">Total Rows</p>
+              <p className="font-mono text-h4 font-bold leading-tight text-[var(--color-primary)] tabular-nums">
+                {audits.length + chats.length + builds.length}
+              </p>
             </div>
+            <div className="w-px h-8 bg-[var(--color-border)]" />
+            <Button variant="outline" size="sm" onClick={handleSignOut}>Sign out</Button>
           </div>
         </div>
-      </div>
+      </header>
 
       <main className="max-w-[1100px] mx-auto px-6 py-8 space-y-10">
 
