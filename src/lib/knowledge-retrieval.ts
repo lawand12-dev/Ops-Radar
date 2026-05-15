@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { getServerSupabaseClient, hasServerSupabaseClient } from './supabase-server'
 
 const KB_ROOT = path.join(process.cwd(), 'knowledge-base')
 const CATEGORY_CHAR_BUDGET = 10000
@@ -91,6 +92,39 @@ function readCategory(category: string): KnowledgeChunk[] {
   return chunks
 }
 
+async function fetchSubmissionChunks(agencyType: string): Promise<KnowledgeChunk[]> {
+  if (!agencyType.trim() || !hasServerSupabaseClient()) return []
+  try {
+    const supabase = getServerSupabaseClient()
+    const { data, error } = await supabase
+      .from('agency_submissions')
+      .select('id, agency_type, team_size, revenue, active_clients, automation_wish')
+      .ilike('agency_type', `%${agencyType.trim()}%`)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (error || !data) return []
+
+    return data.map(row => ({
+      id: row.id,
+      slug: null,
+      sourceFile: 'agency_submissions',
+      category: 'real-submissions',
+      content: [
+        `Real agency: ${row.agency_type}`,
+        row.team_size != null ? `${row.team_size} people` : '',
+        row.revenue ? `${row.revenue} revenue` : '',
+        row.active_clients != null ? `${row.active_clients} active clients` : '',
+        `Main automation need: ${row.automation_wish}`,
+      ].filter(Boolean).join(', '),
+      similarity: 1.0,
+      metadata: { retrieval_source: 'supabase-submissions' },
+    }))
+  } catch {
+    return []
+  }
+}
+
 export async function retrieveRelevantKnowledge(
   _query: string,
   _topK: number = 15, // retained for call-site compatibility; char budget controls output size
@@ -102,7 +136,9 @@ export async function retrieveRelevantKnowledge(
     ? [options.category]
     : selectCategories(options.agencyType, options.automationWish).slice(0, MAX_CATEGORIES)
 
-  return categories.flatMap(cat => readCategory(cat))
+  const fileChunks = categories.flatMap(cat => readCategory(cat))
+  const submissionChunks = await fetchSubmissionChunks(options.agencyType ?? '')
+  return [...fileChunks, ...submissionChunks]
 }
 
 export function formatKnowledgeContext(chunks: KnowledgeChunk[]): string {
