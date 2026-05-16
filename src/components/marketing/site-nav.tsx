@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "<npm>/lib/utils";
 import { Button } from "<npm>/components/ui/button";
+import { SiteThemeToggle } from "<npm>/components/marketing/site-theme-toggle";
 import { Menu, X } from "lucide-react";
 
 export type NavLink = { label: string; href: string };
@@ -85,6 +86,7 @@ export function SiteNav({
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <SiteThemeToggle />
           <Link
             href="/login"
             className="text-body-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] transition-colors"
@@ -125,7 +127,11 @@ export function SiteNav({
                 {l.label}
               </Link>
             ))}
-            <div className="mt-2 flex items-center gap-2 border-t border-[var(--color-border)] pt-3">
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--color-border)] pt-3">
+              <span className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Theme</span>
+              <SiteThemeToggle />
+            </div>
+            <div className="flex items-center gap-2 pt-2">
               <Button asChild variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
                 <Link href="/login">Sign in</Link>
               </Button>
