@@ -55,12 +55,12 @@ export function SiteNav({
           aria-label="OpsRadar home"
         >
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt=""
-            width={24}
-            height={24}
+            width={28}
+            height={28}
             priority
-            className="h-6 w-6"
+            className="h-7 w-7 rounded-md object-cover"
           />
           <span className="font-serif text-[1.0625rem] tracking-[-0.01em]">OpsRadar</span>
         </Link>

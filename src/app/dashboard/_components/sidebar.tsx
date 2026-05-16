@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
-import { EcgIcon } from './icons';
+import Image from 'next/image';
 import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
 import { ThemeToggle } from '<npm>/components/dashboard/theme-toggle';
 
@@ -47,7 +47,7 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
         href="/dashboard"
         className="flex items-center gap-2.5 px-5 pt-5 pb-5 text-[var(--color-fg)] no-underline"
       >
-        <EcgIcon />
+        <Image src="/logo.png" alt="OpsRadar" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
         <span className="font-serif text-[17px] tracking-[-0.01em] text-[var(--color-fg)]">
           OpsRadar
         </span>
