@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     n8nBaseUrl?: string;
     n8nWebhookSecret?: string;
     n8nApiKey?: string;
+    chatv2ProjectId?: string;
   };
   try {
     body = await req.json();
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
   const n8nBaseUrl = body.n8nBaseUrl?.trim();
   const n8nWebhookSecret = body.n8nWebhookSecret?.trim();
   const n8nApiKey = body.n8nApiKey?.trim();
+  const chatv2ProjectId = body.chatv2ProjectId?.trim() || null;
 
   if (!email || !n8nBaseUrl || !n8nWebhookSecret || !n8nApiKey) {
     return NextResponse.json(
@@ -77,6 +79,7 @@ export async function POST(req: NextRequest) {
     n8n_base_url: normalizedUrl,
     n8n_webhook_secret: n8nWebhookSecret,
     n8n_api_key: n8nApiKey,
+    chatv2_project_id: chatv2ProjectId,
   });
 
   if (insertError) {
