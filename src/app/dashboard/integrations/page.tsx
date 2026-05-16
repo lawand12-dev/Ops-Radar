@@ -94,6 +94,16 @@ const TOOL_CATALOG: ToolDef[] = [
     createKeyDocsUrl: 'https://app.asana.com/0/my-apps',
   },
   {
+    key: 'monday',
+    label: 'Monday.com',
+    blurb: 'Boards, items, deadlines',
+    cardKey: 'Delivery',
+    enabled: true,
+    instructions:
+      'In Monday, click your avatar → Developers → My Access Tokens. Copy your personal API token and paste it below.',
+    createKeyDocsUrl: 'https://monday.com/developers/v2#authentication-section',
+  },
+  {
     key: 'toggl',
     label: 'Toggl',
     blurb: 'Hours tracked, utilization',

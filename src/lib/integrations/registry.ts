@@ -7,6 +7,7 @@ import { validateClickupKey } from './clickup/adapter';
 import { validateAsanaToken } from './asana/adapter';
 import { validateTogglToken } from './toggl/adapter';
 import { validatePipedriveKey } from './pipedrive/adapter';
+import { validateMondayToken } from './monday/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -99,6 +100,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Pipedrive, click your avatar → Personal preferences → API. ' +
       'Copy your personal API token and paste it below.',
     validate: validatePipedriveKey,
+  },
+  monday: {
+    tool: 'monday',
+    displayName: 'Monday.com',
+    createKeyDocsUrl: 'https://monday.com/developers/v2#authentication-section',
+    instructions:
+      'In Monday, click your avatar → Developers → My Access Tokens. ' +
+      'Copy your personal API token and paste it below.',
+    validate: validateMondayToken,
   },
 };
 

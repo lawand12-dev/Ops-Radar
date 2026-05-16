@@ -5,7 +5,7 @@ export type DeliveryTask = {
   due_date: string | null;
   overdue: boolean;
   project_name: string;
-  source: 'clickup' | 'asana';
+  source: 'clickup' | 'asana' | 'monday';
 };
 
 export type DeliveryData = {
