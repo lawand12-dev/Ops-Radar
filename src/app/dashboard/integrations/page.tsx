@@ -113,6 +113,16 @@ const TOOL_CATALOG: ToolDef[] = [
       'In Toggl Track, click your avatar (bottom-left) → Profile Settings. Scroll to "API Token" at the bottom. Copy it and paste it below.',
     createKeyDocsUrl: 'https://track.toggl.com/profile',
   },
+  {
+    key: 'harvest',
+    label: 'Harvest',
+    blurb: 'Hours tracked, utilization',
+    cardKey: 'Time tracking',
+    enabled: true,
+    instructions:
+      'At id.getharvest.com/developers, create a Personal Access Token. Copy BOTH your Account ID and Token, then paste as <account_id>:<token> (e.g. 1234567:pat_abc...).',
+    createKeyDocsUrl: 'https://id.getharvest.com/developers',
+  },
 ];
 
 const CATEGORY_ORDER = ['Finance', 'Sales', 'Marketing', 'Delivery', 'Time tracking'] as const;

@@ -8,6 +8,7 @@ import { validateAsanaToken } from './asana/adapter';
 import { validateTogglToken } from './toggl/adapter';
 import { validatePipedriveKey } from './pipedrive/adapter';
 import { validateMondayToken } from './monday/adapter';
+import { validateHarvestKey } from './harvest/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -109,6 +110,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Monday, click your avatar → Developers → My Access Tokens. ' +
       'Copy your personal API token and paste it below.',
     validate: validateMondayToken,
+  },
+  harvest: {
+    tool: 'harvest',
+    displayName: 'Harvest',
+    createKeyDocsUrl: 'https://id.getharvest.com/developers',
+    instructions:
+      'At id.getharvest.com/developers, create a Personal Access Token. ' +
+      'Copy BOTH your Account ID and Token, then paste as `<account_id>:<token>` (e.g. 1234567:pat_abc...).',
+    validate: validateHarvestKey,
   },
 };
 
