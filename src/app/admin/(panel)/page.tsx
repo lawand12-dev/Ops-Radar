@@ -1,11 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Button } from '../../components/ui/button'
-import { fetchAdminApi } from '../../lib/admin-api-client'
+import { fetchAdminApi } from '<npm>/lib/admin-api-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -203,7 +200,6 @@ function AuditDetail({ audit }: { audit: AuditRow }) {
 
 // Main page
 export default function AdminPage() {
-  const router = useRouter()
   const [audits, setAudits] = useState<AuditRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -243,17 +239,11 @@ export default function AdminPage() {
     setExpandedId(prev => prev === id ? null : id)
   }
 
-  async function handleSignOut() {
-    await fetch('/api/admin-auth', { method: 'DELETE' })
-    router.replace('/admin/login')
-    router.refresh()
-  }
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+      <div className="flex h-[60vh] items-center justify-center">
         <div
-          className="w-8 h-8 rounded-full border-2 animate-spin"
+          className="h-8 w-8 animate-spin rounded-full border-2"
           style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}
         />
       </div>
@@ -261,11 +251,7 @@ export default function AdminPage() {
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
-        <p className="text-body-sm text-[var(--color-danger,#F87171)]">Error: {error}</p>
-      </div>
-    )
+    return <p className="text-body-sm text-[var(--color-danger,#F87171)]">Error: {error}</p>
   }
 
   const avgScore = audits.length > 0
@@ -273,89 +259,47 @@ export default function AdminPage() {
     : 0
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
-
-      {/* ── Top nav bar ── */}
-      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-[1100px] px-6 h-14 flex items-center justify-between gap-6">
-
-          {/* Wordmark + breadcrumb */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
-            >
-              <Image src="/logo.png" alt="OpsRadar" width={16} height={16} className="h-4 w-auto rounded-[3px]" />
-              OpsRadar
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <span className="text-caption text-[var(--color-fg-muted)]">Admin</span>
-
-            {/* Sub-nav */}
-            <span className="text-[var(--color-border-strong)] text-caption ml-2">/</span>
-            <Link
-              href="/admin/data"
-              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)] inline-flex items-center gap-1"
-            >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <rect x="1" y="1" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="1" y="5.5" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="1" y="10" width="10" height="1" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
-              </svg>
-              Data
-            </Link>
-          </div>
-
-          {/* Right: KPI strip + sign out */}
-          <div className="flex items-center gap-5 shrink-0">
-            {/* Total audits KPI */}
-            <div className="text-right hidden sm:block">
-              <p className="text-label text-[var(--color-fg-subtle)]">Total Audits</p>
-              <p className="font-mono text-h4 font-bold leading-tight text-[var(--color-primary)] tabular-nums">{audits.length}</p>
-            </div>
-
-            {audits.length > 0 && (
-              <>
-                <div className="w-px h-8 bg-[var(--color-border)] hidden sm:block" />
-                {/* Avg readiness KPI */}
-                <div className="text-right hidden sm:block">
-                  <p className="text-label text-[var(--color-fg-subtle)]">Avg Readiness</p>
-                  <p
-                    className="font-mono text-h4 font-bold leading-tight tabular-nums"
-                    style={{ color: scoreColor(avgScore) }}
-                  >
-                    {avgScore}
-                    <span className="text-body-sm font-normal text-[var(--color-fg-subtle)]">/100</span>
-                  </p>
-                </div>
-              </>
-            )}
-
-            <div className="w-px h-8 bg-[var(--color-border)]" />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-            >
-              Sign out
-            </Button>
-          </div>
+    <div className="flex flex-col gap-5">
+      {/* Topbar */}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
+        <div className="text-body-sm text-[var(--color-fg-muted)]">
+          Admin /{' '}
+          <span className="font-semibold text-[var(--color-fg)]">Audits</span>
         </div>
-      </header>
-
-      <main className="max-w-[1100px] mx-auto px-6 py-10">
-
-        {/* Page heading */}
-        <div className="mb-8">
-          <h1 className="font-serif text-h2 tracking-[-0.02em] text-[var(--color-fg)]">
-            Audit Dashboard
-          </h1>
-          <p className="mt-1 text-body text-[var(--color-fg-muted)]">
-            {audits.length > 0
-              ? `${audits.length} audit${audits.length !== 1 ? 's' : ''} submitted — operator view`
-              : 'No audits submitted yet.'}
-          </p>
+        <div className="flex items-center gap-5 text-right">
+          <div>
+            <p className="text-label text-[var(--color-fg-subtle)]">Total</p>
+            <p className="font-mono text-h4 font-bold leading-tight tabular-nums text-[var(--color-primary)]">{audits.length}</p>
+          </div>
+          {audits.length > 0 && (
+            <>
+              <div className="h-8 w-px bg-[var(--color-border)]" />
+              <div>
+                <p className="text-label text-[var(--color-fg-subtle)]">Avg readiness</p>
+                <p
+                  className="font-mono text-h4 font-bold leading-tight tabular-nums"
+                  style={{ color: scoreColor(avgScore) }}
+                >
+                  {avgScore}
+                  <span className="text-body-sm font-normal text-[var(--color-fg-subtle)]">/100</span>
+                </p>
+              </div>
+            </>
+          )}
         </div>
+      </div>
+
+      {/* Page heading */}
+      <div>
+        <h1 className="font-serif text-h2 tracking-[-0.02em] text-[var(--color-fg)]">
+          Audit dashboard
+        </h1>
+        <p className="mt-1 text-body-sm text-[var(--color-fg-muted)]">
+          {audits.length > 0
+            ? `${audits.length} audit${audits.length !== 1 ? 's' : ''} submitted — operator view`
+            : 'No audits submitted yet.'}
+        </p>
+      </div>
 
         {/* ── Funnel section ── */}
         {funnelData && funnelData.totalSessions > 0 && (
@@ -526,7 +470,6 @@ export default function AdminPage() {
             )
           })}
         </div>
-      </main>
     </div>
   )
 }

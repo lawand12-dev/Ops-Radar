@@ -4,26 +4,38 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 const DASH_THEME_KEY = 'dash-theme';
+const ADMIN_THEME_KEY = 'admin-theme';
 
 function isDashboard(pathname: string): boolean {
   return pathname === '/dashboard' || pathname.startsWith('/dashboard/');
 }
 
+function isAdmin(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
 function isAlwaysDark(pathname: string): boolean {
-  const prefixes = ['/admin', '/aios'];
+  const prefixes = ['/aios'];
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function readStored(key: string): 'light' | 'dark' | null {
+  try {
+    const v = localStorage.getItem(key);
+    if (v === 'light' || v === 'dark') return v;
+  } catch {
+    // localStorage may throw in private browsing
+  }
+  return null;
 }
 
 function computeTheme(pathname: string): 'light' | 'dark' {
   if (isAlwaysDark(pathname)) return 'dark';
+  if (isAdmin(pathname)) {
+    return readStored(ADMIN_THEME_KEY) ?? 'dark';
+  }
   if (isDashboard(pathname)) {
-    try {
-      const pref = localStorage.getItem(DASH_THEME_KEY);
-      if (pref === 'light' || pref === 'dark') return pref;
-    } catch {
-      // localStorage may throw in private browsing — fall through to default
-    }
-    return 'dark';
+    return readStored(DASH_THEME_KEY) ?? 'dark';
   }
   return 'light';
 }

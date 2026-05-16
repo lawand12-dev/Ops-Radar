@@ -1,17 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '<npm>/components/ui/button';
 import { Input } from '<npm>/components/ui/input';
 import { Label } from '<npm>/components/ui/label';
 import { Badge } from '<npm>/components/ui/badge';
 
 export default function OnboardCustomerPage() {
-  const router = useRouter();
-
   const [adminPassword, setAdminPassword] = useState('');
   const [email, setEmail] = useState('');
   const [n8nBaseUrl, setN8nBaseUrl] = useState('');
@@ -24,12 +19,6 @@ export default function OnboardCustomerPage() {
     | { kind: 'error'; message: string }
     | null
   >(null);
-
-  async function handleSignOut() {
-    await fetch('/api/admin-auth', { method: 'DELETE' });
-    router.replace('/admin/login');
-    router.refresh();
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,79 +52,24 @@ export default function OnboardCustomerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
-
-      {/* ── Top nav bar ── */}
-      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-[1100px] px-6 h-14 flex items-center justify-between gap-6 flex-wrap">
-
-          {/* Wordmark + breadcrumb + sub-nav */}
-          <div className="flex items-center gap-2 min-w-0 flex-wrap">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
-            >
-              <Image src="/logo.png" alt="OpsRadar" width={16} height={16} className="h-4 w-auto rounded-[3px]" />
-              OpsRadar
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <Link
-              href="/admin"
-              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]"
-            >
-              Admin
-            </Link>
-
-            {/* Sub-nav */}
-            <span className="text-[var(--color-border-strong)] text-caption ml-2">/</span>
-            <Link
-              href="/admin"
-              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)] inline-flex items-center gap-1"
-            >
-              Audits
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <Link
-              href="/admin/data"
-              className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)] inline-flex items-center gap-1"
-            >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <rect x="1" y="1" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="1" y="5.5" width="10" height="3" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="1" y="10" width="10" height="1" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
-              </svg>
-              Data
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <span className="text-caption text-[var(--color-fg-muted)]">Onboard customer</span>
-          </div>
-
-          {/* Right: sign out */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="w-px h-8 bg-[var(--color-border)]" />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-            >
-              Sign out
-            </Button>
-          </div>
+    <div className="flex flex-col gap-5">
+      {/* Topbar */}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
+        <div className="text-body-sm text-[var(--color-fg-muted)]">
+          Admin /{' '}
+          <span className="font-semibold text-[var(--color-fg)]">Onboard customer</span>
         </div>
-      </header>
+      </div>
 
-      {/* ── Page body ── */}
-      <main className="max-w-[1100px] mx-auto px-6 py-10">
-
-        {/* Page heading */}
-        <div className="mb-8">
-          <h1 className="font-serif text-h2 tracking-[-0.02em] text-[var(--color-fg)]">
-            Onboard customer
-          </h1>
-          <p className="mt-1.5 text-body text-[var(--color-fg-muted)]">
-            Provision a new customer account and send their magic-link invite.
-          </p>
-        </div>
+      {/* Page heading */}
+      <div>
+        <h1 className="font-serif text-h2 tracking-[-0.02em] text-[var(--color-fg)]">
+          Onboard customer
+        </h1>
+        <p className="mt-1 text-body-sm text-[var(--color-fg-muted)]">
+          Provision a new customer account and send their magic-link invite.
+        </p>
+      </div>
 
         {/* Two-column layout: form left, context right */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_300px] gap-8 items-start">
@@ -315,7 +249,6 @@ export default function OnboardCustomerPage() {
           </div>
 
         </div>
-      </main>
     </div>
   );
 }

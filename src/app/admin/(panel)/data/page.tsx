@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Button } from '<npm>/components/ui/button'
 import { Input } from '<npm>/components/ui/input'
 import { Badge } from '<npm>/components/ui/badge'
@@ -20,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '<npm>/components/ui/dialog'
-import { fetchAdminApi } from '../../../lib/admin-api-client'
+import { fetchAdminApi } from '<npm>/lib/admin-api-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -529,8 +526,6 @@ function SectionLabel({ text }: { text: string }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminDataPage() {
-  const router = useRouter()
-
   // Table data
   const [audits, setAudits]               = useState<Record<string, unknown>[]>([])
   const [chats,  setChats]                = useState<Record<string, unknown>[]>([])
@@ -578,12 +573,6 @@ export default function AdminDataPage() {
       method: 'DELETE',
       body: JSON.stringify({ table, id }),
     })
-  }
-
-  async function handleSignOut() {
-    await fetch('/api/admin-auth', { method: 'DELETE' })
-    router.replace('/admin/login')
-    router.refresh()
   }
 
   const funnel = useMemo(() => {
@@ -637,9 +626,9 @@ export default function AdminDataPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+      <div className="flex h-[60vh] items-center justify-center">
         <div
-          className="w-8 h-8 rounded-full border-2 animate-spin"
+          className="h-8 w-8 animate-spin rounded-full border-2"
           style={{ borderColor: 'var(--color-accent-400)', borderTopColor: 'transparent' }}
         />
       </div>
@@ -647,48 +636,22 @@ export default function AdminDataPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-[1100px] px-6 h-14 flex items-center justify-between gap-6">
-
-          {/* Left: wordmark + breadcrumb + sub-nav */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
-              <Image src="/logo.png" alt="OpsRadar" width={16} height={16} className="h-4 w-auto rounded-[3px]" />
-              OpsRadar
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <span className="text-caption text-[var(--color-fg-muted)]">Admin</span>
-            <span className="text-[var(--color-border-strong)] text-caption ml-2">/</span>
-            <Link href="/admin" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
-              Audits
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <Link href="/admin/onboard-customer" className="text-caption text-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] transition-colors duration-[var(--duration-fast)]">
-              Onboard
-            </Link>
-            <span className="text-[var(--color-border-strong)] text-caption">/</span>
-            <span className="text-caption text-[var(--color-fg-muted)]">Data</span>
-          </div>
-
-          {/* Right: KPI strip + sign out */}
-          <div className="flex items-center gap-5 shrink-0">
-            {/* Total rows KPI */}
-            <div className="text-right hidden sm:block">
-              <p className="text-label text-[var(--color-fg-subtle)]">Total Rows</p>
-              <p className="font-mono text-h4 font-bold leading-tight text-[var(--color-primary)] tabular-nums">
-                {audits.length + chats.length + builds.length}
-              </p>
-            </div>
-            <div className="w-px h-8 bg-[var(--color-border)]" />
-            <Button variant="outline" size="sm" onClick={handleSignOut}>Sign out</Button>
-          </div>
+    <div className="flex flex-col gap-5">
+      {/* Topbar */}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
+        <div className="text-body-sm text-[var(--color-fg-muted)]">
+          Admin /{' '}
+          <span className="font-semibold text-[var(--color-fg)]">Data</span>
         </div>
-      </header>
+        <div className="text-right">
+          <p className="text-label text-[var(--color-fg-subtle)]">Total rows</p>
+          <p className="font-mono text-h4 font-bold leading-tight tabular-nums text-[var(--color-primary)]">
+            {audits.length + chats.length + builds.length}
+          </p>
+        </div>
+      </div>
 
-      <main className="max-w-[1100px] mx-auto px-6 py-8 space-y-10">
+      <div className="space-y-10">
 
         {/* ── 1. Table Overview ─────────────────────────────────────────────── */}
         <section>
@@ -992,7 +955,7 @@ export default function AdminDataPage() {
           </div>
         </section>
 
-      </main>
+      </div>
     </div>
   )
 }
