@@ -5,6 +5,7 @@ import { validateApolloKey } from './apollo/adapter';
 import { validateCalendlyToken } from './calendly/adapter';
 import { validateClickupKey } from './clickup/adapter';
 import { validateAsanaToken } from './asana/adapter';
+import { validateTogglToken } from './toggl/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -79,6 +80,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Asana, go to My Profile Settings → Apps → Manage developer apps → ' +
       'Personal access token → Create new token. Paste it below.',
     validate: validateAsanaToken,
+  },
+  toggl: {
+    tool: 'toggl',
+    displayName: 'Toggl',
+    createKeyDocsUrl: 'https://track.toggl.com/profile',
+    instructions:
+      'In Toggl Track, click your avatar (bottom-left) → Profile Settings. ' +
+      'Scroll to "API Token" at the bottom. Copy it and paste it below.',
+    validate: validateTogglToken,
   },
 };
 
