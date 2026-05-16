@@ -61,11 +61,11 @@ export async function validateHarvestKey(combined: string): Promise<AdapterValid
       return { ok: false, reason: 'network', message: 'Harvest response missing user id.' };
     }
     return { ok: true, externalAccountId: parsed.accountId };
-  } catch (err) {
+  } catch {
     return {
       ok: false,
       reason: 'network',
-      message: err instanceof Error ? err.message : 'Could not reach Harvest.',
+      message: 'Could not reach Harvest.',
     };
   }
 }
@@ -95,7 +95,12 @@ export async function fetchHarvestTimeData(combined: string): Promise<HarvestTim
     per_page: '100',
   });
 
-  const res = await fetch(`${BASE}/time_entries?${params}`, { headers: h });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/time_entries?${params}`, { headers: h });
+  } catch {
+    throw new Error('Harvest time entries fetch failed: network');
+  }
   if (!res.ok) throw new Error(`Harvest time entries fetch failed: ${res.status}`);
   const body = (await res.json()) as { time_entries?: HarvestEntry[] };
   const entries = body.time_entries ?? [];

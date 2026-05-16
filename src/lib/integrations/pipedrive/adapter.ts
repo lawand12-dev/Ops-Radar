@@ -27,6 +27,9 @@ export async function validatePipedriveKey(apiKey: string): Promise<AdapterValid
     if (res.status === 401) {
       return { ok: false, reason: 'invalid_key', message: 'Pipedrive rejected the token.' };
     }
+    if (res.status === 403) {
+      return { ok: false, reason: 'permission', message: 'Pipedrive token lacks required permissions.' };
+    }
     if (!res.ok) {
       const text = await res.text().catch(() => '<no body>');
       return { ok: false, reason: 'network', message: `Pipedrive returned ${res.status}: ${text}` };

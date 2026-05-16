@@ -22,21 +22,22 @@ async function gql<T>(token: string, query: string): Promise<{ ok: boolean; stat
       return { ok: false, status: 400, error: body.errors.map((e) => e.message).join('; ') };
     }
     return { ok: true, status: res.status, data: body.data };
-  } catch (err) {
-    return { ok: false, status: 0, error: err instanceof Error ? err.message : 'network' };
+  } catch {
+    return { ok: false, status: 0, error: 'Could not reach Monday.' };
   }
 }
 
 export async function validateMondayToken(token: string): Promise<AdapterValidation> {
   const r = await gql<{ me?: { id?: string; name?: string } }>(token, '{ me { id name } }');
   if (!r.ok) {
-    if (r.status === 401 || /authentic|unauthor/i.test(r.error ?? '')) {
+    const msg = r.error ?? '';
+    if (r.status === 401 || /authentic|unauthor|invalid.*token|token.*invalid|not authenticated/i.test(msg)) {
       return { ok: false, reason: 'invalid_key', message: 'Monday rejected the token.' };
     }
-    if (r.status === 403) {
+    if (r.status === 403 || /permission|forbidden|not authorized|not allowed|access denied/i.test(msg)) {
       return { ok: false, reason: 'permission', message: 'Token lacks permissions.' };
     }
-    return { ok: false, reason: 'network', message: r.error ?? `Monday returned ${r.status}` };
+    return { ok: false, reason: 'network', message: msg || `Monday returned ${r.status}` };
   }
   const id = r.data?.me?.id;
   if (!id) {
