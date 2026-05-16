@@ -145,6 +145,7 @@ async function loadTimeSaved(): Promise<FetchResult> {
   } catch {
     return { error: 'failed' };
   }
+  if (r?.status === 'not_enrolled') return { error: 'not_connected' };
   if (r?.status === 'error' || !r?.data) return { error: 'failed' };
   const hours = r.data.hours_saved;
   if (typeof hours !== 'number') return { error: 'no_data' };

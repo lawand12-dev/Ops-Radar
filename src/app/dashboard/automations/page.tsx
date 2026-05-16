@@ -19,6 +19,7 @@ type AutomationRoiWidget = {
 
 type RoiResp =
   | { status: 'ok'; data: AutomationRoiWidget; fromCache: boolean }
+  | { status: 'not_enrolled' }
   | { status: 'error'; message: string; staleData?: AutomationRoiWidget };
 
 // Real shape from /api/dashboard/workflow-health
