@@ -70,6 +70,22 @@ type MarketingWidgetData = {
   upcoming: CalendlyUpcoming[];
 };
 
+type PipedriveDealRow = {
+  id: string;
+  title: string;
+  value: number;
+  currency: string;
+  stage: string;
+  expected_close: string | null;
+};
+type PipedriveSalesData = {
+  pipeline_value: number;
+  open_deals_count: number;
+  deals_won_this_month: number;
+  rows: PipedriveDealRow[];
+  currency: string;
+};
+
 type DeliveryTask = {
   id: string;
   name: string;
@@ -77,7 +93,7 @@ type DeliveryTask = {
   due_date: string | null;
   overdue: boolean;
   project_name: string;
-  source: 'clickup' | 'asana';
+  source: 'clickup' | 'asana' | 'monday';
 };
 
 type DeliveryData = {
@@ -92,6 +108,14 @@ type TogglTimeData = {
   hours_tracked: number;
   utilization_pct: number | null;
   by_project: TogglProjectRow[];
+  period_label: string;
+};
+
+type HarvestProjectRow = { project_name: string; hours: number; client_name: string | null };
+type HarvestTimeData = {
+  hours_tracked: number;
+  utilization_pct: number | null;
+  by_project: HarvestProjectRow[];
   period_label: string;
 };
 
@@ -116,10 +140,12 @@ export default function BusinessPage() {
       </div>
       <RevenueSection />
       <PipelineSection />
+      <PipedriveSection />
       <ProspectsSection />
       <BookingsSection />
       <DeliverySection />
       <TimeSection />
+      <HarvestSection />
     </div>
   );
 }
@@ -189,7 +215,7 @@ function BusinessAlerts() {
     .filter(
       (a) =>
         a.href.startsWith('/dashboard/business') ||
-        /tool=(stripe|hubspot|apollo|calendly|clickup|asana|toggl)/.test(a.href),
+        /tool=(stripe|hubspot|apollo|calendly|clickup|asana|toggl|pipedrive|monday|harvest)/.test(a.href),
     )
     .slice(0, 5);
 
@@ -419,6 +445,72 @@ function TimeSection() {
               <RowTable
                 headers={['Project', 'Hours']}
                 rows={time.by_project.map((p) => [p.project_name, `${p.hours}h`])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No time entries this week.</p>
+            )}
+          </>
+        );
+      }}
+    />
+  );
+}
+
+function PipedriveSection() {
+  return (
+    <ToolSection
+      title="Sales pipeline (Pipedrive)"
+      endpoint="/api/dashboard/sales-pipedrive"
+      tool="Pipedrive"
+      toolSlug="pipedrive"
+      renderConnected={(data) => {
+        const pd = (data as { data?: PipedriveSalesData }).data;
+        return (
+          <>
+            <div className="mb-4 grid grid-cols-3 gap-2">
+              <StatMini label="Open deals" value={pd?.open_deals_count != null ? String(pd.open_deals_count) : '—'} />
+              <StatMini label="Pipeline $" value={pd?.pipeline_value != null ? fmtMoney(pd.pipeline_value) : '—'} />
+              <StatMini label="Won · MTD" value={pd?.deals_won_this_month != null ? String(pd.deals_won_this_month) : '—'} />
+            </div>
+            {pd?.rows && pd.rows.length > 0 ? (
+              <RowTable
+                headers={['Deal', 'Value', 'Stage', 'Expected close']}
+                rows={pd.rows.map((r) => [
+                  r.title,
+                  fmtMoney(r.value),
+                  r.stage,
+                  r.expected_close ?? '—',
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No open deals.</p>
+            )}
+          </>
+        );
+      }}
+    />
+  );
+}
+
+function HarvestSection() {
+  return (
+    <ToolSection
+      title="Time tracking (Harvest)"
+      endpoint="/api/dashboard/time-harvest"
+      tool="Harvest"
+      toolSlug="harvest"
+      renderConnected={(data) => {
+        const time = (data as { data?: HarvestTimeData }).data;
+        return (
+          <>
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <StatMini label="Hours · this week" value={time?.hours_tracked != null ? `${time.hours_tracked}h` : '—'} />
+              <StatMini label="Utilization" value={time?.utilization_pct != null ? `${time.utilization_pct.toFixed(1)}%` : '—'} />
+            </div>
+            {time?.by_project && time.by_project.length > 0 ? (
+              <RowTable
+                headers={['Project', 'Client', 'Hours']}
+                rows={time.by_project.map((p) => [p.project_name, p.client_name ?? '—', `${p.hours}h`])}
               />
             ) : (
               <p className="text-body-sm text-[var(--color-fg-subtle)]">No time entries this week.</p>
