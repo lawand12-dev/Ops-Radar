@@ -43,12 +43,59 @@ const TOOL_CATALOG: ToolDef[] = [
       'In HubSpot, go to Settings → Integrations → Private Apps → Create a private app. Scopes: crm.objects.deals.read + crm.objects.contacts.read. Paste the Private App Token below.',
     createKeyDocsUrl: 'https://developers.hubspot.com/docs/api/private-apps#create-a-private-app',
   },
-  { key: 'apollo',   label: 'Apollo',   blurb: 'Cold outreach — emails sent, opens, replies', cardKey: 'Marketing', enabled: false, instructions: '', createKeyDocsUrl: '' },
-  { key: 'calendly', label: 'Calendly', blurb: 'Meetings booked from outreach',               cardKey: 'Marketing', enabled: false, instructions: '', createKeyDocsUrl: '' },
-  { key: 'clickup',  label: 'ClickUp',  blurb: 'Projects, tasks, deadlines',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
-  { key: 'asana',    label: 'Asana',    blurb: 'Projects, tasks, deadlines',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
-  { key: 'toggl',    label: 'Toggl',    blurb: 'Hours tracked, utilization',                  cardKey: 'Delivery',  enabled: false, instructions: '', createKeyDocsUrl: '' },
+  {
+    key: 'apollo',
+    label: 'Apollo',
+    blurb: 'Cold outreach — emails sent, opens, replies',
+    cardKey: 'Marketing',
+    enabled: true,
+    instructions:
+      'In Apollo, go to Settings → Integrations → API → Create API Key. Copy the key and paste it below.',
+    createKeyDocsUrl: 'https://developer.apollo.io/keys/',
+  },
+  {
+    key: 'calendly',
+    label: 'Calendly',
+    blurb: 'Meetings booked from outreach',
+    cardKey: 'Marketing',
+    enabled: true,
+    instructions:
+      'In Calendly, go to Integrations & apps → API & Webhooks → Personal access tokens → Create new token. Paste the token below.',
+    createKeyDocsUrl: 'https://calendly.com/integrations/api_webhooks',
+  },
+  {
+    key: 'clickup',
+    label: 'ClickUp',
+    blurb: 'Projects, tasks, deadlines',
+    cardKey: 'Delivery',
+    enabled: true,
+    instructions:
+      'In ClickUp, go to Settings → Apps → API Token. Copy your personal API token and paste it below.',
+    createKeyDocsUrl: 'https://app.clickup.com/settings/apps',
+  },
+  {
+    key: 'asana',
+    label: 'Asana',
+    blurb: 'Projects, tasks, deadlines',
+    cardKey: 'Delivery',
+    enabled: true,
+    instructions:
+      'In Asana, go to My Profile Settings → Apps → Manage developer apps → Personal access token → Create new token. Paste it below.',
+    createKeyDocsUrl: 'https://app.asana.com/0/my-apps',
+  },
+  {
+    key: 'toggl',
+    label: 'Toggl',
+    blurb: 'Hours tracked, utilization',
+    cardKey: 'Time tracking',
+    enabled: true,
+    instructions:
+      'In Toggl Track, click your avatar (bottom-left) → Profile Settings. Scroll to "API Token" at the bottom. Copy it and paste it below.',
+    createKeyDocsUrl: 'https://track.toggl.com/profile',
+  },
 ];
+
+const CATEGORY_ORDER = ['Finance', 'Sales', 'Marketing', 'Delivery', 'Time tracking'] as const;
 
 export default function IntegrationsSettingsPage() {
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -125,20 +172,33 @@ export default function IntegrationsSettingsPage() {
         <div className="text-[12.5px] text-[var(--color-fg-subtle)]">Loading…</div>
       )}
 
-      <div className="flex flex-col gap-2.5">
-        {TOOL_CATALOG.map((t) => (
-          <IntegrationCard
-            key={t.key}
-            tool={t.key}
-            label={t.label}
-            blurb={t.blurb}
-            cardKey={t.cardKey}
-            enabled={t.enabled}
-            connection={connectionFor(t.key)}
-            onConnect={() => setDialogTool(t)}
-            onDisconnect={() => disconnect(t.key)}
-          />
-        ))}
+      <div className="flex flex-col gap-6">
+        {CATEGORY_ORDER.map((category) => {
+          const tools = TOOL_CATALOG.filter((t) => t.cardKey === category);
+          if (tools.length === 0) return null;
+          return (
+            <div key={category}>
+              <h2 className="mb-2.5 text-label font-medium uppercase tracking-[0.06em] text-[var(--color-fg-subtle)]">
+                {category}
+              </h2>
+              <div className="flex flex-col gap-2.5">
+                {tools.map((t) => (
+                  <IntegrationCard
+                    key={t.key}
+                    tool={t.key}
+                    label={t.label}
+                    blurb={t.blurb}
+                    cardKey={t.cardKey}
+                    enabled={t.enabled}
+                    connection={connectionFor(t.key)}
+                    onConnect={() => setDialogTool(t)}
+                    onDisconnect={() => disconnect(t.key)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <ConnectKeyDialog
