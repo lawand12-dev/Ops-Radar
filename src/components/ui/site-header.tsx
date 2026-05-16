@@ -8,6 +8,7 @@ import { Menu, X } from "lucide-react"
 
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants"
 import { cn } from "<npm>/lib/utils"
+import { SiteThemeToggle } from "<npm>/components/marketing/site-theme-toggle"
 
 export interface SiteNavLink {
   label: string
@@ -62,7 +63,7 @@ export default function SiteHeader({
   return (
     <header
       className={cn(
-        "z-50 w-full border-b border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-md",
+        "z-50 w-full border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-bg)_95%,transparent)] backdrop-blur-md",
         sticky && "sticky top-0",
         className
       )}
@@ -83,7 +84,7 @@ export default function SiteHeader({
               height={28}
               className="h-7 w-7 rounded-md object-cover"
             />
-            <span className="font-headline text-base font-bold tracking-tight text-white">
+            <span className="font-headline text-base font-bold tracking-tight text-[var(--color-fg)]">
               OpsRadar
             </span>
           </Link>
@@ -100,13 +101,13 @@ export default function SiteHeader({
                   className={cn(
                     "relative rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
                     isActive
-                      ? "text-white"
-                      : "text-white/60 hover:text-white"
+                      ? "text-[var(--color-fg)]"
+                      : "text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
                   )}
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute inset-x-3 -bottom-[1px] h-px bg-white" aria-hidden="true" />
+                    <span className="absolute inset-x-3 -bottom-[1px] h-px bg-[var(--color-fg)]" aria-hidden="true" />
                   )}
                 </Link>
               )
@@ -115,15 +116,16 @@ export default function SiteHeader({
 
           {/* Right CTAs — right column (only desktop) */}
           <div className="hidden lg:flex items-center justify-end gap-2">
+            <SiteThemeToggle />
             <Link
               href="/login"
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
+              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
             >
               Sign in
             </Link>
             <Link
               href="/audit"
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white"
+              className="inline-flex items-center rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
             >
               Run Free Audit
             </Link>
@@ -131,7 +133,7 @@ export default function SiteHeader({
               href={ctaHref}
               target={ctaIsExternal ? "_blank" : undefined}
               rel={ctaIsExternal ? "noopener noreferrer" : undefined}
-              className="inline-flex items-center rounded-md bg-[#0066FF] px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#0052CC]"
+              className="inline-flex items-center rounded-md bg-[var(--color-primary)] px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors hover:opacity-90"
             >
               {ctaLabel}
             </Link>
@@ -141,7 +143,7 @@ export default function SiteHeader({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
@@ -151,7 +153,7 @@ export default function SiteHeader({
 
         {/* Mobile panel */}
         {mobileMenuOpen ? (
-          <div className="lg:hidden border-t border-white/[0.06] py-3">
+          <div className="lg:hidden border-t border-[var(--color-border)] py-3">
             <nav className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const isActive = isActiveLink(link)
@@ -164,26 +166,29 @@ export default function SiteHeader({
                     className={cn(
                       "rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-white/[0.06] text-white"
-                        : "text-white/70 hover:bg-white/[0.04] hover:text-white"
+                        ? "bg-[var(--color-surface-sunken)] text-[var(--color-fg)]"
+                        : "text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
                     )}
                   >
                     {link.label}
                   </Link>
                 )
               })}
-              <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+              <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-[var(--color-border)]">
+                <div className="px-3 py-1">
+                  <SiteThemeToggle />
+                </div>
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/[0.04] hover:text-white transition-colors"
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/audit"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/[0.04] hover:text-white transition-colors"
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
                 >
                   Run Free Audit
                 </Link>
@@ -192,7 +197,7 @@ export default function SiteHeader({
                   target={ctaIsExternal ? "_blank" : undefined}
                   rel={ctaIsExternal ? "noopener noreferrer" : undefined}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-md bg-[#0066FF] px-3 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#0052CC]"
+                  className="rounded-md bg-[var(--color-primary)] px-3 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:opacity-90"
                 >
                   {ctaLabel}
                 </Link>

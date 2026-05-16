@@ -6,9 +6,9 @@ import {
   isValidAdminSessionToken,
 } from './lib/admin-session'
 
-const ALWAYS_DARK_PREFIXES = ['/aios'] as const
 const DASH_THEME_COOKIE = 'dash-theme'
 const ADMIN_THEME_COOKIE = 'admin-theme'
+const SITE_THEME_COOKIE = 'site-theme'
 
 function isDashboard(pathname: string): boolean {
   return pathname === '/dashboard' || pathname.startsWith('/dashboard/')
@@ -18,16 +18,13 @@ function isAdmin(pathname: string): boolean {
   return pathname === '/admin' || pathname.startsWith('/admin/')
 }
 
-type ThemeCookies = { dash: string | undefined; admin: string | undefined }
+type ThemeCookies = {
+  dash: string | undefined
+  admin: string | undefined
+  site: string | undefined
+}
 
 function themeForRequest(pathname: string, cookies: ThemeCookies): 'light' | 'dark' {
-  if (
-    ALWAYS_DARK_PREFIXES.some(
-      (p) => pathname === p || pathname.startsWith(`${p}/`),
-    )
-  ) {
-    return 'dark'
-  }
   if (isAdmin(pathname)) {
     if (cookies.admin === 'light' || cookies.admin === 'dark') return cookies.admin
     return 'dark'
@@ -36,6 +33,7 @@ function themeForRequest(pathname: string, cookies: ThemeCookies): 'light' | 'da
     if (cookies.dash === 'light' || cookies.dash === 'dark') return cookies.dash
     return 'dark'
   }
+  if (cookies.site === 'light' || cookies.site === 'dark') return cookies.site
   return 'light'
 }
 
@@ -53,6 +51,7 @@ export async function proxy(request: NextRequest) {
   const themeCookies: ThemeCookies = {
     dash: request.cookies.get(DASH_THEME_COOKIE)?.value,
     admin: request.cookies.get(ADMIN_THEME_COOKIE)?.value,
+    site: request.cookies.get(SITE_THEME_COOKIE)?.value,
   }
 
   // /admin/* — gated by the existing admin-session cookie.

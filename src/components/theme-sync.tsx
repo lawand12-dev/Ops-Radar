@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const DASH_THEME_KEY = 'dash-theme';
 const ADMIN_THEME_KEY = 'admin-theme';
+const SITE_THEME_KEY = 'site-theme';
 
 function isDashboard(pathname: string): boolean {
   return pathname === '/dashboard' || pathname.startsWith('/dashboard/');
@@ -12,11 +13,6 @@ function isDashboard(pathname: string): boolean {
 
 function isAdmin(pathname: string): boolean {
   return pathname === '/admin' || pathname.startsWith('/admin/');
-}
-
-function isAlwaysDark(pathname: string): boolean {
-  const prefixes = ['/aios'];
-  return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 function readStored(key: string): 'light' | 'dark' | null {
@@ -30,14 +26,13 @@ function readStored(key: string): 'light' | 'dark' | null {
 }
 
 function computeTheme(pathname: string): 'light' | 'dark' {
-  if (isAlwaysDark(pathname)) return 'dark';
   if (isAdmin(pathname)) {
     return readStored(ADMIN_THEME_KEY) ?? 'dark';
   }
   if (isDashboard(pathname)) {
     return readStored(DASH_THEME_KEY) ?? 'dark';
   }
-  return 'light';
+  return readStored(SITE_THEME_KEY) ?? 'light';
 }
 
 /**
