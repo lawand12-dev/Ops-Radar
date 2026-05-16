@@ -4,6 +4,7 @@ import { validateHubspotToken } from './hubspot/adapter';
 import { validateApolloKey } from './apollo/adapter';
 import { validateCalendlyToken } from './calendly/adapter';
 import { validateClickupKey } from './clickup/adapter';
+import { validateAsanaToken } from './asana/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -69,6 +70,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In ClickUp, go to Settings → Apps → API Token. ' +
       'Copy your personal API token and paste it below.',
     validate: validateClickupKey,
+  },
+  asana: {
+    tool: 'asana',
+    displayName: 'Asana',
+    createKeyDocsUrl: 'https://app.asana.com/0/my-apps',
+    instructions:
+      'In Asana, go to My Profile Settings → Apps → Manage developer apps → ' +
+      'Personal access token → Create new token. Paste it below.',
+    validate: validateAsanaToken,
   },
 };
 
