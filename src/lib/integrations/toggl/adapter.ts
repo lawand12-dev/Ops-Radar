@@ -25,6 +25,9 @@ export async function validateTogglToken(apiToken: string): Promise<AdapterValid
     if (res.status === 403) {
       return { ok: false, reason: 'invalid_key', message: 'The API token was rejected by Toggl.' };
     }
+    if (res.status === 401) {
+      return { ok: false, reason: 'invalid_key', message: 'Toggl rejected the API token (401).' };
+    }
     if (!res.ok) {
       const text = await res.text().catch(() => '<no body>');
       return { ok: false, reason: 'network', message: `Toggl returned ${res.status}: ${text}` };

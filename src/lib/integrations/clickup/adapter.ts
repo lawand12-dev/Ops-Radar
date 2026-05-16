@@ -12,6 +12,9 @@ export async function validateClickupKey(token: string): Promise<AdapterValidati
     if (res.status === 401) {
       return { ok: false, reason: 'invalid_key', message: 'The token was rejected by ClickUp.' };
     }
+    if (res.status === 403) {
+      return { ok: false, reason: 'permission', message: 'ClickUp access denied — check token permissions.' };
+    }
     if (!res.ok) {
       const text = await res.text().catch(() => '<no body>');
       return { ok: false, reason: 'network', message: `ClickUp returned ${res.status}: ${text}` };
