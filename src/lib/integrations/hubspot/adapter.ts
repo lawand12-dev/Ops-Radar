@@ -1,4 +1,5 @@
 import { Client as HubspotClient } from '@hubspot/api-client';
+import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 
 function client(token: string): HubspotClient {
   return new HubspotClient({ accessToken: token });
@@ -123,7 +124,7 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
   const monthStart = startOfMonthUtc(now);
   const thirtyAgo = daysAgo(now, 30);
 
-  const [dealsResp, contactsResp] = await Promise.all([
+  const [dealsResp, contactsResp, rowsResp] = await Promise.all([
     hs.crm.deals.basicApi.getPage(
       PAGE_LIMIT,
       undefined,
@@ -140,6 +141,19 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
       undefined,
       false,
     ),
+    hs.crm.deals.searchApi.doSearch({
+      filterGroups: [
+        {
+          filters: [
+            { propertyName: 'hs_is_closed', operator: FilterOperatorEnum.Eq, value: 'false' },
+          ],
+        },
+      ],
+      sorts: ['-amount'],
+      properties: ['dealname', 'amount', 'dealstage', 'closedate', 'hs_is_closed'],
+      limit: 5,
+      after: '0',
+    }).catch(() => null),
   ]);
 
   let pipelineValue = 0;
@@ -168,8 +182,15 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     }
   }
 
-  const rows: HubspotDealRow[] = dealsResp.results
+  // Use the search response (sorted by amount desc server-side) so we get the
+  // top 5 deals globally, not just the top 5 from the first 100 returned by
+  // the basic list API. Falls back to the basic list results if the search call
+  // failed (e.g. SDK version mismatch) — note: fallback only reflects the first
+  // 100 deals and may miss higher-amount deals on later pages.
+  const rows: HubspotDealRow[] = (rowsResp?.results ?? dealsResp.results
     .filter((deal) => (deal.properties?.hs_is_closed ?? '').toString() !== 'true')
+    .sort((a, b) => (Number(b.properties?.amount ?? 0) || 0) - (Number(a.properties?.amount ?? 0) || 0))
+    .slice(0, 5))
     .map((deal) => ({
       id: deal.id,
       name: deal.properties?.dealname ?? 'Untitled deal',
@@ -178,9 +199,7 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
       close_date: deal.properties?.closedate
         ? new Date(deal.properties.closedate).toISOString().slice(0, 10)
         : null,
-    }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5);
+    }));
 
   let newLeads = 0;
   for (const contact of contactsResp.results) {

@@ -90,7 +90,7 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
     stripe.invoices.list({
       status: 'open',
       due_date: { lt: unix(now) },
-      limit: 5,
+      limit: 100,
       expand: ['data.customer'],
     } as Parameters<typeof stripe.invoices.list>[0]),
   ]);
@@ -137,7 +137,8 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
         days_overdue: daysOverdue,
       };
     })
-    .sort((a, b) => b.days_overdue - a.days_overdue);
+    .sort((a, b) => b.days_overdue - a.days_overdue)
+    .slice(0, 5);
 
   return { invoiced, paid, overdue, sparkline, currency: 'USD', rows };
 }
