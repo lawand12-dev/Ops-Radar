@@ -44,6 +44,16 @@ const TOOL_CATALOG: ToolDef[] = [
     createKeyDocsUrl: 'https://developers.hubspot.com/docs/api/private-apps#create-a-private-app',
   },
   {
+    key: 'pipedrive',
+    label: 'Pipedrive',
+    blurb: 'CRM — pipeline, deals, stages',
+    cardKey: 'Sales',
+    enabled: true,
+    instructions:
+      'In Pipedrive, click your avatar → Personal preferences → API. Copy your personal API token and paste it below.',
+    createKeyDocsUrl: 'https://app.pipedrive.com/settings/personal/api',
+  },
+  {
     key: 'apollo',
     label: 'Apollo',
     blurb: 'Cold outreach — emails sent, opens, replies',

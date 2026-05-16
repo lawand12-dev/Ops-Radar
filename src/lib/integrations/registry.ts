@@ -6,6 +6,7 @@ import { validateCalendlyToken } from './calendly/adapter';
 import { validateClickupKey } from './clickup/adapter';
 import { validateAsanaToken } from './asana/adapter';
 import { validateTogglToken } from './toggl/adapter';
+import { validatePipedriveKey } from './pipedrive/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -89,6 +90,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Toggl Track, click your avatar (bottom-left) → Profile Settings. ' +
       'Scroll to "API Token" at the bottom. Copy it and paste it below.',
     validate: validateTogglToken,
+  },
+  pipedrive: {
+    tool: 'pipedrive',
+    displayName: 'Pipedrive',
+    createKeyDocsUrl: 'https://app.pipedrive.com/settings/personal/api',
+    instructions:
+      'In Pipedrive, click your avatar → Personal preferences → API. ' +
+      'Copy your personal API token and paste it below.',
+    validate: validatePipedriveKey,
   },
 };
 
