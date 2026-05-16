@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CONTACT_EMAIL } from "<npm>/lib/constants";
 
 const FOOTER_NAV = [
@@ -44,12 +45,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2 text-[var(--color-fg)]">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" className="text-[var(--color-primary)]">
-                <circle cx="11" cy="11" r="10" stroke="currentColor" strokeWidth="1.2" opacity="0.25" />
-                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
-                <circle cx="11" cy="11" r="3" stroke="currentColor" strokeWidth="1.4" opacity="0.7" />
-                <circle cx="11" cy="11" r="1.4" fill="currentColor" />
-              </svg>
+              <Image src="/logo.png" alt="" width={28} height={28} className="h-7 w-7 rounded-md object-cover" />
               <span className="font-serif text-[1.0625rem] tracking-[-0.01em]">OpsRadar</span>
             </Link>
             <p className="mt-4 text-body-sm text-[var(--color-fg-muted)] max-w-xs">
