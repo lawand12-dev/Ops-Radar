@@ -9,12 +9,21 @@ function client(apiKey: string): Stripe {
   });
 }
 
+export type StripeInvoiceRow = {
+  id: string;
+  customer_name: string;
+  amount: number; // USD
+  due_date: string; // YYYY-MM-DD
+  days_overdue: number;
+};
+
 export type StripeFinanceData = {
   invoiced: number; // USD, this month-to-date (sum of invoice amount_due)
   paid: number; // USD, this month-to-date (sum of paid invoice amount_paid)
   overdue: number; // USD, currently outstanding past due
   sparkline: Array<{ date: string; amount: number }>; // last 30 days, daily charge totals
   currency: 'USD';
+  rows: StripeInvoiceRow[];
 };
 
 export type AdapterValidation =
@@ -75,9 +84,15 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
   const thirtyDaysAgo = subDays(now, 30);
   const nowSec = unix(now);
 
-  const [charges, invoices] = await Promise.all([
+  const [charges, invoices, overdueInvoices] = await Promise.all([
     stripe.charges.list({ created: { gte: unix(thirtyDaysAgo) }, limit: 100 }),
     stripe.invoices.list({ created: { gte: unix(monthStart) }, limit: 100 }),
+    stripe.invoices.list({
+      status: 'open',
+      due_date: { lt: unix(now) },
+      limit: 5,
+      expand: ['data.customer'],
+    } as Parameters<typeof stripe.invoices.list>[0]),
   ]);
 
   const INVOICED_STATUSES: ReadonlyArray<Stripe.Invoice.Status> = ['open', 'paid', 'uncollectible'];
@@ -104,5 +119,25 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([date, amount]) => ({ date, amount }));
 
-  return { invoiced, paid, overdue, sparkline, currency: 'USD' };
+  const rows: StripeInvoiceRow[] = overdueInvoices.data
+    .filter((inv) => inv.due_date != null && inv.due_date < nowSec)
+    .map((inv) => {
+      const customer = inv.customer;
+      const customerName =
+        typeof customer === 'object' && customer !== null && 'name' in customer
+          ? ((customer as { name?: string | null }).name ?? 'Unknown')
+          : 'Unknown';
+      const dueDate = inv.due_date!;
+      const daysOverdue = Math.floor((unix(now) - dueDate) / 86400);
+      return {
+        id: inv.id,
+        customer_name: customerName,
+        amount: (inv.amount_remaining ?? 0) / 100,
+        due_date: new Date(dueDate * 1000).toISOString().slice(0, 10),
+        days_overdue: daysOverdue,
+      };
+    })
+    .sort((a, b) => b.days_overdue - a.days_overdue);
+
+  return { invoiced, paid, overdue, sparkline, currency: 'USD', rows };
 }
