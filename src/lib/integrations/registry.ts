@@ -3,6 +3,7 @@ import { validateStripeKey } from './stripe/adapter';
 import { validateHubspotToken } from './hubspot/adapter';
 import { validateApolloKey } from './apollo/adapter';
 import { validateCalendlyToken } from './calendly/adapter';
+import { validateClickupKey } from './clickup/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -59,6 +60,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Calendly, go to Integrations & apps → API & Webhooks → Personal access tokens → ' +
       'Create new token. Paste the token below.',
     validate: validateCalendlyToken,
+  },
+  clickup: {
+    tool: 'clickup',
+    displayName: 'ClickUp',
+    createKeyDocsUrl: 'https://app.clickup.com/settings/apps',
+    instructions:
+      'In ClickUp, go to Settings → Apps → API Token. ' +
+      'Copy your personal API token and paste it below.',
+    validate: validateClickupKey,
   },
 };
 
