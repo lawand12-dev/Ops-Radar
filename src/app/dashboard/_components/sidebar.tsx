@@ -7,7 +7,8 @@ import {
   Activity,
   TrendingUp,
   Plug,
-  ChevronDown,
+  Settings,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
@@ -30,6 +31,7 @@ const navSections: NavSection[] = [
     tag: 'WORKSPACE',
     items: [
       { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
+      { label: 'Settings',     href: '/dashboard/settings',     icon: Settings },
     ],
   },
 ];
@@ -85,9 +87,10 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
 
       {/* User */}
       <div className="flex flex-col gap-2 border-t border-[var(--color-border)] px-3.5 py-3">
-        <button
-          type="button"
-          className="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-sunken)] px-2.5 py-2 transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
+        <Link
+          href="/dashboard/settings"
+          aria-label="Edit profile"
+          className="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-sunken)] px-2.5 py-2 no-underline transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
         >
           <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-accent-400)] to-[var(--color-accent-600)] text-[12px] font-bold tracking-[0.5px] text-white">
             {userInitials}
@@ -96,8 +99,8 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
             <div className="truncate text-body-sm font-semibold text-[var(--color-fg)]">{userName}</div>
             <div className="text-caption text-[var(--color-fg-subtle)]">{userRole}</div>
           </div>
-          <ChevronDown size={13} className="text-[var(--color-fg-faint)]" />
-        </button>
+          <ChevronRight size={13} className="text-[var(--color-fg-faint)]" />
+        </Link>
 
         <SignOutButton />
       </div>
