@@ -2,6 +2,7 @@ import type { ToolName } from '<npm>/lib/integrations';
 import { validateStripeKey } from './stripe/adapter';
 import { validateHubspotToken } from './hubspot/adapter';
 import { validateApolloKey } from './apollo/adapter';
+import { validateCalendlyToken } from './calendly/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -49,6 +50,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'In Apollo, go to Settings → Integrations → API → Create API Key. ' +
       'Copy the key and paste it below.',
     validate: validateApolloKey,
+  },
+  calendly: {
+    tool: 'calendly',
+    displayName: 'Calendly',
+    createKeyDocsUrl: 'https://calendly.com/integrations/api_webhooks',
+    instructions:
+      'In Calendly, go to Integrations & apps → API & Webhooks → Personal access tokens → ' +
+      'Create new token. Paste the token below.',
+    validate: validateCalendlyToken,
   },
 };
 
