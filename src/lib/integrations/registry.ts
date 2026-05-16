@@ -1,6 +1,7 @@
 import type { ToolName } from '<npm>/lib/integrations';
 import { validateStripeKey } from './stripe/adapter';
 import { validateHubspotToken } from './hubspot/adapter';
+import { validateApolloKey } from './apollo/adapter';
 
 export type ToolValidator = (apiKey: string) => Promise<
   | { ok: true; externalAccountId: string }
@@ -39,6 +40,15 @@ const REGISTRY: Partial<Record<ToolName, ToolMeta>> = {
       'Scopes needed: crm.objects.deals.read and crm.objects.contacts.read. ' +
       'Paste the access token (Private App Token) below.',
     validate: validateHubspotToken,
+  },
+  apollo: {
+    tool: 'apollo',
+    displayName: 'Apollo',
+    createKeyDocsUrl: 'https://developer.apollo.io/keys/',
+    instructions:
+      'In Apollo, go to Settings → Integrations → API → Create API Key. ' +
+      'Copy the key and paste it below.',
+    validate: validateApolloKey,
   },
 };
 
