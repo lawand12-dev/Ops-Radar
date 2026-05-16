@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
+import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
+import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -82,10 +84,15 @@ type AutomationRoiWidget = {
 
 type ApiResult =
   | { status: 'ok'; data: AutomationRoiWidget; fromCache: boolean }
+  | { status: 'not_enrolled' }
   | { status: 'error'; message: string; staleData?: AutomationRoiWidget; staleAgeMs?: number };
 
-const CACHE_KEY = 'dash:automation-roi';
-const STALE_KEY = `${CACHE_KEY}:stale`;
+function cacheKeys(userId: string) {
+  return {
+    fresh: `dash:automation-roi:${userId}`,
+    stale: `dash:automation-roi:${userId}:stale`,
+  };
+}
 
 function shape(raw: CtoAnalyticsResponse): AutomationRoiWidget {
   const minutesPerExec = Number(process.env.DEFAULT_MINUTES_PER_EXECUTION ?? 5);
@@ -109,41 +116,73 @@ function shape(raw: CtoAnalyticsResponse): AutomationRoiWidget {
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return NextResponse.json({ status: 'error', message: 'unauthorized' }, { status: 401 });
+  }
+
+  const apiUrl = process.env.CHATV2_API_URL;
+  const serviceKey = process.env.CHATV2_SERVICE_API_KEY;
+  if (!apiUrl || !serviceKey) {
+    console.error('[automation-roi] CHATV2_API_URL or CHATV2_SERVICE_API_KEY missing');
+    return NextResponse.json({ status: 'error', message: 'integration_not_configured' }, { status: 500 });
+  }
+
+  const keys = cacheKeys(userId);
   const fresh = req.nextUrl.searchParams.get('fresh') === '1';
 
   if (!fresh) {
-    const cached = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(CACHE_KEY);
+    const cached = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(keys.fresh);
     if (cached) {
       return NextResponse.json({ status: 'ok', data: cached.data, fromCache: true });
     }
   }
 
-  const baseUrl = process.env.CTO_BACKEND_URL;
-  if (!baseUrl) {
-    return NextResponse.json({ status: 'error', message: 'CTO_BACKEND_URL not configured' });
+  // Look up this customer's chatv2 project
+  const supabase = getServerSupabaseClient();
+  const { data: mapping, error: mappingError } = await supabase
+    .from('client_n8n_config')
+    .select('chatv2_project_id')
+    .eq('client_id', userId)
+    .maybeSingle();
+
+  if (mappingError) {
+    console.error('[automation-roi] mapping lookup failed:', mappingError.message);
+    return NextResponse.json({ status: 'error', message: 'mapping_lookup_failed' }, { status: 500 });
+  }
+
+  if (!mapping?.chatv2_project_id) {
+    return NextResponse.json({ status: 'not_enrolled' });
   }
 
   let response: Response;
   try {
-    response = await fetch(`${baseUrl}/analytics`, {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-      cache: 'no-store',
-    });
+    response = await fetch(
+      `${apiUrl}/service/projects/${encodeURIComponent(mapping.chatv2_project_id)}/analytics`,
+      {
+        headers: { Authorization: `Bearer ${serviceKey}` },
+        signal: AbortSignal.timeout(10_000),
+        cache: 'no-store',
+      }
+    );
   } catch (err) {
-    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
+    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(keys.stale);
     return NextResponse.json({
       status: 'error',
-      message: err instanceof Error ? err.message : 'CTO backend unreachable',
+      message: err instanceof Error ? err.message : 'chatv2 unreachable',
       ...(stale && { staleData: stale.data, staleAgeMs: Date.now() - stale.ts }),
     });
   }
 
+  if (response.status === 404) {
+    return NextResponse.json({ status: 'not_enrolled' });
+  }
+
   if (!response.ok) {
-    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(STALE_KEY);
+    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(keys.stale);
     return NextResponse.json({
       status: 'error',
-      message: `CTO backend returned ${response.status}`,
+      message: `chatv2 returned ${response.status}`,
       ...(stale && { staleData: stale.data, staleAgeMs: Date.now() - stale.ts }),
     });
   }
@@ -155,17 +194,14 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
       throw new Error('unexpected shape');
     }
   } catch {
-    return NextResponse.json({
-      status: 'error',
-      message: 'CTO backend returned an unexpected response shape',
-    });
+    return NextResponse.json({ status: 'error', message: 'chatv2 returned unexpected shape' });
   }
 
   const data = shape(raw);
   const wrapped = { data, ts: Date.now() };
   await Promise.all([
-    safeRedisSet(CACHE_KEY, wrapped, CACHE_TTL_SECONDS),
-    safeRedisSet(STALE_KEY, wrapped, STALE_TTL_SECONDS),
+    safeRedisSet(keys.fresh, wrapped, CACHE_TTL_SECONDS),
+    safeRedisSet(keys.stale, wrapped, STALE_TTL_SECONDS),
   ]);
 
   return NextResponse.json({ status: 'ok', data, fromCache: false });
