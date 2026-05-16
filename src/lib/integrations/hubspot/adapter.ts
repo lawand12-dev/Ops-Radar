@@ -4,6 +4,14 @@ function client(token: string): HubspotClient {
   return new HubspotClient({ accessToken: token });
 }
 
+export type HubspotDealRow = {
+  id: string;
+  name: string;
+  amount: number;              // USD
+  stage: string;
+  close_date: string | null;  // YYYY-MM-DD or null
+};
+
 export type HubspotSalesData = {
   pipeline_value: number;             // sum of `amount` for all open deals (USD)
   open_deals_count: number;
@@ -12,6 +20,7 @@ export type HubspotSalesData = {
   sparkline: Array<{ date: string; deals_created: number }>; // last 30 days
   currency: 'USD';
   truncated: boolean;                 // true if either deals or contacts response had a next page
+  rows: HubspotDealRow[];
 };
 
 export type AdapterValidation =
@@ -118,7 +127,7 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     hs.crm.deals.basicApi.getPage(
       PAGE_LIMIT,
       undefined,
-      ['amount', 'dealstage', 'createdate', 'closedate', 'hs_is_closed', 'hs_is_closed_won'],
+      ['amount', 'dealstage', 'dealname', 'createdate', 'closedate', 'hs_is_closed', 'hs_is_closed_won'],
       undefined,
       undefined,
       false,
@@ -159,6 +168,20 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     }
   }
 
+  const rows: HubspotDealRow[] = dealsResp.results
+    .filter((deal) => (deal.properties?.hs_is_closed ?? '').toString() !== 'true')
+    .map((deal) => ({
+      id: deal.id,
+      name: deal.properties?.dealname ?? 'Untitled deal',
+      amount: Number(deal.properties?.amount ?? 0) || 0,
+      stage: deal.properties?.dealstage ?? 'unknown',
+      close_date: deal.properties?.closedate
+        ? new Date(deal.properties.closedate).toISOString().slice(0, 10)
+        : null,
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+
   let newLeads = 0;
   for (const contact of contactsResp.results) {
     const createIso = contact.properties?.createdate;
@@ -181,5 +204,6 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     sparkline,
     currency: 'USD',
     truncated,
+    rows,
   };
 }
