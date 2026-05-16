@@ -13,6 +13,7 @@ import {
 import { cn } from '<npm>/lib/utils';
 import { EcgIcon } from './icons';
 import { SignOutButton } from '<npm>/components/dashboard/sign-out-button';
+import { ThemeToggle } from '<npm>/components/dashboard/theme-toggle';
 
 type NavItem = { label: string; href: string; icon: typeof LayoutDashboard };
 type NavSection = { tag: string | null; items: NavItem[] };
@@ -102,6 +103,7 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
           <ChevronRight size={13} className="text-[var(--color-fg-faint)]" />
         </Link>
 
+        <ThemeToggle />
         <SignOutButton />
       </div>
     </aside>

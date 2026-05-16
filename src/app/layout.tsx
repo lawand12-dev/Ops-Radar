@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { headers } from "next/headers";
 import { SITE_URL } from "<npm>/lib/constants";
 import { Toaster } from "<npm>/components/ui/toast";
+import { ThemeSync } from "<npm>/components/theme-sync";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -82,6 +83,7 @@ export default async function RootLayout({
       className={`h-full antialiased ${interTight.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
     >
       <body className="min-h-full flex flex-col">
+        <ThemeSync />
         {children}
         <Toaster />
         <Analytics />

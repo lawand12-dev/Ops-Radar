@@ -6,23 +6,40 @@ import {
   isValidAdminSessionToken,
 } from './lib/admin-session'
 
-const DARK_ROUTE_PREFIXES = ['/dashboard', '/admin', '/aios'] as const
+const ALWAYS_DARK_PREFIXES = ['/admin', '/aios'] as const
+const DASH_THEME_COOKIE = 'dash-theme'
 
-function themeForPath(pathname: string): 'light' | 'dark' {
-  return DARK_ROUTE_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  )
-    ? 'dark'
-    : 'light'
+function isDashboard(pathname: string): boolean {
+  return pathname === '/dashboard' || pathname.startsWith('/dashboard/')
 }
 
-function withTheme(response: NextResponse, pathname: string): NextResponse {
-  response.headers.set('x-theme', themeForPath(pathname))
+function themeForRequest(pathname: string, dashCookie: string | undefined): 'light' | 'dark' {
+  if (
+    ALWAYS_DARK_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    )
+  ) {
+    return 'dark'
+  }
+  if (isDashboard(pathname)) {
+    if (dashCookie === 'light' || dashCookie === 'dark') return dashCookie
+    return 'dark'
+  }
+  return 'light'
+}
+
+function withTheme(
+  response: NextResponse,
+  pathname: string,
+  dashCookie: string | undefined,
+): NextResponse {
+  response.headers.set('x-theme', themeForRequest(pathname, dashCookie))
   return response
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const dashCookie = request.cookies.get(DASH_THEME_COOKIE)?.value
 
   // /admin/* — gated by the existing admin-session cookie.
   const isAdminRoute =
@@ -33,9 +50,9 @@ export async function proxy(request: NextRequest) {
   if (isAdminRoute && !isAdminLoginPage) {
     const cookie = request.cookies.get(ADMIN_SESSION_COOKIE)
     if (!cookie?.value || !isValidAdminSessionToken(cookie.value)) {
-      return withTheme(new NextResponse(null, { status: 404 }), pathname)
+      return withTheme(new NextResponse(null, { status: 404 }), pathname, dashCookie)
     }
-    return withTheme(NextResponse.next(), pathname)
+    return withTheme(NextResponse.next(), pathname, dashCookie)
   }
 
   // /dashboard/* (pages) and /api/dashboard/* (data endpoints) — both gated
@@ -52,7 +69,7 @@ export async function proxy(request: NextRequest) {
 
     if (!url || !key) {
       console.error('[proxy] missing Supabase env, redirecting to /login')
-      return withTheme(redirectToLogin(request), pathname)
+      return withTheme(redirectToLogin(request), pathname, dashCookie)
     }
 
     const res = NextResponse.next({ request })
@@ -74,22 +91,22 @@ export async function proxy(request: NextRequest) {
       const { data, error } = await supabase.auth.getUser()
       if (error || !data.user) {
         if (isDashboardApi) {
-          return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname)
+          return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname, dashCookie)
         }
-        return withTheme(redirectToLogin(request), pathname)
+        return withTheme(redirectToLogin(request), pathname, dashCookie)
       }
     } catch (err) {
       console.warn('[proxy] auth check threw, fail-closed:', err)
       if (isDashboardApi) {
-        return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname)
+        return withTheme(NextResponse.json({ error: 'unauthorized' }, { status: 401 }), pathname, dashCookie)
       }
-      return withTheme(redirectToLogin(request), pathname)
+      return withTheme(redirectToLogin(request), pathname, dashCookie)
     }
 
-    return withTheme(res, pathname)
+    return withTheme(res, pathname, dashCookie)
   }
 
-  return withTheme(NextResponse.next(), pathname)
+  return withTheme(NextResponse.next(), pathname, dashCookie)
 }
 
 export const config = {
