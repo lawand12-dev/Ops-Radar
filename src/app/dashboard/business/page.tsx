@@ -4,26 +4,31 @@ import { useEffect, useState } from 'react';
 import { NarrativeCard } from '../_components/narrative-card';
 import { EmptyStateConnect } from '../_components/empty-state-connect';
 
-// Real shape from /api/dashboard/alerts (Task 12)
-type DashboardAlert = {
+type StripeInvoiceRow = {
   id: string;
-  severity: 'needs-you' | 'watch' | 'heads-up';
-  label: string;
-  message: string;
-  href: string;
+  customer_name: string;
+  amount: number;
+  due_date: string;
+  days_overdue: number;
 };
-type AlertsResp = { status: string; alerts?: DashboardAlert[] };
 
-// Real shape from /api/dashboard/finance → StripeFinanceData
 type StripeFinanceData = {
   invoiced: number;
   paid: number;
   overdue: number;
   sparkline: Array<{ date: string; amount: number }>;
   currency: 'USD';
+  rows: StripeInvoiceRow[];
 };
 
-// Real shape from /api/dashboard/sales-live → HubspotSalesData
+type HubspotDealRow = {
+  id: string;
+  name: string;
+  amount: number;
+  stage: string;
+  close_date: string | null;
+};
+
 type HubspotSalesData = {
   pipeline_value: number;
   open_deals_count: number;
@@ -32,9 +37,25 @@ type HubspotSalesData = {
   sparkline: Array<{ date: string; deals_created: number }>;
   currency: 'USD';
   truncated: boolean;
+  rows: HubspotDealRow[];
 };
 
-// Real shape from /api/dashboard/marketing (flat — no nested apollo/calendly objects)
+type ApolloSequence = {
+  id: string;
+  name: string;
+  contacts_enrolled: number;
+  emails_sent: number;
+  open_rate_pct: number;
+  reply_rate_pct: number;
+};
+
+type CalendlyUpcoming = {
+  name: string;
+  invitee_name: string;
+  invitee_email: string;
+  start_time: string;
+};
+
 type MarketingWidgetData = {
   emails_sent: number | null;
   open_rate_pct: number | null;
@@ -45,7 +66,44 @@ type MarketingWidgetData = {
   apollo_connected: boolean;
   calendly_connected: boolean;
   period_label: string;
+  sequences: ApolloSequence[];
+  upcoming: CalendlyUpcoming[];
 };
+
+type DeliveryTask = {
+  id: string;
+  name: string;
+  status: string;
+  due_date: string | null;
+  overdue: boolean;
+  project_name: string;
+  source: 'clickup' | 'asana';
+};
+
+type DeliveryData = {
+  active_projects: number;
+  overdue_tasks: number;
+  tasks: DeliveryTask[];
+};
+
+type TogglProjectRow = { project_name: string; hours: number; color: string };
+
+type TogglTimeData = {
+  hours_tracked: number;
+  utilization_pct: number | null;
+  by_project: TogglProjectRow[];
+  period_label: string;
+};
+
+type DashboardAlert = {
+  id: string;
+  severity: 'needs-you' | 'watch' | 'heads-up';
+  label: string;
+  message: string;
+  href: string;
+};
+
+type AlertsResp = { status: string; alerts?: DashboardAlert[] };
 
 export default function BusinessPage() {
   return (
@@ -60,6 +118,8 @@ export default function BusinessPage() {
       <PipelineSection />
       <ProspectsSection />
       <BookingsSection />
+      <DeliverySection />
+      <TimeSection />
     </div>
   );
 }
@@ -85,33 +145,21 @@ function Kpis() {
   const [mkt, setMkt] = useState<{ status?: string; data?: MarketingWidgetData } | null>(null);
 
   useEffect(() => {
-    fetch('/api/dashboard/finance')
-      .then((r) => r.json())
-      .then(setFin)
-      .catch(() => {});
-    fetch('/api/dashboard/sales-live')
-      .then((r) => r.json())
-      .then(setSales)
-      .catch(() => {});
-    fetch('/api/dashboard/marketing')
-      .then((r) => r.json())
-      .then(setMkt)
-      .catch(() => {});
+    fetch('/api/dashboard/finance').then((r) => r.json()).then(setFin).catch(() => {});
+    fetch('/api/dashboard/sales-live').then((r) => r.json()).then(setSales).catch(() => {});
+    fetch('/api/dashboard/marketing').then((r) => r.json()).then(setMkt).catch(() => {});
   }, []);
 
-  // MRR: not available from Stripe — show paid MTD as closest proxy
   const paid = fin?.data?.paid;
-  // Active pipeline: pipeline_value from HubSpot
   const pipeline = sales?.data?.pipeline_value;
-  // New prospects: no per-metric count from Apollo in current upstream — show '—'
-  // Booked calls: meetings_booked from marketing widget
   const calls = mkt?.data?.meetings_booked;
+  const emails = mkt?.data?.emails_sent;
 
   return (
     <div className="grid grid-cols-4 gap-2.5">
       <Kpi label="Revenue · MTD" value={typeof paid === 'number' ? fmtMoney(paid) : '—'} />
       <Kpi label="Active pipeline" value={typeof pipeline === 'number' ? fmtMoney(pipeline) : '—'} />
-      <Kpi label="New prospects · 7d" value="—" />
+      <Kpi label="Emails sent" value={typeof emails === 'number' ? String(emails) : '—'} />
       <Kpi label="Booked calls · 7d" value={typeof calls === 'number' ? String(calls) : '—'} />
     </div>
   );
@@ -120,12 +168,8 @@ function Kpis() {
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
-      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">
-        {label}
-      </div>
-      <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">
-        {value}
-      </div>
+      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">{label}</div>
+      <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">{value}</div>
     </div>
   );
 }
@@ -140,22 +184,18 @@ function BusinessAlerts() {
       .catch(() => setResp({ status: 'unavailable' }));
   }, []);
 
-  // Filter to business-side alerts: hrefs pointing to /dashboard/business
-  // or integration hrefs for the four business tools.
   const all = resp?.alerts ?? [];
   const items = all
     .filter(
       (a) =>
         a.href.startsWith('/dashboard/business') ||
-        /tool=(stripe|hubspot|apollo|calendly)/.test(a.href),
+        /tool=(stripe|hubspot|apollo|calendly|clickup|asana|toggl)/.test(a.href),
     )
     .slice(0, 5);
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
-      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
-        Current alerts
-      </h3>
+      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">Current alerts</h3>
       {resp === null ? (
         <p className="text-body-sm text-[var(--color-fg-subtle)]">Loading…</p>
       ) : items.length === 0 ? (
@@ -167,7 +207,8 @@ function BusinessAlerts() {
               key={a.id}
               className="border-b border-[var(--color-border)] py-1.5 text-body-sm text-[var(--color-fg-muted)] last:border-b-0"
             >
-              <span className="font-semibold text-[var(--color-fg)]">{a.label}:</span> {a.message}
+              <span className="font-semibold text-[var(--color-fg)]">{a.label}:</span>{' '}
+              {a.message}
             </li>
           ))}
         </ul>
@@ -175,11 +216,6 @@ function BusinessAlerts() {
     </div>
   );
 }
-
-// ============================================================
-// Per-tool sections. Each calls one upstream and degrades to
-// EmptyStateConnect when not connected.
-// ============================================================
 
 function RevenueSection() {
   return (
@@ -189,18 +225,27 @@ function RevenueSection() {
       tool="Stripe"
       toolSlug="stripe"
       renderConnected={(data) => {
-        const d = data as { data?: StripeFinanceData };
-        const fin = d.data;
+        const fin = (data as { data?: StripeFinanceData }).data;
         return (
           <>
-            <div className="mb-3 grid grid-cols-4 gap-2">
+            <div className="mb-4 grid grid-cols-3 gap-2">
               <StatMini label="Invoiced · MTD" value={fin?.invoiced != null ? fmtMoney(fin.invoiced) : '—'} />
               <StatMini label="Paid · MTD" value={fin?.paid != null ? fmtMoney(fin.paid) : '—'} />
               <StatMini label="Overdue" value={fin?.overdue != null ? fmtMoney(fin.overdue) : '—'} />
-              <StatMini label="Top customer" value="—" />
             </div>
-            {/* Upstream does not expose per-charge rows */}
-            <p className="text-body-sm text-[var(--color-fg-subtle)]">No detailed rows yet.</p>
+            {fin?.rows && fin.rows.length > 0 ? (
+              <RowTable
+                headers={['Customer', 'Amount', 'Due date', 'Days overdue']}
+                rows={fin.rows.map((r) => [
+                  r.customer_name,
+                  fmtMoney(r.amount),
+                  r.due_date,
+                  `${r.days_overdue}d`,
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No overdue invoices.</p>
+            )}
           </>
         );
       }}
@@ -216,30 +261,28 @@ function PipelineSection() {
       tool="HubSpot"
       toolSlug="hubspot"
       renderConnected={(data) => {
-        const d = data as { data?: HubspotSalesData };
-        const hs = d.data;
+        const hs = (data as { data?: HubspotSalesData }).data;
         return (
           <>
-            <div className="mb-3 grid grid-cols-4 gap-2">
-              <StatMini
-                label="Open deals"
-                value={hs?.open_deals_count != null ? String(hs.open_deals_count) : '—'}
-              />
-              <StatMini
-                label="Pipeline $"
-                value={hs?.pipeline_value != null ? fmtMoney(hs.pipeline_value) : '—'}
-              />
-              <StatMini
-                label="New leads · 30d"
-                value={hs?.new_leads != null ? String(hs.new_leads) : '—'}
-              />
-              <StatMini
-                label="Won · MTD"
-                value={hs?.deals_won_this_month != null ? String(hs.deals_won_this_month) : '—'}
-              />
+            <div className="mb-4 grid grid-cols-4 gap-2">
+              <StatMini label="Open deals" value={hs?.open_deals_count != null ? String(hs.open_deals_count) : '—'} />
+              <StatMini label="Pipeline $" value={hs?.pipeline_value != null ? fmtMoney(hs.pipeline_value) : '—'} />
+              <StatMini label="New leads · 30d" value={hs?.new_leads != null ? String(hs.new_leads) : '—'} />
+              <StatMini label="Won · MTD" value={hs?.deals_won_this_month != null ? String(hs.deals_won_this_month) : '—'} />
             </div>
-            {/* Upstream does not expose per-deal rows */}
-            <p className="text-body-sm text-[var(--color-fg-subtle)]">No detailed rows yet.</p>
+            {hs?.rows && hs.rows.length > 0 ? (
+              <RowTable
+                headers={['Deal', 'Value', 'Stage', 'Close date']}
+                rows={hs.rows.map((r) => [
+                  r.name,
+                  fmtMoney(r.amount),
+                  r.stage,
+                  r.close_date ?? '—',
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No open deals.</p>
+            )}
           </>
         );
       }}
@@ -256,27 +299,28 @@ function ProspectsSection() {
       toolSlug="apollo"
       statusKey="apollo"
       renderConnected={(data) => {
-        const d = data as { data?: MarketingWidgetData };
-        const mkt = d.data;
-        // Apollo fields in the current marketing widget: emails_sent, open_rate_pct, reply_rate_pct
+        const mkt = (data as { data?: MarketingWidgetData }).data;
         return (
           <>
-            <div className="mb-3 grid grid-cols-3 gap-2">
-              <StatMini
-                label="Emails sent"
-                value={mkt?.emails_sent != null ? mkt.emails_sent.toLocaleString() : '—'}
-              />
-              <StatMini
-                label="Open rate"
-                value={mkt?.open_rate_pct != null ? `${mkt.open_rate_pct.toFixed(1)}%` : '—'}
-              />
-              <StatMini
-                label="Reply rate"
-                value={mkt?.reply_rate_pct != null ? `${mkt.reply_rate_pct.toFixed(1)}%` : '—'}
-              />
+            <div className="mb-4 grid grid-cols-3 gap-2">
+              <StatMini label="Emails sent" value={mkt?.emails_sent != null ? mkt.emails_sent.toLocaleString() : '—'} />
+              <StatMini label="Open rate" value={mkt?.open_rate_pct != null ? `${mkt.open_rate_pct.toFixed(1)}%` : '—'} />
+              <StatMini label="Reply rate" value={mkt?.reply_rate_pct != null ? `${mkt.reply_rate_pct.toFixed(1)}%` : '—'} />
             </div>
-            {/* No per-prospect row data in current upstream */}
-            <p className="text-body-sm text-[var(--color-fg-subtle)]">No detailed rows yet.</p>
+            {mkt?.sequences && mkt.sequences.length > 0 ? (
+              <RowTable
+                headers={['Sequence', 'Enrolled', 'Sent', 'Open %', 'Reply %']}
+                rows={mkt.sequences.map((s) => [
+                  s.name,
+                  String(s.contacts_enrolled),
+                  String(s.emails_sent),
+                  `${s.open_rate_pct.toFixed(1)}%`,
+                  `${s.reply_rate_pct.toFixed(1)}%`,
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No active sequences.</p>
+            )}
           </>
         );
       }}
@@ -293,27 +337,92 @@ function BookingsSection() {
       toolSlug="calendly"
       statusKey="calendly"
       renderConnected={(data) => {
-        const d = data as { data?: MarketingWidgetData };
-        const mkt = d.data;
+        const mkt = (data as { data?: MarketingWidgetData }).data;
         return (
           <>
-            <div className="mb-3 grid grid-cols-3 gap-2">
-              <StatMini
-                label="Booked · period"
-                value={mkt?.meetings_booked != null ? String(mkt.meetings_booked) : '—'}
-              />
-              <StatMini
-                label="Conversion"
-                value={
-                  mkt?.meeting_conversion_pct != null
-                    ? `${mkt.meeting_conversion_pct.toFixed(1)}%`
-                    : '—'
-                }
-              />
-              <StatMini label="Period" value={mkt?.period_label ?? '—'} />
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <StatMini label="Booked · last 7d" value={mkt?.meetings_booked != null ? String(mkt.meetings_booked) : '—'} />
+              <StatMini label="Conversion" value={mkt?.meeting_conversion_pct != null ? `${mkt.meeting_conversion_pct.toFixed(1)}%` : '—'} />
             </div>
-            {/* No per-booking row data in current upstream */}
-            <p className="text-body-sm text-[var(--color-fg-subtle)]">No detailed rows yet.</p>
+            {mkt?.upcoming && mkt.upcoming.length > 0 ? (
+              <RowTable
+                headers={['Event', 'Invitee', 'Date / Time']}
+                rows={mkt.upcoming.map((u) => [
+                  u.name,
+                  u.invitee_name,
+                  new Date(u.start_time).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                  }),
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No upcoming bookings.</p>
+            )}
+          </>
+        );
+      }}
+    />
+  );
+}
+
+function DeliverySection() {
+  return (
+    <ToolSection
+      title="Delivery (ClickUp / Asana)"
+      endpoint="/api/dashboard/delivery"
+      tool="ClickUp or Asana"
+      toolSlug="clickup"
+      renderConnected={(data) => {
+        const delivery = (data as { data?: DeliveryData }).data;
+        return (
+          <>
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <StatMini label="Active projects" value={delivery?.active_projects != null ? String(delivery.active_projects) : '—'} />
+              <StatMini label="Overdue tasks" value={delivery?.overdue_tasks != null ? String(delivery.overdue_tasks) : '—'} />
+            </div>
+            {delivery?.tasks && delivery.tasks.length > 0 ? (
+              <RowTable
+                headers={['Task', 'Project', 'Due', 'Status']}
+                rows={delivery.tasks.slice(0, 10).map((t) => [
+                  t.name,
+                  `${t.project_name} (${t.source})`,
+                  t.due_date ?? '—',
+                  t.overdue ? 'Overdue' : t.status,
+                ])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No open tasks.</p>
+            )}
+          </>
+        );
+      }}
+    />
+  );
+}
+
+function TimeSection() {
+  return (
+    <ToolSection
+      title="Time tracking (Toggl)"
+      endpoint="/api/dashboard/time-tracking"
+      tool="Toggl"
+      toolSlug="toggl"
+      renderConnected={(data) => {
+        const time = (data as { data?: TogglTimeData }).data;
+        return (
+          <>
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <StatMini label="Hours · this week" value={time?.hours_tracked != null ? `${time.hours_tracked}h` : '—'} />
+              <StatMini label="Utilization" value={time?.utilization_pct != null ? `${time.utilization_pct.toFixed(1)}%` : '—'} />
+            </div>
+            {time?.by_project && time.by_project.length > 0 ? (
+              <RowTable
+                headers={['Project', 'Hours']}
+                rows={time.by_project.map((p) => [p.project_name, `${p.hours}h`])}
+              />
+            ) : (
+              <p className="text-body-sm text-[var(--color-fg-subtle)]">No time entries this week.</p>
+            )}
           </>
         );
       }}
@@ -326,17 +435,21 @@ type ToolSectionProps = {
   endpoint: string;
   tool: string;
   toolSlug: string;
-  /**
-   * For the unified marketing endpoint: if statusKey is 'apollo' or 'calendly',
-   * check the flat `data.apollo_connected` / `data.calendly_connected` boolean
-   * to determine whether the tool is connected.
-   */
   statusKey?: 'apollo' | 'calendly';
   renderConnected: (data: unknown) => React.ReactNode;
 };
 
-function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnected }: ToolSectionProps) {
-  const [state, setState] = useState<'loading' | 'connected' | 'not-connected' | 'error'>('loading');
+function ToolSection({
+  title,
+  endpoint,
+  tool,
+  toolSlug,
+  statusKey,
+  renderConnected,
+}: ToolSectionProps) {
+  const [state, setState] = useState<'loading' | 'connected' | 'not-connected' | 'error'>(
+    'loading',
+  );
   const [data, setData] = useState<unknown>(null);
 
   useEffect(() => {
@@ -352,14 +465,19 @@ function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnect
       .then((j) => {
         if (cancelled || j === null) return;
         const status = (j as { status?: string })?.status;
-        if (status === 'not_configured' || status === 'not_enrolled' || status === 'not_connected') {
+        if (
+          status === 'not_configured' ||
+          status === 'not_enrolled' ||
+          status === 'not_connected' ||
+          status === 'requires_reconnect'
+        ) {
           return setState('not-connected');
         }
-        if (status === 'requires_reconnect') return setState('not-connected');
         if (status === 'error') return setState('error');
         if (statusKey) {
-          // Flat boolean check on the marketing payload: data.apollo_connected / data.calendly_connected
-          const connected = (j as { data?: Record<string, boolean> })?.data?.[`${statusKey}_connected`];
+          const connected = (j as { data?: Record<string, boolean> })?.data?.[
+            `${statusKey}_connected`
+          ];
           if (!connected) return setState('not-connected');
         }
         setData(j);
@@ -368,16 +486,12 @@ function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnect
       .catch(() => {
         if (!cancelled) setState('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [endpoint, statusKey]);
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
-      <h3 className="mb-3 text-label text-[var(--color-fg-muted)]">
-        {title}
-      </h3>
+      <h3 className="mb-4 text-label text-[var(--color-fg-muted)]">{title}</h3>
       {state === 'loading' ? (
         <p className="text-body-sm text-[var(--color-fg-subtle)]">Loading…</p>
       ) : state === 'not-connected' ? (
@@ -389,6 +503,41 @@ function ToolSection({ title, endpoint, tool, toolSlug, statusKey, renderConnect
       ) : (
         renderConnected(data)
       )}
+    </div>
+  );
+}
+
+function RowTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-body-sm">
+        <thead>
+          <tr className="border-b border-[var(--color-border)]">
+            {headers.map((h) => (
+              <th
+                key={h}
+                className="pb-2 pr-4 text-left text-label font-normal text-[var(--color-fg-subtle)] last:pr-0"
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} className="border-b border-[var(--color-border)] last:border-b-0">
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className="py-2.5 pr-4 text-[var(--color-fg-muted)] last:pr-0"
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
