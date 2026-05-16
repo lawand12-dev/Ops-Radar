@@ -4,6 +4,7 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import { fetchClickupDeliveryData } from '<npm>/lib/integrations/clickup/adapter';
 import { fetchAsanaDeliveryData } from '<npm>/lib/integrations/asana/adapter';
+import { fetchMondayDeliveryData } from '<npm>/lib/integrations/monday/adapter';
 import type { DeliveryData } from '<npm>/lib/integrations/delivery-types';
 import { Redis } from '@upstash/redis';
 
@@ -40,7 +41,7 @@ export async function GET() {
     .from('integrations')
     .select('tool, encrypted_token, iv, auth_tag, status')
     .eq('client_id', userId)
-    .in('tool', ['clickup', 'asana']);
+    .in('tool', ['clickup', 'asana', 'monday']);
 
   const clickupRow = (rows ?? []).find(
     (r): r is IntegrationRow => r.tool === 'clickup' && r.status === 'connected',
@@ -48,8 +49,11 @@ export async function GET() {
   const asanaRow = (rows ?? []).find(
     (r): r is IntegrationRow => r.tool === 'asana' && r.status === 'connected',
   );
+  const mondayRow = (rows ?? []).find(
+    (r): r is IntegrationRow => r.tool === 'monday' && r.status === 'connected',
+  );
 
-  if (!clickupRow && !asanaRow) {
+  if (!clickupRow && !asanaRow && !mondayRow) {
     return NextResponse.json({ status: 'not_connected' });
   }
 
@@ -97,6 +101,23 @@ export async function GET() {
       synced.push('asana');
     } catch (err) {
       console.error('[delivery] asana fetch failed:', err);
+    }
+  }
+
+  if (mondayRow?.encrypted_token) {
+    try {
+      const key = decryptApiKey({
+        encrypted_token: mondayRow.encrypted_token,
+        iv: mondayRow.iv,
+        auth_tag: mondayRow.auth_tag,
+      });
+      const d = await fetchMondayDeliveryData(key);
+      merged.active_projects += d.active_projects;
+      merged.overdue_tasks += d.overdue_tasks;
+      merged.tasks.push(...d.tasks);
+      synced.push('monday');
+    } catch (err) {
+      console.error('[delivery] monday fetch failed:', err);
     }
   }
 
