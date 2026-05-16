@@ -36,7 +36,6 @@ const nextConfig: NextConfig = {
       { source: '/dashboard/tasks',                 destination: '/dashboard',              permanent: true },
       { source: '/dashboard/team',                  destination: '/dashboard',              permanent: true },
       { source: '/dashboard/time-tracking',         destination: '/dashboard',              permanent: true },
-      { source: '/dashboard/settings',              destination: '/dashboard/integrations', permanent: true },
     ]
   },
   async headers() {
