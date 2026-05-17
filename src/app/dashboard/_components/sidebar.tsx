@@ -11,6 +11,7 @@ import {
   Plug,
   Settings,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -29,6 +30,7 @@ const navSections: NavSection[] = [
       { label: 'Automations',    href: '/dashboard/automations',    icon: Activity        },
       { label: 'Business',       href: '/dashboard/business',       icon: TrendingUp      },
       { label: 'Profitability',  href: '/dashboard/profitability',  icon: DollarSign      },
+      { label: 'Actions',         href: '/dashboard/actions',         icon: Zap             },
     ],
   },
   {
@@ -43,11 +45,19 @@ const navSections: NavSection[] = [
 export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
   const pathname = usePathname();
   const [unreadBriefings, setUnreadBriefings] = useState(0);
+  const [pendingActions, setPendingActions] = useState(0);
 
   useEffect(() => {
     fetch('/api/dashboard/briefing?unread_only=true')
       .then((r) => r.json())
       .then((d: { count?: number }) => setUnreadBriefings(d.count ?? 0))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/dashboard/actions?status=pending&limit=1')
+      .then((r) => r.json())
+      .then((d: { pending_count?: number }) => setPendingActions(d.pending_count ?? 0))
       .catch(() => {});
   }, []);
 
@@ -92,6 +102,11 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
                   </span>
                   {href === '/dashboard' && unreadBriefings > 0 && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+                  )}
+                  {href === '/dashboard/actions' && pendingActions > 0 && (
+                    <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
+                      {pendingActions}
+                    </span>
                   )}
                 </Link>
               );
