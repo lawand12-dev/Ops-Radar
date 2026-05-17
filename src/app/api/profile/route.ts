@@ -11,6 +11,7 @@ type Profile = {
   timezone: string;
   role: string;
   blended_hourly_rate_usd: number;
+  weekly_briefing_enabled: boolean;
 };
 
 const COMMON_TIMEZONES = new Set([
@@ -52,6 +53,7 @@ export async function GET(): Promise<NextResponse> {
     blended_hourly_rate_usd: typeof meta.blended_hourly_rate_usd === 'number'
       ? meta.blended_hourly_rate_usd
       : 85,
+    weekly_briefing_enabled: meta.weekly_briefing_enabled !== false,
   };
   return NextResponse.json({ profile });
 }
@@ -61,6 +63,7 @@ type PatchBody = {
   company_name?: unknown;
   timezone?: unknown;
   blended_hourly_rate_usd?: unknown;
+  weekly_briefing_enabled?: unknown;
 };
 
 function sanitizeText(input: unknown, max: number): string | null {
@@ -80,7 +83,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
   const body = (await req.json().catch(() => ({}))) as PatchBody;
 
-  const updates: Record<string, string | number> = {};
+  const updates: Record<string, string | number | boolean> = {};
 
   if ('full_name' in body) {
     const v = sanitizeText(body.full_name, 80);
@@ -104,6 +107,12 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'invalid_blended_hourly_rate_usd' }, { status: 400 });
     }
     updates.blended_hourly_rate_usd = v;
+  }
+  if ('weekly_briefing_enabled' in body) {
+    if (typeof body.weekly_briefing_enabled !== 'boolean') {
+      return NextResponse.json({ error: 'invalid_weekly_briefing_enabled' }, { status: 400 });
+    }
+    updates.weekly_briefing_enabled = body.weekly_briefing_enabled;
   }
 
   if (Object.keys(updates).length === 0) {

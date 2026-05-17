@@ -169,6 +169,45 @@ export type Database = {
         }
         Relationships: []
       }
+      briefings: {
+        Row: {
+          attention: Json | null
+          created_at: string
+          email_sent: boolean
+          health_score: number | null
+          id: string
+          kind: string
+          read_at: string | null
+          recommendation: string | null
+          user_id: string
+          win: string | null
+        }
+        Insert: {
+          attention?: Json | null
+          created_at?: string
+          email_sent?: boolean
+          health_score?: number | null
+          id?: string
+          kind?: string
+          read_at?: string | null
+          recommendation?: string | null
+          user_id: string
+          win?: string | null
+        }
+        Update: {
+          attention?: Json | null
+          created_at?: string
+          email_sent?: boolean
+          health_score?: number | null
+          id?: string
+          kind?: string
+          read_at?: string | null
+          recommendation?: string | null
+          user_id?: string
+          win?: string | null
+        }
+        Relationships: []
+      }
       build_requests: {
         Row: {
           audit_id: string | null

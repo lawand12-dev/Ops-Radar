@@ -7,6 +7,7 @@ import { CockpitHeroNarrative } from './_components/cockpit-hero-narrative';
 import { CockpitIntegrationHealth } from './_components/cockpit-integration-health';
 import { CockpitActivityFeed } from './_components/cockpit-activity-feed';
 import { AutomationsCtaCard, BusinessCtaCard } from './_components/pillar-cta-card';
+import { BriefingInbox } from './_components/briefing-inbox';
 
 export default function DashboardPage() {
   const greeting = useGreeting();
@@ -18,6 +19,7 @@ export default function DashboardPage() {
       <CockpitKpiStrip />
       <CockpitAlertsRibbon />
       <CockpitHeroNarrative />
+      <BriefingInbox />
       <CockpitIntegrationHealth />
       <div className="grid grid-cols-[3fr_2fr] gap-3">
         <CockpitActivityFeed />

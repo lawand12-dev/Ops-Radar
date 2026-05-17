@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -41,6 +42,14 @@ const navSections: NavSection[] = [
 
 export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
   const pathname = usePathname();
+  const [unreadBriefings, setUnreadBriefings] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/dashboard/briefing?unread_only=true')
+      .then((r) => r.json())
+      .then((d: { count?: number }) => setUnreadBriefings(d.count ?? 0))
+      .catch(() => {});
+  }, []);
 
   return (
     <aside className="fixed top-0 left-0 z-40 flex h-screen w-[220px] min-w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -81,6 +90,9 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
                   <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
                     {label}
                   </span>
+                  {href === '/dashboard' && unreadBriefings > 0 && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+                  )}
                 </Link>
               );
             })}

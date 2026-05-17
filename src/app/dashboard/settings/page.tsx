@@ -9,6 +9,7 @@ type Profile = {
   timezone: string;
   role: string;
   blended_hourly_rate_usd: number;
+  weekly_briefing_enabled: boolean;
 };
 
 const TIMEZONES = [
@@ -53,6 +54,7 @@ export default function SettingsPage() {
   const [companyName, setCompanyName] = useState('');
   const [timezone, setTimezone] = useState('UTC');
   const [blendedRate, setBlendedRate] = useState<number>(85);
+  const [weeklyBriefing, setWeeklyBriefing] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -69,6 +71,7 @@ export default function SettingsPage() {
           setCompanyName(j.profile.company_name);
           setTimezone(j.profile.timezone || 'UTC');
           setBlendedRate(j.profile.blended_hourly_rate_usd ?? 85);
+          setWeeklyBriefing(j.profile.weekly_briefing_enabled !== false);
         } else {
           setBanner({ kind: 'err', text: j.error ?? 'Failed to load profile.' });
         }
@@ -95,6 +98,7 @@ export default function SettingsPage() {
           company_name: companyName,
           timezone,
           blended_hourly_rate_usd: blendedRate,
+          weekly_briefing_enabled: weeklyBriefing,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -207,6 +211,22 @@ export default function SettingsPage() {
             <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
               Average cost per hour of team work delivered — used to calculate client margins.
             </p>
+          </Field>
+
+          <Field label="Weekly briefing email">
+            <label className="flex cursor-pointer items-center gap-2.5">
+              <div
+                onClick={() => setWeeklyBriefing((v) => !v)}
+                className={`relative h-5 w-9 rounded-full transition-colors duration-150 ${weeklyBriefing ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-border)]'}`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-150 ${weeklyBriefing ? 'translate-x-4' : 'translate-x-0.5'}`}
+                />
+              </div>
+              <span className="text-[13px] text-[var(--color-fg-muted)]">
+                Receive weekly COO briefing every Monday
+              </span>
+            </label>
           </Field>
 
           <div className="mt-5 flex items-center gap-2">
