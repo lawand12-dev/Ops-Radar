@@ -5,6 +5,7 @@ const LOOKBACK_MS: Record<ActionType, number> = {
   invoice_reminder:      7  * 24 * 60 * 60 * 1000,
   margin_alert:          7  * 24 * 60 * 60 * 1000,
   hours_budget_exceeded: 7  * 24 * 60 * 60 * 1000,
+  scope_approaching:     7  * 24 * 60 * 60 * 1000,
   workflow_failure:      24 *      60 * 60 * 1000,
   hubspot_harvest_sync:  30 * 24 * 60 * 60 * 1000,
 };

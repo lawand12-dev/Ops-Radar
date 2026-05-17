@@ -4,6 +4,7 @@ import { getClientN8nConfig } from '<npm>/lib/client-n8n';
 import { evalInvoiceReminders } from './evaluators/invoice-reminder';
 import { evalMarginAlerts } from './evaluators/margin-alert';
 import { evalHoursBudget } from './evaluators/hours-budget';
+import { evalScopeApproaching } from './evaluators/scope-approaching';
 import { evalWorkflowFailures } from './evaluators/workflow-failure';
 import { evalHubSpotHarvest } from './evaluators/hubspot-harvest';
 import { executeAction } from './executor';
@@ -67,6 +68,7 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
     stripeKey ? evalInvoiceReminders(ctx, stripeKey) : Promise.resolve([]),
     stripeKey && harvestKey ? evalMarginAlerts(ctx, stripeKey, harvestKey) : Promise.resolve([]),
     harvestKey ? evalHoursBudget(ctx, harvestKey) : Promise.resolve([]),
+    harvestKey ? evalScopeApproaching(ctx, harvestKey) : Promise.resolve([]),
     n8nConfig ? evalWorkflowFailures(ctx, n8nConfig) : Promise.resolve([]),
     hubspotKey ? evalHubSpotHarvest(ctx, hubspotKey) : Promise.resolve([]),
   ]);

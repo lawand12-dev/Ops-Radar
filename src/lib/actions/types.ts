@@ -2,6 +2,7 @@ export type ActionType =
   | 'invoice_reminder'
   | 'margin_alert'
   | 'hours_budget_exceeded'
+  | 'scope_approaching'
   | 'workflow_failure'
   | 'hubspot_harvest_sync'
 
@@ -18,6 +19,7 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   invoice_reminder:      'auto',
   margin_alert:          'approval',
   hours_budget_exceeded: 'approval',
+  scope_approaching:     'approval',
   workflow_failure:      'auto',
   hubspot_harvest_sync:  'auto',
 }
@@ -26,6 +28,7 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   invoice_reminder:      'Payment reminder sent',
   margin_alert:          'Repricing email ready',
   hours_budget_exceeded: 'Scope conversation ready',
+  scope_approaching:     'Scope warning — approaching budget',
   workflow_failure:      'Workflow failure alert sent',
   hubspot_harvest_sync:  'New client synced to Harvest',
 }
@@ -66,6 +69,17 @@ export type HoursBudgetPayload = {
   draft_body: string
 }
 
+export type ScopeApproachingPayload = {
+  client_name: string
+  project_name: string
+  harvest_project_id: string
+  hours_logged: number
+  budget_hours: number
+  used_pct: number
+  draft_subject: string
+  draft_body: string
+}
+
 export type WorkflowFailurePayload = {
   n8n_workflow_id: string
   workflow_name: string
@@ -86,6 +100,7 @@ export type ActionPayload =
   | InvoiceReminderPayload
   | MarginAlertPayload
   | HoursBudgetPayload
+  | ScopeApproachingPayload
   | WorkflowFailurePayload
   | HubSpotHarvestPayload
 
