@@ -12,6 +12,8 @@ type Profile = {
   role: string;
   blended_hourly_rate_usd: number;
   weekly_briefing_enabled: boolean;
+  team_size: string;
+  benchmark_opt_in: boolean;
 };
 
 const COMMON_TIMEZONES = new Set([
@@ -54,6 +56,8 @@ export async function GET(): Promise<NextResponse> {
       ? meta.blended_hourly_rate_usd
       : 85,
     weekly_briefing_enabled: meta.weekly_briefing_enabled !== false,
+    team_size: typeof meta.team_size === 'string' ? meta.team_size : '',
+    benchmark_opt_in: meta.benchmark_opt_in !== false,
   };
   return NextResponse.json({ profile });
 }
@@ -64,6 +68,8 @@ type PatchBody = {
   timezone?: unknown;
   blended_hourly_rate_usd?: unknown;
   weekly_briefing_enabled?: unknown;
+  team_size?: unknown;
+  benchmark_opt_in?: unknown;
 };
 
 function sanitizeText(input: unknown, max: number): string | null {
@@ -113,6 +119,17 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'invalid_weekly_briefing_enabled' }, { status: 400 });
     }
     updates.weekly_briefing_enabled = body.weekly_briefing_enabled;
+  }
+  if ('team_size' in body) {
+    const v = sanitizeText(body.team_size, 20);
+    if (v === null) return NextResponse.json({ error: 'invalid_team_size' }, { status: 400 });
+    updates.team_size = v;
+  }
+  if ('benchmark_opt_in' in body) {
+    if (typeof body.benchmark_opt_in !== 'boolean') {
+      return NextResponse.json({ error: 'invalid_benchmark_opt_in' }, { status: 400 });
+    }
+    updates.benchmark_opt_in = body.benchmark_opt_in;
   }
 
   if (Object.keys(updates).length === 0) {
