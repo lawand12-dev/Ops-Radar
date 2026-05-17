@@ -11,6 +11,7 @@ type RateLimitName =
   | 'build-request'
   | 'chat'
   | 'chat-conversations'
+  | 'dashboard-coo'
   | 'funnel-event'
   | 'generate-audit'
   | 'integrations-connect'
@@ -32,6 +33,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'build-request': { limit: 10, window: '1 h' },
   chat: { limit: 20, window: '1 h' },
   'chat-conversations': { limit: 120, window: '1 h' },
+  'dashboard-coo': { limit: 30, window: '1 h' },
   'funnel-event': { limit: 240, window: '1 h' },
   'generate-audit': { limit: 3, window: '1 h' },
   'integrations-connect': { limit: 10, window: '1 h' },
@@ -67,6 +69,7 @@ const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
   'build-request',
   'chat',
   'chat-conversations',
+  'dashboard-coo',
   'generate-audit',
   'integrations-connect',
   'dashboard-health-report',
