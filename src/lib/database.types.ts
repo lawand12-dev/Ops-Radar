@@ -636,6 +636,33 @@ export type Database = {
         }
         Relationships: []
       }
+      score_snapshots: {
+        Row: {
+          id: string
+          user_id: string
+          share_token: string
+          company_name: string
+          scores: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          share_token?: string
+          company_name?: string
+          scores: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          share_token?: string
+          company_name?: string
+          scores?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_already_contacted: {
