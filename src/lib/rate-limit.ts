@@ -17,6 +17,7 @@ type RateLimitName =
   | 'notify-chat-lead'
   | 'quick-win-onboarding'
   | 'research-preview'
+  | 'share'
 
 const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'admin-auth': { limit: 10, window: '1 h' },
@@ -34,6 +35,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'notify-chat-lead': { limit: 10, window: '1 h' },
   'quick-win-onboarding': { limit: 10, window: '1 h' },
   'research-preview': { limit: 20, window: '1 h' },
+  share: { limit: 60, window: '1 h' },
 }
 
 /**
