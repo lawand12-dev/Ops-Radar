@@ -8,6 +8,7 @@ type Profile = {
   company_name: string;
   timezone: string;
   role: string;
+  blended_hourly_rate_usd: number;
 };
 
 const TIMEZONES = [
@@ -51,6 +52,7 @@ export default function SettingsPage() {
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [timezone, setTimezone] = useState('UTC');
+  const [blendedRate, setBlendedRate] = useState<number>(85);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -66,6 +68,7 @@ export default function SettingsPage() {
           setFullName(j.profile.full_name);
           setCompanyName(j.profile.company_name);
           setTimezone(j.profile.timezone || 'UTC');
+          setBlendedRate(j.profile.blended_hourly_rate_usd ?? 85);
         } else {
           setBanner({ kind: 'err', text: j.error ?? 'Failed to load profile.' });
         }
@@ -91,6 +94,7 @@ export default function SettingsPage() {
           full_name: fullName,
           company_name: companyName,
           timezone,
+          blended_hourly_rate_usd: blendedRate,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -185,6 +189,24 @@ export default function SettingsPage() {
                 <option key={tz} value={tz}>{tz}</option>
               ))}
             </select>
+          </Field>
+
+          <Field label="Blended hourly rate (USD)">
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[13px] text-[var(--color-fg-subtle)]">$</span>
+              <input
+                type="number"
+                min={1}
+                max={10000}
+                step={1}
+                value={blendedRate}
+                onChange={(e) => setBlendedRate(Number(e.target.value))}
+                className="w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-6 pr-3 text-[13px] text-[var(--color-fg)] outline-none focus:border-[var(--color-primary)]"
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              Average cost per hour of team work delivered — used to calculate client margins.
+            </p>
           </Field>
 
           <div className="mt-5 flex items-center gap-2">

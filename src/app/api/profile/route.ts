@@ -10,6 +10,7 @@ type Profile = {
   company_name: string;
   timezone: string;
   role: string;
+  blended_hourly_rate_usd: number;
 };
 
 const COMMON_TIMEZONES = new Set([
@@ -48,6 +49,9 @@ export async function GET(): Promise<NextResponse> {
     company_name: typeof meta.company_name === 'string' ? meta.company_name : '',
     timezone: typeof meta.timezone === 'string' ? meta.timezone : 'UTC',
     role: typeof meta.role === 'string' ? meta.role : '',
+    blended_hourly_rate_usd: typeof meta.blended_hourly_rate_usd === 'number'
+      ? meta.blended_hourly_rate_usd
+      : 85,
   };
   return NextResponse.json({ profile });
 }
@@ -56,6 +60,7 @@ type PatchBody = {
   full_name?: unknown;
   company_name?: unknown;
   timezone?: unknown;
+  blended_hourly_rate_usd?: unknown;
 };
 
 function sanitizeText(input: unknown, max: number): string | null {
@@ -75,7 +80,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
   const body = (await req.json().catch(() => ({}))) as PatchBody;
 
-  const updates: Record<string, string> = {};
+  const updates: Record<string, string | number> = {};
 
   if ('full_name' in body) {
     const v = sanitizeText(body.full_name, 80);
@@ -92,6 +97,13 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'invalid_timezone' }, { status: 400 });
     }
     updates.timezone = body.timezone;
+  }
+  if ('blended_hourly_rate_usd' in body) {
+    const v = body.blended_hourly_rate_usd;
+    if (typeof v !== 'number' || v < 1 || v > 10_000 || !Number.isFinite(v)) {
+      return NextResponse.json({ error: 'invalid_blended_hourly_rate_usd' }, { status: 400 });
+    }
+    updates.blended_hourly_rate_usd = v;
   }
 
   if (Object.keys(updates).length === 0) {

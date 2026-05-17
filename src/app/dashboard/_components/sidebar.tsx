@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Activity,
   TrendingUp,
+  DollarSign,
   Plug,
   Settings,
   ChevronRight,
@@ -24,8 +25,9 @@ const navSections: NavSection[] = [
     tag: null,
     items: [
       { label: 'Overview',     href: '/dashboard',             icon: LayoutDashboard },
-      { label: 'Automations',  href: '/dashboard/automations', icon: Activity        },
-      { label: 'Business',     href: '/dashboard/business',    icon: TrendingUp      },
+      { label: 'Automations',    href: '/dashboard/automations',    icon: Activity        },
+      { label: 'Business',       href: '/dashboard/business',       icon: TrendingUp      },
+      { label: 'Profitability',  href: '/dashboard/profitability',  icon: DollarSign      },
     ],
   },
   {
