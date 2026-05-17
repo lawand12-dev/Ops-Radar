@@ -103,7 +103,8 @@ export function ProfitabilityTable({ state }: Props) {
                   </th>
                 ))}
                 <th className="pb-2 pr-4 text-left text-label font-normal text-[var(--color-fg-subtle)]">Payment</th>
-                <th className="pb-2 text-left text-label font-normal text-[var(--color-fg-subtle)]">Trend</th>
+                <th className="pb-2 pr-4 text-left text-label font-normal text-[var(--color-fg-subtle)]">Trend</th>
+                <th className="pb-2 text-left text-label font-normal text-[var(--color-fg-subtle)]">Health</th>
               </tr>
             </thead>
             <tbody>
@@ -160,8 +161,11 @@ function ClientRow({ client: c, blendedRate }: { client: ClientProfitability; bl
       <td className="py-3 pr-4">
         <PaymentBadge status={c.payment_status} daysOverdue={c.days_overdue} />
       </td>
-      <td className="py-3">
+      <td className="py-3 pr-4">
         <TrendIcon trend={c.trend} />
+      </td>
+      <td className="py-3">
+        <HealthBadge score={c.health_score} />
       </td>
     </tr>
   );
@@ -253,4 +257,18 @@ function fmtMoney(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}m`;
   if (Math.abs(n) >= 1000) return `$${(n / 1000).toFixed(1)}k`;
   return `$${Math.round(n).toLocaleString()}`;
+}
+
+function HealthBadge({ score }: { score: number }) {
+  const label = score >= 80 ? 'Strong' : score >= 60 ? 'Good' : score >= 40 ? 'At risk' : 'Critical';
+  const color =
+    score >= 80 ? 'text-emerald-400 bg-emerald-400/10' :
+    score >= 60 ? 'text-[var(--color-fg-muted)] bg-[var(--color-surface-sunken)]' :
+    score >= 40 ? 'text-amber-400 bg-amber-400/10' :
+    'text-[var(--color-error)] bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]';
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-label font-medium ${color}`}>
+      {label}
+    </span>
+  );
 }

@@ -14,6 +14,7 @@ export type ClientProfitability = {
   margin_prior_pct: number | null;
   // up: margin improved >5pp vs prior; down: dropped >5pp; flat: within ±5pp
   trend: 'up' | 'down' | 'flat';
+  health_score: number;
   payment_status: 'on_time' | 'overdue' | 'unknown';
   days_overdue: number | null;
   stripe_customer_id: string | null;
@@ -41,6 +42,34 @@ function computeTrend(current: number, prior: number | null): 'up' | 'down' | 'f
   if (diff > 5) return 'up';
   if (diff < -5) return 'down';
   return 'flat';
+}
+
+function computeHealthScore(
+  paymentStatus: 'on_time' | 'overdue' | 'unknown',
+  daysOverdue: number | null,
+  marginPct: number,
+  trend: 'up' | 'down' | 'flat',
+): number {
+  // Payment component (40 pts)
+  let payment = 40;
+  if (paymentStatus === 'overdue') {
+    const days = daysOverdue ?? 0;
+    payment = days > 30 ? 0 : days > 14 ? 10 : 25;
+  } else if (paymentStatus === 'unknown') {
+    payment = 30;
+  }
+
+  // Margin component (35 pts)
+  let margin = 0;
+  if (marginPct >= 30) margin = 35;
+  else if (marginPct >= 20) margin = 28;
+  else if (marginPct >= 10) margin = 18;
+  else if (marginPct >= 0) margin = 8;
+
+  // Trend component (25 pts)
+  const trendScore = trend === 'up' ? 25 : trend === 'flat' ? 15 : 5;
+
+  return payment + margin + trendScore;
 }
 
 export function computeClientProfitability(
@@ -72,6 +101,9 @@ export function computeClientProfitability(
     const marginPriorPct = sc.revenue_prior > 0
       ? ((sc.revenue_prior - priorCost) / sc.revenue_prior) * 100
       : null;
+    const trend = computeTrend(marginPct, marginPriorPct);
+    const paymentStatus = sc.payment_status;
+    const daysOverdue = sc.days_overdue;
 
     clients.push({
       id: sc.id,
@@ -84,9 +116,10 @@ export function computeClientProfitability(
       cost_mtd: costMtd,
       margin_pct: marginPct,
       margin_prior_pct: marginPriorPct,
-      trend: computeTrend(marginPct, marginPriorPct),
-      payment_status: sc.payment_status,
-      days_overdue: sc.days_overdue,
+      trend,
+      health_score: computeHealthScore(paymentStatus, daysOverdue, marginPct, trend),
+      payment_status: paymentStatus,
+      days_overdue: daysOverdue,
       stripe_customer_id: sc.id,
       matched: hc !== null,
     });
