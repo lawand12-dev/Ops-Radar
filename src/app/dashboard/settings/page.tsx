@@ -10,6 +10,8 @@ type Profile = {
   role: string;
   blended_hourly_rate_usd: number;
   weekly_briefing_enabled: boolean;
+  team_size: string;
+  benchmark_opt_in: boolean;
 };
 
 const TIMEZONES = [
@@ -55,6 +57,8 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState('UTC');
   const [blendedRate, setBlendedRate] = useState<number>(85);
   const [weeklyBriefing, setWeeklyBriefing] = useState(true);
+  const [teamSize, setTeamSize] = useState<string>('');
+  const [benchmarkOptIn, setBenchmarkOptIn] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -72,6 +76,8 @@ export default function SettingsPage() {
           setTimezone(j.profile.timezone || 'UTC');
           setBlendedRate(j.profile.blended_hourly_rate_usd ?? 85);
           setWeeklyBriefing(j.profile.weekly_briefing_enabled !== false);
+          setTeamSize(j.profile.team_size ?? '');
+          setBenchmarkOptIn(j.profile.benchmark_opt_in !== false);
         } else {
           setBanner({ kind: 'err', text: j.error ?? 'Failed to load profile.' });
         }
@@ -99,6 +105,8 @@ export default function SettingsPage() {
           timezone,
           blended_hourly_rate_usd: blendedRate,
           weekly_briefing_enabled: weeklyBriefing,
+          team_size: teamSize,
+          benchmark_opt_in: benchmarkOptIn,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -227,6 +235,43 @@ export default function SettingsPage() {
                 Receive weekly COO briefing every Monday
               </span>
             </label>
+          </Field>
+
+          <Field label="Team size">
+            <select
+              value={teamSize}
+              onChange={(e) => setTeamSize(e.target.value)}
+              className="w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-fg)] outline-none focus:border-[var(--color-primary)]"
+            >
+              <option value="">Prefer not to say</option>
+              <option value="1">Solo (1)</option>
+              <option value="2-5">2–5</option>
+              <option value="6-15">6–15</option>
+              <option value="16-30">16–30</option>
+              <option value="31+">31+</option>
+            </select>
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              Used to compare your numbers against agencies your size.
+            </p>
+          </Field>
+
+          <Field label="Industry benchmarks">
+            <label className="flex cursor-pointer items-center gap-2.5">
+              <div
+                onClick={() => setBenchmarkOptIn((v) => !v)}
+                className={`relative h-5 w-9 rounded-full transition-colors duration-150 ${benchmarkOptIn ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-border)]'}`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-150 ${benchmarkOptIn ? 'translate-x-4' : 'translate-x-0.5'}`}
+                />
+              </div>
+              <span className="text-[13px] text-[var(--color-fg-muted)]">
+                Contribute anonymized metrics to industry benchmarks
+              </span>
+            </label>
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              Your data is aggregated with other agencies your size — never shared individually.
+            </p>
           </Field>
 
           <div className="mt-5 flex items-center gap-2">
