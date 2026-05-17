@@ -113,7 +113,7 @@ export function HealthReportBanner() {
         </button>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {findings.map((f, i) => (
+        {findings.slice(0, 3).map((f, i) => (
           <div key={i} className="flex min-w-0 flex-col gap-1">
             <div className="flex min-w-0 items-center gap-1.5">
               <SeverityIcon severity={f.severity} />
