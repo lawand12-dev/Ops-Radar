@@ -20,6 +20,7 @@ type RateLimitName =
   | 'share'
   | 'dashboard-actions'
   | 'dashboard-benchmarks'
+  | 'dashboard-health-report'
 
 const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'admin-auth': { limit: 10, window: '1 h' },
@@ -40,6 +41,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   share: { limit: 60, window: '1 h' },
   'dashboard-actions': { limit: 120, window: '1 h' },
   'dashboard-benchmarks': { limit: 120, window: '1 h' },
+  'dashboard-health-report': { limit: 20, window: '1 h' },
 }
 
 /**
@@ -67,6 +69,7 @@ const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
   'chat-conversations',
   'generate-audit',
   'integrations-connect',
+  'dashboard-health-report',
   'notify-chat-lead',
   'quick-win-onboarding',
   'research-preview',
