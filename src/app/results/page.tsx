@@ -2437,6 +2437,7 @@ function ResultsContent() {
   )
   const [modalOpp,    setModalOpp]    = useState<BuildRequestDraft | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
+  const [shareLoading, setShareLoading] = useState(false)
   const sessionIdRef = useRef('')
   const sectionTrackingRef = useRef(new Set<string>())
   const resultsViewRef = useRef<string | null>(null)
@@ -2640,40 +2641,50 @@ function ResultsContent() {
     setModalOpp({ title, source })
   }, [audit?.report_stage, auditId])
 
-  const handleShareResults = () => {
-    if (typeof window === 'undefined') return
-    const currentUrl = window.location.href
+  const handleShareResults = useCallback(async () => {
+    if (!auditId || !accessToken) return
+    setShareLoading(true)
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auditId, accessToken }),
+      })
+      if (!res.ok) throw new Error('share_failed')
+      const { shareUrl } = await res.json() as { shareUrl: string }
 
-    const copyToClipboard = async () => {
       try {
-        await navigator.clipboard.writeText(currentUrl)
-        setShareCopied(true)
-        setTimeout(() => setShareCopied(false), 2000)
+        await navigator.clipboard.writeText(shareUrl)
       } catch {
-        const textarea = document.createElement('textarea')
-        textarea.value = currentUrl
-        textarea.style.position = 'fixed'
-        textarea.style.left = '-9999px'
-        document.body.appendChild(textarea)
-        textarea.select()
-        try {
-          document.execCommand('copy')
-          setShareCopied(true)
-          setTimeout(() => setShareCopied(false), 2000)
-        } catch {
-          // Give up silently
-        }
-        document.body.removeChild(textarea)
+        const ta = document.createElement('textarea')
+        ta.value = shareUrl
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
       }
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+
+      sendFunnelEvent({ event: 'results_shared', auditId: auditId || undefined })
+    } catch {
+      // Fallback: copy current URL (private token — safe for logged-in user)
+      const ta = document.createElement('textarea')
+      ta.value = window.location.href
+      ta.style.position = 'fixed'
+      ta.style.left = '-9999px'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } finally {
+      setShareLoading(false)
     }
-
-    void copyToClipboard()
-
-    sendFunnelEvent({
-      event: 'results_shared',
-      auditId: auditId || undefined,
-    })
-  }
+  }, [auditId, accessToken])
 
   // ── Normalize old / new response shapes ─────────────────────────────────────
   const currentAudit  = audit
@@ -3272,8 +3283,9 @@ function ResultsContent() {
                   </p>
                   <button
                     type="button"
-                    onClick={handleShareResults}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] text-body-sm font-semibold border border-[var(--color-border)] text-[var(--color-fg-muted)] hover:border-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] bg-[var(--color-surface-sunken)] transition-colors"
+                    onClick={() => void handleShareResults()}
+                    disabled={shareLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] text-body-sm font-semibold border border-[var(--color-border)] text-[var(--color-fg-muted)] hover:border-[var(--color-fg-subtle)] hover:text-[var(--color-fg)] bg-[var(--color-surface-sunken)] transition-colors disabled:opacity-50"
                   >
                     {shareCopied ? (
                       <>
@@ -3282,12 +3294,14 @@ function ResultsContent() {
                         </svg>
                         Copied to clipboard
                       </>
+                    ) : shareLoading ? (
+                      'Generating link…'
                     ) : (
                       <>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                           <path d="M9 3H11.5C12.0523 3 12.5 3.44772 12.5 4V11C12.5 11.5523 12.0523 12 11.5 12H5C4.44772 12 4 11.5523 4 11V9.5M9 3V4.5C9 5.05228 8.55228 5.5 8 5.5H3.5C2.94772 5.5 2.5 5.05228 2.5 4.5V4C2.5 3.44772 2.94772 3 3.5 3H9ZM9 3V3C9 2.44772 8.55228 2 8 2H3.5C2.94772 2 2.5 2.44772 2.5 3V9.5C2.5 10.0523 2.94772 10.5 3.5 10.5H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        Copy share link
+                        Share this report
                       </>
                     )}
                   </button>
