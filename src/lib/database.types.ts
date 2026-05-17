@@ -134,6 +134,8 @@ export type Database = {
           id: string
           name: string
           result: Json
+          share_expires_at: string | null
+          share_token: string | null
           unsubscribe_token: string | null
           unsubscribed_at: string | null
         }
@@ -149,6 +151,8 @@ export type Database = {
           id?: string
           name: string
           result: Json
+          share_expires_at?: string | null
+          share_token?: string | null
           unsubscribe_token?: string | null
           unsubscribed_at?: string | null
         }
@@ -164,6 +168,8 @@ export type Database = {
           id?: string
           name?: string
           result?: Json
+          share_expires_at?: string | null
+          share_token?: string | null
           unsubscribe_token?: string | null
           unsubscribed_at?: string | null
         }
