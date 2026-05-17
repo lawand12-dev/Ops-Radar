@@ -1,0 +1,115 @@
+export type ActionType =
+  | 'invoice_reminder'
+  | 'margin_alert'
+  | 'hours_budget_exceeded'
+  | 'workflow_failure'
+  | 'hubspot_harvest_sync'
+
+export type ActionStatus =
+  | 'pending'
+  | 'executed'
+  | 'dismissed'
+  | 'undone'
+  | 'failed'
+
+export type ActionRisk = 'auto' | 'approval'
+
+export const ACTION_RISK: Record<ActionType, ActionRisk> = {
+  invoice_reminder:      'auto',
+  margin_alert:          'approval',
+  hours_budget_exceeded: 'approval',
+  workflow_failure:      'auto',
+  hubspot_harvest_sync:  'auto',
+}
+
+export const ACTION_LABELS: Record<ActionType, string> = {
+  invoice_reminder:      'Payment reminder sent',
+  margin_alert:          'Repricing email ready',
+  hours_budget_exceeded: 'Scope conversation ready',
+  workflow_failure:      'Workflow failure alert sent',
+  hubspot_harvest_sync:  'New client synced to Harvest',
+}
+
+// ─── Payload types ────────────────────────────────────────────────────────────
+
+export type InvoiceReminderPayload = {
+  stripe_customer_id: string
+  invoice_id: string
+  client_name: string
+  amount_due: number
+  days_overdue: number
+  recipient_email: string
+  draft_subject: string
+  draft_body: string
+  resend_email_id?: string
+}
+
+export type MarginAlertPayload = {
+  stripe_customer_id: string
+  client_name: string
+  margin_pct: number
+  margin_prior_pct: number | null
+  revenue_mtd: number
+  cost_mtd: number
+  draft_subject: string
+  draft_body: string
+}
+
+export type HoursBudgetPayload = {
+  client_name: string
+  project_name: string
+  harvest_project_id: string
+  hours_logged: number
+  budget_hours: number
+  overage_pct: number
+  draft_subject: string
+  draft_body: string
+}
+
+export type WorkflowFailurePayload = {
+  n8n_workflow_id: string
+  workflow_name: string
+  failure_count: number
+  last_failed_at: string
+  n8n_base_url: string
+  resend_email_id?: string
+}
+
+export type HubSpotHarvestPayload = {
+  hubspot_contact_id: string
+  hubspot_company_name: string
+  client_email: string | null
+  harvest_client_id?: string
+}
+
+export type ActionPayload =
+  | InvoiceReminderPayload
+  | MarginAlertPayload
+  | HoursBudgetPayload
+  | WorkflowFailurePayload
+  | HubSpotHarvestPayload
+
+export type NewAction = {
+  action_type: ActionType
+  payload: ActionPayload
+}
+
+export type AgentAction = {
+  id: string
+  user_id: string
+  action_type: ActionType
+  status: ActionStatus
+  payload: ActionPayload
+  created_at: string
+  approved_at: string | null
+  executed_at: string | null
+  undone_at: string | null
+  undo_deadline: string | null
+}
+
+export type UserContext = {
+  userId: string
+  email: string
+  companyName: string
+  blendedRate: number
+}

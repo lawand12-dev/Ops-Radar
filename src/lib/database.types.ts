@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_actions: {
+        Row: {
+          action_type: string
+          approved_at: string | null
+          created_at: string
+          executed_at: string | null
+          id: string
+          payload: Json
+          status: string
+          undo_deadline: string | null
+          undone_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          approved_at?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          status?: string
+          undo_deadline?: string | null
+          undone_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          approved_at?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          status?: string
+          undo_deadline?: string | null
+          undone_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_events: {
         Row: {
           audit_id: string | null
