@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ProfitabilityTable } from '../_components/profitability-table';
+import { BenchmarkCards } from './_components/benchmark-cards';
 import type { ProfitabilityResult } from '<npm>/lib/profitability';
 
 type ApiResp =
@@ -55,6 +56,8 @@ export default function ProfitabilityPage() {
           Revenue vs. hours worked — see which clients are making you money this month.
         </p>
       </div>
+
+      <BenchmarkCards />
 
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
         <ProfitabilityTable state={tableState} />
