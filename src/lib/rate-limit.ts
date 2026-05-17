@@ -22,6 +22,7 @@ type RateLimitName =
   | 'dashboard-actions'
   | 'dashboard-benchmarks'
   | 'dashboard-health-report'
+  | 'dashboard-score'
 
 const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'admin-auth': { limit: 10, window: '1 h' },
@@ -44,6 +45,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'dashboard-actions': { limit: 120, window: '1 h' },
   'dashboard-benchmarks': { limit: 120, window: '1 h' },
   'dashboard-health-report': { limit: 20, window: '1 h' },
+  'dashboard-score': { limit: 30, window: '1 h' },
 }
 
 /**
