@@ -214,6 +214,39 @@ export type Database = {
         }
         Relationships: []
       }
+      benchmarks: {
+        Row: {
+          computed_at: string
+          id: string
+          metric: string
+          p25: number
+          p50: number
+          p75: number
+          sample_size: number
+          team_size_bucket: string
+        }
+        Insert: {
+          computed_at?: string
+          id?: string
+          metric: string
+          p25: number
+          p50: number
+          p75: number
+          sample_size: number
+          team_size_bucket: string
+        }
+        Update: {
+          computed_at?: string
+          id?: string
+          metric?: string
+          p25?: number
+          p50?: number
+          p75?: number
+          sample_size?: number
+          team_size_bucket?: string
+        }
+        Relationships: []
+      }
       briefings: {
         Row: {
           attention: Json | null
