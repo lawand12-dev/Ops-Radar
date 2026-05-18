@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/threshold-alerts",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
