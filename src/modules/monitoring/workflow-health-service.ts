@@ -23,7 +23,7 @@ import {
   finishCycle as finishCycleBudget,
   startCycle as startCycleBudget
 } from "./cycle-budget";
-import { flagsSnapshot } from "./feature-flags";
+import { flagsSnapshot, isSilentFailurePipelineEnabled } from "./feature-flags";
 import { buildHealthViewWithFallback } from "./health-view-builder";
 
 /**
@@ -689,13 +689,53 @@ export async function getWorkflowHealth(
     last_checked_at: new Date().toISOString()
   };
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Unify legacy vs anomalies BEFORE any persistence so the snapshot table,
+  // alert pipeline, transition events, AND the API response all share one
+  // truth. Pre-hardening behaviour is preserved when the pipeline flag is
+  // off: `buildHealthViewWithFallback` is skipped entirely so the table is
+  // never queried and `unifiedStatus`/`unifiedMessage` collapse to legacy.
+  //
+  // This block is the single point at which "legacy" becomes "the answer."
+  // Everything below — snapshot, alerts, health-transition events — reads
+  // unifiedStatus/unifiedMessage so the value the operator sees in the UI
+  // is the value the DB and alert layer agree on.
+  // ──────────────────────────────────────────────────────────────────────
+  let unifiedStatus: typeof healthStatus = healthStatus;
+  let unifiedMessage: string | null = message;
+  let legacyStatusForLog: typeof healthStatus = healthStatus;
+  if (isSilentFailurePipelineEnabled()) {
+    const view = await buildHealthViewWithFallback({
+      workflowId: workflow.id,
+      legacyStatus: healthStatus,
+      legacyReason: message ?? ""
+    });
+    unifiedStatus = view.unified.status;
+    unifiedMessage =
+      view.unified.status === view.legacy.status ? message : view.unified.reason;
+    legacyStatusForLog = view.legacy.status;
+    if (view.unified.status !== view.legacy.status) {
+      // Surface every divergence so operators can audit "the anomaly layer
+      // escalated this workflow" without spelunking through DB tables.
+      logInfo("telemetry-observability", "health_status_unified", {
+        workflow_id: workflow.id,
+        legacy_status: view.legacy.status,
+        unified_status: view.unified.status,
+        unified_reason: view.unified.reason
+      });
+    }
+  }
+  payload.health_status = unifiedStatus;
+  payload.message = unifiedMessage;
+  void legacyStatusForLog; // kept around for future audit; not surfaced in API
+
   const snapshot = await createWorkflowHealthSnapshot({
     projectId,
     workflowId: workflow.id,
     n8nWorkflowId: workflow.n8n_workflow_id,
     status: workflow.status,
     active,
-    healthStatus,
+    healthStatus: unifiedStatus,
     lastSuccessAt: toDate(payload.last_success_at),
     lastFailureAt: toDate(payload.last_failure_at),
     recentSuccessCount,
@@ -716,7 +756,7 @@ export async function getWorkflowHealth(
   await maybeCreateOrResolveAlerts({
     projectId,
     workflow,
-    healthStatus,
+    healthStatus: unifiedStatus,
     classification: latestFailureClassification,
     failedNode: latestFailureNode,
     message: latestFailureMessage,
@@ -749,28 +789,32 @@ export async function getWorkflowHealth(
     });
   }
 
-  if (healthStatus === "warning" && previousSnapshot?.health_status !== "warning") {
+  if (unifiedStatus === "warning" && previousSnapshot?.health_status !== "warning") {
     await emitMonitoringEvent({
       workflowId: workflow.id,
       eventType: "workflow_health_warning",
       status: "info",
-      message
+      message: unifiedMessage
     });
   }
 
-  if (healthStatus === "failing" && previousSnapshot?.health_status !== "failing") {
+  if (unifiedStatus === "failing" && previousSnapshot?.health_status !== "failing") {
     await emitMonitoringEvent({
       workflowId: workflow.id,
       eventType: "workflow_health_failing",
       status: "failure",
-      message
+      message: unifiedMessage
     });
   }
 
   // Silent-failure detection pipeline. Delegated to the coordinator, which
   // is itself gated by `isSilentFailurePipelineEnabled()` — when off, this
   // call is a near-instant noop. Fire-and-forget: a thrown exception in the
-  // pipeline cannot affect the legacy response we return below.
+  // pipeline cannot affect the response we return below.
+  //
+  // Runs AFTER snapshot + alerts + events so anomalies persisted on THIS
+  // cycle feed the unified view of the NEXT cycle, not this one — a deliberate
+  // one-cycle lag that keeps within-cycle ordering deterministic.
   if (latestExecution && n8nWorkflow) {
     void runSilentFailurePipeline({
       workflowId: workflow.id,
@@ -784,21 +828,8 @@ export async function getWorkflowHealth(
     });
   }
 
-  // Reconcile legacy status with recent anomalies. When the pipeline is off
-  // (default) there are no anomalies, the view collapses to legacy, and the
-  // response is byte-for-byte identical to pre-hardening. When the pipeline
-  // is on, a silent-failure escalation can promote `healthy` → `warning` or
-  // `healthy/warning` → `failing` without changing the response shape.
-  const view = await buildHealthViewWithFallback({
-    workflowId: workflow.id,
-    legacyStatus: healthStatus,
-    legacyReason: message ?? ""
-  });
-
   return {
     ...payload,
-    health_status: view.unified.status,
-    message: view.unified.status === view.legacy.status ? payload.message : view.unified.reason,
     last_checked_at: snapshot.created_at.toISOString()
   };
 }
@@ -1005,42 +1036,62 @@ async function runMonitoringCycle(): Promise<{
     // pipelines. The pipeline reads `acquireIncludeDataSlot()` to enforce
     // backpressure; without an active cycle it defers all deep fetches.
     const cycleId = startCycleBudget();
+    let legacyChecked = 0;
+    let legacyFailures = 0;
+    let driftChecked = 0;
+    let driftAnomalies = 0;
+    let cleaned = 0;
+    let cycleError: unknown = null;
+    try {
+      const refreshed = await refreshAllWorkflowHealths();
+      legacyChecked = refreshed.checked;
+      legacyFailures = refreshed.failures;
 
-    const refreshed = await refreshAllWorkflowHealths();
-    const cleaned = await cleanupOldWorkflowHealthSnapshots(
-      env.MONITORING_SNAPSHOT_RETENTION_DAYS
-    );
-    // Drift sweep runs AFTER per-workflow refreshes — the latter call
-    // recordObservedRun() which advances last_seen_run_at, so the sweep sees
-    // an accurate "is this overdue?" picture rather than one polling cycle stale.
-    const drift = await runScheduleDriftSweep().catch((err) => {
-      logWarn("monitoring", "schedule-drift sweep crashed", { error: safeMessage(err) });
-      return { checked: 0, anomalies: 0 };
-    });
+      cleaned = await cleanupOldWorkflowHealthSnapshots(
+        env.MONITORING_SNAPSHOT_RETENTION_DAYS
+      );
 
-    // Single cycle_summary log line carries the full observability payload
-    // for the new layer — extraction duration, deep-fetch count, anomaly
-    // count, pipeline failures, skipped workflows, degraded flag. Operators
-    // grep "telemetry-observability cycle_summary" to trend the system itself.
-    const summary = finishCycleBudget();
-    if (summary) {
-      logInfo("telemetry-observability", "cycle_summary", {
-        ...summary,
-        cycle_id: cycleId,
-        flags: flagsSnapshot(),
-        legacy_checked: refreshed.checked,
-        legacy_failures: refreshed.failures,
-        drift_checked: drift.checked,
-        drift_anomalies: drift.anomalies
+      // Drift sweep runs AFTER per-workflow refreshes — the latter call
+      // recordObservedRun() which advances last_seen_run_at, so the sweep
+      // sees an accurate "is this overdue?" picture instead of one cycle stale.
+      const drift = await runScheduleDriftSweep().catch((err) => {
+        logWarn("monitoring", "schedule-drift sweep crashed", { error: safeMessage(err) });
+        return { checked: 0, anomalies: 0 };
       });
+      driftChecked = drift.checked;
+      driftAnomalies = drift.anomalies;
+    } catch (err) {
+      // Hold the error for re-throw after we emit cycle_summary. Without this
+      // catch, a refresh throw would skip finishCycleBudget() and we'd lose
+      // observability for exactly the cycles we most need to see.
+      cycleError = err;
+    } finally {
+      // Single cycle_summary log line carries the full observability payload
+      // for the new layer — extraction duration, deep-fetch count, anomaly
+      // count, pipeline failures, skipped workflows, degraded flag. Operators
+      // grep "telemetry-observability cycle_summary" to trend the system.
+      const summary = finishCycleBudget();
+      if (summary) {
+        logInfo("telemetry-observability", "cycle_summary", {
+          ...summary,
+          cycle_id: cycleId,
+          flags: flagsSnapshot(),
+          legacy_checked: legacyChecked,
+          legacy_failures: legacyFailures,
+          drift_checked: driftChecked,
+          drift_anomalies: driftAnomalies,
+          cycle_errored: cycleError !== null
+        });
+      }
     }
+    if (cycleError !== null) throw cycleError;
 
     return {
-      checked: refreshed.checked,
-      failures: refreshed.failures,
+      checked: legacyChecked,
+      failures: legacyFailures,
       cleaned_snapshots: cleaned,
-      drift_checked: drift.checked,
-      drift_anomalies: drift.anomalies
+      drift_checked: driftChecked,
+      drift_anomalies: driftAnomalies
     };
   });
 

@@ -42,7 +42,7 @@ import {
   recordPipelineFailure
 } from "./cycle-budget";
 import {
-  countOpenAnomaliesByWorkflowId,
+  listAnomaliesByWorkflowId,
   persistAnomalies
 } from "./execution-anomaly-repository";
 import {
@@ -120,20 +120,30 @@ export async function runSilentFailurePipeline(input: PipelineExecutionInput): P
     recordPipelineFailure();
   }
 
-  // (3) Compute the deep-inspection signals.
+  // (3) Compute BOTH deep-inspection signals from a single repo call.
+  //
+  // Before this hardening pass the coordinator used a coarse COUNT(*) over
+  // 24h and approximated the score as 99 — and it never populated
+  // `hasRecentSchedulerDrift`, leaving condition (c) of the 4-condition rule
+  // as dead code. The fix: one `listAnomaliesByWorkflowId(limit=10)` call
+  // gives us the exact max score (for condition b) AND a real flag for
+  // recent drift (for condition c) without doubling the query count.
+  //
+  // `limit: 10` is an over-fetch by design — we look at type+score on each
+  // row, so a workflow with a stale duration anomaly plus a fresh drift
+  // can't hide the latter behind the former in result ordering.
   let recentMaxAnomalyScore: number | null = null;
   let hasRecentSchedulerDrift = false;
   try {
-    // We use the 24h open-anomaly count as a coarse "interesting workflow"
-    // proxy — keeps the gate query cheap (single COUNT). The high-score
-    // condition is approximated as "any open anomaly exists" because score
-    // detail would require another query and the current detectors emit a
-    // sane score (≥3 for duration, ≥1 for drift, etc).
-    const count = await countOpenAnomaliesByWorkflowId(input.workflowId);
-    if (count > 0) recentMaxAnomalyScore = 99; // > threshold of 3; passes (b)
-    hasRecentSchedulerDrift = false; // populated by drift sweep separately
+    const recent = await listAnomaliesByWorkflowId(input.workflowId, { limit: 10 });
+    const scores = recent
+      .map((a) => a.anomaly_score)
+      .filter((s): s is number => s !== null && Number.isFinite(s));
+    recentMaxAnomalyScore = scores.length === 0 ? null : Math.max(...scores);
+    hasRecentSchedulerDrift = recent.some((a) => a.anomaly_type === "scheduler_drift");
   } catch {
-    // Fall through with defaults — the gate will deny on no-qualifying-condition
+    // Fall through with defaults — the gate denies as "no_qualifying_condition"
+    // rather than silently allowing through on partial information.
   }
 
   const decision = shouldDeepInspect({
