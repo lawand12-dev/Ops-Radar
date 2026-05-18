@@ -9,6 +9,7 @@ import { CockpitActivityFeed } from './_components/cockpit-activity-feed';
 import { AutomationsCtaCard, BusinessCtaCard } from './_components/pillar-cta-card';
 import { BriefingInbox } from './_components/briefing-inbox';
 import { HealthReportBanner } from './_components/health-report-banner';
+import { OnboardingChecklist } from './_components/onboarding-checklist';
 
 export default function DashboardPage() {
   const greeting = useGreeting();
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-3.5">
       <HealthReportBanner />
+      <OnboardingChecklist />
       <Topbar />
       <Greeting greeting={greeting} />
       <CockpitKpiStrip />
