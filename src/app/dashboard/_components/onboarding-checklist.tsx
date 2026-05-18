@@ -55,11 +55,14 @@ export function OnboardingChecklist() {
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
-  // Auto-generate first briefing when steps 1-3 complete but briefing not yet done
+  // Auto-generate first briefing when steps 1-3 complete but briefing not yet done.
+  // Fetch-on-effect pattern: state is required to show the "generating…" label
+  // and to guard against double-fire across re-renders.
   useEffect(() => {
     if (!status) return;
     const { time_tracking, billing, blended_rate, first_briefing } = status.steps;
     if (time_tracking && billing && blended_rate && !first_briefing && !generatingBriefing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-effect guard, mirrors HealthReportBanner pattern
       setGeneratingBriefing(true);
       fetch('/api/dashboard/briefing', { method: 'POST' })
         .then(() => fetchStatus())
