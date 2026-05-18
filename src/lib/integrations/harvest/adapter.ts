@@ -129,3 +129,48 @@ export async function fetchHarvestTimeData(combined: string): Promise<HarvestTim
 
   return { hours_tracked, utilization_pct, by_project, period_label: 'This week' };
 }
+
+export type HarvestMonthlyProjectRow = {
+  project_name: string;
+  hours: number;
+};
+
+export type HarvestMonthlyProjectData = {
+  projects: HarvestMonthlyProjectRow[];
+};
+
+export async function fetchHarvestMonthlyProjectHours(
+  combined: string,
+): Promise<HarvestMonthlyProjectData> {
+  const parsed = parseCombined(combined);
+  if (!parsed) throw new Error('Harvest credentials malformed');
+  const h = headers(parsed.accountId, parsed.token);
+
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const params = new URLSearchParams({
+    from: monthStart.toISOString().slice(0, 10),
+    to: now.toISOString().slice(0, 10),
+    per_page: '100',
+  });
+
+  const res = await fetch(`${BASE}/time_entries?${params}`, { headers: h });
+  if (!res.ok) throw new Error(`Harvest monthly project fetch failed: ${res.status}`);
+  const body = (await res.json()) as { time_entries?: HarvestEntry[] };
+  const entries = body.time_entries ?? [];
+
+  const projectMap = new Map<string, number>();
+  for (const e of entries) {
+    const name = e.project?.name ?? 'No project';
+    projectMap.set(name, (projectMap.get(name) ?? 0) + (Number(e.hours) || 0));
+  }
+
+  const projects: HarvestMonthlyProjectRow[] = [...projectMap.entries()]
+    .map(([project_name, hours]) => ({
+      project_name,
+      hours: Math.round(hours * 10) / 10,
+    }))
+    .sort((a, b) => b.hours - a.hours);
+
+  return { projects };
+}
