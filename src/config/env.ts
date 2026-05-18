@@ -85,6 +85,25 @@ const envSchema = z.object({
   MONITORING_EXECUTION_LIMIT: z.coerce.number().int().positive().default(20),
   MONITORING_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().positive().default(14),
 
+  // --- Silent-failure detection layer (hardening flags) ---
+  // All default to FALSE so the new pipeline is dormant until the operator
+  // explicitly opts in. Existing legacy monitoring keeps running regardless.
+  SILENT_FAILURE_PIPELINE_ENABLED: boolFromEnv(false),
+  SCHEDULE_DRIFT_ENABLED: boolFromEnv(false),
+  // Master gate for any getN8nExecutionById({ includeData: true }) call in
+  // the silent-failure pipeline. Without this, even an "eligible" execution
+  // never triggers a deep fetch.
+  TELEMETRY_DEEP_INSPECTION_ENABLED: boolFromEnv(false),
+  // Backpressure knobs. The cycle aborts deep inspection for the remaining
+  // workflows once either threshold is crossed and emits one degraded_mode
+  // log line per cycle.
+  TELEMETRY_INCLUDE_DATA_BUDGET_PER_CYCLE: z.coerce.number().int().positive().default(200),
+  TELEMETRY_CYCLE_TIME_BUDGET_RATIO: z.coerce.number().min(0.1).max(0.95).default(0.7),
+  // Comma-separated workflow_id allowlist. Workflows in this list bypass the
+  // "only fetch on error/anomaly/drift" rule — useful for explicit deep
+  // tracing of a specific automation under investigation.
+  TELEMETRY_DEEP_INSPECTION_ALLOWLIST: z.string().default(""),
+
   // Auth: required so we never silently accept tokens signed by an empty/default secret.
   // SECRETS_ENCRYPTION_KEY hashes to a 32-byte AES-256 key, but we still demand ≥32 chars
   // of entropy so a weak input doesn't survive the SHA-256 derivation.
