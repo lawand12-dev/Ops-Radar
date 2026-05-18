@@ -33,7 +33,8 @@ export function computeScopeCreep(
 ): ScopeCreepResult {
   const harvestMap = new Map<string, number>();
   for (const p of harvest.projects) {
-    harvestMap.set(normalizeProjectName(p.project_name), p.hours);
+    const key = normalizeProjectName(p.project_name);
+    harvestMap.set(key, (harvestMap.get(key) ?? 0) + p.hours);
   }
 
   const matchedHarvestNorms = new Set<string>();
