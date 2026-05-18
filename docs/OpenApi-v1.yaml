@@ -1,0 +1,2566 @@
+openapi: 3.1.0
+info:
+  title: Ops-Radar AI Automation Builder API
+  version: 1.0.0
+  description: |
+    HTTP API for **Ops-Radar / AI Automation Builder** — a multi-tenant service that turns
+    natural-language requests into n8n workflows, deploys them to a remote n8n instance,
+    monitors workflow health (including silent-failure detection), and surfaces alerts,
+    executions, and AI-generated remediation guidance.
+
+    ## What changed since v0.1.0
+
+    - **Authentication is now mandatory.** Every endpoint except `/health`, the static
+      shell (`/`, `/app.css`, `/app.js`), `POST /auth/register`, and `POST /auth/login`
+      requires a Bearer JWT obtained from `/auth/login` or `/auth/register`.
+    - **Tenant scoping.** `/projects/*`, `/workflows/*`, `/n8n/*`, and `/analytics` now
+      filter on the authenticated user. A user only sees their own projects, anomalies,
+      analytics aggregates, and the n8n instance configured under their account.
+    - **Per-user credentials.** Each user stores their own `n8n_base_url` + `n8n_api_key`
+      and (optionally) `anthropic_api_key`. Env-level keys are reserved for background
+      tasks (monitoring scheduler / failure analysis). See `PUT /auth/credentials`.
+    - **Admin console** (`/admin/*`): platform overview, user CRUD, RAG-agent permission
+      toggles, AI-interaction log, cross-tenant project view. Gated by `is_admin = true`
+      re-read from the DB on every request (JWT claims are NOT trusted for authorization).
+    - **RAG agent path.** Users with `can_use_rag_agent = true` and the platform-level
+      `RAG_AGENT_URL` / `RAG_AGENT_API_KEY` configured route through a shared RAG agent
+      instead of the regular Anthropic + knowledge-base flow. No new endpoints — purely
+      a behaviour switch.
+    - **Silent-failure detection layer** (additive, off by default — see the new
+      `SILENT_FAILURE_PIPELINE_ENABLED` / `SCHEDULE_DRIFT_ENABLED` /
+      `TELEMETRY_DEEP_INSPECTION_ENABLED` flags). When enabled, `/projects/:id/health`
+      returns a unified `health_status` that can escalate legacy `healthy` → `warning`
+      or `healthy` / `warning` → `failing` based on recent anomalies. Response shape is
+      unchanged.
+    - **`WorkflowAlertRecord` gains `occurrence_count`** — duplicate-fingerprint alerts
+      now carry a recurrence counter instead of being indistinguishable single rows.
+    - **`ProjectRecord` gains `user_id`** (nullable for projects created before
+      migration 012; new projects always carry the owner).
+
+    ## Architecture
+
+    The service is a single Hono-based HTTP server (Bun or Node) exposing:
+
+    - **`/auth`** — register / login / me / per-user credential updates.
+    - **`/admin`** — operator-only console (users, AI interactions, cross-tenant view).
+    - **`/chat`** — turn a free-text instruction into a validated n8n workflow owned by
+      the authenticated user.
+    - **`/projects`** — project lifecycle, deploy preflight + deploy, credential
+      bindings, executions, health, activity (tenant-scoped).
+    - **`/workflows`** — low-level workflow status, run stats, alerts, AI suggestion
+      (tenant-scoped via project ownership).
+    - **`/event`** — webhook-style event ingestion from n8n / external workers; protected
+      by `EVENT_INGEST_TOKEN`.
+    - **`/analytics`** — per-user aggregated KPIs.
+    - **`/n8n`** — facade over the *user's* n8n REST API.
+    - **`/health`** — public liveness probe.
+    - **`/debug/*`** — dev-only diagnostics.
+
+    ## Error format
+
+    All errors share a single envelope:
+
+    ```json
+    { "error": { "code": "BAD_REQUEST", "message": "Invalid request body.", "details": [] } }
+    ```
+
+    `details` is present for `4xx` and stripped for `5xx`. Zod validation errors return
+    `error.issues` under `details`.
+
+    ## Cross-tenant safety
+
+    Operations that name a `projectId` you don't own return `404 PROJECT_NOT_FOUND` —
+    NOT `403`. The 404 is deliberate: it prevents an attacker from probing for project
+    ids belonging to other tenants.
+
+  contact:
+    name: Ops-Radar Maintainers
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:{port}
+    description: Local development server
+    variables:
+      port:
+        default: "3000"
+        description: HTTP port from `PORT` env (default 3000)
+  - url: https://api.ops-radar.example.com
+    description: Production API (replace with your deployment hostname)
+
+tags:
+  - name: Health
+    description: Liveness probe and the bundled static UI.
+  - name: Auth
+    description: Sign up, sign in, JWT issuance, per-user credential storage.
+  - name: Admin
+    description: Operator console. Every endpoint requires `is_admin = true`.
+  - name: Chat
+    description: Generate workflows from natural-language messages (tenant-scoped).
+  - name: Projects
+    description: Project lifecycle, deploy preflight, deploy, credential bindings, executions (tenant-scoped).
+  - name: Workflows
+    description: Low-level workflow status, run stats, alerts, AI suggestions (tenant-scoped).
+  - name: Events
+    description: Webhook-style ingestion of run/node lifecycle events from external workers.
+  - name: Analytics
+    description: Cross-workflow KPIs scoped to the authenticated user.
+  - name: n8n
+    description: Facade over the user's n8n REST API (credentials, schemas).
+  - name: Debug
+    description: Development-only diagnostics. Returns 404 in non-development.
+
+# Default security: every operation requires a Bearer JWT unless it overrides
+# `security` to `[]` (public) or to `eventTokenAuth` (the /event endpoint).
+security:
+  - bearerAuth: []
+
+paths:
+  # ──────────────────────────────────────────────────────────────────────
+  # Health + static (public)
+  # ──────────────────────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Liveness probe (public)
+      description: Returns service liveness, runtime feature flags relevant to deployment, and a UTC ISO timestamp. Useful for load-balancer / k8s probes.
+      security: []
+      responses:
+        "200":
+          description: Service is up.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+                service: ai-automation-builder
+                timestamp: "2026-05-10T10:15:00.000Z"
+                monitoring_enabled: true
+                credential_provisioning_mode: manual_only
+
+  /:
+    get:
+      tags: [Health]
+      operationId: getIndexPage
+      summary: Static index page (public)
+      description: Serves `public/index.html` (the bundled web UI).
+      security: []
+      responses:
+        "200":
+          description: HTML page.
+          content:
+            text/html:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /app.css:
+    get:
+      tags: [Health]
+      operationId: getAppCss
+      summary: Static CSS bundle (public)
+      security: []
+      responses:
+        "200":
+          description: CSS bundle.
+          content:
+            text/css:
+              schema: { type: string }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /app.js:
+    get:
+      tags: [Health]
+      operationId: getAppJs
+      summary: Static JS bundle (public)
+      security: []
+      responses:
+        "200":
+          description: JS bundle.
+          content:
+            application/javascript:
+              schema: { type: string }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Auth (mix of public + bearer)
+  # ──────────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: register
+      summary: Create a new user account
+      description: |
+        Creates a user with the provided email/name/password. Returns a JWT plus the
+        user's public profile. Self-service: no `is_admin` or `can_use_rag_agent`
+        permission can be requested here — those are operator-set via `/admin`.
+
+        Passwords are stored as scrypt hashes (`crypto.scrypt`, N=16384, r=8, p=1).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: alice@example.com
+              name: Alice Example
+              password: longenoughpw
+      responses:
+        "201":
+          description: User created. JWT issued.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSuccess"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Email already in use.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              example:
+                error:
+                  code: EMAIL_TAKEN
+                  message: An account with this email already exists.
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: Exchange email + password for a JWT
+      description: |
+        Returns a JWT that must be supplied as `Authorization: Bearer <token>` on every
+        protected endpoint. The token lifetime is governed by `JWT_EXPIRES_IN_SECONDS`
+        (default 86400). The same response also returns the user's public profile so
+        the frontend can hydrate without a follow-up `/auth/me` call.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: alice@example.com
+              password: longenoughpw
+      responses:
+        "200":
+          description: JWT + user profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSuccess"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Wrong email or password.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              example:
+                error:
+                  code: INVALID_CREDENTIALS
+                  message: Invalid email or password.
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getCurrentUser
+      summary: Return the authenticated user's public profile
+      description: |
+        Re-reads `users` row from DB on every call — useful right after a credential
+        update or admin permission change to pick up the new flags.
+      responses:
+        "200":
+          description: Current user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/UserPublic"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/credentials:
+    put:
+      tags: [Auth]
+      operationId: updateMyCredentials
+      summary: Update the authenticated user's per-account integration credentials
+      description: |
+        Each field is optional so the client can update one at a time. `null` clears a
+        stored value. The two API-key fields trim whitespace and refuse blank strings —
+        this prevents storing a useless encrypted blob that would still mark
+        `has_*_api_key` as true.
+
+        Stored encryption: AES-256-GCM, master key derived from
+        `SECRETS_ENCRYPTION_KEY` via SHA-256. The values are NEVER returned by `GET
+        /auth/me` — only the booleans `has_n8n_api_key` / `has_anthropic_api_key`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCredentialsRequest"
+            example:
+              n8n_base_url: https://n8n.example.com/api/v1
+              n8n_api_key: eyJhbGciOiJI...truncated...
+              anthropic_api_key: sk-ant-...
+      responses:
+        "200":
+          description: Updated profile (no keys, just `has_*` booleans).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/UserPublic"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Admin (every endpoint behind requireAdmin)
+  # ──────────────────────────────────────────────────────────────────────
+  /admin/me:
+    get:
+      tags: [Admin]
+      operationId: adminMe
+      summary: Admin's own profile (saves a separate /auth/me call)
+      responses:
+        "200":
+          description: Admin user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user: { $ref: "#/components/schemas/UserPublic" }
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+
+  /admin/analytics:
+    get:
+      tags: [Admin]
+      operationId: adminAnalytics
+      summary: Platform-wide analytics overview (cross-tenant)
+      responses:
+        "200":
+          description: Platform overview.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [overview]
+                properties:
+                  overview:
+                    $ref: "#/components/schemas/AdminAnalyticsOverview"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      operationId: adminListUsers
+      summary: List all users (optionally filter by email/name)
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+        - { name: q, in: query, required: false, description: Free-text fragment matched against email and name (case-insensitive)., schema: { type: string } }
+      responses:
+        "200":
+          description: User page.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, count]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/UserPublic" }
+                  count: { type: integer }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+    post:
+      tags: [Admin]
+      operationId: adminCreateUser
+      summary: Create a user (admin-only — bypasses self-service rules)
+      description: |
+        Unlike `/auth/register`, this endpoint accepts `is_admin` and
+        `can_use_rag_agent` so the operator can provision elevated accounts directly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateUserRequest"
+            example:
+              email: bob@example.com
+              name: Bob Example
+              password: longenoughpw
+              can_use_rag_agent: true
+              is_admin: false
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user: { $ref: "#/components/schemas/UserPublic" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "409":
+          description: Email already in use.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /admin/users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/UserIdPath"
+    get:
+      tags: [Admin]
+      operationId: adminGetUserDetail
+      summary: User detail with AI-interaction stats and recent prompts
+      responses:
+        "200":
+          description: User detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Admin]
+      operationId: adminPatchUser
+      summary: Update name / `is_admin` / `can_use_rag_agent`
+      description: |
+        Lockout guards apply:
+        - `LAST_ADMIN_LOCKOUT` (409) when removing `is_admin` from the only remaining admin
+        - `SELF_DEMOTE` (409) when an admin tries to demote themselves
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminPatchUserRequest"
+            example:
+              can_use_rag_agent: true
+      responses:
+        "200":
+          description: Updated user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user: { $ref: "#/components/schemas/UserPublic" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Lockout guard tripped.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    delete:
+      tags: [Admin]
+      operationId: adminDeleteUser
+      summary: Permanently delete a user
+      description: |
+        Projects owned by the deleted user are orphaned (`user_id` set to NULL via
+        `ON DELETE SET NULL` from migration 012). Anomalies, node stats, and schedule
+        rows cascade-delete with the workflows the user owned.
+
+        Refuses with `SELF_DELETE` (409) when an admin targets their own id.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deleted]
+                properties:
+                  deleted: { type: boolean }
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Self-delete or last-admin lockout.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /admin/users/{id}/reset-password:
+    parameters:
+      - $ref: "#/components/parameters/UserIdPath"
+    post:
+      tags: [Admin]
+      operationId: adminResetUserPassword
+      summary: Replace a user's password
+      description: |
+        The target user is NOT automatically signed out (their existing JWT remains
+        valid until expiry). They simply need the new password on their next sign-in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, minLength: 8, maxLength: 256 }
+            example:
+              password: a-new-long-password
+      responses:
+        "200":
+          description: Reset result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [reset]
+                properties:
+                  reset: { type: boolean }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/ai-interactions:
+    get:
+      tags: [Admin]
+      operationId: adminListAiInteractions
+      summary: Prompt + response log across ALL users (filterable)
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+        - { name: user_id, in: query, required: false, description: Filter to a single user., schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { type: string, enum: [success, error] } }
+        - name: provider
+          in: query
+          required: false
+          description: "e.g. `anthropic`, `digitalocean`, `rag_agent`."
+          schema: { type: string }
+      responses:
+        "200":
+          description: Interaction page (summarised; full text via the detail endpoint).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, count]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminAiInteractionSummary" }
+                  count: { type: integer }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+
+  /admin/ai-interactions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, description: Numeric interaction id., schema: { type: integer } }
+    get:
+      tags: [Admin]
+      operationId: adminGetAiInteraction
+      summary: Full prompt + response + raw provider payload for one interaction
+      responses:
+        "200":
+          description: Full interaction record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAiInteractionFull"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/projects:
+    get:
+      tags: [Admin]
+      operationId: adminListAllProjects
+      summary: Cross-tenant project list (every owner)
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 1000, default: 200 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        "200":
+          description: Project page across all tenants.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, count]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminProjectListItem" }
+                  count: { type: integer }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/AdminRequired"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Chat (tenant-scoped)
+  # ──────────────────────────────────────────────────────────────────────
+  /chat:
+    post:
+      tags: [Chat]
+      operationId: createChatWorkflow
+      summary: Generate, validate and persist a workflow from a natural-language message
+      description: |
+        Sends a natural-language request to the AI provider (Anthropic by default, or
+        the platform RAG agent when the user has `can_use_rag_agent = true` and the
+        agent env vars are set), asks it to generate a complete n8n workflow JSON,
+        runs the security validator, and persists the project + chat session + workflow
+        as a single transaction owned by the authenticated user.
+
+        ### Authentication
+        Requires `Authorization: Bearer <jwt>`. The created project's `user_id` is set
+        to the authenticated user.
+
+        ### Workflow lifecycle
+        - Validation passes → status `validated`.
+        - Validation fails → status `rejected`, secrets redacted from the JSON,
+          `validation.errors` enumerates the failures.
+
+        ### Tracing
+        Pass `x-trace-id` to thread your request id through logs and the response. If
+        omitted, the server generates one and echoes it back via the `x-trace-id` header.
+      parameters:
+        - $ref: "#/components/parameters/TraceIdHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+            examples:
+              telegramToGmail:
+                summary: Forward Telegram message to Gmail
+                value:
+                  message: When I receive a Telegram message, send the body to my Gmail inbox.
+              dailyReport:
+                summary: Daily KPI digest
+                value:
+                  message: Every day at 9am, fetch yesterday's stats from Postgres and email a summary to ops@acme.com.
+      responses:
+        "201":
+          description: Workflow generated, validated (or rejected), and persisted.
+          headers:
+            x-trace-id:
+              description: Echo of the request trace id.
+              schema: { type: string, format: uuid }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Projects (every operation tenant-scoped)
+  # ──────────────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      tags: [Projects]
+      operationId: listProjects
+      summary: List the authenticated user's projects with workflow + health snapshot
+      description: |
+        Paginated list of projects owned by the authenticated user. Each entry carries
+        the **latest workflow per project**, a compact health snapshot, and an optional
+        live n8n sync check (controlled by `verify_n8n` or `PROJECTS_VERIFY_N8N_ON_LIST`).
+      parameters:
+        - $ref: "#/components/parameters/LimitQuery"
+        - $ref: "#/components/parameters/OffsetQuery"
+        - $ref: "#/components/parameters/VerifyN8nQuery"
+      responses:
+        "200":
+          description: List page (only this user's projects).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, count]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ProjectListItem" }
+                  count: { type: integer }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /projects/report:
+    get:
+      tags: [Projects]
+      operationId: getProjectsAuditReport
+      summary: Cross-project audit report for the authenticated user
+      description: |
+        Audit-style dashboard payload for the user's projects: per-project lifecycle
+        state, n8n existence/active flags, credential coverage, recommended next action,
+        node-version compatibility info. Default page size 200. Always performs a live
+        n8n verification unless `verify_n8n=false`.
+      parameters:
+        - $ref: "#/components/parameters/LimitQueryReport"
+        - $ref: "#/components/parameters/OffsetQuery"
+        - $ref: "#/components/parameters/VerifyN8nQuery"
+      responses:
+        "200":
+          description: Audit report (tenant-scoped).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectsAuditReport" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProject
+      summary: Get a project with its latest workflow and health
+      responses:
+        "200":
+          description: Project + workflow snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectWithWorkflow" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+    delete:
+      tags: [Projects]
+      operationId: deleteProject
+      summary: Delete a project and best-effort clean up its n8n workflows
+      description: |
+        Deactivates and deletes every n8n workflow attached to the project's workflows,
+        then deletes the project row in the local DB. Remote failures (other than
+        "not found") are surfaced as `cleanup_warnings` while the local delete still
+        succeeds. Cross-tenant attempts return `404 PROJECT_NOT_FOUND` — the API
+        deliberately doesn't distinguish "doesn't exist" from "not yours".
+      responses:
+        "200":
+          description: Delete result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeleteProjectResult" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /projects/{projectId}/workflow:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProjectWorkflow
+      summary: Get the project's latest workflow record
+      responses:
+        "200":
+          description: Workflow record.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkflowRecord" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/messages:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProjectMessages
+      summary: Get chat history for a project
+      responses:
+        "200":
+          description: Chat messages, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project_id, messages]
+                properties:
+                  project_id: { type: string, format: uuid }
+                  messages:
+                    type: array
+                    items: { $ref: "#/components/schemas/ChatMessage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/events:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProjectActivity
+      summary: Get recent workflow events / activity for a project
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, default: 100 }
+      responses:
+        "200":
+          description: Recent events.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectActivity" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/credential-bindings:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProjectCredentialBindings
+      summary: Get credential bindings (per-node) for the project's latest workflow
+      responses:
+        "200":
+          description: Bindings (new + legacy shapes).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CredentialBindingsResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+    put:
+      tags: [Projects]
+      operationId: saveProjectCredentialBindings
+      summary: Replace credential bindings for the project's latest workflow
+      description: |
+        Replaces all stored bindings for the latest workflow. Bindings can be supplied as:
+
+        - `bindings` (preferred) — array of `NodeCredentialBinding`.
+        - `credential_bindings` — same array shape, kept for compatibility.
+        - A legacy `Record<credentialType, { id?, name? }>` map is also accepted under
+          either key.
+
+        Saving bindings resets the project status to `draft`. Rejected workflows cannot
+        accept bindings — fix them via `POST /projects/{projectId}/fix-workflow` first.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SaveCredentialBindingsRequest" }
+      responses:
+        "200":
+          description: Updated bindings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CredentialBindingsResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+        "409":
+          description: Workflow rejected — fix it before binding credentials.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /projects/{projectId}/deploy-check:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    post:
+      tags: [Projects]
+      operationId: deployPreflight
+      summary: Deploy preflight — what's needed to deploy/activate
+      description: |
+        Returns a full deploy preflight: required credentials per node, which bindings
+        are resolved against live n8n credentials, missing/manual credentials,
+        capabilities (`can_deploy_inactive`, `can_activate`, `can_redeploy`,
+        `can_delete`), and links to the n8n dashboard.
+
+        The "n8n" being queried here is the user's n8n (`users.n8n_base_url` +
+        `users.n8n_api_key`), not a global one.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeployCheckRequest" }
+      responses:
+        "200":
+          description: Preflight result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeployPreflightResult" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+        "409":
+          description: Workflow rejected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /projects/{projectId}/deploy:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    post:
+      tags: [Projects]
+      operationId: deployProject
+      summary: Deploy (and optionally activate) the project's latest workflow to n8n
+      description: |
+        Creates or updates the workflow on the **user's** configured n8n instance,
+        persists the canonical normalized JSON in the local DB, optionally activates
+        the workflow, registers schedule-tracking on success (used by the silent-
+        failure layer's drift detector), and emits lifecycle events
+        (`workflow_deployed`, `workflow_activated`, `workflow_deactivated`).
+
+        ### Concurrency
+        Concurrent deploys for the same project are rejected with `DEPLOY_IN_PROGRESS`
+        (HTTP 409) to prevent orphaning workflows on n8n.
+
+        ### Failure modes
+        - `WORKFLOW_NOT_FOUND` (400) — project has no workflow.
+        - `WORKFLOW_REJECTED` (409) — fix validation errors first.
+        - `WORKFLOW_NOT_DEPLOYABLE` (400) — current status is not deployable.
+        - `N8N_CONFIG_MISSING` (400) — user has not set their n8n API key.
+        - `N8N_CREDENTIALS_PRECHECK_FAILED` (502) — could not reach the user's n8n.
+        - `CREDENTIAL_BINDINGS_REQUIRED` (409) — missing bindings; activation denied.
+        - `N8N_MISSING_CREDENTIALS` (409) — n8n returned a missing-credential error.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeployRequest" }
+      responses:
+        "200":
+          description: Deploy result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeployResult" }
+        "400":
+          description: Bad request, missing n8n config, or non-deployable workflow.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+        "409":
+          description: Workflow not deployable, rejected, missing bindings, or in progress.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "502":
+          description: User's n8n upstream error.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /projects/{projectId}/fix-workflow:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    post:
+      tags: [Projects]
+      operationId: fixProjectWorkflow
+      summary: Ask the AI to fix a rejected workflow
+      description: |
+        Re-runs the AI generator on the original chat request plus the validation errors,
+        re-validates the result, and updates the workflow row. Only available when the
+        latest workflow has `status = "rejected"`.
+      responses:
+        "200":
+          description: Fix result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FixWorkflowResult" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+        "409":
+          description: Workflow is not rejected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /projects/{projectId}/health:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: getProjectHealth
+      summary: Get the project workflow's full health snapshot
+      description: |
+        Reaches out to the user's n8n, lists recent executions, classifies the latest
+        failure (if any), persists a `workflow_health_snapshots` row, opens or resolves
+        alerts, and emits `workflow_execution_*` and `workflow_health_*` events.
+
+        **`health_status` is the UNIFIED status** when
+        `SILENT_FAILURE_PIPELINE_ENABLED=true`: it merges the legacy status with the
+        latest anomalies and can escalate `healthy → warning` or
+        `healthy/warning → failing`. When the flag is off, `health_status` is the
+        legacy status (no anomaly query is performed). Response shape is unchanged.
+      responses:
+        "200":
+          description: Health snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectWorkflowHealth" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/health/refresh:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    post:
+      tags: [Projects]
+      operationId: refreshProjectHealth
+      summary: Force-refresh the project workflow's health snapshot
+      responses:
+        "200":
+          description: Health snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectWorkflowHealth" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/executions:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Projects]
+      operationId: listProjectExecutions
+      summary: List recent n8n executions for the project workflow
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Max executions to return (1–100).
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: status
+          in: query
+          required: false
+          description: Optional n8n status filter (e.g. `error`, `success`, `running`).
+          schema: { type: string }
+      responses:
+        "200":
+          description: Execution list.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectExecutions" }
+        "400":
+          description: Workflow not deployed yet, or invalid query parameters.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ProjectNotFound"
+
+  /projects/{projectId}/executions/{executionId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+      - { name: executionId, in: path, required: true, description: n8n execution id., schema: { type: string } }
+    get:
+      tags: [Projects]
+      operationId: getProjectExecutionDetails
+      summary: Get a single n8n execution with classified-error info and a redacted detail view
+      responses:
+        "200":
+          description: Execution details.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectExecutionDetails" }
+        "400":
+          description: Workflow not deployed yet.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Execution does not belong to this project workflow, or project missing.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Workflows (tenant-scoped via project ownership)
+  # ──────────────────────────────────────────────────────────────────────
+  /workflows/{workflowId}/status:
+    parameters:
+      - { name: workflowId, in: path, required: true, description: Internal workflow UUID., schema: { type: string, format: uuid } }
+    get:
+      tags: [Workflows]
+      operationId: getWorkflowStatus
+      summary: Low-level workflow status, run stats, recent errors, alerts and AI suggestion
+      description: |
+        Tenant-scoped: returns `404 WORKFLOW_NOT_FOUND` if the workflow's project doesn't
+        belong to the authenticated user (we don't leak existence across tenants).
+      responses:
+        "200":
+          description: Workflow status.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkflowStatusResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Events (separate auth scheme)
+  # ──────────────────────────────────────────────────────────────────────
+  /event:
+    post:
+      tags: [Events]
+      operationId: ingestWorkflowEvent
+      summary: Ingest a workflow run/node lifecycle event
+      description: |
+        Webhook-style endpoint for run/node lifecycle and workflow lifecycle events.
+
+        ### Authentication
+        Does NOT use the user JWT. When `EVENT_INGEST_TOKEN` is set on the server
+        (required in production), one of the following must match it:
+        - `Authorization: Bearer <token>`, or
+        - `X-Event-Token: <token>`
+
+        Comparison is timing-safe.
+
+        ### Workflow resolution
+        Provide either `workflow_id` (internal UUID) or `n8n_workflow_id`. If neither
+        resolves to a workflow, the request fails with `404 WORKFLOW_NOT_FOUND`.
+
+        ### Side effects
+        - `run_failed` flips the workflow + project to `failed` and runs the AI
+          failure-analyzer (best-effort).
+        - `run_succeeded` recovers a `failed` workflow to `deployed_active`.
+        - `workflow_deactivated` / `workflow_deleted` adjust workflow + project state.
+      security:
+        - eventTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IncomingWorkflowEvent" }
+      responses:
+        "202":
+          description: Accepted and persisted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventIngestResult" }
+        "400":
+          $ref: "#/components/responses/BadEventPayload"
+        "401":
+          description: Token missing or invalid.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          $ref: "#/components/responses/WorkflowNotFound"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Analytics (per-user)
+  # ──────────────────────────────────────────────────────────────────────
+  /analytics:
+    get:
+      tags: [Analytics]
+      operationId: getAnalyticsSnapshot
+      summary: Per-user analytics snapshot
+      description: |
+        High-level KPIs scoped to the authenticated user — totals/success rate/duration
+        across their projects, plus the per-workflow health ranking (top 20 by
+        unresolved alerts and failure count).
+      responses:
+        "200":
+          description: Analytics snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnalyticsSnapshot" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # n8n facade (user's n8n instance)
+  # ──────────────────────────────────────────────────────────────────────
+  /n8n/credentials:
+    get:
+      tags: [n8n]
+      operationId: listN8nCredentials
+      summary: List credentials registered on the user's n8n instance
+      description: |
+        Reads from the n8n instance configured under the **authenticated user's**
+        `n8n_base_url` + `n8n_api_key`. Returns `400 N8N_CONFIG_MISSING` when the user
+        has not yet provisioned an n8n API key under `/auth/credentials`.
+      responses:
+        "200":
+          description: Credential list.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, count]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/N8nCredentialSummary" }
+                  count: { type: integer }
+        "400":
+          description: User has no n8n API key configured.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          description: User's n8n upstream failure.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    post:
+      tags: [n8n]
+      operationId: createN8nCredential
+      summary: Create an n8n credential (currently rejected — manual-only)
+      description: |
+        Validates input and surfaces a `409` explaining that credential provisioning is
+        **manual-only** (`CREDENTIAL_PROVISIONING_MODE = manual_only`). The endpoint
+        is kept so clients can structure a "where do I create this credential?" probe.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateN8nCredentialRequest" }
+      responses:
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Manual provisioning required (or workflow rejected / type not required).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /n8n/credentials/schema/{credentialType}:
+    parameters:
+      - name: credentialType
+        in: path
+        required: true
+        description: "n8n credential type (e.g. `gmailOAuth2`, `httpBasicAuth`)."
+        schema: { type: string }
+    get:
+      tags: [n8n]
+      operationId: getN8nCredentialPolicy
+      summary: Get the local provisioning policy for a credential type
+      description: |
+        Returns the **server's policy** for this credential type. Today every credential
+        type uses provisioning mode `manual` — credentials must be created in n8n and
+        bound here by id or name.
+      responses:
+        "200":
+          description: Policy.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CredentialPolicyResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Debug (dev-only, public)
+  # ──────────────────────────────────────────────────────────────────────
+  /debug/knowledge-base:
+    get:
+      tags: [Debug]
+      operationId: debugKnowledgeBase
+      summary: Inspect knowledge-base selection for a query (dev only)
+      description: Returns `404` when `NODE_ENV !== "development"`. Currently NOT gated by JWT.
+      security: []
+      parameters:
+        - { name: query, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Selection breakdown.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /debug/workflow/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Debug]
+      operationId: debugWorkflowDrift
+      summary: Compare DB workflow vs n8n workflow (dev only)
+      security: []
+      parameters:
+        - { name: verify_n8n, in: query, required: false, schema: { type: boolean, default: true } }
+      responses:
+        "200":
+          description: Drift snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectWorkflowDebugSnapshot" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /debug/workflow/{projectId}/node-versions:
+    parameters:
+      - $ref: "#/components/parameters/ProjectIdPath"
+    get:
+      tags: [Debug]
+      operationId: debugNodeVersions
+      summary: Compare node-type versions DB vs n8n (dev only)
+      security: []
+      parameters:
+        - { name: verify_n8n, in: query, required: false, schema: { type: boolean, default: true } }
+      responses:
+        "200":
+          description: Node-version subset of the drift snapshot.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT issued by `/auth/login` or `/auth/register`. HS256 signed with `JWT_SECRET`.
+        Payload contains `sub` (user id), `email`, `iat`, `exp`. Token lifetime
+        controlled by `JWT_EXPIRES_IN_SECONDS` (default 86400 = 24h).
+    eventTokenAuth:
+      type: apiKey
+      in: header
+      name: X-Event-Token
+      description: |
+        `EVENT_INGEST_TOKEN` from server env. May also be supplied as
+        `Authorization: Bearer <EVENT_INGEST_TOKEN>` — the route accepts either header.
+        Comparison is timing-safe.
+
+  parameters:
+    ProjectIdPath:
+      name: projectId
+      in: path
+      required: true
+      description: Project UUID.
+      schema: { type: string, format: uuid }
+    UserIdPath:
+      name: id
+      in: path
+      required: true
+      description: User UUID.
+      schema: { type: string, format: uuid }
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      description: Page size (default 20, max 100).
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    LimitQueryReport:
+      name: limit
+      in: query
+      required: false
+      description: Page size for the audit report (default 200).
+      schema: { type: integer, minimum: 1, default: 200 }
+    OffsetQuery:
+      name: offset
+      in: query
+      required: false
+      description: Page offset.
+      schema: { type: integer, minimum: 0, default: 0 }
+    VerifyN8nQuery:
+      name: verify_n8n
+      in: query
+      required: false
+      description: |
+        If `true`, the server reaches out to the user's n8n to verify each workflow's
+        existence + active flag. If omitted, follows `PROJECTS_VERIFY_N8N_ON_LIST` for
+        `/projects` and defaults to `true` for `/projects/report`.
+      schema: { type: boolean }
+    TraceIdHeader:
+      name: x-trace-id
+      in: header
+      required: false
+      description: Distributed-trace correlation id. If absent, the server generates one.
+      schema: { type: string, format: uuid }
+
+  responses:
+    BadRequest:
+      description: Validation or input error.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    BadEventPayload:
+      description: Invalid event payload.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: |
+        Missing or invalid JWT. The client should redirect to login and clear any
+        cached token.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+          example:
+            error:
+              code: UNAUTHENTICATED
+              message: Authentication required.
+    AdminRequired:
+      description: Authenticated but not an admin.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+          example:
+            error:
+              code: ADMIN_REQUIRED
+              message: Admin privileges required.
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ProjectNotFound:
+      description: |
+        Project not found OR exists but belongs to another tenant — the API
+        deliberately doesn't distinguish.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+          example:
+            error:
+              code: PROJECT_NOT_FOUND
+              message: Project not found.
+    WorkflowNotFound:
+      description: Workflow could not be resolved.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    InternalError:
+      description: Internal server error. Sensitive details are stripped.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    # ───── Common ────────────────────────────────────────────────────
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              description: Optional structured details. Present only for `4xx`.
+              nullable: true
+
+    # ───── Health ────────────────────────────────────────────────────
+    HealthResponse:
+      type: object
+      required: [status, service, timestamp, monitoring_enabled, credential_provisioning_mode]
+      properties:
+        status: { type: string, enum: [ok] }
+        service: { type: string, enum: [ai-automation-builder] }
+        timestamp: { type: string, format: date-time }
+        monitoring_enabled: { type: boolean }
+        credential_provisioning_mode: { type: string, enum: [hybrid, manual_only] }
+
+    # ───── Auth ──────────────────────────────────────────────────────
+    RegisterRequest:
+      type: object
+      required: [email, name, password]
+      properties:
+        email: { type: string, format: email, minLength: 3 }
+        name: { type: string, minLength: 2 }
+        password: { type: string, minLength: 8 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, minLength: 3 }
+        password: { type: string, minLength: 1 }
+    AuthSuccess:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+          description: "HS256 JWT. Send back as `Authorization: Bearer <token>`."
+        user:
+          $ref: "#/components/schemas/UserPublic"
+    UpdateCredentialsRequest:
+      type: object
+      description: |
+        Each field is optional. `null` clears the stored value. Blank/whitespace
+        strings on the API key fields are rejected with `400 BAD_REQUEST`. At least
+        one field must be present.
+      properties:
+        n8n_base_url:
+          oneOf:
+            - { type: string, format: uri }
+            - { type: "null" }
+        n8n_api_key:
+          oneOf:
+            - { type: string, minLength: 1 }
+            - { type: "null" }
+        anthropic_api_key:
+          oneOf:
+            - { type: string, minLength: 1 }
+            - { type: "null" }
+    UserPublic:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - n8n_base_url
+        - has_n8n_api_key
+        - has_anthropic_api_key
+        - can_use_rag_agent
+        - is_admin
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        name: { type: string }
+        n8n_base_url:
+          type: string
+          format: uri
+          nullable: true
+          description: User-configured n8n base URL (`null` until set via `/auth/credentials`).
+        has_n8n_api_key:
+          type: boolean
+          description: True iff an encrypted n8n key is stored. The key value itself is NEVER returned.
+        has_anthropic_api_key:
+          type: boolean
+          description: True iff an encrypted Anthropic key is stored.
+        can_use_rag_agent:
+          type: boolean
+          description: Operator-granted permission to route chat through the platform RAG agent.
+        is_admin:
+          type: boolean
+          description: Re-read from DB on every request — never trusted from the JWT.
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    # ───── Admin ─────────────────────────────────────────────────────
+    AdminCreateUserRequest:
+      type: object
+      required: [email, name, password]
+      properties:
+        email: { type: string, minLength: 3 }
+        name: { type: string, minLength: 2 }
+        password: { type: string, minLength: 8 }
+        can_use_rag_agent: { type: boolean }
+        is_admin: { type: boolean }
+    AdminPatchUserRequest:
+      type: object
+      description: At least one of `name`, `can_use_rag_agent`, `is_admin` must be supplied.
+      properties:
+        name: { type: string, minLength: 2 }
+        can_use_rag_agent: { type: boolean }
+        is_admin: { type: boolean }
+    AdminAnalyticsOverview:
+      type: object
+      required:
+        - users_total
+        - users_admin
+        - users_with_rag
+        - projects_total
+        - workflows_total
+        - ai_interactions_24h
+        - ai_errors_24h
+        - ai_tokens_24h
+      properties:
+        users_total: { type: integer }
+        users_admin: { type: integer }
+        users_with_rag: { type: integer }
+        projects_total: { type: integer }
+        workflows_total: { type: integer }
+        ai_interactions_24h: { type: integer }
+        ai_errors_24h: { type: integer }
+        ai_tokens_24h: { type: integer }
+    AdminUserDetail:
+      type: object
+      required: [user, projects_count, ai_interactions, recent_prompts]
+      properties:
+        user: { $ref: "#/components/schemas/UserPublic" }
+        projects_count: { type: integer }
+        ai_interactions:
+          type: object
+          required: [total, success, error, tokens_total]
+          properties:
+            total: { type: integer }
+            success: { type: integer }
+            error: { type: integer }
+            tokens_total: { type: integer }
+        recent_prompts:
+          type: array
+          items: { $ref: "#/components/schemas/AdminAiInteractionSummary" }
+    AdminAiInteractionSummary:
+      type: object
+      required: [id, provider, model, status, latency_ms, tokens_used, created_at]
+      properties:
+        id: { type: integer }
+        user_id: { type: string, format: uuid, nullable: true }
+        provider: { type: string, examples: [anthropic, digitalocean, openai, rag_agent] }
+        model: { type: string }
+        status: { type: string, enum: [success, error] }
+        latency_ms: { type: integer, nullable: true }
+        tokens_used: { type: integer, nullable: true }
+        user_prompt_excerpt:
+          type: string
+          nullable: true
+          description: First few hundred chars of the prompt; full text via the detail endpoint.
+        response_excerpt:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        created_at: { type: string, format: date-time }
+    AdminAiInteractionFull:
+      type: object
+      required: [id, provider, model, status, system_prompt, user_prompt, response, created_at]
+      properties:
+        id: { type: integer }
+        user_id: { type: string, format: uuid, nullable: true }
+        provider: { type: string }
+        model: { type: string }
+        status: { type: string, enum: [success, error] }
+        system_prompt: { type: string, nullable: true }
+        user_prompt: { type: string }
+        response: { type: string, nullable: true }
+        raw_response:
+          description: "Provider's full response object, redacted. May be a JSON object/array OR a wrapper `{ __truncated: true, original_size, excerpt }` when serialized payload exceeds 64KB."
+          nullable: true
+        error_message: { type: string, nullable: true }
+        tokens_used: { type: integer, nullable: true }
+        latency_ms: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+    AdminProjectListItem:
+      type: object
+      required: [id, name, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        status: { $ref: "#/components/schemas/ProjectStatus" }
+        user_id: { type: string, format: uuid, nullable: true }
+        user_email: { type: string, format: email, nullable: true }
+        workflow_status:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowStatus" }
+            - { type: "null" }
+        n8n_workflow_id: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    # ───── Enums ─────────────────────────────────────────────────────
+    ProjectStatus: { type: string, enum: [draft, active, failed] }
+    WorkflowStatus:
+      type: string
+      enum: [draft, validated, rejected, deployed_inactive, deployed_active, failed]
+    WorkflowLifecycleState:
+      type: string
+      enum: [draft, validated, rejected, deployed_inactive, deployed_active, failed, missing_in_n8n, n8n_check_failed, no_workflow]
+    HealthStatus: { type: string, enum: [healthy, warning, failing, inactive, unknown] }
+    ChatRole: { type: string, enum: [user, ai] }
+    EventType:
+      type: string
+      enum:
+        - run_started
+        - run_succeeded
+        - run_failed
+        - node_started
+        - node_succeeded
+        - node_failed
+        - workflow_created
+        - workflow_validated
+        - workflow_rejected
+        - workflow_deployed
+        - workflow_activated
+        - workflow_deactivated
+        - workflow_deleted
+        - workflow_execution_success
+        - workflow_execution_failed
+        - workflow_health_warning
+        - workflow_health_failing
+        - workflow_alert_created
+        - workflow_alert_resolved
+    Severity: { type: string, enum: [low, medium, high] }
+    EventStatus: { type: string, enum: [success, failure, info] }
+    AlertStatus: { type: string, enum: [open, resolved] }
+    CredentialProvisioningMode: { type: string, enum: [manual] }
+    CredentialFieldType: { type: string, enum: [text, password, number, boolean] }
+
+    # ───── Chat ──────────────────────────────────────────────────────
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 3 }
+    ChatResult:
+      type: object
+      required: [project_id, session_id, project_name, description, workflow, validation]
+      properties:
+        project_id: { type: string, format: uuid }
+        session_id: { type: string, format: uuid }
+        project_name: { type: string }
+        description: { type: string }
+        workflow: { $ref: "#/components/schemas/N8nWorkflow" }
+        validation: { $ref: "#/components/schemas/ValidationResult" }
+        trace_id: { type: string, nullable: true }
+    ValidationResult:
+      type: object
+      required: [valid, errors]
+      properties:
+        valid: { type: boolean }
+        errors:
+          type: array
+          items: { type: string }
+
+    # ───── n8n workflow domain ───────────────────────────────────────
+    N8nNode:
+      type: object
+      required: [id, name, type]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string }
+        typeVersion: { type: number, nullable: true }
+        position:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { type: number }
+        parameters:
+          type: object
+          additionalProperties: true
+        credentials:
+          type: object
+          additionalProperties: { $ref: "#/components/schemas/CredentialRef" }
+    N8nConnectionTarget:
+      type: object
+      required: [node, type, index]
+      properties:
+        node: { type: string }
+        type: { type: string }
+        index: { type: integer }
+    N8nConnections:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          main:
+            type: array
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/N8nConnectionTarget" }
+    N8nWorkflow:
+      type: object
+      required: [nodes, connections, settings]
+      properties:
+        name: { type: string }
+        nodes:
+          type: array
+          items: { $ref: "#/components/schemas/N8nNode" }
+        connections: { $ref: "#/components/schemas/N8nConnections" }
+        settings:
+          type: object
+          additionalProperties: true
+
+    # ───── Project / workflow records ────────────────────────────────
+    ProjectRecord:
+      type: object
+      required: [id, name, description, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            Owner. NULLABLE because rows created before migration 012 are orphaned
+            ("legacy unowned"). New projects always carry an owner.
+        name: { type: string }
+        description: { type: string }
+        status: { $ref: "#/components/schemas/ProjectStatus" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    WorkflowRecord:
+      type: object
+      required: [id, project_id, json, status, validation_errors, n8n_workflow_id, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        project_id: { type: string, format: uuid }
+        json: { $ref: "#/components/schemas/N8nWorkflow" }
+        status: { $ref: "#/components/schemas/WorkflowStatus" }
+        validation_errors:
+          type: array
+          nullable: true
+          items: { type: string }
+        n8n_workflow_id: { type: string, nullable: true }
+        last_deployed_at: { type: string, format: date-time, nullable: true }
+        last_activated_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    WorkflowSummary:
+      type: object
+      required: [id, status, created_at, n8n_workflow_id]
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: "#/components/schemas/WorkflowStatus" }
+        created_at: { type: string, format: date-time }
+        n8n_workflow_id: { type: string, nullable: true }
+    HealthSummary:
+      type: object
+      required: [is_working, last_run_status, unresolved_alerts]
+      properties:
+        is_working: { type: boolean }
+        last_run_status: { type: string, enum: [success, failure, unknown] }
+        unresolved_alerts: { type: integer }
+    N8nSyncSummary:
+      type: object
+      required: [checked, exists, active, workflow_name, error]
+      properties:
+        checked: { type: boolean }
+        exists: { type: boolean, nullable: true }
+        active: { type: boolean, nullable: true }
+        workflow_name: { type: string, nullable: true }
+        error: { type: string, nullable: true }
+    ProjectListItem:
+      type: object
+      required: [project, workflow, health, lifecycle_state, n8n_sync]
+      properties:
+        project: { $ref: "#/components/schemas/ProjectRecord" }
+        workflow:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowSummary" }
+            - { type: "null" }
+        health:
+          oneOf:
+            - { $ref: "#/components/schemas/HealthSummary" }
+            - { type: "null" }
+        lifecycle_state: { $ref: "#/components/schemas/WorkflowLifecycleState" }
+        n8n_sync: { $ref: "#/components/schemas/N8nSyncSummary" }
+    ProjectWithWorkflow:
+      type: object
+      required: [project, workflow, health]
+      properties:
+        project: { $ref: "#/components/schemas/ProjectRecord" }
+        workflow:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowRecord" }
+            - { type: "null" }
+        health:
+          oneOf:
+            - type: object
+              required: [is_working, last_run_status, last_run_at, recent_errors, ai_suggestion]
+              properties:
+                is_working: { type: boolean }
+                last_run_status: { type: string, enum: [success, failure, unknown] }
+                last_run_at: { type: string, format: date-time, nullable: true }
+                recent_errors:
+                  type: array
+                  items: { $ref: "#/components/schemas/RecentError" }
+                ai_suggestion:
+                  oneOf:
+                    - { $ref: "#/components/schemas/AiSuggestion" }
+                    - { type: "null" }
+            - { type: "null" }
+    RecentError:
+      type: object
+      required: [run_id, node_name, error_message, created_at]
+      properties:
+        run_id: { type: string, nullable: true }
+        node_name: { type: string, nullable: true }
+        error_message: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+    AiSuggestion:
+      type: object
+      required: [issue, reason, solution, created_at]
+      properties:
+        issue: { type: string }
+        reason: { type: string }
+        solution: { type: string }
+        created_at: { type: string, format: date-time }
+
+    # ───── Audit report (shape unchanged from v0.1.0) ────────────────
+    NormalizedNodeVersionInfo:
+      type: object
+      additionalProperties: true
+    IncompatibleNodeInfo:
+      type: object
+      additionalProperties: true
+    ProjectAuditItem:
+      type: object
+      required:
+        - project_id
+        - project_name
+        - workflow_id
+        - workflow_status
+        - lifecycle_state
+        - n8n_workflow_id
+        - n8n_exists
+        - n8n_active
+        - n8n_workflow_url
+        - n8n_credentials_url
+        - required_credentials_count
+        - missing_credentials_count
+        - manual_credentials_count
+        - health_status
+        - recommended_action
+        - can_deploy_inactive
+        - can_activate
+        - can_redeploy
+        - can_delete
+        - node_types_with_versions
+        - normalized_node_versions
+        - incompatible_nodes
+      properties:
+        project_id: { type: string, format: uuid }
+        project_name: { type: string }
+        workflow_id: { type: string, format: uuid, nullable: true }
+        workflow_status:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowStatus" }
+            - { type: "null" }
+        lifecycle_state: { $ref: "#/components/schemas/WorkflowLifecycleState" }
+        n8n_workflow_id: { type: string, nullable: true }
+        n8n_exists: { type: boolean, nullable: true }
+        n8n_active: { type: boolean, nullable: true }
+        n8n_workflow_url: { type: string, format: uri, nullable: true }
+        n8n_credentials_url: { type: string, format: uri }
+        required_credentials_count: { type: integer }
+        missing_credentials_count: { type: integer }
+        manual_credentials_count: { type: integer }
+        health_status: { type: string, enum: [healthy, warning, failing, unknown] }
+        recommended_action: { type: string }
+        can_deploy_inactive: { type: boolean }
+        can_activate: { type: boolean }
+        can_redeploy: { type: boolean }
+        can_delete: { type: boolean }
+        node_types_with_versions:
+          type: array
+          items: { type: string }
+        normalized_node_versions:
+          type: array
+          items: { $ref: "#/components/schemas/NormalizedNodeVersionInfo" }
+        incompatible_nodes:
+          type: array
+          items: { $ref: "#/components/schemas/IncompatibleNodeInfo" }
+    ProjectsAuditReport:
+      type: object
+      required: [generated_at, totals, items]
+      properties:
+        generated_at: { type: string, format: date-time }
+        totals:
+          type: object
+          required: [projects, rejected, validated, deployed_inactive, deployed_active, failing, warnings]
+          properties:
+            projects: { type: integer }
+            rejected: { type: integer }
+            validated: { type: integer }
+            deployed_inactive: { type: integer }
+            deployed_active: { type: integer }
+            failing: { type: integer }
+            warnings: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ProjectAuditItem" }
+
+    # ───── Activity ──────────────────────────────────────────────────
+    ProjectActivityItem:
+      type: object
+      required: [id, event_time, severity, event_type, message, n8n_workflow_id, execution_id, failed_node, recommended_action, metadata]
+      properties:
+        id: { type: string, format: uuid }
+        event_time: { type: string, format: date-time }
+        severity: { $ref: "#/components/schemas/Severity" }
+        event_type: { $ref: "#/components/schemas/EventType" }
+        message: { type: string, nullable: true }
+        n8n_workflow_id: { type: string, nullable: true }
+        execution_id: { type: string, nullable: true }
+        failed_node: { type: string, nullable: true }
+        recommended_action: { type: string, nullable: true }
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    ProjectActivity:
+      type: object
+      required: [project_id, workflow_id, n8n_workflow_id, items]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid, nullable: true }
+        n8n_workflow_id: { type: string, nullable: true }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ProjectActivityItem" }
+
+    # ───── Chat history ─────────────────────────────────────────────
+    ChatMessage:
+      type: object
+      required: [id, session_id, role, content, created_at]
+      properties:
+        id: { type: integer }
+        session_id: { type: string, format: uuid }
+        role: { $ref: "#/components/schemas/ChatRole" }
+        content: { type: string }
+        created_at: { type: string, format: date-time }
+
+    # ───── Credential bindings ──────────────────────────────────────
+    CredentialRef:
+      type: object
+      description: Either `id` or `name` must be provided.
+      properties:
+        id: { type: string }
+        name: { type: string }
+    NodeCredentialBinding:
+      type: object
+      required: [credential_type]
+      properties:
+        node_id: { type: string, nullable: true }
+        node_name: { type: string, nullable: true }
+        credential_type: { type: string, minLength: 1 }
+        id: { type: string }
+        name: { type: string }
+    CredentialBindingsArray:
+      type: array
+      items: { $ref: "#/components/schemas/NodeCredentialBinding" }
+    LegacyCredentialBindingsMap:
+      type: object
+      additionalProperties: { $ref: "#/components/schemas/CredentialRef" }
+    CredentialBindingsInput:
+      oneOf:
+        - { $ref: "#/components/schemas/CredentialBindingsArray" }
+        - { $ref: "#/components/schemas/LegacyCredentialBindingsMap" }
+    SaveCredentialBindingsRequest:
+      type: object
+      properties:
+        bindings: { $ref: "#/components/schemas/CredentialBindingsInput" }
+        credential_bindings: { $ref: "#/components/schemas/CredentialBindingsInput" }
+    CredentialBindingsResponse:
+      type: object
+      required: [project_id, workflow_id, workflow_status, bindings, credential_bindings, legacy_bindings]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid }
+        workflow_status: { $ref: "#/components/schemas/WorkflowStatus" }
+        bindings: { $ref: "#/components/schemas/CredentialBindingsArray" }
+        credential_bindings: { $ref: "#/components/schemas/CredentialBindingsArray" }
+        legacy_bindings: { $ref: "#/components/schemas/LegacyCredentialBindingsMap" }
+
+    # ───── Deploy ───────────────────────────────────────────────────
+    DeployCheckRequest:
+      type: object
+      properties:
+        credential_bindings: { $ref: "#/components/schemas/CredentialBindingsInput" }
+    DeployRequest:
+      type: object
+      properties:
+        activate: { type: boolean, default: true }
+        credential_bindings: { $ref: "#/components/schemas/CredentialBindingsInput" }
+    CredentialField:
+      type: object
+      required: [name, label, type, required]
+      properties:
+        name: { type: string }
+        label: { type: string }
+        type: { $ref: "#/components/schemas/CredentialFieldType" }
+        required: { type: boolean }
+    DeployCredentialRequirement:
+      type: object
+      required: [node_id, node_name, credential_type, placeholder_credential_name, provisioning_mode, fields, manual_message, provided_binding, resolved_binding, available_credentials, resolved]
+      properties:
+        node_id: { type: string }
+        node_name: { type: string }
+        credential_type: { type: string }
+        placeholder_credential_name: { type: string }
+        provisioning_mode: { $ref: "#/components/schemas/CredentialProvisioningMode" }
+        fields:
+          type: array
+          items: { $ref: "#/components/schemas/CredentialField" }
+        manual_message: { type: string }
+        provided_binding:
+          oneOf:
+            - { $ref: "#/components/schemas/CredentialRef" }
+            - { type: "null" }
+        resolved_binding:
+          oneOf:
+            - { $ref: "#/components/schemas/CredentialRef" }
+            - { type: "null" }
+        available_credentials:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: string }
+              name: { type: string }
+        resolved: { type: boolean }
+    DeployPreflightResult:
+      type: object
+      required:
+        - project_id
+        - workflow_id
+        - workflow_status
+        - deployable
+        - n8n_workflow_id
+        - requirements
+        - missing_credentials
+        - manual_credentials
+        - credentials_source_ok
+        - credentials_source_error
+        - stored_bindings
+        - can_deploy_inactive
+        - can_activate
+        - can_redeploy
+        - can_delete
+        - n8n_credentials_url
+        - n8n_workflow_url
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid }
+        workflow_status: { $ref: "#/components/schemas/WorkflowStatus" }
+        deployable: { type: boolean }
+        n8n_workflow_id: { type: string, nullable: true }
+        requirements:
+          type: array
+          items: { $ref: "#/components/schemas/DeployCredentialRequirement" }
+        missing_credentials:
+          type: array
+          items:
+            type: object
+            required: [node_id, node_name, credential_type, placeholder_credential_name]
+            properties:
+              node_id: { type: string }
+              node_name: { type: string }
+              credential_type: { type: string }
+              placeholder_credential_name: { type: string }
+        manual_credentials:
+          type: array
+          items:
+            type: object
+            required: [node_id, node_name, credential_type, placeholder_credential_name, manual_message]
+            properties:
+              node_id: { type: string }
+              node_name: { type: string }
+              credential_type: { type: string }
+              placeholder_credential_name: { type: string }
+              manual_message: { type: string }
+        credentials_source_ok: { type: boolean }
+        credentials_source_error: { type: string, nullable: true }
+        stored_bindings: { $ref: "#/components/schemas/CredentialBindingsArray" }
+        can_deploy_inactive: { type: boolean }
+        can_activate: { type: boolean }
+        can_redeploy: { type: boolean }
+        can_delete: { type: boolean }
+        n8n_credentials_url: { type: string, format: uri }
+        n8n_workflow_url: { type: string, format: uri, nullable: true }
+    DeployResult:
+      type: object
+      required: [project_id, workflow_id, workflow_status, n8n_workflow_id, activated]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid }
+        workflow_status: { type: string, enum: [deployed_active, deployed_inactive] }
+        n8n_workflow_id: { type: string }
+        activated: { type: boolean }
+    FixWorkflowResult:
+      type: object
+      required: [workflow_id, workflow_status, validation_errors]
+      properties:
+        workflow_id: { type: string, format: uuid }
+        workflow_status: { $ref: "#/components/schemas/WorkflowStatus" }
+        validation_errors:
+          type: array
+          items: { type: string }
+    DeleteProjectResult:
+      type: object
+      required: [project_id, deleted, remote, cleanup_warnings]
+      properties:
+        project_id: { type: string, format: uuid }
+        deleted: { type: boolean }
+        remote:
+          type: object
+          required: [attempted_n8n_workflow_ids, deactivated_n8n_workflow_ids, deleted_n8n_workflow_ids, not_found_n8n_workflow_ids]
+          properties:
+            attempted_n8n_workflow_ids:
+              type: array
+              items: { type: string }
+            deactivated_n8n_workflow_ids:
+              type: array
+              items: { type: string }
+            deleted_n8n_workflow_ids:
+              type: array
+              items: { type: string }
+            not_found_n8n_workflow_ids:
+              type: array
+              items: { type: string }
+        cleanup_warnings:
+          type: array
+          items:
+            type: object
+            required: [n8n_workflow_id, operation, error]
+            properties:
+              n8n_workflow_id: { type: string }
+              operation: { type: string, enum: [deactivate, delete] }
+              error: { type: string }
+
+    # ───── Health (project workflow) ─────────────────────────────────
+    ExecutionView:
+      type: object
+      required: [id, status, started_at, stopped_at, mode, duration_ms, failed_node, error_type, error_message, recommended_action]
+      properties:
+        id: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time, nullable: true }
+        stopped_at: { type: string, format: date-time, nullable: true }
+        mode: { type: string, nullable: true }
+        duration_ms: { type: integer, nullable: true }
+        failed_node: { type: string, nullable: true }
+        error_type: { type: string, nullable: true }
+        error_message: { type: string, nullable: true }
+        recommended_action: { type: string, nullable: true }
+    HealthErrorView:
+      type: object
+      required: [execution_id, failed_node, error_type, severity, human_message, raw_message]
+      properties:
+        execution_id: { type: string, nullable: true }
+        failed_node: { type: string, nullable: true }
+        error_type: { type: string, nullable: true }
+        severity:
+          oneOf:
+            - { $ref: "#/components/schemas/Severity" }
+            - { type: "null" }
+        human_message: { type: string, nullable: true }
+        raw_message: { type: string, nullable: true }
+    ProjectWorkflowHealth:
+      type: object
+      required:
+        - project_id
+        - workflow_id
+        - n8n_workflow_id
+        - n8n_workflow_url
+        - workflow_name
+        - active
+        - health_status
+        - last_success_at
+        - last_failure_at
+        - recent_success_count
+        - recent_failure_count
+        - last_error
+        - recommended_action
+        - message
+        - executions
+        - last_checked_at
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid, nullable: true }
+        n8n_workflow_id: { type: string, nullable: true }
+        n8n_workflow_url: { type: string, format: uri, nullable: true }
+        workflow_name: { type: string, nullable: true }
+        active: { type: boolean }
+        health_status:
+          allOf:
+            - { $ref: "#/components/schemas/HealthStatus" }
+          description: |
+            UNIFIED status when `SILENT_FAILURE_PIPELINE_ENABLED=true` — combines the
+            legacy executions-based status with recent anomalies (continue-on-fail,
+            zero-output, scheduler-drift, duration-z). When the flag is off, this is
+            the legacy status only.
+        last_success_at: { type: string, format: date-time, nullable: true }
+        last_failure_at: { type: string, format: date-time, nullable: true }
+        recent_success_count: { type: integer }
+        recent_failure_count: { type: integer }
+        last_error:
+          oneOf:
+            - { $ref: "#/components/schemas/HealthErrorView" }
+            - { type: "null" }
+        recommended_action: { type: string, nullable: true }
+        message: { type: string, nullable: true }
+        executions:
+          type: array
+          items: { $ref: "#/components/schemas/ExecutionView" }
+        last_checked_at: { type: string, format: date-time }
+    ProjectExecutions:
+      type: object
+      required: [project_id, workflow_id, n8n_workflow_id, executions]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid }
+        n8n_workflow_id: { type: string }
+        executions:
+          type: array
+          items: { $ref: "#/components/schemas/ExecutionView" }
+    ProjectExecutionDetails:
+      type: object
+      required: [project_id, workflow_id, n8n_workflow_id, execution, classified_error, safe_detail]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid }
+        n8n_workflow_id: { type: string }
+        execution: { $ref: "#/components/schemas/ExecutionView" }
+        classified_error:
+          type: object
+          nullable: true
+          additionalProperties: true
+        safe_detail:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+    # ───── Workflow status ──────────────────────────────────────────
+    WorkflowStatusResponse:
+      type: object
+      required: [workflow, health, metrics, recent_errors, alerts, ai_suggestion]
+      properties:
+        workflow:
+          type: object
+          required: [id, project_id, status, n8n_workflow_id, created_at, updated_at]
+          properties:
+            id: { type: string, format: uuid }
+            project_id: { type: string, format: uuid }
+            status: { $ref: "#/components/schemas/WorkflowStatus" }
+            n8n_workflow_id: { type: string, nullable: true }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+        health:
+          type: object
+          required: [is_working, last_run_status, last_run_at, unresolved_alerts]
+          properties:
+            is_working: { type: boolean }
+            last_run_status: { type: string, enum: [success, failure, unknown] }
+            last_run_at: { type: string, format: date-time, nullable: true }
+            unresolved_alerts: { type: integer }
+        metrics:
+          type: object
+          required: [total_runs, failed_runs, success_rate, average_duration_ms]
+          properties:
+            total_runs: { type: integer }
+            failed_runs: { type: integer }
+            success_rate: { type: number }
+            average_duration_ms: { type: integer }
+        recent_errors:
+          type: array
+          items: { $ref: "#/components/schemas/RecentError" }
+        alerts:
+          type: array
+          items: { $ref: "#/components/schemas/WorkflowAlert" }
+        ai_suggestion:
+          oneOf:
+            - { $ref: "#/components/schemas/AiSuggestion" }
+            - { type: "null" }
+    WorkflowAlert:
+      type: object
+      required:
+        - id
+        - alert_type
+        - severity
+        - message
+        - recommended_action
+        - failed_node
+        - first_seen_at
+        - last_seen_at
+        - status
+        - occurrence_count
+      properties:
+        id: { type: string, format: uuid }
+        alert_type: { type: string }
+        severity: { $ref: "#/components/schemas/Severity" }
+        message: { type: string }
+        recommended_action: { type: string, nullable: true }
+        failed_node: { type: string, nullable: true }
+        first_seen_at: { type: string, format: date-time }
+        last_seen_at: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/AlertStatus" }
+        occurrence_count:
+          type: integer
+          minimum: 1
+          description: Number of times the same fingerprint has fired (added v1.0.0).
+
+    # ───── Event ingest ─────────────────────────────────────────────
+    IncomingWorkflowEvent:
+      type: object
+      required: [event_type]
+      properties:
+        project_id: { type: string, format: uuid }
+        workflow_id: { type: string, format: uuid, description: Internal workflow UUID (preferred). }
+        n8n_workflow_id: { type: string }
+        run_id: { type: string }
+        node_name: { type: string }
+        event_type: { $ref: "#/components/schemas/EventType" }
+        status: { $ref: "#/components/schemas/EventStatus" }
+        severity: { $ref: "#/components/schemas/Severity" }
+        message: { type: string }
+        duration_ms: { type: integer, minimum: 0 }
+        error_message: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true
+    EventIngestResult:
+      type: object
+      required: [accepted, workflow_id, event_id, analysis_error]
+      properties:
+        accepted: { type: boolean }
+        workflow_id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        analysis_error: { type: string, nullable: true }
+
+    # ───── Analytics ────────────────────────────────────────────────
+    AnalyticsSnapshot:
+      type: object
+      required: [overview, workflows_health]
+      properties:
+        overview:
+          type: object
+          required: [total_projects, total_workflows, total_runs, failed_runs, success_rate, average_duration_ms, unresolved_alerts, healthy_workflows, unhealthy_workflows]
+          properties:
+            total_projects: { type: integer }
+            total_workflows: { type: integer }
+            total_runs: { type: integer }
+            failed_runs: { type: integer }
+            success_rate: { type: number }
+            average_duration_ms: { type: integer }
+            unresolved_alerts: { type: integer }
+            healthy_workflows: { type: integer }
+            unhealthy_workflows: { type: integer }
+        workflows_health:
+          type: array
+          items:
+            type: object
+            required: [workflow_id, project_id, project_name, is_working, last_run_status, failed_runs, total_runs, unresolved_alerts]
+            properties:
+              workflow_id: { type: string, format: uuid }
+              project_id: { type: string, format: uuid }
+              project_name: { type: string }
+              is_working: { type: boolean }
+              last_run_status: { type: string, enum: [success, failure, unknown] }
+              failed_runs: { type: integer }
+              total_runs: { type: integer }
+              unresolved_alerts: { type: integer }
+
+    # ───── n8n facade ───────────────────────────────────────────────
+    N8nCredentialSummary:
+      type: object
+      required: [id, name, type]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string }
+    CredentialPolicyResponse:
+      type: object
+      required: [credential_type, label, provisioning_mode, fields, manual_message]
+      properties:
+        credential_type: { type: string }
+        label: { type: string }
+        provisioning_mode: { $ref: "#/components/schemas/CredentialProvisioningMode" }
+        fields:
+          type: array
+          items: { $ref: "#/components/schemas/CredentialField" }
+        manual_message: { type: string, nullable: true }
+    CreateN8nCredentialRequest:
+      type: object
+      required: [name, type, data, project_id]
+      properties:
+        name: { type: string, minLength: 2 }
+        type: { type: string, minLength: 2 }
+        data:
+          type: object
+          additionalProperties: true
+        project_id: { type: string, minLength: 1 }
+
+    # ───── Debug ────────────────────────────────────────────────────
+    ProjectWorkflowDebugSnapshot:
+      type: object
+      additionalProperties: true
+      description: Shape evolves with the debug helpers — see source for exact fields.
+    NodeSummary:
+      type: object
+      required: [name, type, typeVersion]
+      properties:
+        name: { type: string }
+        type: { type: string }
+        typeVersion: { type: number, nullable: true }
