@@ -30,6 +30,52 @@ import {
   listProjectsForUser,
   updateProjectStatus
 } from "./project-repository";
+import { summarizeSchedule, nextExpectedRunAt } from "../monitoring/schedule-parser";
+import {
+  upsertScheduleTracking,
+  deleteScheduleTracking
+} from "../monitoring/workflow-schedule-repository";
+
+/**
+ * Sync `workflow_schedule_tracking` with the deployed workflow definition.
+ *
+ *   - schedule-trigger workflow with parseable interval → upsert row, seed
+ *     expected_next_run_at = NOW + interval so the first drift check waits one
+ *     full cycle before alerting
+ *   - schedule-trigger with unparseable rule (cron expression) → upsert row
+ *     with expected_interval_seconds = NULL; drift sweep skips it
+ *   - webhook/manual/no trigger → delete any prior row to keep the sweep
+ *     table sparse
+ */
+async function registerScheduleTrackingFromDeploy(input: {
+  workflowId: string;
+  workflowNodes: Array<{ type?: string; parameters?: unknown }>;
+}): Promise<void> {
+  const summary = summarizeSchedule(input.workflowNodes);
+
+  if (!summary || summary.expected_interval_seconds === null) {
+    if (summary && summary.cron_expression) {
+      await upsertScheduleTracking({
+        workflowId: input.workflowId,
+        triggerType: summary.trigger_type,
+        cronExpression: summary.cron_expression,
+        expectedIntervalSeconds: null,
+        seedNextRunAt: null
+      });
+      return;
+    }
+    await deleteScheduleTracking(input.workflowId);
+    return;
+  }
+
+  await upsertScheduleTracking({
+    workflowId: input.workflowId,
+    triggerType: summary.trigger_type,
+    cronExpression: summary.cron_expression,
+    expectedIntervalSeconds: summary.expected_interval_seconds,
+    seedNextRunAt: nextExpectedRunAt(null, summary.expected_interval_seconds)
+  });
+}
 
 /**
  * Returns the user id of the current authenticated request, or throws if the
@@ -2080,6 +2126,23 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
     await markWorkflowDeployed(workflow.id, n8nWorkflowId!, activate, connection);
     await updateProjectStatus(projectId, activate ? "active" : "draft", connection);
   });
+
+  // Schedule tracking — register or update the row used by the drift sweep.
+  // We use the normalized + binding-applied workflow definition so the
+  // recorded trigger matches what n8n actually executes. Soft-failing because
+  // schedule tracking is observability, not a deploy blocker.
+  try {
+    await registerScheduleTrackingFromDeploy({
+      workflowId: workflow.id,
+      workflowNodes: workflowJsonWithBindings.nodes as Array<{ type?: string; parameters?: unknown }>
+    });
+  } catch (err) {
+    logWarn("projects", "Schedule tracking registration failed", {
+      project_id: projectId,
+      workflow_id: workflow.id,
+      error: toAppErrorMessage(err)
+    });
+  }
 
   await emitDeploymentEvent({
     workflowId: workflow.id,

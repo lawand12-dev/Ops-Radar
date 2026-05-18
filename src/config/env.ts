@@ -74,6 +74,11 @@ const envSchema = z.object({
 
   EVENT_INGEST_TOKEN: z.string().optional(),
   ALERT_FAILURE_THRESHOLD: z.coerce.number().int().positive().default(3),
+  // Time window (seconds) for `ALERT_FAILURE_THRESHOLD`. The legacy behaviour
+  // was "≥ N failures in the last 20 executions" which scaled differently by
+  // workflow frequency. Default 1h keeps the same operator intent across
+  // hourly and daily schedules.
+  ALERT_FAILURE_WINDOW_SECONDS: z.coerce.number().int().positive().default(3600),
 
   MONITORING_ENABLED: boolFromEnv(true),
   MONITORING_INTERVAL_SECONDS: z.coerce.number().int().positive().default(300),

@@ -43,6 +43,7 @@ type WorkflowAlertRow = RowDataPacket & {
   last_seen_at: string | Date;
   resolved_at: string | Date | null;
   status: "open" | "resolved";
+  occurrence_count: number;
 };
 
 function parseJsonField<T>(value: unknown): T {
@@ -94,7 +95,8 @@ function mapAlertRow(row: WorkflowAlertRow): WorkflowAlertRecord {
     first_seen_at: new Date(row.first_seen_at),
     last_seen_at: new Date(row.last_seen_at),
     resolved_at: row.resolved_at ? new Date(row.resolved_at) : null,
-    status: row.status
+    status: row.status,
+    occurrence_count: Number(row.occurrence_count ?? 1)
   };
 }
 
@@ -210,7 +212,7 @@ export async function findOpenWorkflowAlertByFingerprint(
   const [rows] = await dbQuery<WorkflowAlertRow[]>(
     db,
     `SELECT id, project_id, workflow_id, n8n_workflow_id, alert_type, severity, message,
-            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status
+            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status, occurrence_count
      FROM workflow_alerts
      WHERE fingerprint = ?
        AND status = 'open'
@@ -236,10 +238,14 @@ export async function upsertWorkflowAlert(input: {
   const db = getDb();
   const existing = await findOpenWorkflowAlertByFingerprint(input.fingerprint);
   if (existing) {
+    // Increment occurrence_count on every fingerprint hit. Before this,
+    // operators saw one row with first_seen_at/last_seen_at but no way to
+    // tell whether the alert recurred twice or two-hundred times.
     await dbQuery(
       db,
       `UPDATE workflow_alerts
        SET last_seen_at = CURRENT_TIMESTAMP,
+           occurrence_count = occurrence_count + 1,
            severity = ?,
            message = ?,
            recommended_action = ?,
@@ -286,7 +292,7 @@ export async function upsertWorkflowAlert(input: {
   const [rows] = await dbQuery<WorkflowAlertRow[]>(
     db,
     `SELECT id, project_id, workflow_id, n8n_workflow_id, alert_type, severity, message,
-            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status
+            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status, occurrence_count
      FROM workflow_alerts
      WHERE id = ?`,
     [id]
@@ -338,7 +344,7 @@ export async function listOpenWorkflowAlertsByWorkflowId(
   const [rows] = await dbQuery<WorkflowAlertRow[]>(
     db,
     `SELECT id, project_id, workflow_id, n8n_workflow_id, alert_type, severity, message,
-            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status
+            recommended_action, fingerprint, failed_node, first_seen_at, last_seen_at, resolved_at, status, occurrence_count
      FROM workflow_alerts
      WHERE workflow_id = ?
        AND status = 'open'

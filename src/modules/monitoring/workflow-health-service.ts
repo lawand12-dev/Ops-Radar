@@ -3,6 +3,7 @@ import { AppError } from "../../lib/errors";
 import { logError, logInfo, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
 import {
+  countWorkflowFailuresSince,
   createWorkflowEvent
 } from "../events/event-repository";
 import {
@@ -14,6 +15,25 @@ import {
 } from "../n8n/n8n-client";
 import { getProjectById, getProjectByIdForUser } from "../projects/project-repository";
 import { getRequestContext } from "../../lib/request-context";
+import { extractNodeTelemetry } from "./telemetry-extractor";
+import {
+  detectContinueOnFail,
+  detectDurationAnomaly,
+  detectZeroOutput,
+  evaluateScheduleDrift,
+  type AnomalyRecord
+} from "./anomaly-detectors";
+import {
+  persistNodeTelemetry,
+  getRecentItemsOutBaselineByNode,
+  getExecutionDurationBaseline
+} from "./execution-node-stats-repository";
+import { persistAnomalies } from "./execution-anomaly-repository";
+import {
+  listOverdueSchedules,
+  recordObservedRun,
+  updateSchedulerStatus
+} from "./workflow-schedule-repository";
 
 /**
  * Tenant-aware project loader for monitoring helpers.
@@ -413,11 +433,27 @@ async function maybeCreateOrResolveAlerts(input: {
     });
   }
 
-  if (input.recentFailureCount >= env.ALERT_FAILURE_THRESHOLD) {
+  // Time-windowed failure threshold. The legacy condition was
+  // `recentFailureCount >= ALERT_FAILURE_THRESHOLD` over the last 20 executions —
+  // a hourly workflow and a daily workflow with identical thresholds would
+  // alert across wildly different real-time windows. The new condition
+  // requires the failures to actually be recent (default 1 hour) AND meet the
+  // count threshold. Falls back to the old "recent" count if the time query
+  // fails (defensive: never silence the alert).
+  let timeWindowedFailures = input.recentFailureCount;
+  try {
+    timeWindowedFailures = await countWorkflowFailuresSince(
+      input.workflow.id,
+      Date.now() - env.ALERT_FAILURE_WINDOW_SECONDS * 1000
+    );
+  } catch {
+    // keep legacy count
+  }
+  if (timeWindowedFailures >= env.ALERT_FAILURE_THRESHOLD) {
     alertCandidates.push({
       alertType: "repeated_failures",
       severity: "high",
-      message: `Workflow has ${input.recentFailureCount} recent failures.`,
+      message: `Workflow has ${timeWindowedFailures} failures in the last ${Math.round(env.ALERT_FAILURE_WINDOW_SECONDS / 60)} minute(s).`,
       recommendedAction: "Investigate failed executions, fix root cause, and redeploy if needed.",
       failedNode: input.failedNode
     });
@@ -740,10 +776,208 @@ export async function getWorkflowHealth(
     });
   }
 
+  // Silent-failure detection pipeline. Fully isolated from the legacy health
+  // computation above — if anything here throws, the monitoring cycle still
+  // returns the original payload. Reads runData for the LATEST execution only
+  // (1 extra n8n call per workflow per cycle, ~1.7 req/s at 500 workflows).
+  if (latestExecution && n8nWorkflow) {
+    void runSilentFailurePipeline({
+      workflowId: workflow.id,
+      latestExecution,
+      latestExecutionStatus: latestExecution.status,
+      latestDurationMs: latestExecution.duration_ms,
+      workflowNodes,
+      n8nErrorSummary
+    });
+  }
+
   return {
     ...payload,
     last_checked_at: snapshot.created_at.toISOString()
   };
+}
+
+/**
+ * Silent-failure detection — additive pipeline that runs after the legacy
+ * health classifier. NEVER awaited from the request path (fire-and-forget),
+ * NEVER throws out. Each step is independently try/catched so a parsing
+ * issue on one workflow cannot wedge the cycle for the rest.
+ *
+ * Pipeline:
+ *   1. Fetch runData for the latest execution (includeData: true).
+ *   2. Extract per-node telemetry via the pure parser.
+ *   3. Persist node_stats (batched insert, ON DUPLICATE KEY UPDATE idempotent).
+ *   4. Read baselines (per-node items_out mean + execution duration mean/stddev).
+ *   5. Run detectors: continue-on-fail, zero-output, duration-z.
+ *   6. Persist anomalies (batched insert).
+ *   7. Bump schedule tracking (last_seen_run_at) so the drift sweep
+ *      can keep the next-run deadline current.
+ */
+async function runSilentFailurePipeline(input: {
+  workflowId: string;
+  latestExecution: ExecutionView;
+  latestExecutionStatus: string;
+  latestDurationMs: number | null;
+  workflowNodes: N8nNode[];
+  n8nErrorSummary: string | null;
+}): Promise<void> {
+  const traceCtx = { workflow_id: input.workflowId, execution_id: input.latestExecution.id };
+  try {
+    let detail: N8nExecutionDetails;
+    try {
+      detail = await getN8nExecutionById(input.latestExecution.id, { includeData: true });
+    } catch (err) {
+      logWarn("monitoring", "silent-failure: deep fetch failed; skipping cycle", { ...traceCtx, error: safeMessage(err) });
+      return;
+    }
+
+    // Build node-name lookup so telemetry rows carry node_type.
+    const nodesByName = new Map<string, { type: string | null }>();
+    for (const n of input.workflowNodes) {
+      if (n && typeof n.name === "string") {
+        nodesByName.set(n.name, { type: typeof n.type === "string" ? n.type : null });
+      }
+    }
+
+    const telemetry = extractNodeTelemetry({
+      executionDetail: detail,
+      parentExecutionStatus: input.latestExecutionStatus,
+      workflowNodesByName: nodesByName
+    });
+    if (telemetry.length === 0) {
+      return;
+    }
+
+    try {
+      await persistNodeTelemetry({
+        workflowId: input.workflowId,
+        executionId: input.latestExecution.id,
+        telemetry
+      });
+    } catch (err) {
+      logWarn("monitoring", "silent-failure: persist node_stats failed", { ...traceCtx, error: safeMessage(err) });
+      // Continue — detectors can still run on in-memory telemetry even if the
+      // write failed; baselines just won't include this execution.
+    }
+
+    let baselineItemsOut: Map<string, number> = new Map();
+    let durationBaseline = { sampleSize: 0, meanMs: 0, stddevMs: 0 };
+    try {
+      [baselineItemsOut, durationBaseline] = await Promise.all([
+        getRecentItemsOutBaselineByNode(input.workflowId, { sampleLimit: 50 }),
+        getExecutionDurationBaseline(input.workflowId, { sampleLimit: 50 })
+      ]);
+    } catch (err) {
+      logWarn("monitoring", "silent-failure: baseline query failed", { ...traceCtx, error: safeMessage(err) });
+    }
+
+    const allAnomalies: AnomalyRecord[] = [];
+    try {
+      allAnomalies.push(
+        ...detectContinueOnFail({
+          workflowId: input.workflowId,
+          executionId: input.latestExecution.id,
+          telemetry
+        }),
+        ...detectZeroOutput({
+          workflowId: input.workflowId,
+          executionId: input.latestExecution.id,
+          telemetry,
+          itemsOutMeanByNode: baselineItemsOut
+        }),
+        ...detectDurationAnomaly({
+          workflowId: input.workflowId,
+          executionId: input.latestExecution.id,
+          currentDurationMs: input.latestDurationMs,
+          baselineMeanMs: durationBaseline.meanMs,
+          baselineStddevMs: durationBaseline.stddevMs,
+          baselineSampleSize: durationBaseline.sampleSize
+        })
+      );
+    } catch (err) {
+      logWarn("monitoring", "silent-failure: detector failure", { ...traceCtx, error: safeMessage(err) });
+    }
+
+    if (allAnomalies.length > 0) {
+      try {
+        await persistAnomalies(allAnomalies);
+        logInfo("monitoring", "silent-failure: anomalies persisted", {
+          ...traceCtx,
+          count: allAnomalies.length,
+          types: allAnomalies.map((a) => a.anomaly_type)
+        });
+      } catch (err) {
+        logWarn("monitoring", "silent-failure: persist anomalies failed", { ...traceCtx, error: safeMessage(err) });
+      }
+    }
+
+    // Schedule observability: any successful or failed execution advances the
+    // tracking deadline. Webhook/manual workflows have no row here, so the
+    // UPDATE is a harmless no-op for them.
+    try {
+      const startedAt = input.latestExecution.started_at
+        ? new Date(input.latestExecution.started_at)
+        : new Date();
+      await recordObservedRun(input.workflowId, startedAt);
+    } catch (err) {
+      logWarn("monitoring", "silent-failure: recordObservedRun failed", { ...traceCtx, error: safeMessage(err) });
+    }
+  } catch (err) {
+    // Hard catch-all so a programmer error in this pipeline still cannot crash
+    // the cycle. logError (not Warn) so it shows up in alerting.
+    logError("monitoring", "silent-failure: unhandled pipeline error", {
+      workflow_id: input.workflowId,
+      error: safeMessage(err)
+    });
+  }
+}
+
+/**
+ * Schedule-drift sweep. Runs once per monitoring cycle (separate from the
+ * per-workflow pipeline because the read pattern is different — a global
+ * "what is overdue right now" scan vs per-workflow telemetry).
+ */
+async function runScheduleDriftSweep(): Promise<{ checked: number; anomalies: number }> {
+  let overdue: Awaited<ReturnType<typeof listOverdueSchedules>> = [];
+  try {
+    overdue = await listOverdueSchedules({ limit: 500 });
+  } catch (err) {
+    logWarn("monitoring", "schedule-drift: list query failed", { error: safeMessage(err) });
+    return { checked: 0, anomalies: 0 };
+  }
+
+  if (overdue.length === 0) return { checked: 0, anomalies: 0 };
+
+  const allAnomalies: AnomalyRecord[] = [];
+  for (const row of overdue) {
+    if (row.expected_next_run_at === null || row.expected_interval_seconds === null) continue;
+    try {
+      const evaluation = evaluateScheduleDrift({
+        workflowId: row.workflow_id,
+        expectedNextRunAt: row.expected_next_run_at,
+        lastSeenRunAt: row.last_seen_run_at,
+        expectedIntervalSeconds: row.expected_interval_seconds
+      });
+      if (evaluation.anomaly) {
+        allAnomalies.push(evaluation.anomaly);
+      }
+      if (evaluation.schedulerStatus !== row.scheduler_status) {
+        await updateSchedulerStatus(row.workflow_id, evaluation.schedulerStatus);
+      }
+    } catch (err) {
+      logWarn("monitoring", "schedule-drift: evaluation failed", { workflow_id: row.workflow_id, error: safeMessage(err) });
+    }
+  }
+
+  if (allAnomalies.length > 0) {
+    try {
+      await persistAnomalies(allAnomalies);
+    } catch (err) {
+      logWarn("monitoring", "schedule-drift: persist anomalies failed", { error: safeMessage(err) });
+    }
+  }
+
+  return { checked: overdue.length, anomalies: allAnomalies.length };
 }
 
 export async function refreshWorkflowHealth(projectId: string): Promise<ProjectWorkflowHealthResponse> {
@@ -948,10 +1182,19 @@ async function runMonitoringCycle(): Promise<{
     const cleaned = await cleanupOldWorkflowHealthSnapshots(
       env.MONITORING_SNAPSHOT_RETENTION_DAYS
     );
+    // Drift sweep runs AFTER per-workflow refreshes — the latter call
+    // recordObservedRun() which advances last_seen_run_at, so the sweep sees
+    // an accurate "is this overdue?" picture rather than one polling cycle stale.
+    const drift = await runScheduleDriftSweep().catch((err) => {
+      logWarn("monitoring", "schedule-drift sweep crashed", { error: safeMessage(err) });
+      return { checked: 0, anomalies: 0 };
+    });
     return {
       checked: refreshed.checked,
       failures: refreshed.failures,
-      cleaned_snapshots: cleaned
+      cleaned_snapshots: cleaned,
+      drift_checked: drift.checked,
+      drift_anomalies: drift.anomalies
     };
   });
 

@@ -201,4 +201,7 @@ export interface WorkflowAlertRecord {
   last_seen_at: Date;
   resolved_at: Date | null;
   status: "open" | "resolved";
+  /** Incremented every time the same fingerprint upserts. Lets operators tell
+   *  "this alert fired 47 times in 6h" from "this alert fired once". */
+  occurrence_count: number;
 }

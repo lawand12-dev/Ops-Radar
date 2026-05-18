@@ -160,6 +160,32 @@ export async function countWorkflowFailures(workflowId: string): Promise<number>
   return Number(rows[0]?.failures ?? 0);
 }
 
+/**
+ * Time-windowed failure counter. Used by the alert layer instead of the
+ * count-based "last N executions" heuristic, which alerted on hourly and
+ * daily workflows differently for the same threshold value.
+ *
+ * Counts terminal-run failures from both event-type families ('run_failed',
+ * 'workflow_execution_failed') in the trailing window.
+ */
+export async function countWorkflowFailuresSince(
+  workflowId: string,
+  sinceEpochMs: number
+): Promise<number> {
+  const db = getDb();
+  const since = new Date(sinceEpochMs);
+  const [rows] = await dbQuery<Array<RowDataPacket & { failures: number }>>(
+    db,
+    `SELECT COUNT(*) AS failures
+     FROM workflow_events
+     WHERE workflow_id = ?
+       AND event_type IN (${TERMINAL_RUN_FAILURE_TYPES_SQL})
+       AND created_at >= ?`,
+    [workflowId, since]
+  );
+  return Number(rows[0]?.failures ?? 0);
+}
+
 export async function countConsecutiveWorkflowFailures(workflowId: string, take = 10): Promise<number> {
   const db = getDb();
   const [rows] = await dbQuery<Array<RowDataPacket & { event_type: EventType }>>(
