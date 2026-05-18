@@ -136,3 +136,21 @@ export function emptyCalendarRule(input: {
     href: '/dashboard/business',
   };
 }
+
+/** Scope creep: a project has logged >= threshold% of its ClickUp time estimate. */
+export function scopeCreepRule(input: {
+  projectName: string;
+  burnPct: number;
+  threshold?: number;
+}): DashboardAlert | null {
+  const threshold = input.threshold ?? 80;
+  if (input.burnPct < threshold) return null;
+  const statusText = input.burnPct >= 100 ? 'over budget' : `${Math.round(input.burnPct)}% burned`;
+  return {
+    id: `scope-${input.projectName.replace(/\W+/g, '-').toLowerCase().slice(0, 40)}`,
+    severity: input.burnPct >= 100 ? 'needs-you' : 'watch',
+    label: severityLabel(input.burnPct >= 100 ? 'needs-you' : 'watch'),
+    message: `"${input.projectName}" is ${statusText} — review scope or bill overage.`,
+    href: '/dashboard/scope',
+  };
+}

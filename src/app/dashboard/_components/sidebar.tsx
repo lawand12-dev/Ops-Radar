@@ -14,6 +14,7 @@ import {
   Zap,
   BrainCircuit,
   BarChart2,
+  Target,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -32,6 +33,7 @@ const navSections: NavSection[] = [
       { label: 'Automations',    href: '/dashboard/automations',    icon: Activity        },
       { label: 'Business',       href: '/dashboard/business',       icon: TrendingUp      },
       { label: 'Profitability',  href: '/dashboard/profitability',  icon: DollarSign      },
+      { label: 'Scope',          href: '/dashboard/scope',          icon: Target          },
       { label: 'Actions',         href: '/dashboard/actions',         icon: Zap             },
       { label: 'COO',             href: '/dashboard/coo',             icon: BrainCircuit    },
       { label: 'Score',           href: '/dashboard/score',           icon: BarChart2       },

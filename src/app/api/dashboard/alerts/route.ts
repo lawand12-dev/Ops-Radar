@@ -7,6 +7,7 @@ import {
   stuckDealRule,
   failingWorkflowRule,
   emptyCalendarRule,
+  scopeCreepRule,
   sortAlertsBySeverity,
   MAX_COCKPIT_ALERTS,
   type DashboardAlert,
@@ -43,8 +44,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
     fetchJson(request, 'sales-live'),
     fetchJson(request, 'workflow-health'),
     fetchJson(request, 'marketing'),
+    fetchJson(request, 'scope'),
   ]);
-  const [finance, sales, workflows, marketing] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
+  const [finance, sales, workflows, marketing, scope] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
 
   const candidates: (DashboardAlert | null)[] = [];
 
@@ -127,6 +129,18 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
   const bookings7d = marketingData?.data?.meetings_booked ?? 0;
   const pipelineValueUsd = salesData?.data?.pipeline_value ?? 0;
   candidates.push(emptyCalendarRule({ bookings7d, pipelineValueUsd }));
+
+  // ── Scope creep ───────────────────────────────────────────────────────────────
+  type ScopeProject = {
+    project_name?: string;
+    burn_pct?: number;
+  };
+  const scopeProjects =
+    (scope as { status?: string; data?: { projects?: ScopeProject[] } } | null)?.data?.projects ?? [];
+  for (const p of scopeProjects) {
+    if (!p.project_name || typeof p.burn_pct !== 'number') continue;
+    candidates.push(scopeCreepRule({ projectName: p.project_name, burnPct: p.burn_pct }));
+  }
 
   const alerts = sortAlertsBySeverity(
     candidates.filter((a): a is DashboardAlert => a !== null),
