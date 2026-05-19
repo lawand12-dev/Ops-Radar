@@ -36,7 +36,8 @@ export default async function PublicScorePage({ params }: Props) {
 
   const score = data.scores as unknown as AgencyScore;
   const companyName = data.company_name || score.company_name || 'Agency';
-  const computedAt = new Date(data.created_at).toLocaleDateString(undefined, {
+  const createdAtISO = data.created_at ?? new Date().toISOString();
+  const computedAt = new Date(createdAtISO).toLocaleDateString(undefined, {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 

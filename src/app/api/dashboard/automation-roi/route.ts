@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
-import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
+import { chatV2Fetch } from '<npm>/lib/chatv2/client';
+import { ChatV2Error } from '<npm>/lib/chatv2/errors';
+import { getChatV2ProjectId } from '<npm>/lib/chatv2/project-mapping';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -115,17 +117,24 @@ function shape(raw: CtoAnalyticsResponse): AutomationRoiWidget {
   };
 }
 
+async function buildStaleErrorResponse(
+  userId: string,
+  message: string,
+): Promise<NextResponse<ApiResult>> {
+  const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(
+    cacheKeys(userId).stale,
+  );
+  return NextResponse.json({
+    status: 'error',
+    message,
+    ...(stale && { staleData: stale.data, staleAgeMs: Date.now() - stale.ts }),
+  });
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ status: 'error', message: 'unauthorized' }, { status: 401 });
-  }
-
-  const apiUrl = process.env.CHATV2_API_URL;
-  const serviceKey = process.env.CHATV2_SERVICE_API_KEY;
-  if (!apiUrl || !serviceKey) {
-    console.error('[automation-roi] CHATV2_API_URL or CHATV2_SERVICE_API_KEY missing');
-    return NextResponse.json({ status: 'error', message: 'integration_not_configured' }, { status: 500 });
   }
 
   const keys = cacheKeys(userId);
@@ -138,63 +147,44 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
     }
   }
 
-  // Look up this customer's chatv2 project
-  const supabase = getServerSupabaseClient();
-  const { data: mapping, error: mappingError } = await supabase
-    .from('client_n8n_config')
-    .select('chatv2_project_id')
-    .eq('client_id', userId)
-    .maybeSingle();
-
-  if (mappingError) {
-    console.error('[automation-roi] mapping lookup failed:', mappingError.message);
-    return NextResponse.json({ status: 'error', message: 'mapping_lookup_failed' }, { status: 500 });
-  }
-
-  if (!mapping?.chatv2_project_id) {
-    return NextResponse.json({ status: 'not_enrolled' });
-  }
-
-  let response: Response;
+  let projectId: string | null;
   try {
-    response = await fetch(
-      `${apiUrl}/service/projects/${encodeURIComponent(mapping.chatv2_project_id)}/analytics`,
-      {
-        headers: { Authorization: `Bearer ${serviceKey}` },
-        signal: AbortSignal.timeout(10_000),
-        cache: 'no-store',
-      }
-    );
+    projectId = await getChatV2ProjectId(userId);
   } catch (err) {
-    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(keys.stale);
-    return NextResponse.json({
-      status: 'error',
-      message: err instanceof Error ? err.message : 'chatv2 unreachable',
-      ...(stale && { staleData: stale.data, staleAgeMs: Date.now() - stale.ts }),
-    });
+    console.error('[automation-roi] mapping lookup failed:', err);
+    return NextResponse.json(
+      { status: 'error', message: 'mapping_lookup_failed' },
+      { status: 500 },
+    );
   }
 
-  if (response.status === 404) {
+  if (!projectId) {
     return NextResponse.json({ status: 'not_enrolled' });
-  }
-
-  if (!response.ok) {
-    const stale = await safeRedisGet<{ data: AutomationRoiWidget; ts: number }>(keys.stale);
-    return NextResponse.json({
-      status: 'error',
-      message: `chatv2 returned ${response.status}`,
-      ...(stale && { staleData: stale.data, staleAgeMs: Date.now() - stale.ts }),
-    });
   }
 
   let raw: CtoAnalyticsResponse;
   try {
-    raw = (await response.json()) as CtoAnalyticsResponse;
+    raw = await chatV2Fetch<CtoAnalyticsResponse>('/analytics', { projectId });
     if (!raw?.overview || typeof raw.overview.total_runs !== 'number') {
       throw new Error('unexpected shape');
     }
-  } catch {
-    return NextResponse.json({ status: 'error', message: 'chatv2 returned unexpected shape' });
+  } catch (err) {
+    if (err instanceof ChatV2Error) {
+      if (err.isNotFound()) {
+        return NextResponse.json({ status: 'not_enrolled' });
+      }
+      const message = err.code === 'NOT_CONFIGURED'
+        ? 'integration_not_configured'
+        : err.isUnavailable()
+          ? 'chatv2 unreachable'
+          : `chatv2 returned ${err.status}`;
+      if (err.code === 'NOT_CONFIGURED') {
+        console.error('[automation-roi]', err.message);
+        return NextResponse.json({ status: 'error', message }, { status: 500 });
+      }
+      return await buildStaleErrorResponse(userId, message);
+    }
+    return await buildStaleErrorResponse(userId, 'chatv2 returned unexpected shape');
   }
 
   const data = shape(raw);
