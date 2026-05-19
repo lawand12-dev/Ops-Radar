@@ -125,7 +125,17 @@ const envSchema = z.object({
   // password changes through the UI are not reset by env on every reboot.
   // Required so a fresh deployment never boots without an admin account.
   ADMIN_EMAIL: z.string().email("ADMIN_EMAIL must be a valid email"),
-  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters")
+  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters"),
+
+  // Service-to-service API key for the /service/* endpoints. Optional so the
+  // feature can be disabled cluster-wide by leaving the var unset (every
+  // /service/* call then returns 401 SERVICE_AUTH_NOT_CONFIGURED). When set,
+  // we require ≥32 chars to keep brute-force out of reach. Compared with
+  // timingSafeEqual at the middleware layer.
+  CHATV2_SERVICE_API_KEY: z
+    .string()
+    .min(32, "CHATV2_SERVICE_API_KEY must be at least 32 characters")
+    .optional()
 });
 
 const parsed = envSchema.safeParse(process.env);

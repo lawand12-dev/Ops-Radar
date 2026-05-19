@@ -14,6 +14,7 @@ import eventRoutes from "./modules/events/event-routes";
 import n8nRoutes from "./modules/n8n/n8n-routes";
 import projectRoutes from "./modules/projects/project-routes";
 import { getProjectWorkflowDebugSnapshot } from "./modules/projects/project-service";
+import serviceRoutes from "./modules/service/service-routes";
 import workflowRoutes from "./modules/workflows/workflow-routes";
 import {
   buildKnowledgeBaseSelectionLogMeta,
@@ -196,5 +197,6 @@ app.route("/workflows", workflowRoutes);
 app.route("/event", eventRoutes);
 app.route("/analytics", analyticsRoutes);
 app.route("/n8n", n8nRoutes);
+app.route("/service", serviceRoutes);
 
 export default app;

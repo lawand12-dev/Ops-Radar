@@ -126,6 +126,32 @@ export async function listRecentEventsByWorkflowId(
   return rows.map((row) => mapEventRow(row));
 }
 
+/**
+ * Recent terminal-run events only — both event families ('run_*' from external
+ * ingest and 'workflow_execution_*' from the monitoring scheduler). Used by
+ * the /service/* layer to surface execution-level history without dragging in
+ * node_started / health snapshots.
+ */
+export async function listRecentTerminalEventsByWorkflowId(
+  workflowId: string,
+  limit = 10
+): Promise<WorkflowEventRecord[]> {
+  const db = getDb();
+  const capped = Math.min(Math.max(limit, 1), 100);
+  const [rows] = await dbQuery<WorkflowEventRow[]>(
+    db,
+    `SELECT id, workflow_id, run_id, node_name, event_type, status, duration_ms, error_message, metadata, created_at
+     FROM workflow_events
+     WHERE workflow_id = ?
+       AND event_type IN (${TERMINAL_RUN_TYPES_SQL})
+     ORDER BY created_at DESC
+     LIMIT ?`,
+    [workflowId, capped]
+  );
+
+  return rows.map((row) => mapEventRow(row));
+}
+
 export async function listRecentFailureEventsByWorkflowId(
   workflowId: string,
   limit = 10
