@@ -2,14 +2,16 @@ import { NextResponse } from 'next/server'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { decryptApiKey } from '<npm>/lib/integrations/crypto'
-import { bucketForTeamSize } from '<npm>/lib/benchmarks/buckets'
+import { bucketForServiceMix, bucketForTeamSize } from '<npm>/lib/benchmarks/buckets'
 import { collectUserMetrics } from '<npm>/lib/benchmarks/collect'
 import {
   METRIC_DIRECTION,
   type BenchmarkMetric,
   type BenchmarkRow,
+  type ServiceMixBucket,
   type UserComparison,
 } from '<npm>/lib/benchmarks/types'
+import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -47,24 +49,43 @@ export async function GET(): Promise<NextResponse> {
   if (userErr || !user) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+
+  const plan = getUserPlan(meta)
+  if (!canAccess(plan, 'benchmarks')) {
+    return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 })
+  }
+
   const bucket = bucketForTeamSize(meta.team_size as string | undefined)
+  const userMix = bucketForServiceMix(meta.service_mix as string | undefined)
 
   if (!bucket) {
     return NextResponse.json({
       bucket: null,
+      service_mix: userMix,
       comparisons: [] as UserComparison[],
     })
   }
 
   const session = await getSessionSupabaseClient()
+  // Fetch BOTH the user's service-mix-specific cohort AND the pooled cohort.
+  // We prefer the specific cohort per-metric when it has sample_size >= floor,
+  // otherwise fall back to the pooled 'all' cohort.
+  const cohortsToQuery: ServiceMixBucket[] = userMix && userMix !== 'all' ? [userMix, 'all'] : ['all']
   const { data: rows } = await session
     .from('benchmarks')
     .select('*')
     .eq('team_size_bucket', bucket)
+    .in('service_mix_bucket', cohortsToQuery)
 
+  // Build a lookup preferring the more specific cohort.
   const benchmarkByMetric = new Map<BenchmarkMetric, BenchmarkRow>()
   for (const r of rows ?? []) {
-    benchmarkByMetric.set(r.metric as BenchmarkMetric, r as BenchmarkRow)
+    const row = r as BenchmarkRow
+    const existing = benchmarkByMetric.get(row.metric)
+    // Prefer the user's specific mix; fall back to 'all' if no specific row.
+    if (!existing || (existing.service_mix_bucket === 'all' && row.service_mix_bucket !== 'all')) {
+      benchmarkByMetric.set(row.metric, row)
+    }
   }
 
   const { data: keyRows } = await service
@@ -105,5 +126,5 @@ export async function GET(): Promise<NextResponse> {
     }
   })
 
-  return NextResponse.json({ bucket, comparisons })
+  return NextResponse.json({ bucket, service_mix: userMix, comparisons })
 }

@@ -8,6 +8,8 @@ const LOOKBACK_MS: Record<ActionType, number> = {
   scope_approaching:     7  * 24 * 60 * 60 * 1000,
   workflow_failure:      24 *      60 * 60 * 1000,
   hubspot_harvest_sync:  30 * 24 * 60 * 60 * 1000,
+  retainer_overage:      14 * 24 * 60 * 60 * 1000,
+  retainer_invoice_draft: 31 * 24 * 60 * 60 * 1000, // one draft per client per month
 };
 
 export async function isDuplicate(

@@ -1,11 +1,13 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { decryptApiKey } from '<npm>/lib/integrations/crypto'
-import { bucketForTeamSize } from './buckets'
+import { bucketForServiceMix, bucketForTeamSize } from './buckets'
 import { collectUserMetrics, type UserMetrics } from './collect'
 import { p25, p50, p75 } from './percentile'
 import {
+  SERVICE_MIX_BUCKETS,
   TEAM_SIZE_BUCKETS,
   type BenchmarkMetric,
+  type ServiceMixBucket,
   type TeamSizeBucket,
 } from './types'
 
@@ -23,6 +25,9 @@ export type AggregateStats = {
   rows_upserted:    number
 }
 
+type SampleKey = `${TeamSizeBucket}|${ServiceMixBucket}`
+const key = (team: TeamSizeBucket, mix: ServiceMixBucket): SampleKey => `${team}|${mix}` as SampleKey
+
 export async function runBenchmarkAggregation(): Promise<AggregateStats> {
   const supabase = getServerSupabaseClient()
 
@@ -34,11 +39,16 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
 
   const userIds = [...new Set((integrationRows ?? []).map((r) => r.client_id))]
 
-  const samples = new Map<TeamSizeBucket, Map<BenchmarkMetric, number[]>>()
-  for (const b of TEAM_SIZE_BUCKETS) {
-    const inner = new Map<BenchmarkMetric, number[]>()
-    for (const m of ALL_METRICS) inner.set(m, [])
-    samples.set(b, inner)
+  // Sample sets keyed by (team_size, service_mix).
+  // We always also accumulate into (team_size, 'all') to keep the pooled cohort.
+  const samples = new Map<SampleKey, Map<BenchmarkMetric, number[]>>()
+  const ensureBucket = (k: SampleKey) => {
+    if (!samples.has(k)) {
+      const inner = new Map<BenchmarkMetric, number[]>()
+      for (const m of ALL_METRICS) inner.set(m, [])
+      samples.set(k, inner)
+    }
+    return samples.get(k)!
   }
 
   let withData = 0
@@ -49,8 +59,10 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
     const meta = (user.user_metadata ?? {}) as Record<string, unknown>
     if (meta.benchmark_opt_in === false) continue
 
-    const bucket = bucketForTeamSize(meta.team_size as string | undefined)
-    if (!bucket) continue
+    const teamBucket = bucketForTeamSize(meta.team_size as string | undefined)
+    if (!teamBucket) continue
+
+    const mixBucket = bucketForServiceMix(meta.service_mix as string | undefined) ?? null
 
     const { data: keyRows } = await supabase
       .from('integrations')
@@ -80,40 +92,49 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
     if (Object.keys(metrics).length === 0) continue
     withData += 1
 
-    const bucketSamples = samples.get(bucket)!
+    // Always contribute to the pooled (team_size, 'all') cohort.
+    const pooled = ensureBucket(key(teamBucket, 'all'))
+    // Also contribute to the service-mix-specific cohort if the user declared one.
+    const specific = mixBucket ? ensureBucket(key(teamBucket, mixBucket)) : null
+
     for (const [metricKey, value] of Object.entries(metrics) as [BenchmarkMetric, number][]) {
       if (!Number.isFinite(value)) continue
-      bucketSamples.get(metricKey)!.push(value)
+      pooled.get(metricKey)!.push(value)
+      if (specific) specific.get(metricKey)!.push(value)
     }
   }
 
   const computedAt = new Date().toISOString()
   let rowsUpserted = 0
 
-  for (const bucket of TEAM_SIZE_BUCKETS) {
-    const inner = samples.get(bucket)!
-    for (const metric of ALL_METRICS) {
-      const arr = inner.get(metric)!
-      if (arr.length < SAMPLE_SIZE_FLOOR) continue
-      const v25 = p25(arr); const v50 = p50(arr); const v75 = p75(arr)
-      if (v25 === null || v50 === null || v75 === null) continue
+  for (const team of TEAM_SIZE_BUCKETS) {
+    for (const mix of SERVICE_MIX_BUCKETS) {
+      const inner = samples.get(key(team, mix))
+      if (!inner) continue
+      for (const metric of ALL_METRICS) {
+        const arr = inner.get(metric)!
+        if (arr.length < SAMPLE_SIZE_FLOOR) continue
+        const v25 = p25(arr); const v50 = p50(arr); const v75 = p75(arr)
+        if (v25 === null || v50 === null || v75 === null) continue
 
-      const { error } = await supabase
-        .from('benchmarks')
-        .upsert(
-          {
-            metric,
-            team_size_bucket: bucket,
-            p25: v25,
-            p50: v50,
-            p75: v75,
-            sample_size: arr.length,
-            computed_at: computedAt,
-          },
-          { onConflict: 'metric,team_size_bucket' },
-        )
-      if (!error) rowsUpserted += 1
-      else console.error('[benchmarks] upsert failed', { metric, bucket, error })
+        const { error } = await supabase
+          .from('benchmarks')
+          .upsert(
+            {
+              metric,
+              team_size_bucket: team,
+              service_mix_bucket: mix,
+              p25: v25,
+              p50: v50,
+              p75: v75,
+              sample_size: arr.length,
+              computed_at: computedAt,
+            },
+            { onConflict: 'metric,team_size_bucket,service_mix_bucket' },
+          )
+        if (!error) rowsUpserted += 1
+        else console.error('[benchmarks] upsert failed', { metric, team, mix, error })
+      }
     }
   }
 

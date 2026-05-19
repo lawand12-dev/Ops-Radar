@@ -7,9 +7,13 @@ import { evalHoursBudget } from './evaluators/hours-budget';
 import { evalScopeApproaching } from './evaluators/scope-approaching';
 import { evalWorkflowFailures } from './evaluators/workflow-failure';
 import { evalHubSpotHarvest } from './evaluators/hubspot-harvest';
+import { evalRetainerOverage } from './evaluators/retainer-overage';
+import { evalRetainerInvoiceDraft } from './evaluators/retainer-invoice-draft';
 import { executeAction } from './executor';
 import { ACTION_RISK } from './types';
 import type { NewAction, AgentAction, UserContext } from './types';
+import { hasQuotaRemaining } from './usage';
+import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
 
 const DEFAULT_BLENDED_RATE = 85;
 
@@ -71,6 +75,8 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
     harvestKey ? evalScopeApproaching(ctx, harvestKey) : Promise.resolve([]),
     n8nConfig ? evalWorkflowFailures(ctx, n8nConfig) : Promise.resolve([]),
     hubspotKey ? evalHubSpotHarvest(ctx, hubspotKey) : Promise.resolve([]),
+    harvestKey ? evalRetainerOverage(ctx, harvestKey) : Promise.resolve([]),
+    stripeKey ? evalRetainerInvoiceDraft(ctx, stripeKey) : Promise.resolve([]),
   ]);
 
   const proposed: NewAction[] = [];
@@ -79,8 +85,36 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
   }
 
   for (const action of proposed) {
+    // Enforce per-tier monthly quota. Starter has quota 0 (blocks all actions);
+    // Growth = 50, Pro = 200, FO = unlimited. Quota covers all action_types together.
+    const allowed = await hasQuotaRemaining(userId);
+    if (!allowed) {
+      console.log('[evaluator] quota exhausted, skipping action', action.action_type, 'for', userId);
+      break;
+    }
+
     const inserted = await insertAction(userId, action);
     if (!inserted) continue;
+
+    // Fire generic action.created webhook event
+    await dispatchEvent(userId, 'action.created', {
+      action_id: inserted.id,
+      action_type: inserted.action_type,
+      payload: action.payload as unknown as Record<string, unknown>,
+    });
+
+    // Fire specific event types for retainer + scope so customers can route them differently
+    if (inserted.action_type === 'retainer_overage') {
+      await dispatchEvent(userId, 'retainer.overage_detected', {
+        action_id: inserted.id,
+        payload: action.payload as unknown as Record<string, unknown>,
+      });
+    } else if (inserted.action_type === 'scope_approaching') {
+      await dispatchEvent(userId, 'scope.at_risk', {
+        action_id: inserted.id,
+        payload: action.payload as unknown as Record<string, unknown>,
+      });
+    }
 
     if (ACTION_RISK[action.action_type] === 'auto') {
       await executeAction(inserted);

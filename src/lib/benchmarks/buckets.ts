@@ -1,4 +1,5 @@
-import type { TeamSizeBucket } from './types'
+import type { ServiceMixBucket, TeamSizeBucket } from './types'
+import { SERVICE_MIX_BUCKETS } from './types'
 
 export function bucketForTeamSize(raw: string | null | undefined): TeamSizeBucket | null {
   if (!raw) return null
@@ -20,4 +21,20 @@ export function bucketForTeamSize(raw: string | null | undefined): TeamSizeBucke
   if (n <= 15)   return '6-15'
   if (n <= 30)   return '16-30'
   return '31+'
+}
+
+export function bucketForServiceMix(raw: string | null | undefined): ServiceMixBucket | null {
+  if (!raw) return null
+  const s = String(raw).trim().toLowerCase().replace(/\s+|-/g, '_')
+  if (!s) return null
+  if ((SERVICE_MIX_BUCKETS as readonly string[]).includes(s)) {
+    return s as ServiceMixBucket
+  }
+  // Common loose synonyms
+  if (s === 'paid' || s === 'paid_ads' || s === 'ppc') return 'paid_media'
+  if (s === 'seo' || s === 'content') return 'seo_content'
+  if (s === 'creative' || s === 'branding' || s === 'design') return 'creative_branding'
+  if (s === 'social') return 'social_media'
+  if (s === 'fullservice' || s === 'full' || s === 'multi') return 'full_service'
+  return 'other'
 }

@@ -5,6 +5,7 @@ import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import { fetchStripePerClientRevenue } from '<npm>/lib/integrations/stripe/profitability-adapter';
 import { fetchHarvestPerClientHours } from '<npm>/lib/integrations/harvest/profitability-adapter';
 import { computeClientProfitability, type ProfitabilityResult } from '<npm>/lib/profitability';
+import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ const DEFAULT_BLENDED_RATE = 85;
 type ProfitabilityResponse =
   | { status: 'ok'; data: ProfitabilityResult; blended_rate_usd: number; last_synced_at: string; from_cache: boolean }
   | { status: 'not_connected'; missing: ('stripe' | 'harvest')[] }
+  | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
 
 export async function GET(): Promise<NextResponse<ProfitabilityResponse>> {
@@ -28,6 +30,12 @@ export async function GET(): Promise<NextResponse<ProfitabilityResponse>> {
   const sessionSupabase = await getSessionSupabaseClient();
   const { data: userData } = await sessionSupabase.auth.getUser();
   const meta = (userData?.user?.user_metadata ?? {}) as Record<string, unknown>;
+
+  const plan = getUserPlan(meta);
+  if (!canAccess(plan, 'profitability')) {
+    return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 });
+  }
+
   const blendedRate = typeof meta.blended_hourly_rate_usd === 'number'
     ? meta.blended_hourly_rate_usd
     : DEFAULT_BLENDED_RATE;

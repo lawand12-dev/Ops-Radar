@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { getServerSupabaseClient, hasServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { serverErrorResponse } from '<npm>/lib/security';
 import { generateBriefingForUser } from '<npm>/lib/briefing';
+import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
 import { buildBriefingEmail } from '<npm>/lib/emails/weekly-briefing-email';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -64,6 +65,16 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       await supabase.from('briefings').update({ email_sent: true }).eq('id', briefing.id);
+
+      // Fire webhook event so customers integrating with Zapier / Make / etc. get notified.
+      await dispatchEvent(userId, 'briefing.ready', {
+        briefing_id: briefing.id,
+        kind: briefing.kind,
+        health_score: briefing.health_score,
+        win: briefing.win,
+        recommendation: briefing.recommendation,
+      });
+
       stats.sent++;
     } catch (err) {
       console.error('[weekly-briefing cron] error for', userId, err);

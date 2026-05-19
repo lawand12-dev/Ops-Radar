@@ -3,16 +3,19 @@
 
 import { useEffect, useState } from 'react';
 import { ScopeTable, ScopeNotConnected } from './_components/scope-table';
+import { PlanGate } from '../_components/plan-gate';
 import type { ScopeCreepResult } from '<npm>/lib/scope-creep';
 
 type ApiResp =
   | { status: 'ok'; data: ScopeCreepResult; last_synced_at: string }
   | { status: 'not_connected'; missing: ('clickup' | 'harvest')[] }
+  | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
 
 type PageState =
   | { kind: 'loading' }
   | { kind: 'not_connected'; missing: ('clickup' | 'harvest')[] }
+  | { kind: 'upgrade_required' }
   | { kind: 'error' }
   | { kind: 'ok'; data: ScopeCreepResult; last_synced_at: string };
 
@@ -29,6 +32,8 @@ export default function ScopePage() {
           setState({ kind: 'not_connected', missing: resp.missing });
         } else if (resp.status === 'ok') {
           setState({ kind: 'ok', data: resp.data, last_synced_at: resp.last_synced_at });
+        } else if (resp.status === 'upgrade_required') {
+          setState({ kind: 'upgrade_required' });
         } else {
           setState({ kind: 'error' });
         }
@@ -78,6 +83,10 @@ export default function ScopePage() {
             <div key={i} className="h-10 animate-pulse rounded-[var(--radius)] bg-[var(--color-surface-sunken)]" />
           ))}
         </div>
+      )}
+
+      {state.kind === 'upgrade_required' && (
+        <PlanGate feature="Scope Tracker" requiredPlan="growth" />
       )}
 
       {state.kind === 'not_connected' && (

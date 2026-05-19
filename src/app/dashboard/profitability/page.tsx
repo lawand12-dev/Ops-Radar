@@ -3,16 +3,19 @@
 import { useEffect, useState } from 'react';
 import { ProfitabilityTable } from '../_components/profitability-table';
 import { BenchmarkCards } from './_components/benchmark-cards';
+import { PlanGate } from '../_components/plan-gate';
 import type { ProfitabilityResult } from '<npm>/lib/profitability';
 
 type ApiResp =
   | { status: 'ok'; data: ProfitabilityResult; blended_rate_usd: number }
   | { status: 'not_connected'; missing: ('stripe' | 'harvest')[] }
+  | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
 
 type TableState =
   | { kind: 'loading' }
   | { kind: 'not_connected'; missing: ('stripe' | 'harvest')[] }
+  | { kind: 'upgrade_required' }
   | { kind: 'error' }
   | { kind: 'ok'; data: ProfitabilityResult; blended_rate_usd: number };
 
@@ -29,6 +32,8 @@ export default function ProfitabilityPage() {
           setTableState({ kind: 'not_connected', missing: resp.missing });
         } else if (resp.status === 'ok') {
           setTableState({ kind: 'ok', data: resp.data, blended_rate_usd: resp.blended_rate_usd });
+        } else if (resp.status === 'upgrade_required') {
+          setTableState({ kind: 'upgrade_required' });
         } else {
           setTableState({ kind: 'error' });
         }
@@ -57,11 +62,16 @@ export default function ProfitabilityPage() {
         </p>
       </div>
 
-      <BenchmarkCards />
-
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
-        <ProfitabilityTable state={tableState} />
-      </div>
+      {tableState.kind === 'upgrade_required' ? (
+        <PlanGate feature="Per-client profitability" requiredPlan="growth" />
+      ) : (
+        <>
+          <BenchmarkCards />
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
+            <ProfitabilityTable state={tableState} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

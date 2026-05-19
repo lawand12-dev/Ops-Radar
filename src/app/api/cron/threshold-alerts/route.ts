@@ -13,6 +13,9 @@ import {
   buildThresholdAlertEmail,
   type AlertEmailKind,
 } from '<npm>/lib/emails/threshold-alert-email';
+import { sendToSlackDirect, type SlackMessage } from '<npm>/lib/notifications/slack';
+import { sendToTeamsDirect, type TeamsMessage } from '<npm>/lib/notifications/teams';
+import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -71,6 +74,16 @@ export async function GET(request: Request): Promise<Response> {
       const firstName = (typeof meta.full_name === 'string' ? meta.full_name : '').split(' ')[0] ?? '';
       const blendedRate = typeof meta.blended_hourly_rate_usd === 'number'
         ? meta.blended_hourly_rate_usd : DEFAULT_BLENDED_RATE;
+      const slackWebhookUrl =
+        typeof meta.slack_webhook_url === 'string' && meta.slack_webhook_url.startsWith('https://hooks.slack.com/')
+          ? meta.slack_webhook_url
+          : null;
+      const teamsWebhookUrl =
+        typeof meta.teams_webhook_url === 'string' &&
+        (/^https:\/\/([a-z0-9-]+\.)?webhook\.office\.com\//.test(meta.teams_webhook_url) ||
+          meta.teams_webhook_url.startsWith('https://outlook.office.com/webhook/'))
+          ? meta.teams_webhook_url
+          : null;
 
       const { data: keyRows } = await supabase
         .from('integrations')
@@ -110,7 +123,7 @@ export async function GET(request: Request): Promise<Response> {
                   },
                   firstName,
                 );
-                await sendAndRecord(supabase, resend, userId, user.email, 'negative_margin', client.name, subject, html, stats);
+                await sendAndRecord(supabase, resend, userId, user.email, 'negative_margin', client.name, subject, html, slackWebhookUrl, teamsWebhookUrl, stats);
               }
             }
 
@@ -128,7 +141,7 @@ export async function GET(request: Request): Promise<Response> {
                   },
                   firstName,
                 );
-                await sendAndRecord(supabase, resend, userId, user.email, 'invoice_overdue', client.name, subject, html, stats);
+                await sendAndRecord(supabase, resend, userId, user.email, 'invoice_overdue', client.name, subject, html, slackWebhookUrl, teamsWebhookUrl, stats);
               }
             }
           }
@@ -162,7 +175,7 @@ export async function GET(request: Request): Promise<Response> {
                 },
                 firstName,
               );
-              await sendAndRecord(supabase, resend, userId, user.email, kind, project.project_name, subject, html, stats);
+              await sendAndRecord(supabase, resend, userId, user.email, kind, project.project_name, subject, html, slackWebhookUrl, teamsWebhookUrl, stats);
             }
           }
         }
@@ -203,6 +216,8 @@ async function sendAndRecord(
   entityName: string,
   subject: string,
   html: string,
+  slackWebhookUrl: string | null,
+  teamsWebhookUrl: string | null,
   stats: { sent: number; skipped: number; errors: number },
 ): Promise<void> {
   const now = new Date().toISOString();
@@ -225,6 +240,49 @@ async function sendAndRecord(
     stats.errors++;
     return;
   }
+
+  // Fan out to Slack if the customer has configured a webhook.
+  // Slack delivery is fire-and-forget — failures don't fail the alert.
+  if (slackWebhookUrl) {
+    const slackMessage: SlackMessage = {
+      text: subject,
+      blocks: [
+        { type: 'header', text: { type: 'plain_text', text: subject } },
+        { type: 'section', text: { type: 'mrkdwn', text: `*${entityName}*` } },
+        {
+          type: 'context',
+          elements: [{ type: 'mrkdwn', text: 'Alert from your OpsRadar AI COO' }],
+        },
+      ],
+    };
+    await sendToSlackDirect(slackWebhookUrl, slackMessage);
+  }
+
+  // Fan out to Microsoft Teams if configured. Same fire-and-forget contract.
+  if (teamsWebhookUrl) {
+    const teamsMessage: TeamsMessage = {
+      '@type': 'MessageCard',
+      '@context': 'https://schema.org/extensions',
+      themeColor: kind === 'invoice_overdue' || kind === 'negative_margin' ? 'ef4444' : 'f59e0b',
+      summary: subject,
+      title: subject,
+      sections: [
+        {
+          activityTitle: entityName,
+          activitySubtitle: 'Alert from your OpsRadar AI COO',
+        },
+      ],
+    };
+    await sendToTeamsDirect(teamsWebhookUrl, teamsMessage);
+  }
+
+  // Fire customer-registered outgoing webhooks. Failures are logged but don't
+  // affect the alert pipeline.
+  await dispatchEvent(userId, 'alert.threshold_crossed', {
+    kind,
+    entity_name: entityName,
+    subject,
+  });
 
   await supabase
     .from('alert_notifications')

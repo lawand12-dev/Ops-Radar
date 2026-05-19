@@ -5,6 +5,7 @@ import { decryptApiKey } from '<npm>/lib/integrations/crypto'
 import { applyRateLimit } from '<npm>/lib/rate-limit'
 import { openai } from '<npm>/lib/openai'
 import { buildCooContext } from '<npm>/lib/coo/context'
+import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -43,6 +44,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (userErr || !user) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+
+  const plan = getUserPlan(meta)
+  if (!canAccess(plan, 'coo_chat')) {
+    return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 })
+  }
+
   const blendedRate = typeof meta.blended_hourly_rate_usd === 'number'
     ? meta.blended_hourly_rate_usd
     : 85

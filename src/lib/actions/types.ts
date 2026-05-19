@@ -5,6 +5,8 @@ export type ActionType =
   | 'scope_approaching'
   | 'workflow_failure'
   | 'hubspot_harvest_sync'
+  | 'retainer_overage'
+  | 'retainer_invoice_draft'
 
 export type ActionStatus =
   | 'pending'
@@ -22,6 +24,8 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   scope_approaching:     'approval',
   workflow_failure:      'auto',
   hubspot_harvest_sync:  'auto',
+  retainer_overage:      'approval',
+  retainer_invoice_draft: 'approval',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -31,6 +35,8 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   scope_approaching:     'Scope warning — approaching budget',
   workflow_failure:      'Workflow failure alert sent',
   hubspot_harvest_sync:  'New client synced to Harvest',
+  retainer_overage:      'Retainer overage — billing conversation ready',
+  retainer_invoice_draft: 'Retainer invoice — Stripe draft ready',
 }
 
 // ─── Payload types ────────────────────────────────────────────────────────────
@@ -96,6 +102,29 @@ export type HubSpotHarvestPayload = {
   harvest_client_id?: string
 }
 
+export type RetainerOveragePayload = {
+  client_name: string
+  client_name_norm: string
+  monthly_amount_usd: number
+  included_hours: number
+  logged_hours: number
+  overage_hours: number
+  overage_cost_usd: number
+  implied_hourly_rate: number
+  draft_subject: string
+  draft_body: string
+}
+
+export type RetainerInvoiceDraftPayload = {
+  client_name: string
+  client_name_norm: string
+  stripe_customer_id: string
+  amount_usd: number
+  retainer_period: string // YYYY-MM
+  description: string
+  stripe_invoice_id?: string // populated after successful execute
+}
+
 export type ActionPayload =
   | InvoiceReminderPayload
   | MarginAlertPayload
@@ -103,6 +132,8 @@ export type ActionPayload =
   | ScopeApproachingPayload
   | WorkflowFailurePayload
   | HubSpotHarvestPayload
+  | RetainerOveragePayload
+  | RetainerInvoiceDraftPayload
 
 export type NewAction = {
   action_type: ActionType

@@ -1,11 +1,12 @@
 // src/app/api/dashboard/scope/route.ts
 import { NextResponse } from 'next/server';
-import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
+import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import { fetchClickupProjectBudgets } from '<npm>/lib/integrations/clickup/scope-adapter';
 import { fetchHarvestMonthlyProjectHours } from '<npm>/lib/integrations/harvest/adapter';
 import { computeScopeCreep, type ScopeCreepResult } from '<npm>/lib/scope-creep';
+import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
@@ -17,12 +18,20 @@ const CACHE_KEY = (userId: string) => `dash:scope:${userId}`;
 type ScopeResponse =
   | { status: 'ok'; data: ScopeCreepResult; last_synced_at: string; from_cache: boolean }
   | { status: 'not_connected'; missing: ('clickup' | 'harvest')[] }
+  | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
 
 export async function GET(): Promise<NextResponse<ScopeResponse>> {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ status: 'unavailable', message: 'unauthorized' }, { status: 401 });
+  }
+
+  const sessionSupabase = await getSessionSupabaseClient();
+  const { data: userData } = await sessionSupabase.auth.getUser();
+  const plan = getUserPlan(userData?.user?.user_metadata ?? null);
+  if (!canAccess(plan, 'scope')) {
+    return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 });
   }
 
   const supabase = getServerSupabaseClient();

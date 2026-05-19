@@ -3,13 +3,27 @@ import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-s
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { executeAction } from '<npm>/lib/actions/executor';
 import type { AgentAction } from '<npm>/lib/actions/types';
+import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+async function checkAgenticActionsPlan(): Promise<NextResponse | null> {
+  const session = await getSessionSupabaseClient();
+  const { data: { user } } = await session.auth.getUser();
+  const plan = getUserPlan(user?.user_metadata ?? null);
+  if (!canAccess(plan, 'agentic_actions')) {
+    return NextResponse.json(upgradeRequiredBody('pro'), { status: 402 });
+  }
+  return null;
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+
+  const planBlock = await checkAgenticActionsPlan();
+  if (planBlock) return planBlock;
 
   const url = new URL(request.url);
   const statusFilter = url.searchParams.get('status');
@@ -39,6 +53,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+
+  const planBlock = await checkAgenticActionsPlan();
+  if (planBlock) return planBlock;
 
   let body: { action?: string; id?: string };
   try {

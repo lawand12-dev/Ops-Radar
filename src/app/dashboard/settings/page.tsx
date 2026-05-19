@@ -12,6 +12,9 @@ type Profile = {
   weekly_briefing_enabled: boolean;
   team_size: string;
   benchmark_opt_in: boolean;
+  slack_webhook_url: string;
+  teams_webhook_url: string;
+  service_mix: string;
 };
 
 const TIMEZONES = [
@@ -59,6 +62,9 @@ export default function SettingsPage() {
   const [weeklyBriefing, setWeeklyBriefing] = useState(true);
   const [teamSize, setTeamSize] = useState<string>('');
   const [benchmarkOptIn, setBenchmarkOptIn] = useState(true);
+  const [slackUrl, setSlackUrl] = useState<string>('');
+  const [teamsUrl, setTeamsUrl] = useState<string>('');
+  const [serviceMix, setServiceMix] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -78,6 +84,9 @@ export default function SettingsPage() {
           setWeeklyBriefing(j.profile.weekly_briefing_enabled !== false);
           setTeamSize(j.profile.team_size ?? '');
           setBenchmarkOptIn(j.profile.benchmark_opt_in !== false);
+          setSlackUrl(j.profile.slack_webhook_url ?? '');
+          setTeamsUrl(j.profile.teams_webhook_url ?? '');
+          setServiceMix(j.profile.service_mix ?? '');
         } else {
           setBanner({ kind: 'err', text: j.error ?? 'Failed to load profile.' });
         }
@@ -107,6 +116,9 @@ export default function SettingsPage() {
           weekly_briefing_enabled: weeklyBriefing,
           team_size: teamSize,
           benchmark_opt_in: benchmarkOptIn,
+          slack_webhook_url: slackUrl.trim(),
+          teams_webhook_url: teamsUrl.trim(),
+          service_mix: serviceMix,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -255,6 +267,25 @@ export default function SettingsPage() {
             </p>
           </Field>
 
+          <Field label="Service mix">
+            <select
+              value={serviceMix}
+              onChange={(e) => setServiceMix(e.target.value)}
+              className="w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+            >
+              <option value="">— Select —</option>
+              <option value="paid_media">Paid Media (Meta, Google Ads)</option>
+              <option value="seo_content">SEO &amp; Content</option>
+              <option value="creative_branding">Creative &amp; Branding (design, video)</option>
+              <option value="social_media">Social Media management</option>
+              <option value="full_service">Full Service (multi-discipline)</option>
+              <option value="other">Other</option>
+            </select>
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              Sharpens your peer benchmarks (paid-media agencies look very different from creative agencies).
+            </p>
+          </Field>
+
           <Field label="Industry benchmarks">
             <label className="flex cursor-pointer items-center gap-2.5">
               <div
@@ -271,6 +302,32 @@ export default function SettingsPage() {
             </label>
             <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
               Your data is aggregated with other agencies your size — never shared individually.
+            </p>
+          </Field>
+
+          <Field label="Slack webhook URL (optional)">
+            <input
+              type="url"
+              value={slackUrl}
+              onChange={(e) => setSlackUrl(e.target.value)}
+              placeholder="https://hooks.slack.com/services/..."
+              className="w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-fg)] placeholder:text-[var(--color-fg-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+            />
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              We&apos;ll post threshold alerts and action drafts to this Slack channel alongside email. Get the URL from a Slack incoming-webhook integration.
+            </p>
+          </Field>
+
+          <Field label="Microsoft Teams webhook URL (optional)">
+            <input
+              type="url"
+              value={teamsUrl}
+              onChange={(e) => setTeamsUrl(e.target.value)}
+              placeholder="https://outlook.office.com/webhook/..."
+              className="w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-fg)] placeholder:text-[var(--color-fg-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+            />
+            <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">
+              Same alerts delivered to Teams. Get the URL from a Teams channel&apos;s &ldquo;Incoming Webhook&rdquo; connector.
             </p>
           </Field>
 

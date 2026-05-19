@@ -1,7 +1,15 @@
+import Stripe from 'stripe';
 import { Resend } from 'resend';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
-import type { AgentAction, InvoiceReminderPayload, WorkflowFailurePayload, HubSpotHarvestPayload } from './types';
+import type {
+  AgentAction,
+  HubSpotHarvestPayload,
+  InvoiceReminderPayload,
+  RetainerInvoiceDraftPayload,
+  WorkflowFailurePayload,
+} from './types';
+import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const HARVEST_BASE = 'https://api.harvestapp.com/v2';
@@ -82,7 +90,59 @@ export async function executeAction(action: AgentAction): Promise<void> {
 
       case 'margin_alert':
       case 'hours_budget_exceeded':
+      case 'scope_approaching':
+      case 'retainer_overage':
+        // Approval-required action — no automatic send.
+        // The draft sits in the actions queue for the founder to review.
         break;
+
+      case 'retainer_invoice_draft': {
+        // Approval-required: when the founder approves this action, we actually
+        // create a draft invoice in the customer's own Stripe account using
+        // their stored Model C key. The invoice stays in DRAFT status —
+        // the founder reviews + sends from the Stripe dashboard.
+        const p = action.payload as RetainerInvoiceDraftPayload;
+        const { data: rows } = await supabase
+          .from('integrations')
+          .select('tool, encrypted_token, iv, auth_tag, status')
+          .eq('client_id', action.user_id)
+          .eq('tool', 'stripe')
+          .eq('status', 'connected')
+          .limit(1);
+        const stripeRow = rows?.[0];
+        if (!stripeRow) {
+          console.warn('[executor] retainer_invoice_draft: no stripe key for', action.user_id);
+          break;
+        }
+        const stripeKey = decryptApiKey(stripeRow);
+        const stripe = new Stripe(stripeKey, { typescript: true, maxNetworkRetries: 2 });
+
+        try {
+          // Create invoice item first (line item), then the invoice (in draft).
+          await stripe.invoiceItems.create({
+            customer: p.stripe_customer_id,
+            amount: Math.round(p.amount_usd * 100),
+            currency: 'usd',
+            description: p.description,
+          });
+          const invoice = await stripe.invoices.create({
+            customer: p.stripe_customer_id,
+            collection_method: 'send_invoice',
+            days_until_due: 14,
+            auto_advance: false, // keep as draft; founder sends from Stripe
+            description: p.description,
+            metadata: {
+              opsradar_action_id: action.id,
+              opsradar_retainer_period: p.retainer_period,
+            },
+          });
+          if (invoice.id) updatedPayload.stripe_invoice_id = invoice.id;
+        } catch (err) {
+          console.error('[executor] retainer_invoice_draft stripe error:', err);
+          throw err;
+        }
+        break;
+      }
     }
 
     await supabase
@@ -94,6 +154,13 @@ export async function executeAction(action: AgentAction): Promise<void> {
         payload: updatedPayload as unknown as import('<npm>/lib/database.types').Json,
       })
       .eq('id', action.id);
+
+    // Fire webhook event after successful execution.
+    await dispatchEvent(action.user_id, 'action.executed', {
+      action_id: action.id,
+      action_type: action.action_type,
+      payload: updatedPayload,
+    });
 
   } catch (err) {
     console.error('[executeAction] failed for', action.action_type, err);

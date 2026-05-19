@@ -14,6 +14,9 @@ type Profile = {
   weekly_briefing_enabled: boolean;
   team_size: string;
   benchmark_opt_in: boolean;
+  slack_webhook_url: string;
+  teams_webhook_url: string;
+  service_mix: string;
 };
 
 const COMMON_TIMEZONES = new Set([
@@ -58,6 +61,9 @@ export async function GET(): Promise<NextResponse> {
     weekly_briefing_enabled: meta.weekly_briefing_enabled !== false,
     team_size: typeof meta.team_size === 'string' ? meta.team_size : '',
     benchmark_opt_in: meta.benchmark_opt_in !== false,
+    slack_webhook_url: typeof meta.slack_webhook_url === 'string' ? meta.slack_webhook_url : '',
+    teams_webhook_url: typeof meta.teams_webhook_url === 'string' ? meta.teams_webhook_url : '',
+    service_mix: typeof meta.service_mix === 'string' ? meta.service_mix : '',
   };
   return NextResponse.json({ profile });
 }
@@ -70,6 +76,9 @@ type PatchBody = {
   weekly_briefing_enabled?: unknown;
   team_size?: unknown;
   benchmark_opt_in?: unknown;
+  slack_webhook_url?: unknown;
+  teams_webhook_url?: unknown;
+  service_mix?: unknown;
 };
 
 function sanitizeText(input: unknown, max: number): string | null {
@@ -130,6 +139,32 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'invalid_benchmark_opt_in' }, { status: 400 });
     }
     updates.benchmark_opt_in = body.benchmark_opt_in;
+  }
+  if ('slack_webhook_url' in body) {
+    if (typeof body.slack_webhook_url !== 'string') {
+      return NextResponse.json({ error: 'invalid_slack_webhook_url' }, { status: 400 });
+    }
+    const url = body.slack_webhook_url.trim();
+    if (url.length > 0 && !url.startsWith('https://hooks.slack.com/')) {
+      return NextResponse.json({ error: 'slack_webhook_url must start with https://hooks.slack.com/' }, { status: 400 });
+    }
+    updates.slack_webhook_url = url;
+  }
+  if ('service_mix' in body) {
+    const v = sanitizeText(body.service_mix, 40);
+    if (v === null) return NextResponse.json({ error: 'invalid_service_mix' }, { status: 400 });
+    updates.service_mix = v;
+  }
+  if ('teams_webhook_url' in body) {
+    if (typeof body.teams_webhook_url !== 'string') {
+      return NextResponse.json({ error: 'invalid_teams_webhook_url' }, { status: 400 });
+    }
+    const url = body.teams_webhook_url.trim();
+    // Teams webhook URLs use either outlook.office.com or *.webhook.office.com
+    if (url.length > 0 && !/^https:\/\/([a-z0-9-]+\.)?webhook\.office\.com\//.test(url) && !url.startsWith('https://outlook.office.com/webhook/')) {
+      return NextResponse.json({ error: 'teams_webhook_url must be a Microsoft Teams incoming webhook URL' }, { status: 400 });
+    }
+    updates.teams_webhook_url = url;
   }
 
   if (Object.keys(updates).length === 0) {
