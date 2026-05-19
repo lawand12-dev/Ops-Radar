@@ -8,7 +8,6 @@ import {
 
 const DASH_THEME_COOKIE = 'dash-theme'
 const ADMIN_THEME_COOKIE = 'admin-theme'
-const SITE_THEME_COOKIE = 'site-theme'
 
 function isDashboard(pathname: string): boolean {
   return pathname === '/dashboard' || pathname.startsWith('/dashboard/')
@@ -21,7 +20,6 @@ function isAdmin(pathname: string): boolean {
 type ThemeCookies = {
   dash: string | undefined
   admin: string | undefined
-  site: string | undefined
 }
 
 function themeForRequest(pathname: string, cookies: ThemeCookies): 'light' | 'dark' {
@@ -33,7 +31,6 @@ function themeForRequest(pathname: string, cookies: ThemeCookies): 'light' | 'da
     if (cookies.dash === 'light' || cookies.dash === 'dark') return cookies.dash
     return 'dark'
   }
-  if (cookies.site === 'light' || cookies.site === 'dark') return cookies.site
   return 'light'
 }
 
@@ -51,7 +48,6 @@ export async function proxy(request: NextRequest) {
   const themeCookies: ThemeCookies = {
     dash: request.cookies.get(DASH_THEME_COOKIE)?.value,
     admin: request.cookies.get(ADMIN_THEME_COOKIE)?.value,
-    site: request.cookies.get(SITE_THEME_COOKIE)?.value,
   }
 
   // /admin/* — gated by the existing admin-session cookie.

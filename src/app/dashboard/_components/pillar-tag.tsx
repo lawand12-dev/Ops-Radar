@@ -5,7 +5,7 @@ type Pillar = 'OPERATE' | 'OBSERVE' | 'BRAIN' | 'GUARD';
 
 /**
  * Small monospace caps label that marks a dashboard section as one of
- * the four AIOS pillars. Matches the eyebrow style used across marketing.
+ * the four AI COO pillars. Matches the eyebrow style used across marketing.
  */
 export function PillarTag({
   name,

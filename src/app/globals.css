@@ -7,60 +7,83 @@
 
 @theme {
   /* ── Fonts ──────────────────────────────────────────────────────── */
-  --font-serif: var(--font-serif-loaded), "Iowan Old Style", Georgia, serif;
+  /* Phase D decision: all headings use Inter Tight (sans). --font-serif resolves
+     to the same stack so every .font-serif utility class on every page
+     renders Inter Tight without needing per-element overrides or !important. */
   --font-sans: var(--font-sans-loaded), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-sans-loaded), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-mono-loaded), ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* ── Type scale (size / line-height) ───────────────────────────── */
-  --text-display: clamp(2.5rem, 3vw + 1.5rem, 4rem);
-  --text-display--line-height: 1.05;
+  /* ── Type scale — locked per docs/design-language-opsradar.md §3 ── */
+  /* Hero H1: scales from 48px mobile up to 84px desktop. Locked, no clamp wider. */
+  --text-hero: clamp(3rem, 4.5vw + 1.25rem, 5.25rem);
+  --text-hero--line-height: 1.04;
+  --text-hero--letter-spacing: -0.028em;
+  --text-hero--font-weight: 500;
+
+  /* Mercury thesis billboard — single 42px H2 standing alone */
+  --text-display: clamp(2.25rem, 2vw + 1.25rem, 3.5rem);
+  --text-display--line-height: 1.08;
   --text-display--letter-spacing: -0.025em;
-  --text-display--font-weight: 400;
+  --text-display--font-weight: 480;
 
-  --text-h1: clamp(2rem, 2vw + 1.2rem, 3rem);
-  --text-h1--line-height: 1.08;
-  --text-h1--letter-spacing: -0.02em;
-  --text-h1--font-weight: 400;
+  /* Section H1 — drops from hero size to a still-large 48px on desktop */
+  --text-h1: clamp(2rem, 1.8vw + 1.25rem, 3rem);
+  --text-h1--line-height: 1.06;
+  --text-h1--letter-spacing: -0.022em;
+  --text-h1--font-weight: 500;
 
-  --text-h2: clamp(1.625rem, 1.5vw + 1rem, 2.25rem);
-  --text-h2--line-height: 1.12;
+  /* Section H2 — locked at 36px desktop, period-terminated complete sentences */
+  --text-h2: clamp(1.625rem, 1.2vw + 1rem, 2.25rem);
+  --text-h2--line-height: 1.14;
   --text-h2--letter-spacing: -0.02em;
-  --text-h2--font-weight: 400;
+  --text-h2--font-weight: 500;
 
-  --text-h3: 1.375rem;
-  --text-h3--line-height: 1.25;
+  --text-h3: 1.5rem;            /* 24px */
+  --text-h3--line-height: 1.33;
   --text-h3--letter-spacing: -0.015em;
   --text-h3--font-weight: 500;
 
   --text-h4: 1.125rem;
-  --text-h4--line-height: 1.3;
+  --text-h4--line-height: 1.5;
   --text-h4--letter-spacing: -0.01em;
   --text-h4--font-weight: 500;
 
+  /* Hero sub-paragraph at 21px (Mercury spec) */
+  --text-lead: 1.3125rem;
+  --text-lead--line-height: 1.5;
+  --text-lead--font-weight: 400;
+
   --text-body-lg: 1.0625rem;
-  --text-body-lg--line-height: 1.55;
+  --text-body-lg--line-height: 1.6;
   --text-body-lg--font-weight: 400;
 
-  --text-body: 0.9375rem;
-  --text-body--line-height: 1.55;
+  --text-body: 1rem;
+  --text-body--line-height: 1.625;
   --text-body--font-weight: 400;
 
-  --text-body-sm: 0.8125rem;
-  --text-body-sm--line-height: 1.5;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.55;
   --text-body-sm--font-weight: 400;
 
-  --text-caption: 0.6875rem;
+  --text-caption: 0.75rem;
   --text-caption--line-height: 1.4;
   --text-caption--font-weight: 500;
 
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1.4;
-  --text-label--font-weight: 600;
-  --text-label--letter-spacing: 0.12em;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.33;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.08em;
 
   --text-mono: 0.875rem;
   --text-mono--line-height: 1.45;
   --text-mono--font-weight: 400;
+
+  /* Ramp-style stat panel typography — the 64px numbers */
+  --text-stat: clamp(2.5rem, 4vw + 0.5rem, 4rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.03em;
+  --text-stat--font-weight: 480;
 
   /* ── Radius ─────────────────────────────────────────────────────── */
   --radius-sm: 4px;
@@ -78,18 +101,33 @@
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasis: cubic-bezier(0.3, 0, 0.1, 1);
 
-  /* ── Accent ladder (Refined Indigo) — identical across themes ──── */
-  --color-accent-50:  #EEF2FF;
-  --color-accent-100: #E0E7FF;
-  --color-accent-200: #C7D2FE;
-  --color-accent-300: #A5B4FC;
-  --color-accent-400: #818CF8;
-  --color-accent-500: #6366F1;
-  --color-accent-600: #4F46E5;
-  --color-accent-700: #4338CA;
-  --color-accent-800: #3730A3;
-  --color-accent-900: #312E81;
-  --color-accent-950: #1E1B4B;
+  /* ── Accent ladder (Radar Blue) — Phase D, per docs/design-language-opsradar.md ─ */
+  --color-accent-50:  rgba(0, 102, 255, 0.08);
+  --color-accent-100: #DBEAFE;
+  --color-accent-200: #BFDBFE;
+  --color-accent-300: #93C5FD;
+  --color-accent-400: #60A5FA;
+  --color-accent-500: #0066FF;  /* radar-500 — primary brand */
+  --color-accent-600: #0052CC;  /* radar-600 — hover */
+  --color-accent-700: #003D99;
+  --color-accent-800: #002B70;
+  --color-accent-900: #001A4D;  /* radar-900 — instrument-panel deep */
+  --color-accent-950: #000F2E;
+
+  /* ── Brand-named aliases (per design-language spec §2) ───────────── */
+  --radar-500:  #0066FF;
+  --radar-600:  #0052CC;
+  --radar-50:   rgba(0, 102, 255, 0.08);
+  --radar-900:  #001A4D;
+  --signal-400: #00D4FF;   /* cyan demoted to data-viz only */
+  --clear-500:  #10B981;   /* success */
+  --smoke-500:  #F59E0B;   /* warning */
+  --flare-500:  #EF4444;   /* error / critical alert */
+  --ink-card:   #13141A;   /* floating panel on dark surface */
+  --ink-line:   rgba(255, 255, 255, 0.08);  /* dark hairline */
+  --paper-line: rgba(0, 0, 0, 0.06);        /* light hairline */
+  --paper-1:    #F4F2EE;   /* alt section slab (warm gray) */
+  --paper-hover:#F0EDE6;
 
   /* ── Theme-resolved tokens — bound to --* CSS vars below ───────── */
   --color-bg: var(--bg);
@@ -116,27 +154,37 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #FAFAF7;
+  /* Phase D — Mercury-warm cream + hairlines + Notion 5-layer shadows */
+  --bg: #FBFAF7;              /* warm cream — Mercury / Notion midway */
   --surface: #FFFFFF;
-  --surface-sunken: #F4F4F0;
-  --border: #E4E4E7;
-  --border-strong: #D4D4D8;
-  --fg: #18181B;
-  --fg-muted: #52525B;
-  --fg-subtle: #71717A;
-  --fg-faint: #A1A1AA;
+  --surface-sunken: #F4F2EE;  /* paper-1 — alt section slab */
+  --border: rgba(0, 0, 0, 0.06);   /* hairline divider — Vercel/Linear value */
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --fg: #0A1424;              /* near-black with warm tint — Mercury translation */
+  --fg-muted: #3D4654;
+  --fg-subtle: #6B7385;
+  --fg-faint: #9AA0AC;
 
-  --primary: var(--color-accent-600);
+  --primary: var(--radar-500);   /* electric blue #0066FF — the brand */
   --primary-fg: #FFFFFF;
-  --primary-hover: var(--color-accent-700);
+  --primary-hover: var(--radar-600);
 
-  --success: #16A34A;
-  --warn: #B45309;
-  --danger: #DC2626;
+  --success: #10B981;  /* clear-500 */
+  --warn:    #F59E0B;  /* smoke-500 */
+  --danger:  #EF4444;  /* flare-500 */
 
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow:    0 4px 12px rgba(0,0,0,0.06);
-  --shadow-md: 0 12px 32px rgba(0,0,0,0.08);
+  /* 5-layer Notion micro-shadow — max alpha 0.05, screenshot floats without halo */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 1px 3px rgba(0,0,0,0.01),
+               0 3px 7px rgba(0,0,0,0.02),
+               0 7px 15px rgba(0,0,0,0.02),
+               0 14px 28px rgba(0,0,0,0.04),
+               0 23px 52px rgba(0,0,0,0.05);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.02),
+               0 3px 7px rgba(0,0,0,0.04),
+               0 7px 15px rgba(0,0,0,0.04),
+               0 14px 28px rgba(0,0,0,0.06),
+               0 23px 52px rgba(0,0,0,0.08);
 }
 
 /* =====================================================================
@@ -145,23 +193,24 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0A0A0B;
-  --surface: #0F0F11;
-  --surface-sunken: #15151A;
-  --border: #1F1F22;
-  --border-strong: #27272A;
-  --fg: #FAFAF9;
-  --fg-muted: #A1A1AA;
-  --fg-subtle: #71717A;
-  --fg-faint: #52525B;
+  /* Phase D — Linear marketing-blacker-black so product screenshots float */
+  --bg: #020203;              /* ink-0 — marketing-blacker-black */
+  --surface: #0A0B10;         /* ink-1 — app-surface in mockups, lifts off --bg */
+  --surface-sunken: #13141A;  /* ink-card — floating panel on dark */
+  --border: rgba(255, 255, 255, 0.08);   /* hairline divider — Linear value */
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --fg: #F2F4F8;              /* paper-text-inv */
+  --fg-muted: #C8CDD8;
+  --fg-subtle: #8A8F98;       /* Linear's --color-text-tertiary */
+  --fg-faint: #86848D;
 
-  --primary: var(--color-accent-400);
-  --primary-fg: #1E1B4B;
-  --primary-hover: var(--color-accent-300);
+  --primary: var(--radar-500);   /* keep electric blue on dark too */
+  --primary-fg: #FFFFFF;
+  --primary-hover: var(--radar-600);
 
-  --success: #34D399;
-  --warn: #FBBF24;
-  --danger: #F87171;
+  --success: #10B981;
+  --warn:    #F59E0B;
+  --danger:  #EF4444;
 
   --shadow-xs: 0 1px 0 rgba(255,255,255,0.04) inset;
   --shadow:    0 4px 12px rgba(0,0,0,0.5);
@@ -210,11 +259,16 @@
     text-rendering: optimizeLegibility;
   }
   *:focus-visible {
-    outline: 2px solid var(--color-accent-500);
-    outline-offset: 2px;
+    /* Vercel double-ring — inner ring matches page bg so it works on any surface */
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--color-bg),
+      0 0 0 4px var(--radar-500);
   }
-  /* Serif applied to display/h1/h2 utility classes generated from @theme */
-  .text-display, .text-h1, .text-h2 { font-family: var(--font-serif); }
+  /* Phase D — sans-serif everywhere. --font-serif resolves to Inter Tight via @theme,
+     so .font-serif, .text-h1, .text-h2 all deliver the same typeface. */
+  .text-display, .text-h1, .text-h2 { font-family: var(--font-sans); letter-spacing: -0.025em; font-weight: 500; }
+  .font-serif { letter-spacing: -0.02em; }
 }
 
 @media print {

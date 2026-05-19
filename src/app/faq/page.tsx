@@ -13,21 +13,22 @@ import {
 } from "<npm>/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "<npm>/components/ui/tabs";
 import { CALENDLY_STRATEGY_CALL_URL, CONTACT_EMAIL } from "<npm>/lib/constants";
+import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
 
 export const metadata: Metadata = {
-  title: "Questions — OpsRadar",
+  title: "Questions agency owners ask before booking",
   description:
-    "Common questions about OpsRadar: what we build, what it costs, how long it takes, and how the work stays yours.",
+    "Direct answers on price, process, integrations, and how an AI COO is different from a fractional COO. Written by the founder.",
   openGraph: {
-    title: "Questions — OpsRadar",
+    title: "Questions agency owners ask before booking — OpsRadar",
     description:
-      "Common questions about OpsRadar: what we build, what it costs, how long it takes, and how the work stays yours.",
+      "Direct answers on price, process, integrations, and how an AI COO is different from a fractional COO. Written by the founder.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar" }],
   },
   twitter: {
-    title: "Questions — OpsRadar",
+    title: "Questions agency owners ask before booking — OpsRadar",
     description:
-      "Common questions about OpsRadar: what we build, what it costs, how long it takes, and how the work stays yours.",
+      "Direct answers on price, process, integrations, and how an AI COO is different from a fractional COO. Written by the founder.",
     images: ["/og-image.png"],
   },
 };
@@ -41,19 +42,19 @@ const CATEGORIES = [
     items: [
       {
         q: "What is OpsRadar?",
-        a: "OpsRadar is AIOS — the AI Operating System for agencies. Four pillars: OPERATE runs your workflows, OBSERVE shows every tool in one dashboard, BRAIN remembers how your agency works, GUARD catches breakage before it hits your reports. Everything lives in your accounts, not ours.",
+        a: "OpsRadar is the AI COO for marketing agencies. Four parts: OPERATE runs the operational work that lives in your team's heads, OBSERVE shows every tool in one view, BRAIN answers questions about your business with live data, GUARD watches the system overnight. From $750/month — one-tenth the cost of a fractional COO.",
       },
       {
         q: "Who is this for?",
-        a: "Agencies under 30 people losing hours to manual reporting, client onboarding, pacing alerts, or cross-tool data stitching. If your team rebuilds the same client decks every Monday, this is for you.",
+        a: "Marketing agencies between $1M and $5M in revenue, 10 to 50 people, where the founder still runs ops directly. Paid media, SEO, social, and full-service digital. If you're losing money on clients you don't catch until quarter-end, this is for you.",
       },
       {
         q: "Who is this NOT for?",
-        a: "Solo operators where the math doesn't land yet. Large enterprise programs that need a different scale. Agencies that want shrinkwrap software — AIOS is custom-built for your specific stack and workflows.",
+        a: "Solo operators or sub-$1M agencies where the margin pain hasn't hit yet. Agencies over $20M with a real COO and analytics team already on staff. Production studios, dev shops, and promotional-products companies — different ops shape entirely.",
       },
       {
         q: "Why does \"you own it\" matter?",
-        a: "Yes, ownership matters. Every workflow runs on your accounts, every credential in your vault, every log on your infrastructure. If OpsRadar ever disappeared, nothing breaks. You keep the code, the logic, and the BRAIN.",
+        a: "Your data was never trapped in OpsRadar — it lives in HubSpot, ClickUp, Harvest, Stripe, and the rest. We were only reading from them. If OpsRadar ever disappeared, every tool you already pay for keeps working unchanged.",
       },
     ],
   },
@@ -63,19 +64,19 @@ const CATEGORIES = [
     items: [
       {
         q: "What does it cost?",
-        a: "Build cost is set in your Blueprint PDF after we understand your agency. There is no list price — every AIOS is scoped for the agency it runs inside. The discovery call is free. Scope and cost are locked before any build starts.",
+        a: "Four tiers, flat per agency: Starter $750/mo, Growth $1,500/mo (most popular), Pro $3,000/mo, and a Fractional Operator tier at $1,200/mo + $300/agency for partners managing multiple clients. Annual prepay saves 17% (two months free). See the full breakdown on /pricing.",
       },
       {
         q: "How does payment work?",
-        a: "Half upfront once scope is agreed, half on delivery. No long-term lock-in. If we ever part ways, you keep everything — it's your infrastructure.",
+        a: "Month-to-month by default. Annual prepay is 17% off. No long-term lock-in. 30-day money-back on Starter and Growth, 60-day on Pro. Cancel any time at the end of the billing cycle.",
       },
       {
-        q: "Is ongoing support required?",
-        a: "No. You can take the Blueprint and run it yourself. Most agencies want ongoing care because Meta, Google, and Shopify push breaking API changes every quarter — GUARD catches those, but someone still has to ship the fix.",
+        q: "$1,500/mo seems steep for our size — how do you justify it?",
+        a: "Compare it to a fractional COO ($7–15K/mo), a full-time COO ($25K/mo), or the unprofitable client you'll only catch at quarter-end. If OpsRadar finds you a single $5K overserve in the first month, Growth has paid for itself 3x over. If the math doesn't work in your first month, we send the money back.",
       },
       {
-        q: "How is AIOS cheaper than Zapier at scale?",
-        a: "Zapier charges per task. Agency reporting workflows run hundreds of times a day — the bill compounds fast. The automation layer AIOS runs on uses flat-rate cloud pricing with unlimited executions. For agencies running data at volume, that is the only math that holds.",
+        q: "Why isn't there a free tier?",
+        a: "A free tier turns the founder into a free-tier support engineer, and we need to ride the first 100 customers to capture what's working. The free surface is the 3-minute audit — you get a real dollar number on what you're leaking, no credit card. Then a 30-minute call. Then paid.",
       },
     ],
   },
@@ -84,20 +85,20 @@ const CATEGORIES = [
     label: "Process",
     items: [
       {
-        q: "How long does a build take?",
-        a: "Blueprint is roughly a week of evaluation after the discovery call. Build timelines are scoped in the Blueprint, sized to your agency. We don't build AIOS for agencies we don't understand — the evaluation exists so the scope is real.",
+        q: "How long until my AI COO is live?",
+        a: "Week one. The 30-minute call confirms fit. Discovery and Blueprint take about a week. By the second week the AI COO is reading from your stack and surfacing the first alerts. Most agencies see their first $ recovered in the first month.",
       },
       {
         q: "What happens after I submit the audit?",
-        a: "The audit is 13 questions, about 3 minutes. You get back a breakdown of where your ops are leaking time. If the numbers make sense, we book a discovery call to go deeper. If not, keep the audit — no pressure.",
+        a: "Your custom report — including estimated annual leakage in dollars — lands in your inbox within minutes. If the numbers add up, the booking link for the 30-minute call is on your results page. The team will have read your report before the call.",
       },
       {
-        q: "What's required from me during the build?",
-        a: "Mostly access. You connect the tools you already use — Meta, Google, Slack, and so on — review the Blueprint once, and test the final system before it goes live. We do the heavy lifting; you verify it fits your agency.",
+        q: "What's required from me during onboarding?",
+        a: "Mostly access. You connect the tools you already use — HubSpot, ClickUp, Harvest, Stripe — review the first weekly health score, and tell us which alerts you want first. The AI COO does the heavy lifting; you verify it fits your agency.",
       },
       {
-        q: "What if something breaks after the build?",
-        a: "GUARD monitors every workflow for failures and API drift. If something breaks, it fires before your Monday report runs — not after. We fix it. That's the point of building an operating system, not just a workflow.",
+        q: "What if something breaks after the AI COO is live?",
+        a: "GUARD monitors every read from every integrated tool. If an API drifts or a connection breaks, it fires before your Monday digest is generated — not after. We fix it. That's the point of an always-on COO, not just a one-time audit.",
       },
     ],
   },
@@ -106,20 +107,20 @@ const CATEGORIES = [
     label: "Tech & tools",
     items: [
       {
-        q: "What tools does AIOS connect to?",
-        a: "Anything with an API or webhook. Most common: Meta Ads, Google Ads, GA4, Triple Whale, Klaviyo, HubSpot, Ahrefs, Semrush, Slack, Notion, Google Sheets, Looker Studio. If your tool isn't listed, note it in the audit — it likely still works.",
+        q: "What tools does the AI COO connect to?",
+        a: "Ten integrations live today: HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Stripe, Calendly, Apollo. Anything else with an API can be added — note it in the audit and we'll prioritize it.",
       },
       {
-        q: "Why not Zapier, Make, or a SaaS tool?",
-        a: "Three reasons: flat monthly cost instead of per-task fees. The workflows live in your account, not ours. And the automation layer AIOS runs on is powerful enough for the AI nodes, branching logic, and custom code that AIOS requires — nothing else holds at agency scale.",
+        q: "How is this different from Productive, Scoro, or other PSAs?",
+        a: "PSAs are systems of record — they store what happened. The AI COO is the intelligence layer that sits on top and tells you what to do about it. Productive shows you Acme's margin dropped to 14% three weeks after the month closed. OpsRadar tells you Acme is about to drop below 20% this week, and hands you the three unbilled deliverables to invoice for.",
       },
       {
-        q: "Can the automation platform be self-hosted?",
-        a: "Yes. Workflows can run on cloud infrastructure or self-hosted on your own server. We build in either environment. Self-hosting requires someone to manage a server — most agencies use cloud hosting.",
+        q: "Is my data secure?",
+        a: "Your data stays in HubSpot, ClickUp, Harvest, Stripe, and the rest. OpsRadar never writes your client business data to its own database. We read live through OAuth and encrypted API keys you control. Revoke access in one click any time.",
       },
       {
-        q: "Can you work with my existing automations?",
-        a: "Yes. If you already have Zapier zaps, Make scenarios, or hand-rolled scripts, we can migrate and extend them inside OPERATE. GUARD then watches the migrated workflows the same as anything we built from scratch.",
+        q: "Will my data train your models?",
+        a: "No. Your business data is never used to train any AI model — ours or anyone else's. The AI COO reasons over your data in real time to answer your questions and surface alerts. Nothing is retained for training.",
       },
     ],
   },
@@ -147,14 +148,21 @@ function PageHeader() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-4xl px-6 pt-14 md:pt-20 pb-16 md:pb-20">
-        <p className="text-label text-[var(--color-fg-subtle)]">Questions</p>
-        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
-          Things we get asked.
-        </h1>
-        <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          Organized by topic. If you don&apos;t find what you need, the
-          link at the bottom reaches our team directly.
-        </p>
+        <RevealOnScroll delay={0} offset={32}>
+          <p className="text-label text-[var(--color-fg-subtle)]">Questions</p>
+        </RevealOnScroll>
+        <RevealOnScroll delay={120} offset={48}>
+          <h1 className="mt-5 font-serif text-[clamp(2.5rem,4vw+0.5rem,4rem)] leading-[1.05] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
+            The questions we get on every call.
+          </h1>
+        </RevealOnScroll>
+        <RevealOnScroll delay={280} offset={40}>
+          <p className="mt-6 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
+            If you&apos;re considering OpsRadar, you&apos;re probably about to
+            ask one of these. Answers are written by Lawand &mdash; same tone
+            you&apos;d get on the call.
+          </p>
+        </RevealOnScroll>
       </div>
     </section>
   );
@@ -163,6 +171,7 @@ function PageHeader() {
 function FAQSection() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 md:py-20">
+      <RevealOnScroll delay={0} offset={40}>
       <Tabs defaultValue="basics">
         <TabsList className="mb-12 w-full flex-wrap gap-y-2 h-auto border-b border-[var(--color-border)]">
           {CATEGORIES.map((cat) => (
@@ -192,6 +201,7 @@ function FAQSection() {
           </TabsContent>
         ))}
       </Tabs>
+      </RevealOnScroll>
     </section>
   );
 }
@@ -200,43 +210,45 @@ function TalkToUsSection() {
   return (
     <section className="border-t border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
       <div className="mx-auto max-w-3xl px-6 py-24 md:py-28 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Still have questions?</p>
-        <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3rem)] leading-[1.08] tracking-[-0.025em] text-balance">
-          Talk to us directly.
-        </h2>
-        <p className="mt-5 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-lg mx-auto">
-          Book a free 20-min call. Bring any question — tool stack, workflow
-          idea, budget. No prep needed.
-        </p>
+        <RevealOnScroll delay={0} offset={40}>
+          <p className="text-label text-[var(--color-fg-subtle)]">Still have questions?</p>
+          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3rem)] leading-[1.08] tracking-[-0.025em] text-balance">
+            Talk to us directly.
+          </h2>
+          <p className="mt-5 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-lg mx-auto">
+            Book a free 30-min call. Bring any question — tool stack, workflow
+            idea, budget. No prep needed.
+          </p>
 
-        <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
-          <Button asChild size="lg">
-            <a
-              href={CALENDLY_STRATEGY_CALL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <a
+                href={CALENDLY_STRATEGY_CALL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Book a free 30-min call
+                <ArrowRight className="size-4" />
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href={`mailto:${CONTACT_EMAIL}`}>
+                Email us instead
+              </Link>
+            </Button>
+          </div>
+
+          <p className="mt-8 text-caption text-[var(--color-fg-subtle)]">
+            Or run the{" "}
+            <Link
+              href="/audit"
+              className="underline underline-offset-2 hover:text-[var(--color-fg)] transition-colors"
             >
-              Book a free 20-min call
-              <ArrowRight className="size-4" />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href={`mailto:${CONTACT_EMAIL}`}>
-              Email us instead
-            </Link>
-          </Button>
-        </div>
-
-        <p className="mt-8 text-caption text-[var(--color-fg-subtle)]">
-          Or run the{" "}
-          <Link
-            href="/audit"
-            className="underline underline-offset-2 hover:text-[var(--color-fg)] transition-colors"
-          >
-            3-minute self-serve audit
-          </Link>{" "}
-          and get dollar figures back immediately.
-        </p>
+              3-minute self-serve audit
+            </Link>{" "}
+            and get dollar figures back immediately.
+          </p>
+        </RevealOnScroll>
       </div>
     </section>
   );

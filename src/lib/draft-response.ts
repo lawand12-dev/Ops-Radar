@@ -61,7 +61,7 @@ The email must:
 1. Start with "Hey ${firstName},"
 2. Reference one specific detail from their audit (a tool, a number, or their pain) naturally — don't list the numbers back at them, weave one in
 3. Not re-pitch what they already read in the audit
-4. Offer one clear next step: a 20-minute call using ${CALENDLY_STRATEGY_CALL_URL}
+4. Offer one clear next step: a 30-minute call using ${CALENDLY_STRATEGY_CALL_URL}
 5. Give an async alternative: they can reply with their top concern and the OpsRadar team will send a Loom
 6. End with "— OpsRadar"
 7. Stay under 120 words total

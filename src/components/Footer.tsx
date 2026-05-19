@@ -14,9 +14,6 @@ const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Paid Media agencies", href: "/for/paid-media" },
       { label: "SEO agencies", href: "/for/seo" },
       { label: "Full-service agencies", href: "/for/full-service" },
-      { label: "Recruiting agencies", href: "/for/recruiting" },
-      { label: "Design agencies", href: "/for/design" },
-      { label: "E-commerce agencies", href: "/for/ecommerce" },
     ],
   },
   {
@@ -54,7 +51,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-[14px] text-white/55 leading-relaxed max-w-xs mb-6">
-              The AI Operating System for agencies. Your brain, your workflows, your Claude interface.
+              The AI COO for marketing agencies. Catches the unprofitable client in week 2, not month 3 — on the tools you already pay for.
             </p>
             <div className="flex items-center gap-3">
               <Link

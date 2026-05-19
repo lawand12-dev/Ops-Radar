@@ -52,7 +52,7 @@ const DEFAULT_SPECIALTIES: Specialty[] = [
   {
     tag: 'Specialty',
     title: 'Autonomous Operations',
-    desc: 'Your AI Operating System runs your agency ops without a human doing manual work. Reporting runs itself. Leads route themselves. Your team spends time on clients, not spreadsheets.',
+    desc: 'Your AI COO watches your agency ops 24/7 — without a human burning hours pulling numbers. Margin alerts fire mid-month. Scope creep is caught in week 2. Your team spends time on clients, not spreadsheets.',
     color: '#22d3ee',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>

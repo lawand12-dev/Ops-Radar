@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 
 const DASH_THEME_KEY = 'dash-theme';
 const ADMIN_THEME_KEY = 'admin-theme';
-const SITE_THEME_KEY = 'site-theme';
 
 function isDashboard(pathname: string): boolean {
   return pathname === '/dashboard' || pathname.startsWith('/dashboard/');
@@ -32,7 +31,7 @@ function computeTheme(pathname: string): 'light' | 'dark' {
   if (isDashboard(pathname)) {
     return readStored(DASH_THEME_KEY) ?? 'dark';
   }
-  return readStored(SITE_THEME_KEY) ?? 'light';
+  return 'light';
 }
 
 /**

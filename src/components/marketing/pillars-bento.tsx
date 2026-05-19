@@ -2,7 +2,7 @@ import * as React from "react";
 import { Sparkles, ShieldCheck } from "lucide-react";
 
 /**
- * The four AIOS pillars laid out as a bento grid with per-cell
+ * The four AI COO pillars laid out as a bento grid with per-cell
  * product visualizations. Replaces the previous "Four cards" grid.
  *
  * Desktop grid (12 cols × 2 rows):
@@ -74,7 +74,7 @@ function ObserveCard() {
           <p className="font-mono text-[10px] tracking-[0.18em] text-[var(--color-primary)]">
             OBSERVE
           </p>
-          <h3 className="mt-4 font-serif text-h3 leading-[1.12] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+          <h3 className="mt-4 text-[var(--color-fg)] text-balance" style={{ fontFamily: "var(--font-sans)", fontSize: "var(--text-h3)", lineHeight: "var(--text-h3--line-height)", letterSpacing: "var(--text-h3--letter-spacing)", fontWeight: 500 }}>
             Every tool, one screen.
           </h3>
           <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
@@ -130,10 +130,10 @@ function ObserveViz() {
 const OBSERVE_SOURCES = [
   "Stripe",
   "HubSpot",
-  "Slack",
+  "ClickUp",
   "Meta Ads",
   "Google Ads",
-  "n8n",
+  "Harvest",
 ];
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -147,7 +147,7 @@ function BrainCard() {
         <p className="font-mono text-[10px] tracking-[0.18em] text-[var(--color-primary)]">
           BRAIN
         </p>
-        <h3 className="mt-4 font-serif text-h3 leading-[1.12] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+        <h3 className="mt-4 text-[var(--color-fg)] text-balance" style={{ fontFamily: "var(--font-sans)", fontSize: "var(--text-h3)", lineHeight: "var(--text-h3--line-height)", letterSpacing: "var(--text-h3--letter-spacing)", fontWeight: 500 }}>
           The AI that knows your business.
         </h3>
         <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
@@ -214,7 +214,7 @@ function OperateCard() {
         <p className="font-mono text-[10px] tracking-[0.18em] text-[var(--color-primary)]">
           OPERATE
         </p>
-        <h3 className="mt-4 font-serif text-h3 leading-[1.12] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+        <h3 className="mt-4 text-[var(--color-fg)] text-balance" style={{ fontFamily: "var(--font-sans)", fontSize: "var(--text-h3)", lineHeight: "var(--text-h3--line-height)", letterSpacing: "var(--text-h3--letter-spacing)", fontWeight: 500 }}>
           The engine running your agency.
         </h3>
         <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">
@@ -283,7 +283,7 @@ function GuardCard() {
         <p className="font-mono text-[10px] tracking-[0.18em] text-[var(--color-primary)]">
           GUARD
         </p>
-        <h3 className="mt-4 font-serif text-h3 leading-[1.12] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+        <h3 className="mt-4 text-[var(--color-fg)] text-balance" style={{ fontFamily: "var(--font-sans)", fontSize: "var(--text-h3)", lineHeight: "var(--text-h3--line-height)", letterSpacing: "var(--text-h3--letter-spacing)", fontWeight: 500 }}>
           Watching while you sleep.
         </h3>
         <p className="mt-3 text-body-sm leading-[1.6] text-[var(--color-fg-muted)] max-w-prose">

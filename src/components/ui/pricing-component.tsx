@@ -28,7 +28,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '30-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
   {
@@ -44,7 +44,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '30-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
   {
@@ -61,7 +61,7 @@ const ONE_TIME_PLANS: Plan[] = [
       '60-day bug-fix window',
       'You own the workflow',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
 ]
@@ -80,7 +80,7 @@ const MONTHLY_PLANS: Plan[] = [
       '10% discount on any new builds',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
   {
@@ -95,7 +95,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Priority email support',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
   {
@@ -112,7 +112,7 @@ const MONTHLY_PLANS: Plan[] = [
       'Direct OpsRadar team access',
       'Cancel anytime — workflows stay in your account',
     ],
-    cta: 'Book a free 20-min call',
+    cta: 'Book a free 30-min call',
     highlighted: false,
   },
 ]
@@ -228,7 +228,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Book a 20-min call — we&apos;ll tell you which tier actually fits before you commit.
+            Book a 30-min call — we&apos;ll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -256,7 +256,7 @@ export default function OpsRadarPricing() {
           </div>
 
           <p className="text-center text-xs text-white/25 mt-8">
-            Book a 20-min call — we&apos;ll tell you which tier actually fits before you commit.
+            Book a 30-min call — we&apos;ll tell you which tier actually fits before you commit.
           </p>
         </section>
 
@@ -285,7 +285,7 @@ export default function OpsRadarPricing() {
             Not sure which one fits?
           </h2>
           <p className="text-white/40 mb-8 mx-auto max-w-md">
-            Book a 20-min call — we&apos;ll tell you what to build, how complex it is, and which tier fits.
+            Book a 30-min call — we&apos;ll tell you what to build, how complex it is, and which tier fits.
           </p>
           <a
             href={CALENDLY_STRATEGY_CALL_URL}
@@ -293,7 +293,7 @@ export default function OpsRadarPricing() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-white text-black font-semibold text-[15px] hover:bg-white/90 transition-colors"
           >
-            Book a free 20-min call →
+            Book a free 30-min call →
           </a>
           <div className="mt-4">
             <Link

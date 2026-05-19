@@ -346,7 +346,7 @@ const PILLARS: Array<{ label: string; active: boolean; count?: string }> = [
   { label: "GUARD", active: false, count: "1" },
 ];
 
-const SOURCES = ["Stripe", "HubSpot", "Slack", "Meta Ads", "Google Ads", "n8n"];
+const SOURCES = ["Stripe", "HubSpot", "ClickUp", "Meta Ads", "Google Ads", "Harvest"];
 
 const KPIS: Array<{
   label: string;

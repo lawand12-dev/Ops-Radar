@@ -29,7 +29,7 @@ interface SiteHeaderProps {
 
 const DEFAULT_NAV_LINKS: SiteNavLink[] = [
   { label: "Home", href: "/" },
-  { label: "AIOS", href: "/aios" },
+  { label: "Product", href: "/product" },
   { label: "About", href: "/about" },
 ]
 

@@ -53,25 +53,25 @@ interface ResponsiveHeroBannerProps {
 }
 
 const DEFAULT_PARTNERS: Partner[] = [
-  { name: "CRM Sync", href: "/services", icon: DatabaseZap },
-  { name: "AI Routing", href: "/services", icon: Bot },
-  { name: "Reporting", href: "/services", icon: ChartNoAxesCombined },
-  { name: "Inbox Ops", href: "/services", icon: MessagesSquare },
-  { name: "Workflows", href: "/services", icon: Workflow },
+  { name: "CRM Sync", href: "/product", icon: DatabaseZap },
+  { name: "AI Routing", href: "/product", icon: Bot },
+  { name: "Reporting", href: "/product", icon: ChartNoAxesCombined },
+  { name: "Inbox Ops", href: "/product", icon: MessagesSquare },
+  { name: "Workflows", href: "/product", icon: Workflow },
 ]
 
 export default function ResponsiveHeroBanner({
   logoUrl = "/logo.png",
   backgroundImageUrl,
   navLinks,
-  ctaButtonText = "Book a free 20-min call",
+  ctaButtonText = "Book a free 30-min call",
   ctaButtonHref = CALENDLY_STRATEGY_CALL_URL,
   badgeLabel = "New",
-  badgeText = "AI Operating Systems for busy agency teams",
+  badgeText = "The AI COO for marketing agencies",
   title = "Automation for Agencies",
   titleLine2 = "Without Another Tool to Manage",
   description = "We design, deploy, and operate the Agency Brain behind lead routing, onboarding, reporting, and AI handoffs so your team can operate faster without hiring internal ops engineers.",
-  primaryButtonText = "Book a free 20-min call",
+  primaryButtonText = "Book a free 30-min call",
   primaryButtonHref = CALENDLY_STRATEGY_CALL_URL,
   showPrimaryArrowIcon = true,
   secondaryButtonText = "See How It Works",

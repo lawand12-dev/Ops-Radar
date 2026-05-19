@@ -1097,7 +1097,7 @@ function TransformationStrip({
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
                 <p className="text-label text-[var(--color-success)] mb-1">
-                  After AIOS
+                  After the AI COO
                 </p>
                 <p className="font-serif text-h4 text-[var(--color-fg)]">
                   The system carries the load
@@ -2941,7 +2941,7 @@ function ResultsContent() {
               {dateStr  && <p className="text-caption text-[var(--color-fg-subtle)] mt-0.5">{dateStr}</p>}
               <p className="text-caption text-[var(--color-fg-subtle)] mt-1 flex sm:justify-end items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-[var(--color-primary)] inline-block" />
-                Powered by AIOS
+                Powered by the AI COO
               </p>
             </div>
           </div>
@@ -3256,7 +3256,7 @@ function ResultsContent() {
                   This diagnosis is the starting point.
                 </h2>
                 <p className="text-body text-[var(--color-fg-muted)] leading-[1.75] max-w-[480px] mx-auto mb-10">
-                  AIOS takes your audit signal, maps the exact build sequence, and deploys it against your stack.
+                  the AI COO takes your audit signal, maps the exact build sequence, and deploys it against your stack.
                   You get an operating system that runs ops — not a roadmap that collects dust.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

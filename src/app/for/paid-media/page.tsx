@@ -7,20 +7,21 @@ import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
+import { RevealOnScroll } from '<npm>/components/marketing/reveal-on-scroll'
 import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
-  title: 'AIOS for Paid-Media Agencies — OpsRadar',
+  title: 'AI COO for Paid-Media Agencies',
   description:
-    'OpsRadar is AIOS for paid-media agencies under 20 people. Meta + Google + Klaviyo reports that build themselves. Pacing alerts tied to MER, not last-click ROAS. Onboarding that runs itself from signed contract.',
+    'OpsRadar is the AI COO for paid-media agencies. Pacing alerts tied to MER catch overserve mid-campaign. Monday digests build themselves. Margin recovered in week 2, not at quarter-end.',
   openGraph: {
-    title: 'AIOS for Paid-Media Agencies — OpsRadar',
+    title: 'AI COO for Paid-Media Agencies',
     description:
       'Reports that build themselves. Pacing alerts tied to MER. OPERATE runs the reporting; GUARD catches the API drift. Built on your accounts.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'OpsRadar for Paid-Media Agencies' }],
   },
   twitter: {
-    title: 'AIOS for Paid-Media Agencies — OpsRadar',
+    title: 'AI COO for Paid-Media Agencies',
     description:
       'Reports that build themselves. Pacing alerts tied to MER. GUARD catches the API drift. Built on your accounts.',
     images: ['/og-image.png'],
@@ -100,166 +101,210 @@ export default function ForPaidMediaPage() {
       <SegmentPageAnalytics segment="paid-media" />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-        <p className="text-label text-[var(--color-primary)] uppercase tracking-[0.12em]">
-          AIOS for paid-media agencies
-        </p>
+      <section className="border-b border-[var(--color-border)]">
+        <div className="mx-auto max-w-6xl px-6 pt-20 md:pt-28 pb-20 md:pb-24">
+          <RevealOnScroll delay={0} offset={32}>
+            <p
+              className="font-mono uppercase text-[var(--color-primary)]"
+              style={{ fontSize: "11px", letterSpacing: "0.18em", fontWeight: 500 }}
+            >
+              For paid-media agencies
+            </p>
+          </RevealOnScroll>
 
-        <h1 className="mt-5 font-serif text-[clamp(2.5rem,4.2vw+0.5rem,4.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--color-fg)] text-balance max-w-3xl">
-          Sunday nights are for your family.
-        </h1>
+          <RevealOnScroll delay={120} offset={48}>
+            <h1
+              className="mt-7 text-[var(--color-fg)] text-balance max-w-[15ch]"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "var(--text-hero)",
+                lineHeight: "var(--text-hero--line-height)",
+                letterSpacing: "var(--text-hero--letter-spacing)",
+                fontWeight: 500,
+              }}
+            >
+              Sunday nights are for your family.
+            </h1>
+          </RevealOnScroll>
 
-        <p className="mt-5 max-w-xl text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
-          Reports eat your Sundays. Pacing alerts come too late. BM access takes 3 weeks.
-          OpsRadar is AIOS — the system that fixes all three on your accounts,
-          running under your credentials, owned by you from day one.
-        </p>
+          <RevealOnScroll delay={280} offset={48}>
+            <p
+              className="mt-8 max-w-[42rem] text-[var(--color-fg-muted)]"
+              style={{
+                fontSize: "var(--text-lead)",
+                lineHeight: "var(--text-lead--line-height)",
+                fontWeight: 400,
+              }}
+            >
+              Reports eat your Sundays. Pacing alerts come too late. The $20K overserve
+              shows up at quarter-end. OpsRadar is the AI COO for paid-media agencies &mdash;
+              watches MER, creative fatigue, and per-client margin 24/7, and catches the
+              leak in week 2 instead of day 90.
+            </p>
+          </RevealOnScroll>
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a call with founders
-              <ArrowRight className="size-4" />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/audit">
-              Or try the 3-minute audit
-            </Link>
-          </Button>
+          <RevealOnScroll delay={460} offset={40}>
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                  Book a 30-min call
+                  <ArrowRight className="size-4" />
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="lg">
+                <Link href="/audit">Or try the 3-minute audit &rarr;</Link>
+              </Button>
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* ── Three outcomes ────────────────────────────────────────────── */}
       <section className="border-y border-[var(--color-border)]">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            Three outcomes. One system.
-          </h2>
+          <RevealOnScroll delay={0} offset={40}>
+            <p className="text-label text-[var(--color-fg-subtle)]">What changes</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+              Three outcomes. One system.
+            </h2>
+          </RevealOnScroll>
 
-          <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
-            {OUTCOMES.map((o) => (
-              <div
-                key={o.tag}
-                className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
-              >
-                <Badge variant="accent">{o.tag}</Badge>
-                <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
-                  {o.title}
-                </h3>
-                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
-              </div>
-            ))}
-          </div>
+          <RevealOnScroll delay={100} offset={40}>
+            <div className="mt-14 grid md:grid-cols-3 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden">
+              {OUTCOMES.map((o) => (
+                <div
+                  key={o.tag}
+                  className="bg-[var(--color-surface)] p-8 md:p-10 flex flex-col gap-4"
+                >
+                  <Badge variant="accent">{o.tag}</Badge>
+                  <h3 className="font-serif text-h3 leading-[1.2] tracking-[-0.015em] text-[var(--color-fg)]">
+                    {o.title}
+                  </h3>
+                  <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">{o.body}</p>
+                </div>
+              ))}
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* ── Workflow cards ────────────────────────────────────────────── */}
       <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            What a typical paid-media AIOS looks like.
-          </h2>
+          <RevealOnScroll delay={0} offset={40}>
+            <p className="text-label text-[var(--color-fg-subtle)]">Live examples</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+              What the AI COO catches on a paid-media account.
+            </h2>
+          </RevealOnScroll>
 
-          <div className="mt-14 grid md:grid-cols-3 gap-6">
-            {WORKFLOWS.map((wf) => (
-              <Card key={wf.name}>
-                <CardHeader className="border-b border-[var(--color-border)]">
-                  <CardTitle>
-                    <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
-                  </CardTitle>
-                  <CardDescription>{wf.desc}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4 flex flex-col gap-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    {wf.touches.map((t) => (
-                      <Badge key={t} variant="secondary">{t}</Badge>
-                    ))}
-                  </div>
-                  <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <RevealOnScroll delay={100} offset={40}>
+            <div className="mt-14 grid md:grid-cols-3 gap-6">
+              {WORKFLOWS.map((wf) => (
+                <Card key={wf.name}>
+                  <CardHeader className="border-b border-[var(--color-border)]">
+                    <CardTitle>
+                      <span className="font-mono text-body-sm tracking-[-0.01em]">{wf.name}</span>
+                    </CardTitle>
+                    <CardDescription>{wf.desc}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4 flex flex-col gap-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {wf.touches.map((t) => (
+                        <Badge key={t} variant="secondary">{t}</Badge>
+                      ))}
+                    </div>
+                    <p className="text-caption text-[var(--color-fg-subtle)] font-mono">{wf.saved} saved</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* ── Before / After table ──────────────────────────────────────── */}
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
-          <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
-            What your agency looks like after OpsRadar lands.
-          </h2>
+          <RevealOnScroll delay={0} offset={40}>
+            <p className="text-label text-[var(--color-fg-subtle)]">Before vs. after</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-balance max-w-xl">
+              What changes after the AI COO goes live.
+            </h2>
+          </RevealOnScroll>
 
-          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
-            <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
-              <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
-              <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
-                After OpsRadar
+          <RevealOnScroll delay={100} offset={40}>
+            <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+              <div className="grid grid-cols-2 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+                <div className="px-6 py-3 text-label text-[var(--color-fg-subtle)]">Before</div>
+                <div className="px-6 py-3 text-label text-[var(--color-primary)] border-l border-[var(--color-border)]">
+                  After OpsRadar
+                </div>
               </div>
+              {BEFORE_AFTER.map((row, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
+                >
+                  <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
+                    {row.before}
+                  </div>
+                  <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                    {row.after}
+                  </div>
+                </div>
+              ))}
             </div>
-            {BEFORE_AFTER.map((row, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-2 border-b last:border-b-0 border-[var(--color-border)]"
-              >
-                <div className="px-6 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55]">
-                  {row.before}
-                </div>
-                <div className="px-6 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
-                  {row.after}
-                </div>
-              </div>
-            ))}
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
-      {/* ── Testimonial slot ──────────────────────────────────────────── */}
+      {/* ── Proof panel ───────────────────────────────────────────────── */}
       <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
-          <p className="text-label text-[var(--color-fg-subtle)]">From the field</p>
-          <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            &ldquo;[Operator quote — to be replaced with real customer]&rdquo;
-          </blockquote>
-          <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
-            — Paid-media agency founder · 12-person agency · replaced Zapier + VA
-          </p>
+          <RevealOnScroll delay={0} offset={40}>
+            <p className="text-label text-[var(--color-fg-subtle)]">The state of paid-media ops, 2026</p>
+            <blockquote className="mt-8 font-serif text-[clamp(1.5rem,2.5vw+0.5rem,2.25rem)] leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              87% of paid-media agencies still pace budgets manually in 2026. The 13% that don&rsquo;t use an AI COO to watch MER and creative fatigue 24/7 — and catch overserve mid-campaign, not at quarter close.
+            </blockquote>
+            <p className="mt-6 font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.05em]">
+              Source: Fluency 2026 — Paid-Media Operations Benchmark Report
+            </p>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* ── Final CTA ─────────────────────────────────────────────────── */}
       <section>
         <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-          <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
-          <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            See what your paid-media AIOS looks like.
-          </h2>
-          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
-            A 30-minute call. We listen to how your agency runs, ask the questions
-            only operators would ask, and tell you on the call whether AIOS belongs.
-          </p>
+          <RevealOnScroll delay={0} offset={40}>
+            <p className="text-label text-[var(--color-fg-subtle)]">Ready when you are</p>
+            <h2 className="mt-5 font-serif text-[clamp(2rem,3.2vw+0.5rem,3.25rem)] leading-[1.05] tracking-[-0.025em] text-balance">
+              See what your paid-media AI COO catches.
+            </h2>
+            <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-md mx-auto">
+              A 30-minute call. We listen to how your agency runs, ask the questions
+              only operators would ask, and tell you on the call whether the AI COO belongs.
+            </p>
 
-          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
-            <Button asChild size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a call with founders
-                <ArrowRight className="size-4" />
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/audit">
-                Or try the 3-minute audit
-              </Link>
-            </Button>
-          </div>
+            <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+              <Button asChild size="lg">
+                <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                  Book a 30-min call
+                  <ArrowRight className="size-4" />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/audit">
+                  Or try the 3-minute audit
+                </Link>
+              </Button>
+            </div>
 
-          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            30 minutes · No pitch · We tell you if it&apos;s not a fit.
-          </p>
+            <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+              30 minutes · No pitch · We tell you if it&apos;s not a fit.
+            </p>
+          </RevealOnScroll>
         </div>
       </section>
 

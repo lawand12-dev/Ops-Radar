@@ -27,6 +27,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // ── Marketing URL consolidation (Phase C, 2026-05-18) ──────────────
+      // /aios + /services merged into canonical /product page.
+      { source: '/aios',                            destination: '/product',                permanent: true },
+      { source: '/services',                        destination: '/product',                permanent: true },
+      // /for/development deprecated — outside marketing-agency ICP.
+      { source: '/for/development',                 destination: '/',                       permanent: true },
+      // ── Dashboard route renames (legacy) ───────────────────────────────
       { source: '/dashboard/settings/integrations', destination: '/dashboard/integrations', permanent: true },
       { source: '/dashboard/workflow-health',       destination: '/dashboard/automations',  permanent: true },
       { source: '/dashboard/clients',               destination: '/dashboard',              permanent: true },

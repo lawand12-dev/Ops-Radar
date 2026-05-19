@@ -7,21 +7,22 @@ import { SiteFooter } from '<npm>/components/marketing/site-footer'
 import { Button } from '<npm>/components/ui/button'
 import { Badge } from '<npm>/components/ui/badge'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
+import { RevealOnScroll } from '<npm>/components/marketing/reveal-on-scroll'
 
 export const metadata: Metadata = {
-  title: 'AIOS — What the system is | OpsRadar',
+  title: 'Product — The AI COO',
   description:
-    'AIOS is the AI Operating System that runs inside your agency. OPERATE does the work. OBSERVE surfaces every tool. BRAIN answers your questions. GUARD watches while you sleep.',
+    'The AI COO for marketing agencies — four parts, one system. OPERATE runs the operational work. OBSERVE shows every tool. BRAIN answers your questions with live data. GUARD watches while you sleep.',
   openGraph: {
-    title: 'AIOS — What the system is | OpsRadar',
+    title: 'Product — The AI COO',
     description:
-      'AIOS is the AI Operating System that runs inside your agency. OPERATE does the work. OBSERVE surfaces every tool. BRAIN answers your questions. GUARD watches while you sleep.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'AIOS — OpsRadar' }],
+      'The AI COO for marketing agencies — four parts, one system. OPERATE runs the operational work. OBSERVE shows every tool. BRAIN answers your questions with live data. GUARD watches while you sleep.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'AI COO — OpsRadar' }],
   },
   twitter: {
-    title: 'AIOS — What the system is | OpsRadar',
+    title: 'Product — The AI COO',
     description:
-      'AIOS is the AI Operating System that runs inside your agency. OPERATE does the work. OBSERVE surfaces every tool. BRAIN answers your questions. GUARD watches while you sleep.',
+      'The AI COO for marketing agencies — four parts, one system. OPERATE runs the operational work. OBSERVE shows every tool. BRAIN answers your questions with live data. GUARD watches while you sleep.',
     images: ['/og-image.png'],
   },
 }
@@ -30,10 +31,10 @@ export const metadata: Metadata = {
 /*  Page                                                                        */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-export default function AiosPage() {
+export default function ProductPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
-      <SiteNav activeHref="/aios" />
+      <SiteNav activeHref="/product" />
 
       <PageHeader />
       <PillarOperate />
@@ -57,19 +58,47 @@ function PageHeader() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 pt-14 pb-20 md:pt-20 md:pb-28">
-        <p className="text-label text-[var(--color-fg-subtle)]">Product · AIOS</p>
-        <h1 className="mt-5 font-serif text-[clamp(3rem,5vw+0.5rem,5.5rem)] leading-[1.02] tracking-[-0.03em] text-[var(--color-fg)]">
-          AIOS
-        </h1>
-        <p className="mt-7 max-w-2xl text-body-lg leading-[1.6] text-[var(--color-fg-muted)]">
-          AIOS is the category — the AI Operating System that runs inside an agency.
-          Not another automation tool bolted to the side. The system that connects
-          every tool you already pay for, runs the work that lives in your team&apos;s heads,
-          and watches the whole thing overnight.
-        </p>
-        <p className="mt-4 max-w-2xl text-body leading-[1.6] text-[var(--color-fg-subtle)]">
-          Four parts. One platform. Built specifically for how your agency operates.
-        </p>
+        <RevealOnScroll delay={0} offset={32}>
+          <p className="text-label uppercase text-[var(--color-fg-subtle)]">Product &middot; the AI COO</p>
+        </RevealOnScroll>
+        <RevealOnScroll delay={120} offset={48}>
+          <h1
+            className="mt-7 text-[var(--color-fg)] text-balance max-w-[16ch]"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "var(--text-hero)",
+              lineHeight: "var(--text-hero--line-height)",
+              letterSpacing: "var(--text-hero--letter-spacing)",
+              fontWeight: 500,
+            }}
+          >
+            The AI COO for marketing agencies.
+          </h1>
+        </RevealOnScroll>
+        <RevealOnScroll delay={280} offset={48}>
+          <p
+            className="mt-8 max-w-[42rem] text-[var(--color-fg-muted)]"
+            style={{
+              fontSize: "var(--text-lead)",
+              lineHeight: "var(--text-lead--line-height)",
+              fontWeight: 400,
+            }}
+          >
+            The intelligence layer that runs the four loops every functioning ops leader runs every week &mdash; on your live data, every minute. Reads from the tools you already pay for. Tells you what to do next. Acts when you give it permission, with a 30-minute undo on every action.
+          </p>
+        </RevealOnScroll>
+        <RevealOnScroll delay={420} offset={40}>
+          <p
+            className="mt-5 max-w-[42rem]"
+            style={{
+              color: "var(--color-fg-subtle)",
+              fontSize: "16px",
+              lineHeight: 1.65,
+            }}
+          >
+            OPERATE, OBSERVE, BRAIN, GUARD. Four jobs the COO does, all the time. From $750/month &mdash; one-tenth the cost of a fractional COO.
+          </p>
+        </RevealOnScroll>
       </div>
     </section>
   )
@@ -96,19 +125,25 @@ function PillarLayout({
         <div className="grid lg:grid-cols-[0.65fr_1.35fr] gap-12 lg:gap-20 items-start">
           {/* Left column — pillar identity */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="font-mono text-caption tracking-[0.22em] text-[var(--color-primary)]">
-              {name}
-            </p>
-            <h2 className="mt-5 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              {title}
-            </h2>
-            <p className="mt-5 text-body leading-[1.65] text-[var(--color-fg-muted)] max-w-sm">
-              {body}
-            </p>
+            <RevealOnScroll delay={0} offset={40}>
+              <p className="font-mono text-caption tracking-[0.22em] text-[var(--color-primary)]">
+                {name}
+              </p>
+              <h2 className="mt-5 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+                {title}
+              </h2>
+              <p className="mt-5 text-body leading-[1.65] text-[var(--color-fg-muted)] max-w-sm">
+                {body}
+              </p>
+            </RevealOnScroll>
           </div>
 
           {/* Right column — deep content */}
-          <div>{children}</div>
+          <div>
+            <RevealOnScroll delay={100} offset={40}>
+              {children}
+            </RevealOnScroll>
+          </div>
         </div>
       </div>
     </section>
@@ -150,8 +185,8 @@ function PillarOperate() {
   return (
     <PillarLayout
       name="OPERATE"
-      title="The engine running your agency."
-      body="Automations doing the manual work that currently lives in your team's heads. Reporting, onboarding, lead routing, follow-ups — running quietly in the background, under your control, on your accounts."
+      title="The COO takes the next action."
+      body="When the COO spots an issue, it doesn't just flag it — it drafts the invoice, sends the PM nudge, queues the pacing alert. Every action has a 30-minute undo and a 5-evaluator safety net before it touches your business."
     >
       <div className="space-y-4">
         <p className="text-body-sm text-[var(--color-fg-subtle)] mb-8">
@@ -204,8 +239,8 @@ function PillarObserve() {
   return (
     <PillarLayout
       name="OBSERVE"
-      title="Every tool, one screen."
-      body="Revenue, ad spend, leads, deliverables, workflow status — every tool your agency already pays for, surfaced in one dashboard. Your agency at a glance, every morning, without opening nine tabs."
+      title="The COO sees every client every day."
+      body="Margin, utilization, scope, cash flow — read live from the tools you already pay for. Every client gets a 0–100 Health Score every Monday morning. Top 3 risks flagged with the specific dollar exposure. The unprofitable account is caught in week 2."
     >
       <div className="space-y-8">
         <p className="text-body-sm text-[var(--color-fg-subtle)]">
@@ -262,8 +297,8 @@ function PillarBrain() {
   return (
     <PillarLayout
       name="BRAIN"
-      title="The AI that knows your business."
-      body="An LLM lives inside your dashboard. It knows your tools, your history, your patterns. Ask anything in plain English. It does not hallucinate generic answers — it reads your actual data."
+      title="Ask the COO anything about your business."
+      body="A frontier LLM grounded in your live data. Ask &lsquo;which client lost margin this quarter and why?&rsquo; The COO answers in 4 seconds with the three clients, the dollar deltas, and the underlying reason — not generic SaaS advice."
     >
       <div className="space-y-8">
         <p className="text-body-sm text-[var(--color-fg-subtle)]">
@@ -331,8 +366,8 @@ function PillarGuard() {
   return (
     <PillarLayout
       name="GUARD"
-      title="The system watching while you sleep."
-      body="Silent failures caught before they cost you. Ad platforms push breaking changes without notice. Workflows degrade without anyone seeing. GUARD watches the whole system and routes the fix before you do."
+      title="The night-shift COO watching it overnight."
+      body="Pacing alerts catch overshooting media spend Sunday night. Silent connector failures get flagged before Monday&rsquo;s digest fails. Your weekend stays yours — 71% of campaigns at risk by Friday (Fluency 2026) get caught before they wake you."
     >
       <div className="space-y-4">
         <p className="text-body-sm text-[var(--color-fg-subtle)] mb-8">
@@ -408,17 +443,20 @@ function SystemSection() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-        <div className="max-w-2xl mb-14">
-          <p className="text-label text-[var(--color-fg-subtle)]">The system</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            Four parts that run as one.
-          </h2>
-          <p className="mt-5 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl">
-            Each pillar does a specific job. The value of AIOS is how they hand off to
-            each other — a closed loop, running continuously, without a human coordinating it.
-          </p>
-        </div>
+        <RevealOnScroll delay={0} offset={40}>
+          <div className="max-w-2xl mb-14">
+            <p className="text-label text-[var(--color-fg-subtle)]">The system</p>
+            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+              Four parts that run as one.
+            </h2>
+            <p className="mt-5 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl">
+              Each pillar does a specific job. The value of AI COO is how they hand off to
+              each other — a closed loop, running continuously, without a human coordinating it.
+            </p>
+          </div>
+        </RevealOnScroll>
 
+        <RevealOnScroll delay={100} offset={40}>
         <ol className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
           {SYSTEM_FLOW.map((step) => (
             <li
@@ -436,6 +474,7 @@ function SystemSection() {
             </li>
           ))}
         </ol>
+        </RevealOnScroll>
       </div>
     </section>
   )
@@ -450,37 +489,41 @@ function BuildProcessSection() {
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 lg:gap-20 items-start">
-          <div>
-            <p className="text-label text-[var(--color-fg-subtle)]">How AIOS gets built</p>
-            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Call. Discovery. Blueprint. Build.
-            </h2>
-          </div>
+          <RevealOnScroll delay={0} offset={40}>
+            <div>
+              <p className="text-label text-[var(--color-fg-subtle)]">How AI COO gets built</p>
+              <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
+                Call. Discovery. Blueprint. Build.
+              </h2>
+            </div>
+          </RevealOnScroll>
 
-          <div className="space-y-6">
-            <p className="text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
-              AIOS starts with a conversation — not a form. A 30-minute call where both
-              sides decide if the system belongs at your agency. If it does, we go deep
-              on how your agency actually works before a single workflow is written.
-              Discovery produces a blueprint — a written plan naming what is happening
-              to your operations today and what AIOS will do about it. If you proceed,
-              OPERATE, OBSERVE, BRAIN, and GUARD go live on your accounts in the order
-              that delivers the most leverage first.
-            </p>
-            <p className="text-body leading-[1.65] text-[var(--color-fg-muted)]">
-              We do not build for agencies we do not understand. The Discovery step is
-              not skippable. The Blueprint is a buy-or-don&apos;t decision with full
-              visibility — no surprises.
-            </p>
+          <RevealOnScroll delay={100} offset={40}>
+            <div className="space-y-6">
+              <p className="text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
+                AI COO starts with a conversation — not a form. A 30-minute call where both
+                sides decide if the system belongs at your agency. If it does, we go deep
+                on how your agency actually works before a single workflow is written.
+                Discovery produces a blueprint — a written plan naming what is happening
+                to your operations today and what AI COO will do about it. If you proceed,
+                OPERATE, OBSERVE, BRAIN, and GUARD go live on your accounts in the order
+                that delivers the most leverage first.
+              </p>
+              <p className="text-body leading-[1.65] text-[var(--color-fg-muted)]">
+                We do not build for agencies we do not understand. The Discovery step is
+                not skippable. The Blueprint is a buy-or-don&apos;t decision with full
+                visibility — no surprises.
+              </p>
 
-            <Link
-              href="/how-it-works"
-              className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-primary)] hover:text-[var(--color-fg)] transition-colors"
-            >
-              See the full build process
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
+              <Link
+                href="/how-it-works"
+                className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-primary)] hover:text-[var(--color-fg)] transition-colors"
+              >
+                See the full build process
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+          </RevealOnScroll>
         </div>
       </div>
     </section>
@@ -495,32 +538,34 @@ function FinalCTA() {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
-        <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
-        <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance text-[var(--color-fg)]">
-          Talk to us about your AIOS.
-        </h2>
-        <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-          A 30-minute call. We listen to how your agency runs, ask the questions only
-          operators would ask, and tell you on the call whether AIOS belongs at your agency.
-        </p>
+        <RevealOnScroll delay={0} offset={40}>
+          <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
+          <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance text-[var(--color-fg)]">
+            Talk to us about your AI COO.
+          </h2>
+          <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
+            A 30-minute call. We listen to how your agency runs, ask the questions only
+            operators would ask, and tell you on the call whether AI COO belongs at your agency.
+          </p>
 
-        <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
-          <Button asChild size="lg">
-            <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-              Book a call with founders
-              <ArrowRight className="size-4" />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/audit">
-              Try the audit
-            </Link>
-          </Button>
-        </div>
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
+            <Button asChild size="lg">
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Book a 30-min call with the founder
+                <ArrowRight className="size-4" />
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/audit">
+                Try the audit
+              </Link>
+            </Button>
+          </div>
 
-        <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-          30 minutes · No pitch · We tell you if it&apos;s not a fit
-        </p>
+          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
+            30 minutes · No pitch · We tell you if it&apos;s not a fit
+          </p>
+        </RevealOnScroll>
       </div>
     </section>
   )

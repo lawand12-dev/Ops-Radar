@@ -29,7 +29,7 @@ type ConversationBootstrapResponse = {
 function makeWelcome(): Message {
   return {
     role: 'assistant',
-    content: "We don't build for agencies we don't understand. Ask me what AIOS does, how the audit works, or what it costs — and I'll give you a straight answer.",
+    content: "We don't build for agencies we don't understand. Ask me what the AI COO does, how the audit works, or what it costs — and I'll give you a straight answer.",
     timestamp: new Date().toISOString(),
   }
 }
@@ -63,7 +63,7 @@ const VISITOR_KEY = 'opsradar_visitor_id'
 const EMAIL_KEY = 'opsradar_visitor_email'
 
 const QUICK_ACTIONS = [
-  { label: 'What does AIOS do?', message: 'What does AIOS do?' },
+  { label: 'What does the AI COO do?', message: 'What does the AI COO do?' },
   { label: 'How much does it cost?', message: 'How much does it cost?' },
   { label: 'How does the free audit work?', message: 'How does the free audit work?' },
   { label: 'Is my agency a fit?', message: 'How does the free audit work?' },
@@ -547,7 +547,7 @@ const FloatingAiAssistant = () => {
       <button
         className="floating-ai-button relative flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary)] border border-[var(--color-accent-700)] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--color-accent-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-accent-500)] focus-visible:outline-offset-2"
         onClick={() => setIsChatOpen(!isChatOpen)}
-        aria-label={isChatOpen ? 'Close AIOS assistant' : 'Ask AIOS anything'}
+        aria-label={isChatOpen ? 'Close AI COO assistant' : 'Ask the AI COO anything'}
       >
         {isChatOpen
           ? <X className="w-5 h-5 text-white" />
@@ -576,7 +576,7 @@ const FloatingAiAssistant = () => {
               <div className="flex items-center gap-2.5 min-w-0">
                 <Image src="/logo.png" alt="OpsRadar" width={24} height={24} className="rounded shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-body-sm font-semibold text-[var(--color-fg)]">Ask AIOS anything</p>
+                  <p className="text-body-sm font-semibold text-[var(--color-fg)]">Ask the AI COO anything</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
                     <span className="text-caption text-[var(--color-fg-subtle)]">OpsRadar AI</span>

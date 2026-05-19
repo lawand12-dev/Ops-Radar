@@ -4,7 +4,7 @@ import * as React from "react";
 import { Phone, Sparkles } from "lucide-react";
 
 /**
- * Hero-right composition: four artifacts of the AIOS funnel cascading
+ * Hero-right composition: four artifacts of the AI COO funnel cascading
  * diagonally — Call · Discovery · Blueprint · Dashboard. Each card is a
  * recognizable miniature of one step's deliverable. The dashboard sits
  * at the bottom-right, frontmost and most prominent — it's the
@@ -242,7 +242,7 @@ function BlueprintMini() {
     <div data-theme="light" className="bg-[var(--color-surface)]">
       <div className="px-3.5 py-2 border-b border-[var(--color-border)] flex items-center justify-between gap-2">
         <span className="text-[9px] font-mono uppercase tracking-[0.14em] text-[var(--color-primary)] truncate">
-          AIOS Blueprint · v1.0
+          AI COO Blueprint · v1.0
         </span>
         <span className="text-[8px] font-mono text-[var(--color-fg-faint)] whitespace-nowrap">
           18 pp
