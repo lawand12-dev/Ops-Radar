@@ -15,6 +15,9 @@ import {
   BrainCircuit,
   BarChart2,
   Target,
+  FileText,
+  Building2,
+  Webhook,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -23,7 +26,13 @@ import { ThemeToggle } from '<npm>/components/dashboard/theme-toggle';
 
 type NavItem = { label: string; href: string; icon: typeof LayoutDashboard };
 type NavSection = { tag: string | null; items: NavItem[] };
-type SidebarProps = { userInitials: string; userName: string; userRole: string };
+type SidebarProps = {
+  userInitials: string;
+  userName: string;
+  userRole: string;
+  brandLogoUrl?: string | null;
+  brandName?: string | null;
+};
 
 const navSections: NavSection[] = [
   {
@@ -34,21 +43,32 @@ const navSections: NavSection[] = [
       { label: 'Business',       href: '/dashboard/business',       icon: TrendingUp      },
       { label: 'Profitability',  href: '/dashboard/profitability',  icon: DollarSign      },
       { label: 'Scope',          href: '/dashboard/scope',          icon: Target          },
+      { label: 'Retainers',       href: '/dashboard/retainer',        icon: FileText        },
       { label: 'Actions',         href: '/dashboard/actions',         icon: Zap             },
       { label: 'COO',             href: '/dashboard/coo',             icon: BrainCircuit    },
       { label: 'Score',           href: '/dashboard/score',           icon: BarChart2       },
+      { label: 'Index',           href: '/dashboard/benchmarks',      icon: BarChart2       },
+    ],
+  },
+  {
+    tag: 'PARTNER',
+    items: [
+      { label: 'My Agencies',     href: '/dashboard/fo',              icon: Building2       },
+      { label: 'Branding',        href: '/dashboard/fo/branding',     icon: Settings        },
     ],
   },
   {
     tag: 'WORKSPACE',
     items: [
       { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
+      { label: 'Webhooks',     href: '/dashboard/webhooks',     icon: Webhook },
+      { label: 'Team',         href: '/dashboard/settings/team', icon: Building2 },
       { label: 'Settings',     href: '/dashboard/settings',     icon: Settings },
     ],
   },
 ];
 
-export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
+export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandName }: SidebarProps) {
   const pathname = usePathname();
   const [unreadBriefings, setUnreadBriefings] = useState(0);
   const [pendingActions, setPendingActions] = useState(0);
@@ -74,9 +94,20 @@ export function Sidebar({ userInitials, userName, userRole }: SidebarProps) {
         href="/dashboard"
         className="flex items-center gap-2.5 px-5 pt-5 pb-5 text-[var(--color-fg)] no-underline"
       >
-        <Image src="/logo.png" alt="OpsRadar" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
+        {brandLogoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={brandLogoUrl}
+            alt={brandName ?? 'Brand'}
+            width={24}
+            height={24}
+            className="h-6 w-6 rounded-md object-contain"
+          />
+        ) : (
+          <Image src="/logo.png" alt="OpsRadar" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
+        )}
         <span className="font-serif text-[17px] tracking-[-0.01em] text-[var(--color-fg)]">
-          OpsRadar
+          {brandName ?? 'OpsRadar'}
         </span>
       </Link>
 

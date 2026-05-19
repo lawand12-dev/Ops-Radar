@@ -89,6 +89,33 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_notifications: {
+        Row: {
+          alert_kind: string
+          email_sent_at: string | null
+          entity_name: string
+          id: string
+          triggered_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_kind: string
+          email_sent_at?: string | null
+          entity_name: string
+          id?: string
+          triggered_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_kind?: string
+          email_sent_at?: string | null
+          entity_name?: string
+          id?: string
+          triggered_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_events: {
         Row: {
           audit_id: string | null
@@ -223,6 +250,7 @@ export type Database = {
           p50: number
           p75: number
           sample_size: number
+          service_mix_bucket: string
           team_size_bucket: string
         }
         Insert: {
@@ -233,6 +261,7 @@ export type Database = {
           p50: number
           p75: number
           sample_size: number
+          service_mix_bucket?: string
           team_size_bucket: string
         }
         Update: {
@@ -243,34 +272,8 @@ export type Database = {
           p50?: number
           p75?: number
           sample_size?: number
+          service_mix_bucket?: string
           team_size_bucket?: string
-        }
-        Relationships: []
-      }
-      alert_notifications: {
-        Row: {
-          alert_kind: string
-          email_sent_at: string | null
-          entity_name: string
-          id: string
-          triggered_at: string
-          user_id: string
-        }
-        Insert: {
-          alert_kind: string
-          email_sent_at?: string | null
-          entity_name: string
-          id?: string
-          triggered_at?: string
-          user_id: string
-        }
-        Update: {
-          alert_kind?: string
-          email_sent_at?: string | null
-          entity_name?: string
-          id?: string
-          triggered_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -573,6 +576,139 @@ export type Database = {
         }
         Relationships: []
       }
+      fo_branding: {
+        Row: {
+          accent_color: string | null
+          brand_name: string | null
+          email_from_name: string | null
+          fo_user_id: string
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          brand_name?: string | null
+          email_from_name?: string | null
+          fo_user_id: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          brand_name?: string | null
+          email_from_name?: string | null
+          fo_user_id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fo_audit_log: {
+        Row: {
+          action_kind: string
+          created_at: string
+          details: Json
+          fo_client_id: string | null
+          fo_user_id: string
+          id: string
+        }
+        Insert: {
+          action_kind: string
+          created_at?: string
+          details?: Json
+          fo_client_id?: string | null
+          fo_user_id: string
+          id?: string
+        }
+        Update: {
+          action_kind?: string
+          created_at?: string
+          details?: Json
+          fo_client_id?: string | null
+          fo_user_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fo_audit_log_fo_client_id_fkey"
+            columns: ["fo_client_id"]
+            isOneToOne: false
+            referencedRelation: "fo_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fo_clients: {
+        Row: {
+          agency_name: string
+          created_at: string
+          fo_user_id: string
+          id: string
+          notes: string | null
+          team_size: string | null
+        }
+        Insert: {
+          agency_name: string
+          created_at?: string
+          fo_user_id: string
+          id?: string
+          notes?: string | null
+          team_size?: string | null
+        }
+        Update: {
+          agency_name?: string
+          created_at?: string
+          fo_user_id?: string
+          id?: string
+          notes?: string | null
+          team_size?: string | null
+        }
+        Relationships: []
+      }
+      fo_integrations: {
+        Row: {
+          auth_tag: string
+          connected_at: string
+          encrypted_token: string
+          fo_client_id: string
+          fo_user_id: string
+          id: string
+          iv: string
+          status: string
+          tool: string
+        }
+        Insert: {
+          auth_tag: string
+          connected_at?: string
+          encrypted_token: string
+          fo_client_id: string
+          fo_user_id: string
+          id?: string
+          iv: string
+          status?: string
+          tool: string
+        }
+        Update: {
+          auth_tag?: string
+          connected_at?: string
+          encrypted_token?: string
+          fo_client_id?: string
+          fo_user_id?: string
+          id?: string
+          iv?: string
+          status?: string
+          tool?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fo_integrations_fo_client_id_fkey"
+            columns: ["fo_client_id"]
+            isOneToOne: false
+            referencedRelation: "fo_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           auth_tag: string
@@ -612,6 +748,133 @@ export type Database = {
           last_synced_at?: string | null
           status?: string
           tool?: string
+        }
+        Relationships: []
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string
+        }
+        Relationships: []
+      }
+      organization_members: {
+        Row: {
+          joined_at: string
+          org_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          org_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          org_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          org_id: string
+          role: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by: string
+          org_id: string
+          role?: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          org_id?: string
+          role?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outgoing_webhooks: {
+        Row: {
+          created_at: string
+          events: string[]
+          id: string
+          is_active: boolean
+          signing_secret: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          signing_secret: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          signing_secret?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -663,32 +926,115 @@ export type Database = {
         }
         Relationships: []
       }
-      score_snapshots: {
+      retainer_configs: {
         Row: {
-          id: string
-          user_id: string
-          share_token: string
-          company_name: string
-          scores: Json
+          client_name_display: string
+          client_name_norm: string
           created_at: string
+          id: string
+          included_hours: number
+          monthly_amount_usd: number
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          share_token?: string
-          company_name?: string
-          scores: Json
+          client_name_display: string
+          client_name_norm: string
           created_at?: string
+          id?: string
+          included_hours?: number
+          monthly_amount_usd?: number
+          updated_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          share_token?: string
-          company_name?: string
-          scores?: Json
+          client_name_display?: string
+          client_name_norm?: string
           created_at?: string
+          id?: string
+          included_hours?: number
+          monthly_amount_usd?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
+      }
+      score_snapshots: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          id: string
+          scores: Json
+          share_token: string
+          user_id: string
+        }
+        Insert: {
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          scores: Json
+          share_token?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          scores?: Json
+          share_token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          status: string
+          user_id: string
+          webhook_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          status?: string
+          user_id: string
+          webhook_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          status?: string
+          user_id?: string
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "outgoing_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

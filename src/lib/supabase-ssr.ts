@@ -36,23 +36,43 @@ export async function getSessionSupabaseClient(): Promise<SupabaseClient<Databas
 }
 
 /**
- * Returns the current user's id from the session cookie, or
- * `process.env.DEV_CLIENT_ID` as a dev-only fallback.
+ * Returns the actual logged-in user's id from the session cookie.
+ * Use this when you need the literal session user (auth, profile, team mgmt).
+ * For data-scoping queries, prefer `getCurrentUserId()` which returns the
+ * effective (org owner) user id.
  *
- * Returns null if neither is available — the caller should treat that as
- * unauthorized (return 401).
- *
- * The DEV_CLIENT_ID fallback is gated to non-production. Setting it in a
- * production environment must NEVER short-circuit auth.
+ * Returns null if not authenticated.
  */
-export async function getCurrentUserId(): Promise<string | null> {
+export async function getActualUserId(): Promise<string | null> {
   try {
     const supabase = await getSessionSupabaseClient();
     const { data } = await supabase.auth.getUser();
     if (data.user?.id) return data.user.id;
   } catch (err) {
-    console.warn('[getCurrentUserId] session read failed:', err);
+    console.warn('[getActualUserId] session read failed:', err);
   }
   if (process.env.NODE_ENV === 'production') return null;
   return process.env.DEV_CLIENT_ID ?? null;
+}
+
+/**
+ * Returns the **effective** user id for data scoping — i.e., the org OWNER's
+ * user id. For owners, this is the same as the session user. For invited team
+ * members, this is the user_id of the org they belong to.
+ *
+ * Use this for all customer-data queries (integrations, briefings, agent_actions,
+ * retainer_configs, fo_clients, etc.) so team members see the owner's data.
+ *
+ * Returns null if not authenticated.
+ *
+ * NOTE: This adds one Supabase round-trip vs. raw session lookup. Acceptable
+ * for v1; future optimization is to encode the org_id in JWT claims via a
+ * Supabase auth hook.
+ */
+export async function getCurrentUserId(): Promise<string | null> {
+  const actualId = await getActualUserId();
+  if (!actualId) return null;
+  // Lazy-import to avoid a cycle between supabase-ssr.ts and org.ts.
+  const { getEffectiveUserId } = await import('./org');
+  return await getEffectiveUserId(actualId);
 }

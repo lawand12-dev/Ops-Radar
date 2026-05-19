@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Sidebar } from './_components/sidebar';
 import { getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
+import { getFoBranding } from '<npm>/lib/fo-branding';
+import { getUserPlan } from '<npm>/lib/tier';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const supabase = await getSessionSupabaseClient();
@@ -20,9 +22,24 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   ).toUpperCase() || '·';
   const displayRole = role || 'Customer';
 
+  // Pull FO branding only when the user is on the FO plan — gates the white-label
+  // experience to paying FO operators.
+  const plan = getUserPlan((user?.user_metadata ?? null) as Record<string, unknown> | null);
+  const branding = user && plan === 'fo' ? await getFoBranding(user.id) : null;
+
+  const rootStyle: CSSProperties | undefined = branding?.accent_color
+    ? ({ ['--brand-accent' as string]: branding.accent_color } as CSSProperties)
+    : undefined;
+
   return (
-    <div className="flex min-h-screen bg-[var(--color-bg)] font-sans">
-      <Sidebar userInitials={initials} userName={displayName} userRole={displayRole} />
+    <div className="flex min-h-screen bg-[var(--color-bg)] font-sans" style={rootStyle}>
+      <Sidebar
+        userInitials={initials}
+        userName={displayName}
+        userRole={displayRole}
+        brandLogoUrl={branding?.logo_url ?? null}
+        brandName={branding?.brand_name ?? null}
+      />
       <main className="ml-[220px] min-w-0 flex-1 px-6 py-7">
         {children}
       </main>
