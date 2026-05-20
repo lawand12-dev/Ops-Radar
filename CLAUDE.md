@@ -41,18 +41,19 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 ### API Routes (`src/app/api/`)
 
 - `generate-audit/` — Core endpoint: calls OpenAI to generate the automation audit
-- `chat/` — AI chat assistant widget
 - `notify/` — Email notifications via Resend on new audits
-- `notify-chat-lead/` — Chat lead notifications
 - `build-request/` — Automation build request submissions
 - `quick-win-onboarding/` — Quick-win onboarding emails
 - `audit-step/`, `audit-result/` — Audit persistence endpoints
 - `funnel-event/` — Analytics funnel tracking
 - `research-preview/` — Website research intelligence preview
 - `admin-auth/`, `admin/data/` — Admin authentication and data access
-- `chat-conversations/`, `chat-history/` — Chat persistence
+- `admin/onboard-customer/` — Provision new customer account + send invite
 - `cron/followups/` — Scheduled follow-up emails
 - `unsubscribe/` — Email unsubscribe handling
+- `dashboard/coo/` — AI COO chat (dashboard, GPT-4o)
+- `dashboard/automation-roi/` — Automation ROI widget (chatv2 proxy, Redis cached)
+- `dashboard/workflow-health/` — Workflow health list (chatv2 proxy)
 
 ### Key Libraries (`src/lib/`)
 
@@ -71,7 +72,7 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 
 ### Components (`src/components/`)
 
-- `ui/` — Reusable UI components (shadcn-based: button, card, dialog, badge, etc.) plus custom components (chat assistant, pricing, hero banner, shader background, beams)
+- `ui/` — Reusable UI components (shadcn-based: button, card, dialog, badge, etc.) plus custom components (pricing, hero banner, shader background, beams)
 - `animations/` — Animation components (typewriter, stagger, fade-in, floating particles, glow card, count-up)
 - `app/components/` — Page-specific components (email capture modal, FAQ accordion, honeypot field, animated number)
 
