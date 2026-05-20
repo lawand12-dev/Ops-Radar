@@ -109,7 +109,7 @@ export default function OnboardCustomerPage() {
 
             {/* Section 3: Automation config */}
             <div className="flex flex-col gap-3">
-              <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Automation config from chatv2</p>
+              <p className="text-label text-[var(--color-fg-subtle)] uppercase tracking-wider">Automation config</p>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="n8n-base-url">Automation base URL</Label>
@@ -238,7 +238,7 @@ export default function OnboardCustomerPage() {
                 <StepItem
                   n={3}
                   title="Link automation config"
-                  body={<>Inserts a row into <code className="font-mono">client_n8n_config</code> keyed by the new user&apos;s id, storing the n8n base URL, webhook secret, API key, and (optional) chatv2 project ID.</>}
+                  body={<>Inserts a row into <code className="font-mono">client_n8n_config</code> keyed by the new user&apos;s id, storing the n8n base URL, webhook secret, and API key.</>}
                 />
               </ol>
             </section>
