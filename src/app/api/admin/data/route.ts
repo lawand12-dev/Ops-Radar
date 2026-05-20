@@ -7,7 +7,7 @@ import { applyRateLimit } from '../../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient } from '../../../../lib/supabase-server'
 
-type MutableTableName = 'audits' | 'chat_conversations' | 'build_requests'
+type MutableTableName = 'audits' | 'build_requests'
 type AdminAuditRow = {
   id: string
   email?: string | null
@@ -15,7 +15,6 @@ type AdminAuditRow = {
 
 const MUTABLE_TABLES = new Set<MutableTableName>([
   'audits',
-  'chat_conversations',
   'build_requests',
 ])
 
@@ -70,16 +69,14 @@ export async function GET(request: NextRequest) {
       }, { headers: JSON_HEADERS })
     }
 
-    const [auditRes, chatRes, buildRes, auditSessionsRes, auditEventsRes] = await Promise.all([
+    const [auditRes, buildRes, auditSessionsRes, auditEventsRes] = await Promise.all([
       supabase.from('audits').select('*').order('created_at', { ascending: false }),
-      supabase.from('chat_conversations').select('*').order('created_at', { ascending: false }),
       supabase.from('build_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('audit_sessions').select('*').order('updated_at', { ascending: false }),
       supabase.from('audit_events').select('*').order('created_at', { ascending: false }),
     ])
 
     if (auditRes.error) throw auditRes.error
-    if (chatRes.error) throw chatRes.error
     if (buildRes.error) throw buildRes.error
     if (auditSessionsRes.error) throw auditSessionsRes.error
     if (auditEventsRes.error) throw auditEventsRes.error
@@ -87,7 +84,6 @@ export async function GET(request: NextRequest) {
     return Response.json(
       {
         audits: auditRes.data ?? [],
-        chats: chatRes.data ?? [],
         builds: buildRes.data ?? [],
         auditSessions: auditSessionsRes.data ?? [],
         auditEvents: auditEventsRes.data ?? [],
@@ -175,38 +171,6 @@ export async function POST(request: Request) {
       }
 
       return Response.json({ count: count ?? 0 }, { headers: JSON_HEADERS })
-    }
-
-    if (action === 'delete-empty-chat-conversations') {
-      const { data, error } = await supabase
-        .from('chat_conversations')
-        .select('id, messages')
-
-      if (error) {
-        throw error
-      }
-
-      const idsToDelete = (data ?? [])
-        .filter((conversation: { id?: unknown; messages?: unknown }) => (
-          !Array.isArray(conversation.messages) || conversation.messages.length < 2
-        ))
-        .map((conversation: { id?: unknown }) => conversation.id)
-        .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
-
-      if (idsToDelete.length === 0) {
-        return Response.json({ count: 0 }, { headers: JSON_HEADERS })
-      }
-
-      const { error: deleteError } = await supabase
-        .from('chat_conversations')
-        .delete()
-        .in('id', idsToDelete)
-
-      if (deleteError) {
-        throw deleteError
-      }
-
-      return Response.json({ count: idsToDelete.length }, { headers: JSON_HEADERS })
     }
 
     return Response.json({ error: 'Invalid action' }, { status: 400, headers: JSON_HEADERS })

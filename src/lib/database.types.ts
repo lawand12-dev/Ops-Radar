@@ -360,33 +360,6 @@ export type Database = {
           },
         ]
       }
-      chat_conversations: {
-        Row: {
-          created_at: string | null
-          id: string
-          messages: Json
-          updated_at: string | null
-          visitor_email: string | null
-          visitor_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          messages?: Json
-          updated_at?: string | null
-          visitor_email?: string | null
-          visitor_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          messages?: Json
-          updated_at?: string | null
-          visitor_email?: string | null
-          visitor_id?: string
-        }
-        Relationships: []
-      }
       client_n8n_config: {
         Row: {
           backfill_completed_at: string | null

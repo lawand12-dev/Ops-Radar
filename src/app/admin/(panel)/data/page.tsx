@@ -21,7 +21,7 @@ import { fetchAdminApi } from '<npm>/lib/admin-api-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TableName = 'audits' | 'chat_conversations' | 'build_requests'
+type TableName = 'audits' | 'build_requests'
 
 type TableMeta = {
   name: TableName
@@ -53,7 +53,6 @@ type AuditEventRow = {
 
 type AdminDataResponse = {
   audits: Record<string, unknown>[]
-  chats: Record<string, unknown>[]
   builds: Record<string, unknown>[]
   auditSessions: AuditSessionRow[]
   auditEvents: AuditEventRow[]
@@ -65,12 +64,6 @@ const TABLES: TableMeta[] = [
     label: 'Audits',
     color: '#818CF8',
     previewFields: ['name', 'email', 'company', 'created_at'],
-  },
-  {
-    name: 'chat_conversations',
-    label: 'Chat Conversations',
-    color: '#34d399',
-    previewFields: ['visitor_name', 'visitor_email', 'created_at'],
   },
   {
     name: 'build_requests',
@@ -109,12 +102,6 @@ function rowPreview(row: Record<string, unknown>, fields: string[]): string {
     })
     .filter(Boolean)
     .join(' · ')
-}
-
-function msgCount(row: Record<string, unknown>): number {
-  const msgs = row.messages
-  if (!Array.isArray(msgs)) return 0
-  return msgs.length
 }
 
 function formatLabel(value: string): string {
@@ -356,11 +343,6 @@ function TableSection({
                 <p className="text-body-sm text-[var(--color-fg)] truncate">{preview}</p>
                 <p className="text-caption text-[var(--color-fg-faint)] font-mono truncate mt-0.5">{id}</p>
               </button>
-              {meta.name === 'chat_conversations' && (
-                <span className="text-caption text-[var(--color-fg-subtle)] shrink-0">
-                  {msgCount(row)} msgs
-                </span>
-              )}
               <Button
                 variant="destructive"
                 size="xs"
@@ -526,13 +508,11 @@ function SectionLabel({ text }: { text: string }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminDataPage() {
-  // Table data
   const [audits, setAudits]               = useState<Record<string, unknown>[]>([])
-  const [chats,  setChats]                = useState<Record<string, unknown>[]>([])
   const [builds, setBuilds]               = useState<Record<string, unknown>[]>([])
   const [auditSessions, setAuditSessions] = useState<AuditSessionRow[]>([])
   const [auditEvents, setAuditEvents]     = useState<AuditEventRow[]>([])
-  const [counts, setCounts]               = useState({ audits: 0, chat_conversations: 0, build_requests: 0 })
+  const [counts, setCounts]               = useState({ audits: 0, build_requests: 0 })
   const [loading, setLoading]             = useState(true)
 
   // ── Data loading ──────────────────────────────────────────────────────────
@@ -541,17 +521,15 @@ export default function AdminDataPage() {
     try {
       const data = await fetchAdminApi<AdminDataResponse>('/api/admin/data')
       const a = data.audits ?? []
-      const c = data.chats ?? []
       const b = data.builds ?? []
       const s = data.auditSessions ?? []
       const e = data.auditEvents ?? []
 
       setAudits(a)
-      setChats(c)
       setBuilds(b)
       setAuditSessions(s)
       setAuditEvents(e)
-      setCounts({ audits: a.length, chat_conversations: c.length, build_requests: b.length })
+      setCounts({ audits: a.length, build_requests: b.length })
     } catch (error) {
       console.error('[admin-data] failed to load:', error)
     } finally {
@@ -601,16 +579,6 @@ export default function AdminDataPage() {
       (event) => event.section_id,
     ).slice(0, 8)
 
-    const strategySources = summarizeBy(
-      auditEvents.filter((event) => event.event_name === 'strategy_call_clicked'),
-      (event) => event.source,
-    ).slice(0, 6)
-
-    const buildSources = summarizeBy(
-      auditEvents.filter((event) => event.event_name === 'build_request_opened'),
-      (event) => event.source,
-    ).slice(0, 6)
-
     return {
       started,
       auditSubmitted,
@@ -619,8 +587,6 @@ export default function AdminDataPage() {
       buildRequestSuccess,
       stageRows,
       topSections,
-      strategySources,
-      buildSources,
     }
   }, [auditEvents, auditSessions, counts.audits, counts.build_requests])
 
@@ -646,7 +612,7 @@ export default function AdminDataPage() {
         <div className="text-right">
           <p className="text-label text-[var(--color-fg-subtle)]">Total rows</p>
           <p className="font-mono text-h4 font-bold leading-tight tabular-nums text-[var(--color-primary)]">
-            {audits.length + chats.length + builds.length}
+            {audits.length + builds.length}
           </p>
         </div>
       </div>
@@ -658,7 +624,7 @@ export default function AdminDataPage() {
           <SectionLabel text="Table Overview" />
 
           {/* Count cards */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             {TABLES.map(t => (
               <div
                 key={t.name}
@@ -677,9 +643,7 @@ export default function AdminDataPage() {
           {/* Recent 5 per table */}
           <div className="grid gap-4">
             {TABLES.map(t => {
-              const rows = t.name === 'audits' ? audits
-                : t.name === 'chat_conversations' ? chats
-                : builds
+              const rows = t.name === 'audits' ? audits : builds
               const recent = rows.slice(0, 5)
               return (
                 <div key={t.name} className="rounded-[var(--radius-lg)] border border-[var(--color-border)] overflow-hidden bg-[var(--color-surface)]">
@@ -691,14 +655,13 @@ export default function AdminDataPage() {
                     <THead>
                       <TR>
                         <TH density="medium">Preview</TH>
-                        {t.name === 'chat_conversations' && <TH density="medium">Messages</TH>}
                         <TH density="medium" className="hidden sm:table-cell">ID</TH>
                       </TR>
                     </THead>
                     <tbody>
                       {recent.length === 0 && (
                         <TR>
-                          <TD density="medium" colSpan={3} className="text-center text-[var(--color-fg-faint)]">No data yet</TD>
+                          <TD density="medium" colSpan={2} className="text-center text-[var(--color-fg-faint)]">No data yet</TD>
                         </TR>
                       )}
                       {recent.map(row => (
@@ -706,11 +669,6 @@ export default function AdminDataPage() {
                           <TD density="medium" className="truncate max-w-[280px]">
                             {rowPreview(row, t.previewFields)}
                           </TD>
-                          {t.name === 'chat_conversations' && (
-                            <TD density="medium" className="text-[var(--color-fg-subtle)] tabular-nums">
-                              {msgCount(row)}
-                            </TD>
-                          )}
                           <TD density="medium" className="font-mono text-caption text-[var(--color-fg-faint)] hidden sm:table-cell">
                             {(row.id as string).slice(0, 8)}…
                           </TD>
@@ -800,52 +758,29 @@ export default function AdminDataPage() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-4">
-            {[
-              {
-                title: 'Top Report Sections',
-                subtitle: 'Which blocks people actually reach on the results page',
-                rows: funnel.topSections,
-                formatter: (key: string) => formatLabel(key),
-              },
-              {
-                title: 'Commercial CTA Sources',
-                subtitle: 'Where strategy-call and build intent comes from',
-                rows: summarizeBy(
-                  [
-                    ...auditEvents.filter((event) => event.event_name === 'strategy_call_clicked').map((event) => ({ key: `Call · ${event.source ?? 'unknown'}` })),
-                    ...auditEvents.filter((event) => event.event_name === 'build_request_opened').map((event) => ({ key: `Quote · ${event.source ?? 'unknown'}` })),
-                  ],
-                  (entry) => entry.key,
-                ).slice(0, 6),
-                formatter: (key: string) => key.replace(/\b([a-z])/g, (match) => match.toUpperCase()).replace(/[-_]/g, ' '),
-              },
-            ].map((card) => (
-              <div key={card.title} className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
-                <p className="text-body-sm font-medium text-[var(--color-fg)]">{card.title}</p>
-                <p className="text-caption text-[var(--color-fg-subtle)] mt-1 mb-4">{card.subtitle}</p>
-                {card.rows.length === 0 ? (
-                  <p className="text-caption text-[var(--color-fg-faint)]">No tracked events yet.</p>
-                ) : (
-                  <Table density="medium">
-                    <THead>
-                      <TR>
-                        <TH density="medium">Source</TH>
-                        <TH density="medium" className="text-right">Count</TH>
-                      </TR>
-                    </THead>
-                    <tbody>
-                      {card.rows.map((row) => (
-                        <TR key={row.key}>
-                          <TD density="medium">{card.formatter(row.key)}</TD>
-                          <TD density="medium" className="text-right font-mono tabular-nums text-[var(--color-primary)]">{row.count}</TD>
-                        </TR>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </div>
-            ))}
+          <div className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
+            <p className="text-body-sm font-medium text-[var(--color-fg)]">Top Report Sections</p>
+            <p className="text-caption text-[var(--color-fg-subtle)] mt-1 mb-4">Which blocks people actually reach on the results page</p>
+            {funnel.topSections.length === 0 ? (
+              <p className="text-caption text-[var(--color-fg-faint)]">No tracked events yet.</p>
+            ) : (
+              <Table density="medium">
+                <THead>
+                  <TR>
+                    <TH density="medium">Source</TH>
+                    <TH density="medium" className="text-right">Count</TH>
+                  </TR>
+                </THead>
+                <tbody>
+                  {funnel.topSections.map((row) => (
+                    <TR key={row.key}>
+                      <TD density="medium">{formatLabel(row.key)}</TD>
+                      <TD density="medium" className="text-right font-mono tabular-nums text-[var(--color-primary)]">{row.count}</TD>
+                    </TR>
+                  ))}
+                </tbody>
+              </Table>
+            )}
           </div>
         </section>
 
@@ -862,20 +797,6 @@ export default function AdminDataPage() {
                 const result = await fetchAdminApi<{ count: number }>('/api/admin/data', {
                   method: 'POST',
                   body: JSON.stringify({ action: 'delete-test-audits' }),
-                })
-                await loadAll()
-                return { count: result.count ?? 0 }
-              }}
-            />
-
-            <CleanupCard
-              label="Delete empty chat conversations"
-              description="Removes conversations with fewer than 2 messages."
-              color="#f59e0b"
-              onRun={async () => {
-                const result = await fetchAdminApi<{ count: number }>('/api/admin/data', {
-                  method: 'POST',
-                  body: JSON.stringify({ action: 'delete-empty-chat-conversations' }),
                 })
                 await loadAll()
                 return { count: result.count ?? 0 }
@@ -901,13 +822,6 @@ export default function AdminDataPage() {
             />
             <TableSection
               meta={TABLES[1]}
-              rows={chats}
-              count={counts.chat_conversations}
-              onDelete={id => deleteRow('chat_conversations', id)}
-              onRefresh={loadAll}
-            />
-            <TableSection
-              meta={TABLES[2]}
               rows={builds}
               count={counts.build_requests}
               onDelete={id => deleteRow('build_requests', id)}
