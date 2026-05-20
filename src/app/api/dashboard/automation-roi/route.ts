@@ -3,7 +3,6 @@ import { Redis } from '@upstash/redis';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { chatV2Fetch } from '<npm>/lib/chatv2/client';
 import { ChatV2Error } from '<npm>/lib/chatv2/errors';
-import { getChatV2ProjectId } from '<npm>/lib/chatv2/project-mapping';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -147,24 +146,9 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResult>> {
     }
   }
 
-  let projectId: string | null;
-  try {
-    projectId = await getChatV2ProjectId(userId);
-  } catch (err) {
-    console.error('[automation-roi] mapping lookup failed:', err);
-    return NextResponse.json(
-      { status: 'error', message: 'mapping_lookup_failed' },
-      { status: 500 },
-    );
-  }
-
-  if (!projectId) {
-    return NextResponse.json({ status: 'not_enrolled' });
-  }
-
   let raw: CtoAnalyticsResponse;
   try {
-    raw = await chatV2Fetch<CtoAnalyticsResponse>('/analytics', { projectId });
+    raw = await chatV2Fetch<CtoAnalyticsResponse>('/analytics', { projectId: userId });
     if (!raw?.overview || typeof raw.overview.total_runs !== 'number') {
       throw new Error('unexpected shape');
     }

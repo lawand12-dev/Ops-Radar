@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { chatV2Fetch } from '<npm>/lib/chatv2/client';
 import { ChatV2Error } from '<npm>/lib/chatv2/errors';
-import { getChatV2ProjectId } from '<npm>/lib/chatv2/project-mapping';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,25 +36,10 @@ export async function GET(_req: NextRequest): Promise<NextResponse<WorkflowHealt
     );
   }
 
-  let projectId: string | null;
-  try {
-    projectId = await getChatV2ProjectId(userId);
-  } catch (err) {
-    console.error('[workflow-health] mapping lookup failed:', err);
-    return NextResponse.json(
-      { status: 'unavailable', message: 'mapping_lookup_failed' },
-      { status: 500 },
-    );
-  }
-
-  if (!projectId) {
-    return NextResponse.json({ status: 'not_enrolled' });
-  }
-
   try {
     const body = await chatV2Fetch<{ project_id: string; workflows: WorkflowHealthEntry[] }>(
       '/workflows/health',
-      { projectId },
+      { projectId: userId },
     );
     return NextResponse.json({ status: 'ok', workflows: body.workflows });
   } catch (err) {

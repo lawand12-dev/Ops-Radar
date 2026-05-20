@@ -18,6 +18,9 @@ import {
   FileText,
   Building2,
   Webhook,
+  ShieldCheck,
+  Users,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -30,6 +33,7 @@ type SidebarProps = {
   userInitials: string;
   userName: string;
   userRole: string;
+  isOwner?: boolean;
   brandLogoUrl?: string | null;
   brandName?: string | null;
 };
@@ -68,7 +72,16 @@ const navSections: NavSection[] = [
   },
 ];
 
-export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandName }: SidebarProps) {
+const ownerNavSection: NavSection = {
+  tag: 'OPERATOR',
+  items: [
+    { label: 'Audits',   href: '/admin',                  icon: ShieldCheck },
+    { label: 'Users',    href: '/admin/data',             icon: Users       },
+    { label: 'Onboard',  href: '/admin/onboard-customer', icon: UserPlus    },
+  ],
+};
+
+export function Sidebar({ userInitials, userName, userRole, isOwner, brandLogoUrl, brandName }: SidebarProps) {
   const pathname = usePathname();
   const [unreadBriefings, setUnreadBriefings] = useState(0);
   const [pendingActions, setPendingActions] = useState(0);
@@ -113,7 +126,7 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-1">
-        {navSections.map((section, sectionIdx) => (
+        {[...navSections, ...(isOwner ? [ownerNavSection] : [])].map((section, sectionIdx) => (
           <div key={section.tag ?? sectionIdx} className={sectionIdx === 0 ? 'mt-1' : 'mt-3.5'}>
             {section.tag && (
               <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">

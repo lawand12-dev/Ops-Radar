@@ -12,7 +12,6 @@ export default function OnboardCustomerPage() {
   const [n8nBaseUrl, setN8nBaseUrl] = useState('');
   const [n8nWebhookSecret, setN8nWebhookSecret] = useState('');
   const [n8nApiKey, setN8nApiKey] = useState('');
-  const [chatv2ProjectId, setChatv2ProjectId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<
     | { kind: 'success'; userId: string; email: string }
@@ -32,7 +31,7 @@ export default function OnboardCustomerPage() {
           'content-type': 'application/json',
           'x-admin-password': adminPassword,
         },
-        body: JSON.stringify({ email, n8nBaseUrl, n8nWebhookSecret, n8nApiKey, chatv2ProjectId }),
+        body: JSON.stringify({ email, n8nBaseUrl, n8nWebhookSecret, n8nApiKey }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -43,7 +42,6 @@ export default function OnboardCustomerPage() {
       // Clear sensitive fields, keep email visible
       setN8nWebhookSecret('');
       setN8nApiKey('');
-      setChatv2ProjectId('');
     } catch (err) {
       setResult({ kind: 'error', message: err instanceof Error ? err.message : 'Network error' });
     } finally {
@@ -147,20 +145,6 @@ export default function OnboardCustomerPage() {
                     className="font-mono"
                   />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="chatv2-project-id">chatv2 project ID</Label>
-                  <Input
-                    id="chatv2-project-id"
-                    type="text"
-                    value={chatv2ProjectId}
-                    onChange={e => setChatv2ProjectId(e.target.value)}
-                    placeholder="proj_abc123"
-                    className="font-mono"
-                  />
-                  <p className="text-caption text-[var(--color-fg-subtle)]">
-                    Leave blank if this customer has no chatv2 project yet. Can be added later.
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -231,11 +215,6 @@ export default function OnboardCustomerPage() {
                   source="cto"
                   label="n8n API key"
                   hint={<>Personal API key from the customer&apos;s n8n. In n8n: <span className="text-[var(--color-fg-muted)]">Settings → API → Create an API Key</span>. Used to fetch workflow executions live for the dashboard.</>}
-                />
-                <PrepItem
-                  source="cto"
-                  label={<>chatv2 project ID <span className="text-[var(--color-fg-faint)] font-normal">(optional)</span></>}
-                  hint={<>Project slug from chatv2 admin at <code className="font-mono">opstest.atta.codes</code>. Drives the per-customer Automation ROI widget. Leave blank if not set up yet — you can add it later by editing the row in <code className="font-mono">client_n8n_config</code>.</>}
                 />
               </ul>
             </section>
