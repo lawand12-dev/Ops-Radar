@@ -193,6 +193,34 @@ Account context (from settings — do not fetch via tools):
                 });
               }
 
+              // Fire-and-forget: capture failed search_kb queries so the founder can see gaps.
+              if (name === 'search_kb') {
+                const resultsArr = (result.success && result.data && typeof result.data === 'object'
+                  ? (result.data as { results?: unknown }).results
+                  : undefined);
+                const foundResults = result.success && Array.isArray(resultsArr) && resultsArr.length > 0;
+                if (!foundResults) {
+                  const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+                  const lastUserQuestion = lastUserMsg?.content ?? '';
+                  const queryArg = typeof args.query === 'string' ? args.query : null;
+                  void (async () => {
+                    try {
+                      const svc = getServerSupabaseClient();
+                      await svc
+                        .from('coo_kb_gaps')
+                        .insert({
+                          user_id: userId,
+                          user_question: lastUserQuestion,
+                          kb_query: queryArg,
+                          found_results: false,
+                        });
+                    } catch (gapErr) {
+                      console.error('[coo-agent] coo_kb_gaps insert failed:', gapErr);
+                    }
+                  })();
+                }
+              }
+
               history.push({
                 role: 'tool',
                 tool_call_id: tc.id,
