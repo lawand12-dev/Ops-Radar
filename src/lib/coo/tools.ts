@@ -61,6 +61,23 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'search_kb',
+      description: "Search the OpsRadar agency research knowledge base for industry benchmarks, operational patterns, and best practices. Use this when the user asks about general agency norms, what's typical, what to charge, why clients churn, or how other agencies handle a problem — anything that requires knowledge beyond the user's own live data.",
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Short search query, e.g. "paid media agency margin benchmark" or "client churn causes" or "hourly rate for designers".',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'queue_action',
       description: 'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do.',
       parameters: {
@@ -110,5 +127,6 @@ export const TOOL_LABELS: Record<string, string> = {
   get_scope: 'Checking scope creep...',
   get_outbound: 'Fetching outbound metrics...',
   get_meetings: 'Fetching meeting bookings...',
+  search_kb: 'Searching the knowledge base...',
   queue_action: 'Queuing action for your approval...',
 };

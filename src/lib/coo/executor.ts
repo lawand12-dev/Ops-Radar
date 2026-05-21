@@ -13,6 +13,7 @@ import { fetchMondayDeliveryData } from '<npm>/lib/integrations/monday/adapter';
 import { fetchApolloMarketingData } from '<npm>/lib/integrations/apollo/adapter';
 import { fetchCalendlyBookingsData } from '<npm>/lib/integrations/calendly/adapter';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
+import { retrieveCooKnowledge } from '<npm>/lib/knowledge-retrieval';
 import type { Json } from '<npm>/lib/database.types';
 import type {
   MarginAlertPayload,
@@ -323,6 +324,26 @@ async function runGetMeetings(ctx: ExecutorContext): Promise<ToolResult> {
   }
 }
 
+function runSearchKb(args: Record<string, unknown>): ToolResult {
+  if (typeof args.query !== 'string' || !args.query.trim()) {
+    return { success: false, reason: 'query must be a non-empty string.' };
+  }
+  const chunks = retrieveCooKnowledge(args.query);
+  if (chunks.length === 0) {
+    return { success: false, reason: 'No relevant knowledge found for that query.' };
+  }
+  return {
+    success: true,
+    data: {
+      results: chunks.map((c) => ({
+        source: c.sourceFile,
+        category: c.category,
+        content: c.content,
+      })),
+    },
+  };
+}
+
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
@@ -479,6 +500,8 @@ export async function executeToolCall(
       return runGetOutbound(ctx);
     case 'get_meetings':
       return runGetMeetings(ctx);
+    case 'search_kb':
+      return Promise.resolve(runSearchKb(args));
     case 'queue_action':
       return runQueueAction(args, ctx);
     default:

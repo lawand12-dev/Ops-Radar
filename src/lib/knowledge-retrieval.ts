@@ -48,7 +48,7 @@ function selectCategories(agencyType?: string, automationWish?: string): string[
   return ['patterns', 'agency-profiles']
 }
 
-function readCategory(category: string): KnowledgeChunk[] {
+export function readCategory(category: string): KnowledgeChunk[] {
   const categoryPath = path.join(KB_ROOT, category)
 
   let files: string[]
@@ -139,6 +139,23 @@ export async function retrieveRelevantKnowledge(
   const fileChunks = categories.flatMap(cat => readCategory(cat))
   const submissionChunks = await fetchSubmissionChunks(options.agencyType ?? '')
   return [...fileChunks, ...submissionChunks]
+}
+
+function selectCooCategories(query: string): string[] {
+  const q = query.toLowerCase();
+  if (/margin|profit|reprice|pricing|rate|hourly cost/.test(q)) return ['benchmarks', 'agency-profiles'];
+  if (/churn|retention|onboarding|client/.test(q)) return ['agency-profiles'];
+  if (/cash|invoice|overdue|collection/.test(q)) return ['agency-profiles', 'patterns'];
+  if (/utilization|capacity|hours|burnout|hiring|team/.test(q)) return ['benchmarks', 'agency-profiles'];
+  if (/scope|overrun|project|delivery|deadline/.test(q)) return ['patterns', 'failures'];
+  if (/revenue|growth|benchmark/.test(q)) return ['benchmarks', 'agency-profiles'];
+  return ['agency-profiles', 'benchmarks'];
+}
+
+export function retrieveCooKnowledge(query: string): KnowledgeChunk[] {
+  if (!query.trim()) return [];
+  const categories = selectCooCategories(query).slice(0, 2);
+  return categories.flatMap((cat) => readCategory(cat));
 }
 
 export function formatKnowledgeContext(chunks: KnowledgeChunk[]): string {
