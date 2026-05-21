@@ -26,7 +26,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // experience to paying FO operators.
   const plan = getUserPlan((user?.user_metadata ?? null) as Record<string, unknown> | null);
   const branding = user && plan === 'fo' ? await getFoBranding(user.id) : null;
-  const isOwner = role === 'owner';
 
   const rootStyle: CSSProperties | undefined = branding?.accent_color
     ? ({ ['--brand-accent' as string]: branding.accent_color } as CSSProperties)
@@ -38,7 +37,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         userInitials={initials}
         userName={displayName}
         userRole={displayRole}
-        isOwner={isOwner}
         brandLogoUrl={branding?.logo_url ?? null}
         brandName={branding?.brand_name ?? null}
       />
