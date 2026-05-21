@@ -390,6 +390,33 @@ export type Database = {
         }
         Relationships: []
       }
+      coo_kb_gaps: {
+        Row: {
+          created_at: string
+          found_results: boolean
+          id: number
+          kb_query: string | null
+          user_id: string | null
+          user_question: string
+        }
+        Insert: {
+          created_at?: string
+          found_results?: boolean
+          id?: number
+          kb_query?: string | null
+          user_id?: string | null
+          user_question: string
+        }
+        Update: {
+          created_at?: string
+          found_results?: boolean
+          id?: number
+          kb_query?: string | null
+          user_id?: string | null
+          user_question?: string
+        }
+        Relationships: []
+      }
       crm_interactions: {
         Row: {
           channel: string
