@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { LayoutDashboard, Database, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Database, UserPlus, MessageCircleQuestion } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import { AdminThemeToggle } from '<npm>/components/admin/admin-theme-toggle';
 
@@ -14,9 +14,10 @@ const navSections: NavSection[] = [
   {
     tag: 'OPERATOR',
     items: [
-      { label: 'Audits',   href: '/admin',                  icon: LayoutDashboard },
-      { label: 'Data',     href: '/admin/data',             icon: Database        },
-      { label: 'Onboard',  href: '/admin/onboard-customer', icon: UserPlus        },
+      { label: 'Audits',   href: '/admin',                  icon: LayoutDashboard       },
+      { label: 'Data',     href: '/admin/data',             icon: Database              },
+      { label: 'KB Gaps',  href: '/admin/kb-gaps',          icon: MessageCircleQuestion },
+      { label: 'Onboard',  href: '/admin/onboard-customer', icon: UserPlus              },
     ],
   },
 ];
