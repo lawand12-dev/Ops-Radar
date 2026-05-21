@@ -23,24 +23,141 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 
 ## Architecture
 
-**OpsRadar** is an AI-powered operations audit tool for agencies. Users complete a multi-step questionnaire about their business, and OpenAI (GPT-4o) generates a detailed automation audit with ROI calculations and implementation blueprints.
+**OpsRadar** is an AI-powered operations platform (AI COO) for digital agencies. It connects a customer's business tools (Stripe, HubSpot, ClickUp, Harvest, etc.) and surfaces revenue health, client profitability, scope creep, delivery status, and automated COO-style insights on a single dashboard.
+
+### Two-System Architecture
+
+OpsRadar is composed of two completely separate systems:
+
+| | **OpsRadar** (`main` branch, this repo) | **chatv2** (CTO's separate repo) |
+|---|---|---|
+| Framework | Next.js 16 + React 19 | Hono 4 + Bun/Node |
+| Database | Supabase (PostgreSQL) | MySQL (14 migrations) |
+| Hosting | Vercel (auto-deploy) | opstest.atta.codes (CTO-deployed) |
+| Customer-facing? | Yes — the full product UI | No — team-only, customers never see it |
+| Auth | Supabase SSR (email + password) | JWT (team operators + customers via service key) |
+| Purpose | Customer identity, business tool integrations, dashboard UI | n8n workflow management, AI/RAG, workflow health monitoring |
+
+**Domain boundary rule:** Customer state the customer sees and manages → Supabase (`main`). Platform compute, n8n workflow monitoring, AI inference → chatv2 (MySQL).
+
+See `docs/dev/branch-organization.md` for the full domain ownership matrix.
+
+### What chatv2 Owns
+
+The CTO's chatv2 backend is a complete Hono.js server with:
+- **Chat-to-automation generation** — AI (Claude via DigitalOcean RAG or Anthropic direct) creates n8n workflow definitions from natural language
+- **n8n deployment** — deploys workflows to each customer's own n8n instance (per-user encrypted API keys)
+- **Workflow health monitoring** — polls n8n executions on a scheduler, creates health snapshots, deduplicates alerts by fingerprint
+- **AI interactions audit log** — logs every LLM call (model, latency, tokens, prompt, response)
+- **Admin console** — user management, cross-tenant analytics, AI interaction viewer
+- **Multi-tenant** — each user has their own row in MySQL `users` with AES-256-encrypted n8n and Anthropic API keys
+
+OpsRadar consumes chatv2 via two proxied API routes using a shared `CHATV2_SERVICE_API_KEY` bearer. Customers never make requests to opstest.atta.codes — all chatv2 traffic is server-side from Next.js API routes.
 
 ### App Routes (`src/app/`)
+
+**Marketing / Public**
 
 | Route | Purpose |
 |-------|---------|
 | `/` | Landing page |
-| `/audit` | Multi-step questionnaire form |
-| `/results` | Audit results display (free/paid tiers) |
-| `/services` | Services offered |
-| `/workflows` | Workflow showcase |
-| `/pricing` | Pricing page |
+| `/product` | Product page (AI COO positioning) |
+| `/pricing` | Pricing page (4 tiers) |
 | `/about` | About page |
+| `/how-it-works` | How it works |
+| `/for/[vertical]` | Vertical-specific landing pages |
+| `/audit` | Free automation audit (multi-step questionnaire → GPT-4o report) |
+| `/results` | Audit results display |
+| `/share/[id]` | Shared audit results (public) |
+| `/faq` | FAQ |
+| `/login`, `/auth`, `/forgot-password` | Customer authentication |
+
+**Customer Dashboard** (`/dashboard/*`)
+
+| Route | Purpose |
+|-------|---------|
+| `/dashboard` | Overview — KPIs, activity feed, briefing, health strip |
+| `/dashboard/profitability` | Client profitability by retainer vs actual hours |
+| `/dashboard/scope` | Scope creep detection per client |
+| `/dashboard/retainer` | Retainer configs (monthly rates, hour budgets) |
+| `/dashboard/score` | Agency health score |
+| `/dashboard/benchmarks` | Peer benchmarks by service mix + team size |
+| `/dashboard/coo` | AI COO chat (GPT-4o, context-aware) |
+| `/dashboard/automations` | Workflow health from n8n (via chatv2) |
+| `/dashboard/actions` | Agentic action queue (invoice reminders, margin alerts, etc.) |
+| `/dashboard/integrations` | Connect/manage API keys for Stripe, HubSpot, ClickUp, Harvest, etc. |
+| `/dashboard/settings` | Account settings |
+| `/dashboard/settings/team` | Team members + invitations |
+| `/dashboard/business` | Business overview widgets |
+| `/dashboard/fo` | Fractional Operator (FO) multi-client aggregate dashboard |
+| `/dashboard/fo/clients` | FO managed client list |
+| `/dashboard/fo/clients/[id]` | Per-client dashboard for FO |
+| `/dashboard/fo/branding` | White-label branding settings |
+| `/dashboard/fo/audit` | FO audit tools |
+| `/dashboard/webhooks` | Outgoing webhook configurations |
+
+**Admin**
+
+| Route | Purpose |
+|-------|---------|
 | `/admin` | Admin dashboard (password-protected) |
+| `/dev` | Internal dev/debug tools |
 
-### API Routes (`src/app/api/`)
+### Dashboard API Routes (`src/app/api/dashboard/`)
 
-- `generate-audit/` — Core endpoint: calls OpenAI to generate the automation audit
+**Business Intelligence — live-fetched from customer's connected tools:**
+
+| Route | Data source | Purpose |
+|-------|-------------|---------|
+| `finance/` | Stripe | MRR, paid/invoiced MTD, overdue invoices, 30-day sparkline |
+| `sales/` | HubSpot | Pipeline summary, deal counts, stage breakdown |
+| `sales-live/` | HubSpot | Real-time open deals |
+| `sales-pipedrive/` | Pipedrive | Pipeline via Pipedrive adapter |
+| `marketing/` | HubSpot | Marketing funnel metrics |
+| `time-tracking/` | Harvest / ClickUp | Logged hours per project |
+| `time-harvest/` | Harvest | Harvest-specific time data |
+| `delivery/` | ClickUp | Project delivery status |
+| `profitability/` | Stripe + Harvest | Per-client revenue vs cost |
+| `scope/` | ClickUp + Harvest | Scope creep signals per client |
+| `benchmarks/` | Internal + Supabase | Agency peer benchmarks |
+| `benchmarks/cohorts/` | Supabase | Cohort bucket lookup |
+
+**AI-Powered:**
+
+| Route | Purpose |
+|-------|---------|
+| `coo/` | AI COO chat completions (GPT-4o, context-injected) |
+| `briefing/` | Daily AI-generated operations briefing |
+| `narrative/` | Short AI narrative summary for dashboard overview |
+| `score/` | Agency health score computation |
+
+**Supabase-backed:**
+
+| Route | Purpose |
+|-------|---------|
+| `alerts/` | Alert rules evaluation + notification dispatch |
+| `alerts-rules/` | CRUD for user-defined alert thresholds |
+| `actions/` | Agentic action queue (create, read, execute) |
+| `actions/usage/` | Monthly action count vs tier limit |
+| `retainer/` | Retainer config CRUD (Pro+ tier) |
+| `metrics/` | Dashboard KPI aggregation |
+| `activity/` | Activity feed (recent events across integrations) |
+| `onboarding-status/` | Integration onboarding completion state |
+| `team/` | Team member list |
+| `webhooks/` | Outgoing webhook registration + test |
+| `health-report/` | Composite health report for score page |
+| `backfill-complete/` | Marks historical data backfill as done |
+
+**chatv2 Proxies:**
+
+| Route | chatv2 endpoint | Purpose |
+|-------|----------------|---------|
+| `workflow-health/` | `GET /service/projects/:id/workflows/health` | n8n workflow health strip |
+| `automation-roi/` | `GET /service/projects/:id/analytics` | Automation ROI card (Redis fresh/stale cache) |
+
+### Other API Routes (`src/app/api/`)
+
+- `generate-audit/` — Core audit endpoint: calls OpenAI to generate the automation audit
 - `notify/` — Email notifications via Resend on new audits
 - `build-request/` — Automation build request submissions
 - `quick-win-onboarding/` — Quick-win onboarding emails
@@ -51,53 +168,73 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 - `admin/onboard-customer/` — Provision new customer account + send invite
 - `cron/followups/` — Scheduled follow-up emails
 - `unsubscribe/` — Email unsubscribe handling
-- `dashboard/coo/` — AI COO chat (dashboard, GPT-4o)
-- `dashboard/automation-roi/` — Automation ROI widget (chatv2 proxy, Redis cached)
-- `dashboard/workflow-health/` — Workflow health list (chatv2 proxy)
+- `internal/chatv2-ping/` — Admin-gated health check for chatv2 connectivity
+
+### Integration Adapters (`src/lib/integrations/`)
+
+Each adapter follows the same pattern: a `validate*Key()` function and a `fetch*Data()` function. No data is persisted — all adapters live-fetch on every dashboard request.
+
+| Directory | Service | Data returned |
+|-----------|---------|--------------|
+| `stripe/` | Stripe | Finance data, invoices, profitability per client |
+| `hubspot/` | HubSpot | Sales pipeline, deals, marketing funnel |
+| `clickup/` | ClickUp | Project delivery, task completion, scope data |
+| `harvest/` | Harvest | Time tracking, logged hours, project billing |
+| `pipedrive/` | Pipedrive | Pipeline data (alternative to HubSpot) |
+| `apollo/` | Apollo | Prospecting / outbound data |
+| `asana/` | Asana | Project management |
+| `monday/` | Monday.com | Project management |
+| `toggl/` | Toggl | Time tracking (alternative to Harvest) |
+| `calendly/` | Calendly | Meeting bookings |
 
 ### Key Libraries (`src/lib/`)
 
-- `prompts.ts` — AI prompt templates for audit generation (system + user prompts)
-- `openai.ts` — OpenAI client setup
-- `supabase.ts` / `supabase-server.ts` — Client and server Supabase clients
+- `supabase.ts` / `supabase-server.ts` / `supabase-ssr.ts` — Supabase clients (browser, server, SSR with session)
 - `database.types.ts` — Auto-generated Supabase types (do not edit manually)
-- `website-intel.ts`, `website-research-agent.ts`, `website-visual-intel.ts` — Website analysis pipeline
-- `audit-report.ts`, `audit-grounding.ts` — Audit report generation and grounding
-- `pdf-generator.ts`, `pdf-color-sanitizer.ts` — PDF report generation
+- `integrations/crypto.ts` — AES-256-GCM encrypt/decrypt for customer API keys stored in Supabase
+- `chatv2/client.ts`, `chatv2/errors.ts`, `chatv2/project-mapping.ts` — Typed HTTP client for chatv2 proxy calls
+- `client-n8n.ts` — Reads customer's `chatv2_project_id` from `client_n8n_config` Supabase table
+- `briefing.ts` — Generates daily AI COO briefing
+- `actions/` — Agentic action evaluators (margin-alert, invoice-reminder, scope-alert, etc.) and executor
+- `benchmarks/` — Peer benchmark cohort bucketing logic
+- `profitability.ts` — Client profitability computation (Stripe revenue vs Harvest cost)
+- `openai.ts` — OpenAI client setup
 - `rate-limit.ts`, `abuse-protection.ts`, `security.ts` — Security layer (Upstash Redis rate limiting)
-- `constants.ts` — Centralized URLs and config (site URL, Calendly, contact email)
-- `funnel.ts` — Funnel analytics tracking
-- `knowledge-retrieval.ts` — File-based knowledge retrieval: reads `knowledge-base/` categories matched to audit inputs, plus real agency submissions from Supabase
-- `agency-submissions.ts` — Quality filter + fire-and-forget save of qualifying audit inputs to `agency_submissions` Supabase table
+- `constants.ts` — Centralized URLs and config
+- `prompts.ts` — AI prompt templates for audit generation
+- `website-intel.ts`, `website-research-agent.ts` — Website analysis pipeline (for audit)
+- `knowledge-retrieval.ts` — File-based KB retrieval for audit grounding
+- `agency-submissions.ts` — Quality filter + fire-and-forget save of qualifying audit inputs
 
 ### Components (`src/components/`)
 
-- `ui/` — Reusable UI components (shadcn-based: button, card, dialog, badge, etc.) plus custom components (pricing, hero banner, shader background, beams)
+- `ui/` — Reusable UI primitives (shadcn-based: button, card, dialog, badge, etc.) plus custom (pricing, hero banner, shader background)
 - `animations/` — Animation components (typewriter, stagger, fade-in, floating particles, glow card, count-up)
-- `app/components/` — Page-specific components (email capture modal, FAQ accordion, honeypot field, animated number)
+- Dashboard components live in `src/app/dashboard/_components/` and per-route `_components/` subdirectories
 
 ### External Services
 
-- **Supabase** — Database, auth (project ID: `nbdcrmepvwbfbcjqfubr`)
-- **OpenAI** — GPT-4o for audit generation and chat
+- **Supabase** — Database, auth, RLS (project ID: `nbdcrmepvwbfbcjqfubr`)
+- **chatv2** — CTO's Hono.js backend on opstest.atta.codes — n8n workflow management, AI/RAG, monitoring
+- **OpenAI** — GPT-4o for audit generation, COO chat, briefing, narrative
+- **Upstash Redis** — Rate limiting + dashboard caching (fresh 3–5 min, stale 24h)
 - **Resend** — Transactional emails
-- **Upstash Redis** — Rate limiting
 - **Vercel** — Hosting, analytics, speed insights
-- **Calendly** — Strategy call booking
+- **Stripe** — Customer billing (Model C: customers bring their own key)
 
 ### Design System
 
-- Dark theme with electric blue (#0066FF) and cyan (#00D4FF) accents
+- Dark theme with electric blue (`#0066FF`) and cyan (`#00D4FF`) accents
 - Fonts: NotoSansDisplay (body) and NotoSerifDisplay (headings), loaded as local fonts
 - Tailwind CSS v4 with `tw-animate-css` for animations
 - shadcn/ui components with Radix UI primitives
 - Three.js via @react-three/fiber for 3D elements
 - Framer Motion for page transitions and animations
 
-### Design Libraries Subdir
-
-`design-libraries/ui-skill/` is an embedded AI design toolkit (Antigravity Kit) with searchable databases of UI styles, color palettes, and fonts. It has its own CLAUDE.md with search commands. It is a reference resource, not part of the main app build.
-
 ### Security
 
-The app has a Content Security Policy configured in `next.config.ts` and uses security headers on all routes. Admin routes have `no-store` cache headers. Rate limiting uses Upstash Redis.
+Content Security Policy in `next.config.ts`. Admin routes use `no-store` cache headers. Rate limiting via Upstash Redis. Customer API keys are AES-256-GCM encrypted in Supabase — never stored in plaintext. chatv2 traffic is server-side only (customers never call opstest.atta.codes directly).
+
+### No Client Data Persistence
+
+Customer business data fetched from integrations (Stripe charges, HubSpot deals, ClickUp tasks) is **never stored in Supabase**. Every dashboard request live-fetches from the source API. Only computed metadata (agent actions, alert rules, briefing summaries, retainer configs) lives in Supabase. This is a hard architectural rule.
