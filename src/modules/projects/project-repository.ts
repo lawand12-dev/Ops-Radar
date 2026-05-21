@@ -97,6 +97,27 @@ export async function getProjectByIdForUser(
   return row ? mapProjectRow(row) : null;
 }
 
+/**
+ * Fetches every project owned by a user, newest first. Used by the
+ * /service/* layer to render a user-scoped automation list without going
+ * through the per-project lookup path.
+ */
+export async function listProjectsByUserId(
+  userId: string,
+  connection?: PoolConnection
+): Promise<ProjectRecord[]> {
+  const runner = connection ?? getDb();
+  const [rows] = await dbQuery<ProjectRow[]>(
+    runner,
+    `SELECT ${PROJECT_COLUMNS}
+     FROM projects
+     WHERE user_id = ?
+     ORDER BY updated_at DESC, created_at DESC`,
+    [userId]
+  );
+  return rows.map((row) => mapProjectRow(row));
+}
+
 export async function updateProjectStatus(
   id: string,
   status: ProjectStatus,

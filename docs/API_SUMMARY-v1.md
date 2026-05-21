@@ -235,7 +235,200 @@ A `projectId` you don't own returns `404 PROJECT_NOT_FOUND` (**not** 403) — th
 | POST   | `/n8n/credentials`                            | JWT  | Currently always rejects with structured guidance (manual-only mode). |
 | GET    | `/n8n/credentials/schema/{credentialType}`    | JWT  | Local provisioning policy for a credential type.                      |
 
-### 4.10 Debug (`Debug` tag) — only when `NODE_ENV=development`
+### 4.10 Service (`Service` tag) — `CHATV2_SERVICE_API_KEY`, not JWT
+
+The `/service/*` endpoints power external customer dashboards / the chatv2
+consumer. Auth is the **platform service API key**, not a JWT. Send as
+`X-Service-API-Key: <key>` or `Authorization: Bearer <key>`. The path
+parameter is a **user UUID** (`users.id` in the DB) — responses cover the
+whole tenant.
+
+| Method | Path                                                  | Notes                                                                             |
+| ------ | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
+| GET    | `/service/projects/{userUuid}/workflows/health`       | Every workflow owned by the user, with lifecycle, derived category, runs, alerts, and up to 10 recent executions. |
+| GET    | `/service/projects/{userUuid}/analytics`              | Full dashboard payload: `overview`, `automations[]`, `workflows_health[]`, `recent_executions[]` (25), `category_breakdown[]`. |
+
+**Why the `/service/projects/...` URL still says "projects":** The path was
+kept stable from the previous project-keyed contract — the path param meaning
+changed from project ID to user UUID, but the URL did not. There is **no**
+separate `/service/projects/:projectId/...` endpoint anymore; the URL is
+user-scoped today.
+
+**Authorization model.** A single static `CHATV2_SERVICE_API_KEY` (set in
+env, must be ≥32 chars) is compared with `crypto.timingSafeEqual`. The key is
+not bound to a tenant — any holder can read any user's data. If you need
+per-tenant keys, that's an additive change: a `service_api_keys` table with
+`(key_hash, user_id, revoked_at)` and a middleware lookup-by-hash. Not built
+today.
+
+**Errors.**
+
+| Code                          | HTTP | When                                                           |
+| ----------------------------- | ---- | -------------------------------------------------------------- |
+| `SERVICE_AUTH_NOT_CONFIGURED` | 401  | `CHATV2_SERVICE_API_KEY` is unset on the server.               |
+| `SERVICE_UNAUTHORIZED`        | 401  | Missing / wrong service key (uniform message).                 |
+| `USER_NOT_FOUND`              | 404  | No `users` row matches the `userUuid` path parameter.          |
+
+**Sample `GET /service/projects/{userUuid}/workflows/health` response:**
+
+```jsonc
+{
+  "user": {
+    "uuid": "e547073f-076b-424c-9676-50ce463b4818",
+    "email": "alice@example.com",
+    "name": "Alice"
+  },
+  "workflows": [
+    {
+      "workflow_id": "0eacac9b-079a-4b42-9f56-fb285f4f7ca6",
+      "n8n_workflow_id": "7fUxSOcIViugPf3d",
+      "name": "Hourly Slack Reminder",
+      "project_id": "a11c526a-d698-44ff-9137-c8b92df562a3",
+      "project_name": "Hourly Slack Reminder",
+      "category": "schedule",
+      "lifecycle_status": "deployed_active",
+      "status": "warning",
+      "active": true,
+      "has_webhook": false,
+      "last_run_at": "2026-05-21T15:50:40.000Z",
+      "last_run_status": "success",
+      "last_error_summary": null,
+      "last_deployed_at": "2026-05-18T09:12:01.000Z",
+      "last_activated_at": "2026-05-18T09:12:04.000Z",
+      "open_alerts_count": 1,
+      "total_runs": 842,
+      "success_runs": 711,
+      "failed_runs": 131,
+      "success_rate": 84.44,
+      "failure_rate": 15.56,
+      "average_duration_ms": 1240,
+      "created_at": "2026-05-10T18:54:37.000Z",
+      "updated_at": "2026-05-21T15:50:40.000Z",
+      "recent_executions": [
+        {
+          "execution_id": "exec-2026-05-21-12345",
+          "status": "success",
+          "started_at": "2026-05-21T15:50:40.000Z",
+          "duration_ms": 980,
+          "error_summary": null
+        },
+        {
+          "execution_id": "exec-2026-05-21-12344",
+          "status": "failure",
+          "started_at": "2026-05-21T14:50:40.000Z",
+          "duration_ms": 4200,
+          "error_summary": "Forbidden: bot was blocked by the user"
+        }
+      ]
+    }
+  ],
+  "count": 1,
+  "generated_at": "2026-05-21T15:50:40.655Z"
+}
+```
+
+**Sample `GET /service/projects/{userUuid}/analytics` response:**
+
+```jsonc
+{
+  "user": {
+    "uuid": "e547073f-076b-424c-9676-50ce463b4818",
+    "email": "alice@example.com",
+    "name": "Alice"
+  },
+  "overview": {
+    "total_projects": 2,
+    "total_workflows": 5,
+    "active_workflows": 3,
+    "inactive_workflows": 2,
+    "total_runs": 1240,
+    "success_runs": 1117,
+    "failed_runs": 123,
+    "success_rate": 90.08,
+    "failure_rate": 9.92,
+    "average_duration_ms": 1180,
+    "hours_saved": 55.85,
+    "unresolved_alerts": 2,
+    "healthy_workflows": 3,
+    "warning_workflows": 1,
+    "failing_workflows": 1,
+    "last_activity_at": "2026-05-21T15:50:40.000Z"
+  },
+  "automations": [
+    {
+      "project_id": "a11c526a-d698-44ff-9137-c8b92df562a3",
+      "name": "Hourly Slack Reminder",
+      "description": "Trigger every hour and send a message to a designated Slack channel.",
+      "status": "active",
+      "workflow_count": 1,
+      "active_workflow_count": 1,
+      "total_runs": 842,
+      "success_runs": 711,
+      "failed_runs": 131,
+      "success_rate": 84.44,
+      "unresolved_alerts": 1,
+      "last_run_at": "2026-05-21T15:50:40.000Z",
+      "last_run_status": "success",
+      "created_at": "2026-05-10T18:54:37.000Z",
+      "updated_at": "2026-05-21T15:50:40.000Z"
+    }
+  ],
+  "workflows_health": [
+    {
+      "workflow_id": "0eacac9b-079a-4b42-9f56-fb285f4f7ca6",
+      "project_id": "a11c526a-d698-44ff-9137-c8b92df562a3",
+      "project_name": "Hourly Slack Reminder",
+      "name": "Hourly Slack Reminder",
+      "category": "schedule",
+      "status": "warning",
+      "lifecycle_status": "deployed_active",
+      "active": true,
+      "is_working": false,
+      "last_run_at": "2026-05-21T15:50:40.000Z",
+      "last_run_status": "success",
+      "last_error_summary": null,
+      "total_runs": 842,
+      "success_runs": 711,
+      "failed_runs": 131,
+      "success_rate": 84.44,
+      "average_duration_ms": 1240,
+      "unresolved_alerts": 1
+    }
+  ],
+  "recent_executions": [
+    {
+      "execution_id": "exec-2026-05-21-12345",
+      "workflow_id": "0eacac9b-079a-4b42-9f56-fb285f4f7ca6",
+      "project_id": "a11c526a-d698-44ff-9137-c8b92df562a3",
+      "status": "success",
+      "started_at": "2026-05-21T15:50:40.000Z",
+      "duration_ms": 980,
+      "error_summary": null
+    }
+  ],
+  "category_breakdown": [
+    { "category": "schedule", "workflow_count": 3 },
+    { "category": "webhook",  "workflow_count": 1 },
+    { "category": "telegram", "workflow_count": 1 }
+  ],
+  "assumptions": {
+    "manual_minutes_per_successful_run": 3
+  },
+  "generated_at": "2026-05-21T15:50:40.861Z"
+}
+```
+
+**Conventions used in these responses.**
+
+- `status` (per-workflow health): `failing` if lifecycle ∈ {failed, rejected} or the last run failed; `warning` if there are open alerts; otherwise `healthy`.
+- `category`: derived from the **trigger node type** in the workflow JSON (`scheduleTrigger` → `schedule`, `webhook` → `webhook`, `telegramTrigger` → `telegram`, etc.). `unknown` if no trigger could be identified.
+- `has_webhook`: true if the workflow contains any node whose type matches `*.webhook`.
+- `error_summary` / `last_error_summary`: if the raw error is JSON, surfaces `description` → `message` → `messages[0]`; otherwise the first non-empty line. Always one-line, ≤200 chars, ellipsised on overflow.
+- `success_rate` / `failure_rate`: percentages 0–100. Both are `0` (not `100`) when `total_runs == 0`.
+- `hours_saved`: `success_runs × assumptions.manual_minutes_per_successful_run ÷ 60`. The default heuristic of `3 min/run` is echoed back so consumers can override.
+- `execution_id`: equals the originating event's `run_id`. May be `null` when the source did not attach one (e.g. some monitoring-scheduler-emitted events).
+
+### 4.11 Debug (`Debug` tag) — only when `NODE_ENV=development`
 
 | Method | Path                                              | Auth | Notes                          |
 | ------ | ------------------------------------------------- | ---- | ------------------------------ |

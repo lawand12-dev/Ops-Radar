@@ -127,6 +127,40 @@ export async function listRecentEventsByWorkflowId(
 }
 
 /**
+ * Recent terminal-run events across every workflow owned by a user. Joins
+ * through `workflows` → `projects` to apply tenant scoping. Powers the
+ * dashboard's "recent activity" widget without N+1 per-workflow fan-out.
+ */
+export async function listUserRecentTerminalEvents(
+  userId: string,
+  limit = 20
+): Promise<Array<WorkflowEventRecord & { project_id: string }>> {
+  const db = getDb();
+  const capped = Math.min(Math.max(limit, 1), 100);
+  const [rows] = await dbQuery<
+    Array<WorkflowEventRow & { project_id: string }>
+  >(
+    db,
+    `SELECT we.id, we.workflow_id, we.run_id, we.node_name, we.event_type,
+            we.status, we.duration_ms, we.error_message, we.metadata, we.created_at,
+            w.project_id AS project_id
+     FROM workflow_events we
+     INNER JOIN workflows w ON w.id = we.workflow_id
+     INNER JOIN projects p ON p.id = w.project_id
+     WHERE p.user_id = ?
+       AND we.event_type IN (${TERMINAL_RUN_TYPES_SQL})
+     ORDER BY we.created_at DESC
+     LIMIT ?`,
+    [userId, capped]
+  );
+
+  return rows.map((row) => ({
+    ...mapEventRow(row),
+    project_id: row.project_id
+  }));
+}
+
+/**
  * Recent terminal-run events only — both event families ('run_*' from external
  * ingest and 'workflow_execution_*' from the monitoring scheduler). Used by
  * the /service/* layer to surface execution-level history without dragging in

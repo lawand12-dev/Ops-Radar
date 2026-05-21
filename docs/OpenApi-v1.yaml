@@ -107,6 +107,12 @@ tags:
     description: Cross-workflow KPIs scoped to the authenticated user.
   - name: n8n
     description: Facade over the user's n8n REST API (credentials, schemas).
+  - name: Service
+    description: |
+      Service-to-service endpoints gated by the platform `CHATV2_SERVICE_API_KEY`
+      (not JWT). The path parameter is a **user UUID** — these endpoints return
+      the full automation dashboard payload for a single tenant. Used by the
+      chatv2 consumer / external customer dashboards.
   - name: Debug
     description: Development-only diagnostics. Returns 404 in non-development.
 
@@ -1337,6 +1343,81 @@ paths:
           $ref: "#/components/responses/Unauthorized"
 
   # ──────────────────────────────────────────────────────────────────────
+  # Service-to-service (CHATV2_SERVICE_API_KEY, not JWT)
+  # Path segment is /service/projects/{userUuid}/... — the {userUuid} is
+  # the external tenant identifier (== `users.id` in the DB). Returns
+  # the full dashboard payload for that user across all of their projects.
+  # ──────────────────────────────────────────────────────────────────────
+  /service/projects/{userUuid}/workflows/health:
+    parameters:
+      - $ref: "#/components/parameters/UserUuidPath"
+    get:
+      tags: [Service]
+      operationId: serviceUserWorkflowsHealth
+      summary: Per-workflow health across every project owned by a user
+      description: |
+        Returns one entry per workflow that belongs to the requested user
+        (across all of their projects). Each entry carries lifecycle state,
+        derived `category` (from the trigger node type), webhook flag, run
+        statistics, last terminal run, and up to 10 recent executions.
+
+        Authorization is the platform service key (`CHATV2_SERVICE_API_KEY`),
+        sent as `X-Service-API-Key: <key>` or `Authorization: Bearer <key>`.
+        The key is not tied to a tenant; any holder can read any user's data.
+      security:
+        - serviceApiKey: []
+      responses:
+        "200":
+          description: Workflow list for the user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceWorkflowsHealthResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/ServiceUnauthorized"
+        "404":
+          description: User UUID not found.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /service/projects/{userUuid}/analytics:
+    parameters:
+      - $ref: "#/components/parameters/UserUuidPath"
+    get:
+      tags: [Service]
+      operationId: serviceUserAnalytics
+      summary: Full tenant analytics overview for a user
+      description: |
+        Returns the entire dashboard payload for a user: overall counters
+        (`overview`), per-project rollups (`automations[]`), per-workflow
+        rollups (`workflows_health[]`), the 25 most-recent terminal
+        executions across all the user's workflows (`recent_executions[]`),
+        and a category breakdown by trigger type.
+
+        Same authorization model as `/workflows/health`. The
+        `assumptions.manual_minutes_per_successful_run` figure is the
+        heuristic backing `overview.hours_saved`.
+      security:
+        - serviceApiKey: []
+      responses:
+        "200":
+          description: Analytics overview.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceAnalyticsResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/ServiceUnauthorized"
+        "404":
+          description: User UUID not found.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ──────────────────────────────────────────────────────────────────────
   # Debug (dev-only, public)
   # ──────────────────────────────────────────────────────────────────────
   /debug/knowledge-base:
@@ -1413,6 +1494,15 @@ components:
         `EVENT_INGEST_TOKEN` from server env. May also be supplied as
         `Authorization: Bearer <EVENT_INGEST_TOKEN>` — the route accepts either header.
         Comparison is timing-safe.
+    serviceApiKey:
+      type: apiKey
+      in: header
+      name: X-Service-API-Key
+      description: |
+        Platform service-to-service API key (`CHATV2_SERVICE_API_KEY` from server
+        env). May also be supplied as `Authorization: Bearer <key>` — the route
+        accepts either header. Comparison is timing-safe (`crypto.timingSafeEqual`).
+        Single static key today; any holder reads any tenant's data.
 
   parameters:
     ProjectIdPath:
@@ -1426,6 +1516,14 @@ components:
       in: path
       required: true
       description: User UUID.
+      schema: { type: string, format: uuid }
+    UserUuidPath:
+      name: userUuid
+      in: path
+      required: true
+      description: |
+        External tenant identifier — equals `users.id` in the DB.
+        Used by `/service/*` endpoints to scope responses to a single user.
       schema: { type: string, format: uuid }
     LimitQuery:
       name: limit
@@ -1518,6 +1616,18 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ServiceUnauthorized:
+      description: |
+        Service API key missing, invalid, or not configured on the server
+        (`SERVICE_AUTH_NOT_CONFIGURED` when env var is unset; `SERVICE_UNAUTHORIZED`
+        otherwise).
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+          example:
+            error:
+              code: SERVICE_UNAUTHORIZED
+              message: Invalid service API key.
 
   schemas:
     # ───── Common ────────────────────────────────────────────────────
@@ -2564,3 +2674,277 @@ components:
         name: { type: string }
         type: { type: string }
         typeVersion: { type: number, nullable: true }
+
+    # ───── Service (CHATV2_SERVICE_API_KEY, user-scoped) ─────────────
+    ServiceUserStub:
+      type: object
+      required: [uuid, email, name]
+      properties:
+        uuid: { type: string, format: uuid }
+        email: { type: string }
+        name: { type: string }
+    ServiceRunStatus:
+      type: string
+      enum: [success, failure, unknown]
+    ServiceHealthLabel:
+      type: string
+      enum: [healthy, warning, failing]
+    ServiceWorkflowLifecycleStatus:
+      type: string
+      enum: [draft, validated, rejected, deployed_inactive, deployed_active, failed]
+    ServiceProjectStatus:
+      type: string
+      enum: [draft, active, failed]
+    ServiceRecentExecution:
+      type: object
+      required: [execution_id, status, started_at, duration_ms, error_summary]
+      properties:
+        execution_id:
+          type: string
+          nullable: true
+          description: "n8n execution id from the originating event (`run_id`). `null` when the emitting source did not attach one."
+        status: { $ref: "#/components/schemas/ServiceRunStatus" }
+        started_at: { type: string, format: date-time }
+        duration_ms: { type: integer, nullable: true }
+        error_summary:
+          type: string
+          nullable: true
+          description: "One-line summary of the n8n error blob; capped at 200 chars."
+    ServiceWorkflowHealthEntry:
+      type: object
+      required:
+        - workflow_id
+        - n8n_workflow_id
+        - name
+        - project_id
+        - project_name
+        - category
+        - lifecycle_status
+        - status
+        - active
+        - has_webhook
+        - open_alerts_count
+        - total_runs
+        - success_runs
+        - failed_runs
+        - success_rate
+        - failure_rate
+        - average_duration_ms
+        - created_at
+        - updated_at
+        - recent_executions
+      properties:
+        workflow_id: { type: string, format: uuid }
+        n8n_workflow_id: { type: string, nullable: true }
+        name:
+          type: string
+          description: "Workflow display name (from the stored n8n JSON; falls back to the workflow id)."
+        project_id: { type: string, format: uuid }
+        project_name: { type: string }
+        category:
+          type: string
+          description: "Heuristic label derived from the trigger node type (e.g. `telegram`, `schedule`, `webhook`, `manual`). `unknown` when no trigger could be identified."
+        lifecycle_status: { $ref: "#/components/schemas/ServiceWorkflowLifecycleStatus" }
+        status: { $ref: "#/components/schemas/ServiceHealthLabel" }
+        active:
+          type: boolean
+          description: "Shorthand for `lifecycle_status === 'deployed_active'`."
+        has_webhook:
+          type: boolean
+          description: "True if any node in the workflow JSON is a webhook node."
+        last_run_at: { type: string, format: date-time, nullable: true }
+        last_run_status: { $ref: "#/components/schemas/ServiceRunStatus" }
+        last_error_summary: { type: string, nullable: true }
+        last_deployed_at: { type: string, format: date-time, nullable: true }
+        last_activated_at: { type: string, format: date-time, nullable: true }
+        open_alerts_count: { type: integer, minimum: 0 }
+        total_runs: { type: integer, minimum: 0 }
+        success_runs: { type: integer, minimum: 0 }
+        failed_runs: { type: integer, minimum: 0 }
+        success_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Percentage (0–100). `0` when there are no runs."
+        failure_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Percentage (0–100). `0` when there are no runs (NOT 100)."
+        average_duration_ms: { type: integer, minimum: 0 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        recent_executions:
+          type: array
+          maxItems: 10
+          items: { $ref: "#/components/schemas/ServiceRecentExecution" }
+    ServiceWorkflowsHealthResponse:
+      type: object
+      required: [user, workflows, count, generated_at]
+      properties:
+        user: { $ref: "#/components/schemas/ServiceUserStub" }
+        workflows:
+          type: array
+          items: { $ref: "#/components/schemas/ServiceWorkflowHealthEntry" }
+        count: { type: integer, minimum: 0 }
+        generated_at: { type: string, format: date-time }
+
+    ServiceAnalyticsOverview:
+      type: object
+      required:
+        - total_projects
+        - total_workflows
+        - active_workflows
+        - inactive_workflows
+        - total_runs
+        - success_runs
+        - failed_runs
+        - success_rate
+        - failure_rate
+        - average_duration_ms
+        - hours_saved
+        - unresolved_alerts
+        - healthy_workflows
+        - warning_workflows
+        - failing_workflows
+        - last_activity_at
+      properties:
+        total_projects: { type: integer, minimum: 0 }
+        total_workflows: { type: integer, minimum: 0 }
+        active_workflows: { type: integer, minimum: 0 }
+        inactive_workflows: { type: integer, minimum: 0 }
+        total_runs: { type: integer, minimum: 0 }
+        success_runs: { type: integer, minimum: 0 }
+        failed_runs: { type: integer, minimum: 0 }
+        success_rate: { type: number, minimum: 0, maximum: 100 }
+        failure_rate: { type: number, minimum: 0, maximum: 100 }
+        average_duration_ms: { type: integer, minimum: 0 }
+        hours_saved:
+          type: number
+          minimum: 0
+          description: "Estimated operator hours saved (= `success_runs × assumptions.manual_minutes_per_successful_run ÷ 60`)."
+        unresolved_alerts: { type: integer, minimum: 0 }
+        healthy_workflows: { type: integer, minimum: 0 }
+        warning_workflows: { type: integer, minimum: 0 }
+        failing_workflows: { type: integer, minimum: 0 }
+        last_activity_at: { type: string, format: date-time, nullable: true }
+    ServiceAutomationSummary:
+      type: object
+      required:
+        - project_id
+        - name
+        - description
+        - status
+        - workflow_count
+        - active_workflow_count
+        - total_runs
+        - success_runs
+        - failed_runs
+        - success_rate
+        - unresolved_alerts
+        - last_run_status
+        - created_at
+        - updated_at
+      properties:
+        project_id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { $ref: "#/components/schemas/ServiceProjectStatus" }
+        workflow_count: { type: integer, minimum: 0 }
+        active_workflow_count: { type: integer, minimum: 0 }
+        total_runs: { type: integer, minimum: 0 }
+        success_runs: { type: integer, minimum: 0 }
+        failed_runs: { type: integer, minimum: 0 }
+        success_rate: { type: number, minimum: 0, maximum: 100 }
+        unresolved_alerts: { type: integer, minimum: 0 }
+        last_run_at: { type: string, format: date-time, nullable: true }
+        last_run_status: { $ref: "#/components/schemas/ServiceRunStatus" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ServiceWorkflowAnalyticsEntry:
+      type: object
+      required:
+        - workflow_id
+        - project_id
+        - project_name
+        - name
+        - category
+        - status
+        - lifecycle_status
+        - active
+        - is_working
+        - last_run_status
+        - total_runs
+        - success_runs
+        - failed_runs
+        - success_rate
+        - average_duration_ms
+        - unresolved_alerts
+      properties:
+        workflow_id: { type: string, format: uuid }
+        project_id: { type: string, format: uuid }
+        project_name: { type: string }
+        name: { type: string }
+        category: { type: string }
+        status: { $ref: "#/components/schemas/ServiceHealthLabel" }
+        lifecycle_status: { $ref: "#/components/schemas/ServiceWorkflowLifecycleStatus" }
+        active: { type: boolean }
+        is_working: { type: boolean }
+        last_run_at: { type: string, format: date-time, nullable: true }
+        last_run_status: { $ref: "#/components/schemas/ServiceRunStatus" }
+        last_error_summary: { type: string, nullable: true }
+        total_runs: { type: integer, minimum: 0 }
+        success_runs: { type: integer, minimum: 0 }
+        failed_runs: { type: integer, minimum: 0 }
+        success_rate: { type: number, minimum: 0, maximum: 100 }
+        average_duration_ms: { type: integer, minimum: 0 }
+        unresolved_alerts: { type: integer, minimum: 0 }
+    ServiceGlobalRecentExecution:
+      allOf:
+        - $ref: "#/components/schemas/ServiceRecentExecution"
+        - type: object
+          required: [workflow_id, project_id]
+          properties:
+            workflow_id: { type: string, format: uuid }
+            project_id: { type: string, format: uuid }
+    ServiceCategoryCount:
+      type: object
+      required: [category, workflow_count]
+      properties:
+        category: { type: string }
+        workflow_count: { type: integer, minimum: 0 }
+    ServiceAnalyticsResponse:
+      type: object
+      required:
+        - user
+        - overview
+        - automations
+        - workflows_health
+        - recent_executions
+        - category_breakdown
+        - assumptions
+        - generated_at
+      properties:
+        user: { $ref: "#/components/schemas/ServiceUserStub" }
+        overview: { $ref: "#/components/schemas/ServiceAnalyticsOverview" }
+        automations:
+          type: array
+          items: { $ref: "#/components/schemas/ServiceAutomationSummary" }
+        workflows_health:
+          type: array
+          items: { $ref: "#/components/schemas/ServiceWorkflowAnalyticsEntry" }
+        recent_executions:
+          type: array
+          maxItems: 25
+          items: { $ref: "#/components/schemas/ServiceGlobalRecentExecution" }
+        category_breakdown:
+          type: array
+          items: { $ref: "#/components/schemas/ServiceCategoryCount" }
+        assumptions:
+          type: object
+          required: [manual_minutes_per_successful_run]
+          properties:
+            manual_minutes_per_successful_run:
+              type: integer
+              description: "Heuristic backing `overview.hours_saved`. Default: 3."
+        generated_at: { type: string, format: date-time }
