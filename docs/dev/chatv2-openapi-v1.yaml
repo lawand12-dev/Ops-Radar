@@ -1,0 +1,759 @@
+openapi: 3.0.3
+info:
+  title: chatv2 Service API
+  description: |
+    Internal service API consumed by OpsRadar (Next.js) to fetch workflow health
+    and analytics data for customer dashboards.
+
+    All endpoints require a shared service bearer token. The `:userUuid` path
+    parameter is the customer's Supabase UUID — the primary external tenant
+    identifier.
+  version: "1.1.0"
+  contact:
+    name: CTO (chatv2 owner)
+
+servers:
+  - url: https://opstest.atta.codes
+    description: Production
+
+security:
+  - ServiceBearerAuth: []
+
+paths:
+
+  /service/projects/{userUuid}/workflows/health:
+    get:
+      operationId: getWorkflowHealth
+      summary: Get workflow health for a tenant
+      description: |
+        Returns all workflows belonging to the user with health status,
+        execution history, and failure metrics. OpsRadar caches this
+        response for 3 minutes (fresh) and 24 hours (stale fallback).
+      parameters:
+        - $ref: '#/components/parameters/userUuid'
+      responses:
+        '200':
+          description: Workflow health data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowHealthResponse'
+              example:
+                user_uuid: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+                retrieved_at: "2026-05-21T15:30:00.000Z"
+                workflows:
+                  - workflow_id: "wf_abc123"
+                    name: "Invoice Reminder Automation"
+                    status: "healthy"
+                    is_active: true
+                    category: "billing"
+                    webhook_url: "https://silver.n8n.cloud/webhook/abc123"
+                    webhook_active: true
+                    last_execution:
+                      execution_id: "exec_xyz789"
+                      status: "success"
+                      started_at: "2026-05-21T14:00:00.000Z"
+                      finished_at: "2026-05-21T14:00:12.000Z"
+                      duration_ms: 12000
+                      error_message: null
+                    health_metrics:
+                      success_rate_7d: 98.5
+                      total_runs_7d: 67
+                      failed_runs_7d: 1
+                      avg_duration_ms: 11200
+                      uptime_pct: 99.2
+                    recent_executions:
+                      - execution_id: "exec_xyz789"
+                        status: "success"
+                        started_at: "2026-05-21T14:00:00.000Z"
+                        duration_ms: 12000
+                        error_message: null
+                    open_alerts: 0
+                    created_at: "2026-03-10T09:00:00.000Z"
+                    updated_at: "2026-05-21T14:00:12.000Z"
+                  - workflow_id: "wf_def456"
+                    name: "Client Report Generator"
+                    status: "degraded"
+                    is_active: true
+                    category: "reporting"
+                    webhook_url: "https://silver.n8n.cloud/webhook/def456"
+                    webhook_active: true
+                    last_execution:
+                      execution_id: "exec_aaa001"
+                      status: "failure"
+                      started_at: "2026-05-21T08:00:00.000Z"
+                      finished_at: "2026-05-21T08:00:05.000Z"
+                      duration_ms: 5000
+                      error_message: "Google Sheets API quota exceeded"
+                    health_metrics:
+                      success_rate_7d: 88.2
+                      total_runs_7d: 34
+                      failed_runs_7d: 4
+                      avg_duration_ms: 7300
+                      uptime_pct: 91.0
+                    recent_executions:
+                      - execution_id: "exec_aaa001"
+                        status: "failure"
+                        started_at: "2026-05-21T08:00:00.000Z"
+                        duration_ms: 5000
+                        error_message: "Google Sheets API quota exceeded"
+                    open_alerts: 1
+                    created_at: "2026-03-15T11:00:00.000Z"
+                    updated_at: "2026-05-21T08:00:05.000Z"
+                summary:
+                  total: 5
+                  active: 4
+                  inactive: 1
+                  healthy: 3
+                  degraded: 1
+                  failing: 0
+                  unknown: 1
+                  open_alerts: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /service/projects/{userUuid}/analytics:
+    get:
+      operationId: getAnalytics
+      summary: Get full automation analytics for a tenant
+      description: |
+        Returns a complete analytics overview for the customer's automation
+        workspace. Used by OpsRadar to power the Automation ROI dashboard widget.
+        OpsRadar caches this for 3 minutes (fresh) and 24 hours (stale fallback).
+      parameters:
+        - $ref: '#/components/parameters/userUuid'
+        - name: period_days
+          in: query
+          description: Lookback window in days for run statistics
+          required: false
+          schema:
+            type: integer
+            default: 30
+            minimum: 1
+            maximum: 365
+      responses:
+        '200':
+          description: Full analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+              example:
+                user_uuid: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+                retrieved_at: "2026-05-21T15:30:00.000Z"
+                workspace:
+                  name: "Silver Agency"
+                  n8n_base_url: "https://silver.n8n.cloud"
+                  connected_since: "2026-03-10T09:00:00.000Z"
+                period:
+                  from: "2026-04-21T00:00:00.000Z"
+                  to: "2026-05-21T23:59:59.000Z"
+                  days: 30
+                overview:
+                  total_workflows: 5
+                  active_workflows: 4
+                  total_runs: 1847
+                  successful_runs: 1821
+                  failed_runs: 26
+                  success_rate: 98.6
+                  avg_duration_ms: 8400
+                  estimated_hours_saved: 154.0
+                  unresolved_alerts: 1
+                  healthy_workflows: 3
+                  unhealthy_workflows: 2
+                run_statistics:
+                  runs_today: 47
+                  runs_this_week: 312
+                  runs_last_30_days: 1847
+                  peak_day: "2026-05-14"
+                  peak_day_runs: 89
+                  daily_average: 61.6
+                  trend_pct_vs_prev_period: 12.4
+                automation_categories:
+                  - category: "billing"
+                    workflow_count: 2
+                    runs_30d: 623
+                    success_rate: 99.8
+                  - category: "reporting"
+                    workflow_count: 1
+                    runs_30d: 189
+                    success_rate: 88.2
+                  - category: "lead-nurture"
+                    workflow_count: 1
+                    runs_30d: 742
+                    success_rate: 99.1
+                  - category: "ops"
+                    workflow_count: 1
+                    runs_30d: 293
+                    success_rate: 96.6
+                top_workflows_by_runs:
+                  - workflow_id: "wf_lead001"
+                    name: "Lead Nurture Sequence"
+                    runs_30d: 742
+                    success_rate: 99.1
+                    status: "healthy"
+                    category: "lead-nurture"
+                recent_executions:
+                  - workflow_id: "wf_abc123"
+                    workflow_name: "Invoice Reminder Automation"
+                    execution_id: "exec_xyz789"
+                    status: "success"
+                    started_at: "2026-05-21T14:00:00.000Z"
+                    duration_ms: 12000
+                    error_message: null
+                alerts:
+                  open: 1
+                  resolved_30d: 3
+                  items:
+                    - alert_id: "alt_001"
+                      workflow_id: "wf_def456"
+                      workflow_name: "Client Report Generator"
+                      severity: "warning"
+                      message: "Success rate dropped below 95% threshold"
+                      triggered_at: "2026-05-20T08:30:00.000Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /service/projects:
+    post:
+      operationId: provisionTenant
+      summary: Provision a new tenant
+      description: |
+        Called by OpsRadar during customer onboarding. Creates a chatv2 user
+        record keyed to the Supabase UUID and stores the customer's n8n
+        credentials. This eliminates the manual chatv2 registration step.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProvisionTenantRequest'
+            example:
+              user_uuid: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+              email: "customer@agency.com"
+              n8n_base_url: "https://silver.n8n.cloud"
+              n8n_webhook_secret: "whsec_xxx"
+              n8n_api_key: "n8n_api_xxx"
+      responses:
+        '201':
+          description: Tenant provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisionTenantResponse'
+              example:
+                user_uuid: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+                created_at: "2026-05-21T15:30:00.000Z"
+        '409':
+          description: Tenant already provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ALREADY_EXISTS"
+                message: "user already provisioned"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /service/projects/{userUuid}:
+    get:
+      operationId: getTenantStatus
+      summary: Get tenant provisioning status
+      description: Check whether a UUID has been provisioned in chatv2.
+      parameters:
+        - $ref: '#/components/parameters/userUuid'
+      responses:
+        '200':
+          description: Tenant found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantStatusResponse'
+              example:
+                user_uuid: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+                provisioned: true
+                n8n_connected: true
+                n8n_base_url: "https://silver.n8n.cloud"
+                workflow_count: 5
+                created_at: "2026-03-10T09:00:00.000Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+
+  securitySchemes:
+    ServiceBearerAuth:
+      type: http
+      scheme: bearer
+      description: Shared service API key (CHATV2_SERVICE_API_KEY env var on OpsRadar)
+
+  parameters:
+    userUuid:
+      name: userUuid
+      in: path
+      required: true
+      description: The customer's Supabase UUID — external tenant identifier
+      schema:
+        type: string
+        format: uuid
+        example: "6a7fca10-dacc-4cef-9304-bbd577e50efc"
+
+  schemas:
+
+    WorkflowStatus:
+      type: string
+      enum: [healthy, degraded, failing, unknown]
+      description: |
+        healthy: success rate ≥ 95% over last 7 days
+        degraded: success rate 80–94% over last 7 days
+        failing: success rate < 80% or last 3 runs all failed
+        unknown: no runs in last 7 days
+
+    ExecutionStatus:
+      type: string
+      enum: [success, failure, running, canceled]
+
+    AlertSeverity:
+      type: string
+      enum: [info, warning, critical]
+
+    Execution:
+      type: object
+      required: [execution_id, status, started_at, duration_ms]
+      properties:
+        execution_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/ExecutionStatus'
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        duration_ms:
+          type: integer
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+
+    FullExecution:
+      allOf:
+        - $ref: '#/components/schemas/Execution'
+        - type: object
+          properties:
+            finished_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    WorkflowHealthMetrics:
+      type: object
+      required: [success_rate_7d, total_runs_7d, failed_runs_7d, avg_duration_ms, uptime_pct]
+      properties:
+        success_rate_7d:
+          type: number
+          format: float
+          description: Percentage of successful runs in the last 7 days
+        total_runs_7d:
+          type: integer
+        failed_runs_7d:
+          type: integer
+        avg_duration_ms:
+          type: integer
+        uptime_pct:
+          type: number
+          format: float
+
+    WorkflowEntry:
+      type: object
+      required: [workflow_id, name, status, is_active, open_alerts, health_metrics, recent_executions, created_at, updated_at]
+      properties:
+        workflow_id:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        is_active:
+          type: boolean
+        category:
+          type: string
+          nullable: true
+          description: e.g. billing, reporting, lead-nurture, ops
+        webhook_url:
+          type: string
+          nullable: true
+        webhook_active:
+          type: boolean
+          nullable: true
+        last_execution:
+          allOf:
+            - $ref: '#/components/schemas/FullExecution'
+          nullable: true
+        health_metrics:
+          $ref: '#/components/schemas/WorkflowHealthMetrics'
+        recent_executions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Execution'
+          maxItems: 10
+        open_alerts:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    WorkflowHealthSummary:
+      type: object
+      required: [total, active, inactive, healthy, degraded, failing, unknown, open_alerts]
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        inactive:
+          type: integer
+        healthy:
+          type: integer
+        degraded:
+          type: integer
+        failing:
+          type: integer
+        unknown:
+          type: integer
+        open_alerts:
+          type: integer
+
+    WorkflowHealthResponse:
+      type: object
+      required: [user_uuid, retrieved_at, workflows, summary]
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        retrieved_at:
+          type: string
+          format: date-time
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowEntry'
+        summary:
+          $ref: '#/components/schemas/WorkflowHealthSummary'
+
+    AnalyticsOverview:
+      type: object
+      required: [total_workflows, active_workflows, total_runs, successful_runs, failed_runs, success_rate, avg_duration_ms, estimated_hours_saved, unresolved_alerts, healthy_workflows, unhealthy_workflows]
+      properties:
+        total_workflows:
+          type: integer
+        active_workflows:
+          type: integer
+        total_runs:
+          type: integer
+        successful_runs:
+          type: integer
+        failed_runs:
+          type: integer
+        success_rate:
+          type: number
+          format: float
+          description: Percentage 0–100
+        avg_duration_ms:
+          type: integer
+        estimated_hours_saved:
+          type: number
+          format: float
+        unresolved_alerts:
+          type: integer
+        healthy_workflows:
+          type: integer
+        unhealthy_workflows:
+          type: integer
+
+    RunStatistics:
+      type: object
+      properties:
+        runs_today:
+          type: integer
+        runs_this_week:
+          type: integer
+        runs_last_30_days:
+          type: integer
+        peak_day:
+          type: string
+          format: date
+          nullable: true
+        peak_day_runs:
+          type: integer
+          nullable: true
+        daily_average:
+          type: number
+          format: float
+        trend_pct_vs_prev_period:
+          type: number
+          format: float
+          nullable: true
+          description: Positive = growth vs previous period of same length
+
+    CategoryStat:
+      type: object
+      required: [category, workflow_count, runs_30d, success_rate]
+      properties:
+        category:
+          type: string
+        workflow_count:
+          type: integer
+        runs_30d:
+          type: integer
+        success_rate:
+          type: number
+          format: float
+
+    TopWorkflow:
+      type: object
+      required: [workflow_id, name, runs_30d, success_rate, status]
+      properties:
+        workflow_id:
+          type: string
+        name:
+          type: string
+        runs_30d:
+          type: integer
+        success_rate:
+          type: number
+          format: float
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        category:
+          type: string
+          nullable: true
+
+    RecentExecution:
+      allOf:
+        - $ref: '#/components/schemas/Execution'
+        - type: object
+          required: [workflow_id, workflow_name]
+          properties:
+            workflow_id:
+              type: string
+            workflow_name:
+              type: string
+
+    AlertItem:
+      type: object
+      required: [alert_id, workflow_id, workflow_name, severity, message, triggered_at]
+      properties:
+        alert_id:
+          type: string
+        workflow_id:
+          type: string
+        workflow_name:
+          type: string
+        severity:
+          $ref: '#/components/schemas/AlertSeverity'
+        message:
+          type: string
+        triggered_at:
+          type: string
+          format: date-time
+
+    AlertsSummary:
+      type: object
+      required: [open, resolved_30d, items]
+      properties:
+        open:
+          type: integer
+        resolved_30d:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertItem'
+
+    AnalyticsResponse:
+      type: object
+      required: [user_uuid, retrieved_at, overview]
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        retrieved_at:
+          type: string
+          format: date-time
+        workspace:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
+            n8n_base_url:
+              type: string
+              nullable: true
+            connected_since:
+              type: string
+              format: date-time
+              nullable: true
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+            days:
+              type: integer
+        overview:
+          $ref: '#/components/schemas/AnalyticsOverview'
+        run_statistics:
+          $ref: '#/components/schemas/RunStatistics'
+        automation_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryStat'
+        top_workflows_by_runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopWorkflow'
+        recent_executions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecentExecution'
+          maxItems: 20
+        alerts:
+          $ref: '#/components/schemas/AlertsSummary'
+
+    ProvisionTenantRequest:
+      type: object
+      required: [user_uuid, email, n8n_base_url, n8n_webhook_secret, n8n_api_key]
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        n8n_base_url:
+          type: string
+          format: uri
+        n8n_webhook_secret:
+          type: string
+        n8n_api_key:
+          type: string
+
+    ProvisionTenantResponse:
+      type: object
+      required: [user_uuid, created_at]
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    TenantStatusResponse:
+      type: object
+      required: [user_uuid, provisioned]
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        provisioned:
+          type: boolean
+        n8n_connected:
+          type: boolean
+          nullable: true
+        n8n_base_url:
+          type: string
+          nullable: true
+        workflow_count:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid service API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: invalid service key
+
+    Forbidden:
+      description: Service key valid but not authorized for this UUID
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: FORBIDDEN
+            message: not authorized for this tenant
+
+    NotFound:
+      description: No user with this UUID — OpsRadar treats this as not_enrolled
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: NOT_FOUND
+            message: tenant not found
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: INTERNAL_ERROR
+            message: unexpected error
