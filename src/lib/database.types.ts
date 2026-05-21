@@ -546,33 +546,6 @@ export type Database = {
         }
         Relationships: []
       }
-      fo_branding: {
-        Row: {
-          accent_color: string | null
-          brand_name: string | null
-          email_from_name: string | null
-          fo_user_id: string
-          logo_url: string | null
-          updated_at: string
-        }
-        Insert: {
-          accent_color?: string | null
-          brand_name?: string | null
-          email_from_name?: string | null
-          fo_user_id: string
-          logo_url?: string | null
-          updated_at?: string
-        }
-        Update: {
-          accent_color?: string | null
-          brand_name?: string | null
-          email_from_name?: string | null
-          fo_user_id?: string
-          logo_url?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       fo_audit_log: {
         Row: {
           action_kind: string
@@ -607,6 +580,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fo_branding: {
+        Row: {
+          accent_color: string | null
+          brand_name: string | null
+          email_from_name: string | null
+          fo_user_id: string
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          brand_name?: string | null
+          email_from_name?: string | null
+          fo_user_id: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          brand_name?: string | null
+          email_from_name?: string | null
+          fo_user_id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       fo_clients: {
         Row: {
@@ -721,55 +721,47 @@ export type Database = {
         }
         Relationships: []
       }
-      organizations: {
+      kpi_snapshots: {
         Row: {
           created_at: string
-          id: string
-          name: string
-          owner_user_id: string
+          deals_won_mtd: number | null
+          id: number
+          invoiced_mtd_usd: number | null
+          open_deals_count: number | null
+          overdue_usd: number | null
+          paid_mtd_usd: number | null
+          pipeline_value_usd: number | null
+          snapshot_date: string
+          user_id: string
+          utilization_pct: number | null
         }
         Insert: {
           created_at?: string
-          id?: string
-          name: string
-          owner_user_id: string
+          deals_won_mtd?: number | null
+          id?: number
+          invoiced_mtd_usd?: number | null
+          open_deals_count?: number | null
+          overdue_usd?: number | null
+          paid_mtd_usd?: number | null
+          pipeline_value_usd?: number | null
+          snapshot_date: string
+          user_id: string
+          utilization_pct?: number | null
         }
         Update: {
           created_at?: string
-          id?: string
-          name?: string
-          owner_user_id?: string
+          deals_won_mtd?: number | null
+          id?: number
+          invoiced_mtd_usd?: number | null
+          open_deals_count?: number | null
+          overdue_usd?: number | null
+          paid_mtd_usd?: number | null
+          pipeline_value_usd?: number | null
+          snapshot_date?: string
+          user_id?: string
+          utilization_pct?: number | null
         }
         Relationships: []
-      }
-      organization_members: {
-        Row: {
-          joined_at: string
-          org_id: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          joined_at?: string
-          org_id: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          joined_at?: string
-          org_id?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_members_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       organization_invitations: {
         Row: {
@@ -814,6 +806,56 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      organization_members: {
+        Row: {
+          joined_at: string
+          org_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          org_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          org_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string
+        }
+        Relationships: []
       }
       outgoing_webhooks: {
         Row: {

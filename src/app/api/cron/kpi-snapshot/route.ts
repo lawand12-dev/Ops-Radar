@@ -119,9 +119,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       continue;
     }
 
-    // Cast needed until `npm run types:supabase` is run after applying the migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: upsertErr } = await (supabase as any)
+    const { error: upsertErr } = await supabase
       .from('kpi_snapshots')
       .upsert(snap, { onConflict: 'user_id,snapshot_date' });
 
