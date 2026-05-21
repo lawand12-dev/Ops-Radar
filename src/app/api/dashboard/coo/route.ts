@@ -115,8 +115,15 @@ Account context (from settings — do not fetch via tools):
 
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
       function emit(event: AgentEvent) {
+        if (closed) return;
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      }
+      function close() {
+        if (closed) return;
+        closed = true;
+        controller.close();
       }
 
       try {
@@ -144,7 +151,7 @@ Account context (from settings — do not fetch via tools):
           if (choice.finish_reason === 'stop') {
             emit({ type: 'text_delta', delta: choice.message.content ?? '' });
             emit({ type: 'done' });
-            controller.close();
+            close();
             return;
           }
 
@@ -185,15 +192,23 @@ Account context (from settings — do not fetch via tools):
                 content: JSON.stringify(result),
               });
             }
+            continue;
           }
+
+          // Unexpected finish_reason (length, content_filter, etc.) — emit any partial text and stop
+          const partial = choice.message.content ?? '';
+          if (partial) emit({ type: 'text_delta', delta: partial });
+          emit({ type: 'done' });
+          close();
+          return;
         }
 
         emit({ type: 'error', message: 'The COO ran too many steps. Please try a more specific question.' });
-        controller.close();
+        close();
       } catch (err) {
         console.error('[coo-agent] error:', err);
         emit({ type: 'error', message: 'Something went wrong. Please try again.' });
-        controller.close();
+        close();
       }
     },
   });
