@@ -14,7 +14,7 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'get_sales',
-      description: 'Fetch HubSpot pipeline data: total pipeline value, open deal count, deals won this month. Call this for any pipeline or sales question.',
+      description: 'Fetch CRM pipeline data: total pipeline value, open deal count, deals won this month. Reads from HubSpot if connected, otherwise falls back to Pipedrive. Call this for any pipeline or sales question.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -30,7 +30,7 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'get_capacity',
-      description: 'Fetch team capacity: utilization %, hours tracked this month, available hours remaining. Call this for any question about team load, bandwidth, or whether to take on new work.',
+      description: 'Fetch team capacity: utilization %, hours tracked this month, available hours remaining. Reads from Harvest if connected, otherwise falls back to Toggl. Call this for any question about team load, bandwidth, or whether to take on new work.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -38,7 +38,23 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'get_scope',
-      description: 'Fetch scope creep signals: which clients have logged hours exceeding their agreed budget. Call this for any question about scope, overruns, or project health.',
+      description: 'Fetch project delivery and scope creep signals. Reads from ClickUp + Harvest (best — includes budget vs logged) if both connected, otherwise falls back to Asana or Monday for project status and overdue tasks. Call this for any question about scope, overruns, project health, or overdue work.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_outbound',
+      description: 'Fetch outbound marketing/sales metrics from Apollo: emails sent, open rate, reply rate, top sequences. Call this for any question about outbound campaigns, prospecting effectiveness, or cold email performance.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_meetings',
+      description: 'Fetch meeting bookings from Calendly: number of meetings booked, conversion rate, upcoming meetings. Call this for any question about meeting volume, sales calls, or the upcoming schedule.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -92,5 +108,7 @@ export const TOOL_LABELS: Record<string, string> = {
   get_profitability: 'Analysing client profitability...',
   get_capacity: 'Checking team capacity...',
   get_scope: 'Checking scope creep...',
+  get_outbound: 'Fetching outbound metrics...',
+  get_meetings: 'Fetching meeting bookings...',
   queue_action: 'Queuing action for your approval...',
 };

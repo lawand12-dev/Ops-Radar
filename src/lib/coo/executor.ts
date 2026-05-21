@@ -6,6 +6,12 @@ import { fetchStripePerClientRevenue } from '<npm>/lib/integrations/stripe/profi
 import { fetchHarvestPerClientHours } from '<npm>/lib/integrations/harvest/profitability-adapter';
 import { computeClientProfitability } from '<npm>/lib/profitability';
 import { fetchClickupProjectBudgets } from '<npm>/lib/integrations/clickup/scope-adapter';
+import { fetchPipedriveSalesData } from '<npm>/lib/integrations/pipedrive/adapter';
+import { fetchTogglTimeData } from '<npm>/lib/integrations/toggl/adapter';
+import { fetchAsanaDeliveryData } from '<npm>/lib/integrations/asana/adapter';
+import { fetchMondayDeliveryData } from '<npm>/lib/integrations/monday/adapter';
+import { fetchApolloMarketingData } from '<npm>/lib/integrations/apollo/adapter';
+import { fetchCalendlyBookingsData } from '<npm>/lib/integrations/calendly/adapter';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import type { Json } from '<npm>/lib/database.types';
 import type {
@@ -21,6 +27,12 @@ export type ExecutorContext = {
   hubspotKey: string | null;
   harvestKey: string | null;
   clickupKey: string | null;
+  pipedriveKey: string | null;
+  togglKey: string | null;
+  asanaKey: string | null;
+  mondayKey: string | null;
+  apolloKey: string | null;
+  calendlyKey: string | null;
   blendedRate: number;
   teamSizeRaw: string;
   userId: string;
@@ -78,22 +90,41 @@ async function runGetFinance(ctx: ExecutorContext): Promise<ToolResult> {
 }
 
 async function runGetSales(ctx: ExecutorContext): Promise<ToolResult> {
-  if (!ctx.hubspotKey)
-    return { success: false, reason: 'HubSpot is not connected. Go to Integrations to connect it.' };
-  try {
-    const data = await fetchHubspotSalesData(ctx.hubspotKey);
-    return {
-      success: true,
-      data: {
-        pipeline_value_usd: data.pipeline_value,
-        open_deals_count: data.open_deals_count,
-        deals_won_this_month: data.deals_won_this_month,
-        currency: data.currency,
-      },
-    };
-  } catch {
-    return { success: false, reason: 'HubSpot fetch failed. The API key may have expired.' };
+  if (ctx.hubspotKey) {
+    try {
+      const data = await fetchHubspotSalesData(ctx.hubspotKey);
+      return {
+        success: true,
+        data: {
+          source: 'hubspot',
+          pipeline_value_usd: data.pipeline_value,
+          open_deals_count: data.open_deals_count,
+          deals_won_this_month: data.deals_won_this_month,
+          currency: data.currency,
+        },
+      };
+    } catch {
+      // fall through to Pipedrive
+    }
   }
+  if (ctx.pipedriveKey) {
+    try {
+      const data = await fetchPipedriveSalesData(ctx.pipedriveKey);
+      return {
+        success: true,
+        data: {
+          source: 'pipedrive',
+          pipeline_value_usd: data.pipeline_value,
+          open_deals_count: data.open_deals_count,
+          deals_won_this_month: data.deals_won_this_month,
+          currency: data.currency,
+        },
+      };
+    } catch {
+      return { success: false, reason: 'Pipedrive fetch failed.' };
+    }
+  }
+  return { success: false, reason: 'No CRM connected. Connect HubSpot or Pipedrive in Integrations.' };
 }
 
 async function runGetProfitability(ctx: ExecutorContext): Promise<ToolResult> {
@@ -125,60 +156,170 @@ async function runGetProfitability(ctx: ExecutorContext): Promise<ToolResult> {
 }
 
 async function runGetCapacity(ctx: ExecutorContext): Promise<ToolResult> {
-  if (!ctx.harvestKey)
-    return { success: false, reason: 'Harvest is not connected — needed for hours tracking.' };
   const minSize = teamSizeMin(ctx.teamSizeRaw);
   const capacityHours = minSize ? minSize * 160 : null;
   if (!capacityHours)
     return { success: false, reason: 'Team size is not set in account settings.' };
-  try {
-    const harvestData = await fetchHarvestPerClientHours(ctx.harvestKey);
-    const totalHours = harvestData.clients.reduce((s, c) => s + c.hours_current, 0);
-    const utilPct = Math.round((totalHours / capacityHours) * 100);
-    return {
-      success: true,
-      data: {
-        estimated_monthly_capacity_hours: capacityHours,
-        hours_tracked_this_month: Math.round(totalHours * 10) / 10,
-        utilization_pct: utilPct,
-        available_hours: Math.round(capacityHours - totalHours),
-      },
-    };
-  } catch {
-    return { success: false, reason: 'Harvest capacity fetch failed.' };
+
+  if (ctx.harvestKey) {
+    try {
+      const harvestData = await fetchHarvestPerClientHours(ctx.harvestKey);
+      const totalHours = harvestData.clients.reduce((s, c) => s + c.hours_current, 0);
+      const utilPct = Math.round((totalHours / capacityHours) * 100);
+      return {
+        success: true,
+        data: {
+          source: 'harvest',
+          estimated_monthly_capacity_hours: capacityHours,
+          hours_tracked_this_month: Math.round(totalHours * 10) / 10,
+          utilization_pct: utilPct,
+          available_hours: Math.round(capacityHours - totalHours),
+        },
+      };
+    } catch {
+      // fall through to Toggl
+    }
   }
+  if (ctx.togglKey) {
+    try {
+      const data = await fetchTogglTimeData(ctx.togglKey);
+      const utilPct = Math.round((data.hours_tracked / capacityHours) * 100);
+      return {
+        success: true,
+        data: {
+          source: 'toggl',
+          estimated_monthly_capacity_hours: capacityHours,
+          hours_tracked_this_month: Math.round(data.hours_tracked * 10) / 10,
+          utilization_pct: utilPct,
+          available_hours: Math.round(capacityHours - data.hours_tracked),
+        },
+      };
+    } catch {
+      return { success: false, reason: 'Toggl fetch failed.' };
+    }
+  }
+  return { success: false, reason: 'No time tracker connected. Connect Harvest or Toggl in Integrations.' };
 }
 
 async function runGetScope(ctx: ExecutorContext): Promise<ToolResult> {
-  if (!ctx.clickupKey)
-    return { success: false, reason: 'ClickUp is not connected — needed for project budget data.' };
-  if (!ctx.harvestKey)
-    return { success: false, reason: 'Harvest is not connected — needed for hours logged data.' };
-  try {
-    const [clickupData, harvestData] = await Promise.all([
-      fetchClickupProjectBudgets(ctx.clickupKey),
-      fetchHarvestPerClientHours(ctx.harvestKey),
-    ]);
-    const harvestByName = Object.fromEntries(
-      harvestData.clients.map((c) => [c.name.toLowerCase(), c.hours_current]),
-    );
-    const projects = clickupData.projects.map((p) => {
-      const logged = harvestByName[p.project_name.toLowerCase()] ?? 0;
-      const overrunPct =
-        p.estimated_hours > 0
-          ? Math.round(((logged - p.estimated_hours) / p.estimated_hours) * 100)
-          : 0;
+  if (ctx.clickupKey && ctx.harvestKey) {
+    try {
+      const [clickupData, harvestData] = await Promise.all([
+        fetchClickupProjectBudgets(ctx.clickupKey),
+        fetchHarvestPerClientHours(ctx.harvestKey),
+      ]);
+      const harvestByName = Object.fromEntries(
+        harvestData.clients.map((c) => [c.name.toLowerCase(), c.hours_current]),
+      );
+      const projects = clickupData.projects.map((p) => {
+        const logged = harvestByName[p.project_name.toLowerCase()] ?? 0;
+        const overrunPct =
+          p.estimated_hours > 0
+            ? Math.round(((logged - p.estimated_hours) / p.estimated_hours) * 100)
+            : 0;
+        return {
+          project_name: p.project_name,
+          budget_hours: p.estimated_hours,
+          logged_hours: Math.round(logged * 10) / 10,
+          overrun_pct: overrunPct,
+          in_scope: logged <= p.estimated_hours,
+        };
+      });
+      return { success: true, data: { source: 'clickup+harvest', projects } };
+    } catch {
+      // fall through
+    }
+  }
+  if (ctx.asanaKey) {
+    try {
+      const data = await fetchAsanaDeliveryData(ctx.asanaKey);
       return {
-        project_name: p.project_name,
-        budget_hours: p.estimated_hours,
-        logged_hours: Math.round(logged * 10) / 10,
-        overrun_pct: overrunPct,
-        in_scope: logged <= p.estimated_hours,
+        success: true,
+        data: {
+          source: 'asana',
+          active_projects: data.active_projects,
+          overdue_tasks: data.overdue_tasks,
+          tasks: data.tasks.slice(0, 10).map((t) => ({
+            name: t.name,
+            project_name: t.project_name,
+            status: t.status,
+            overdue: t.overdue,
+          })),
+        },
       };
-    });
-    return { success: true, data: { projects } };
+    } catch {
+      // fall through
+    }
+  }
+  if (ctx.mondayKey) {
+    try {
+      const data = await fetchMondayDeliveryData(ctx.mondayKey);
+      return {
+        success: true,
+        data: {
+          source: 'monday',
+          active_projects: data.active_projects,
+          overdue_tasks: data.overdue_tasks,
+          tasks: data.tasks.slice(0, 10).map((t) => ({
+            name: t.name,
+            project_name: t.project_name,
+            status: t.status,
+            overdue: t.overdue,
+          })),
+        },
+      };
+    } catch {
+      return { success: false, reason: 'Monday fetch failed.' };
+    }
+  }
+  return { success: false, reason: 'No project tool connected. Connect ClickUp (best — includes budgets), Asana, or Monday in Integrations.' };
+}
+
+async function runGetOutbound(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!ctx.apolloKey)
+    return { success: false, reason: 'Apollo is not connected. Connect it in Integrations to see outbound metrics.' };
+  try {
+    const data = await fetchApolloMarketingData(ctx.apolloKey);
+    return {
+      success: true,
+      data: {
+        emails_sent: data.emails_sent,
+        open_rate_pct: data.open_rate_pct,
+        reply_rate_pct: data.reply_rate_pct,
+        top_sequences: data.sequences.slice(0, 5).map((s) => ({
+          name: s.name,
+          contacts_enrolled: s.contacts_enrolled,
+          emails_sent: s.emails_sent,
+          open_rate_pct: s.open_rate_pct,
+          reply_rate_pct: s.reply_rate_pct,
+        })),
+      },
+    };
   } catch {
-    return { success: false, reason: 'Scope fetch failed.' };
+    return { success: false, reason: 'Apollo fetch failed. The API key may have expired.' };
+  }
+}
+
+async function runGetMeetings(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!ctx.calendlyKey)
+    return { success: false, reason: 'Calendly is not connected. Connect it in Integrations to see meeting metrics.' };
+  try {
+    const data = await fetchCalendlyBookingsData(ctx.calendlyKey);
+    return {
+      success: true,
+      data: {
+        meetings_booked: data.meetings_booked,
+        meeting_conversion_pct: data.meeting_conversion_pct,
+        period_label: data.period_label,
+        upcoming: data.upcoming.slice(0, 5).map((m) => ({
+          name: m.name,
+          invitee_name: m.invitee_name,
+          start_time: m.start_time,
+        })),
+      },
+    };
+  } catch {
+    return { success: false, reason: 'Calendly fetch failed. The API key may have expired.' };
   }
 }
 
@@ -334,6 +475,10 @@ export async function executeToolCall(
       return runGetCapacity(ctx);
     case 'get_scope':
       return runGetScope(ctx);
+    case 'get_outbound':
+      return runGetOutbound(ctx);
+    case 'get_meetings':
+      return runGetMeetings(ctx);
     case 'queue_action':
       return runQueueAction(args, ctx);
     default:
