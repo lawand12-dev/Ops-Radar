@@ -13,6 +13,18 @@ type RetrievalOptions = {
   category?: string
 }
 
+export type ChunkFrontmatter = {
+  title?: string
+  category?: string
+  tags?: string[]
+  authority?: 'primary-research' | 'industry-report' | 'playbook' | 'case-study' | 'anecdotal'
+  publication_date?: string
+  last_verified?: string
+  coo_relevance?: number
+  audit_relevance?: number
+  summary?: string
+}
+
 export type KnowledgeChunk = {
   id: string
   slug: string | null
@@ -21,6 +33,42 @@ export type KnowledgeChunk = {
   content: string
   similarity: number
   metadata: Record<string, unknown> | null
+  frontmatter?: ChunkFrontmatter
+}
+
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+
+function parseScalar(raw: string): string | number | string[] {
+  const v = raw.trim()
+  if (v.startsWith('[') && v.endsWith(']')) {
+    const inner = v.slice(1, -1).trim()
+    if (!inner) return []
+    return inner.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+  }
+  if (/^-?\d+$/.test(v)) return parseInt(v, 10)
+  // strip surrounding quotes if present
+  return v.replace(/^['"]|['"]$/g, '')
+}
+
+function parseFrontmatter(raw: string): { frontmatter: ChunkFrontmatter; body: string } {
+  const match = raw.match(FRONTMATTER_RE)
+  if (!match) return { frontmatter: {}, body: raw }
+
+  const block = match[1]
+  const body = raw.slice(match[0].length)
+  const fm: Record<string, unknown> = {}
+
+  for (const line of block.split(/\r?\n/)) {
+    if (!line.trim() || line.trim().startsWith('#')) continue
+    const colon = line.indexOf(':')
+    if (colon === -1) continue
+    const key = line.slice(0, colon).trim()
+    const value = line.slice(colon + 1).trim()
+    if (!key) continue
+    fm[key] = parseScalar(value)
+  }
+
+  return { frontmatter: fm as ChunkFrontmatter, body }
 }
 
 function selectCategories(agencyType?: string, automationWish?: string): string[] {
@@ -67,12 +115,16 @@ export function readCategory(category: string): KnowledgeChunk[] {
   for (const file of files) {
     if (remaining <= 0) break
     const filePath = path.join(categoryPath, file)
-    let content: string
+    let raw: string
     try {
-      content = fs.readFileSync(filePath, 'utf-8').trim()
+      raw = fs.readFileSync(filePath, 'utf-8')
     } catch {
       continue
     }
+    if (!raw.trim()) continue
+
+    const { frontmatter, body } = parseFrontmatter(raw)
+    const content = body.trim()
     if (!content) continue
 
     const truncated = content.slice(0, Math.min(remaining, PER_FILE_CHAR_CAP))
@@ -86,6 +138,7 @@ export function readCategory(category: string): KnowledgeChunk[] {
       content: truncated,
       similarity: 1.0,
       metadata: { retrieval_source: 'file' },
+      frontmatter,
     })
   }
 
@@ -142,20 +195,67 @@ export async function retrieveRelevantKnowledge(
 }
 
 function selectCooCategories(query: string): string[] {
-  const q = query.toLowerCase();
-  if (/margin|profit|reprice|pricing|rate|hourly cost/.test(q)) return ['benchmarks', 'agency-profiles'];
-  if (/churn|retention|onboarding|client/.test(q)) return ['agency-profiles'];
-  if (/cash|invoice|overdue|collection/.test(q)) return ['agency-profiles', 'patterns'];
-  if (/utilization|capacity|hours|burnout|hiring|team/.test(q)) return ['benchmarks', 'agency-profiles'];
-  if (/scope|overrun|project|delivery|deadline/.test(q)) return ['patterns', 'failures'];
-  if (/revenue|growth|benchmark/.test(q)) return ['benchmarks', 'agency-profiles'];
-  return ['agency-profiles', 'benchmarks'];
+  const q = query.toLowerCase()
+  // Tool/integration questions → integrations folder first
+  if (/stripe|hubspot|harvest|clickup|pipedrive|apollo|asana|monday|toggl|calendly/.test(q))
+    return ['integrations', 'patterns']
+  // Playbook-flavored questions → playbooks first
+  if (/script|template|conversation|how do i|playbook|framework/.test(q))
+    return ['playbooks', 'agency-profiles']
+  if (/margin|profit|reprice|pricing|rate|hourly cost/.test(q)) return ['benchmarks', 'playbooks']
+  if (/churn|retention|onboarding|client/.test(q)) return ['playbooks', 'agency-profiles']
+  if (/cash|invoice|overdue|collection/.test(q)) return ['playbooks', 'agency-profiles']
+  if (/utilization|capacity|hours|burnout|hiring|team/.test(q)) return ['benchmarks', 'playbooks']
+  if (/scope|overrun|project|delivery|deadline/.test(q)) return ['playbooks', 'patterns']
+  if (/revenue|growth|benchmark/.test(q)) return ['benchmarks', 'agency-profiles']
+  return ['agency-profiles', 'benchmarks']
+}
+
+function scoreCooChunk(chunk: KnowledgeChunk): number {
+  const fm = chunk.frontmatter ?? {}
+  let score = 0
+
+  if (typeof fm.coo_relevance === 'number') score += fm.coo_relevance * 2
+
+  // Recency boost: 2 if published <6 months ago, 1 if <18 months, else 0
+  if (fm.publication_date) {
+    const t = new Date(fm.publication_date).getTime()
+    if (!Number.isNaN(t)) {
+      const ageMs = Date.now() - t
+      const months = ageMs / (1000 * 60 * 60 * 24 * 30)
+      if (months < 6) score += 2
+      else if (months < 18) score += 1
+    }
+  }
+
+  // Authority boost
+  if (fm.authority === 'primary-research' || fm.authority === 'playbook') score += 1
+
+  return score
 }
 
 export function retrieveCooKnowledge(query: string): KnowledgeChunk[] {
-  if (!query.trim()) return [];
-  const categories = selectCooCategories(query).slice(0, 2);
-  return categories.flatMap((cat) => readCategory(cat));
+  if (!query.trim()) return []
+  const categories = selectCooCategories(query).slice(0, 2)
+  const allChunks = categories.flatMap((cat) => readCategory(cat))
+
+  // Score each chunk; mutate `similarity` so it represents the ranking score
+  for (const c of allChunks) {
+    c.similarity = scoreCooChunk(c)
+  }
+
+  // Sort descending by score, then fill within 10KB budget (capped per-chunk)
+  allChunks.sort((a, b) => b.similarity - a.similarity)
+
+  let remaining = CATEGORY_CHAR_BUDGET
+  const selected: KnowledgeChunk[] = []
+  for (const c of allChunks) {
+    if (remaining <= 0) break
+    const trim = c.content.slice(0, Math.min(remaining, PER_FILE_CHAR_CAP))
+    selected.push({ ...c, content: trim })
+    remaining -= trim.length
+  }
+  return selected
 }
 
 export function formatKnowledgeContext(chunks: KnowledgeChunk[]): string {
