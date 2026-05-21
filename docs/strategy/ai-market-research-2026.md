@@ -37,6 +37,8 @@ The AI market has reached a historic scale:
 
 > **The headline number:** $2.52 trillion spent. 95% see nothing. This is the biggest ROI gap in the history of enterprise technology.
 
+**May 2026 Gartner update:** **80% of CEOs** now say AI will force operational capability overhauls ([Gartner April 2026](https://www.gartner.com/en/newsroom/press-releases/2026-04-23-gartner-survey-reveals-80-percent-of-ceos-say-artificial-intelligence-will-force-operational-capability-overhauls)). Gartner's May 2026 framing is the angle to own: *"Autonomous business and AI layoffs may create budget room, but do not deliver returns. Organizations that improve ROI are not those that eliminate the need for people, but those that amplify them."* The amplification thesis is OpsRadar's exact positioning — owner stays in control, AI handles the data aggregation and surfaces the decisions.
+
 ---
 
 ## PART 2: THE ADOPTION TRAP — EVERYONE IS USING AI, ALMOST NOBODY IS WINNING
@@ -311,6 +313,9 @@ Cross-referencing all 8 research sources, these are the documented pain points w
 | Global marketing agencies market (2026) | **$473.57 billion** |
 | Global AI analytics market (2025) | **$29 billion** → projected $98B by 2030 |
 | Agentic AI enterprise software revenue by 2035 | **$450 billion** (30% of enterprise software) |
+| **Global AI OS market (NEW — May 2026)** | **$12.85B (2025) → $107.60B by 2033, 30.5% CAGR** ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report)) |
+| **Gartner AI agent software spend (NEW — 2026)** | **$206.5B in 2026 → $376.3B in 2027** (from $86.4B in 2025) |
+| **Industry-specific AI CAGR vs horizontal (NEW)** | **36.5% vertical vs 18.9% horizontal** ([ACTGSYS 2026](https://actgsys.com/en/blog/vertical-ai-agents-industry-specific-2026)) |
 
 ### What Winning Looks Like (for the customer)
 
@@ -322,6 +327,10 @@ Cross-referencing all 8 research sources, these are the documented pain points w
 | Output increase from automation leaders vs. average agencies | **2–4x** |
 | Average AI ROI within 14 months of production deployment | **5.8x** |
 | CFOs with strategic AI deployment adding margin by 2029 | **+10 margin points** (Gartner) |
+| **Agentic AI ROI ramp by year (NEW — May 2026)** | **41% Y1 → 87% Y2 → 124%+ Y3** ([Onereach 2026](https://onereach.ai/blog/agentic-ai-adoption-rates-roi-market-trends/)) |
+| **Knowledge worker hours saved (NEW)** | **6.4 hours/week per worker** (agentic AI deployments) |
+| **MCP-backed agent adoption (NEW — April 2026)** | **78%** of enterprise AI teams have ≥1 in production ([DigitalApplied 2026](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol)) |
+| **Median time-to-value on agent deployment (NEW)** | **5.1 months** overall — SDR agents pay back in 3.4mo; finance/ops in 8.9mo ([Joget 2026](https://joget.com/ai-agent-adoption-in-2026-what-the-analysts-data-shows/)) |
 
 ---
 

@@ -44,9 +44,12 @@
 |---|---|---|
 | **Fractional COO** | $7,000–$15,000/mo | Part-time human. Quarterly reviews. Knowledge leaves when they do. |
 | **Full-time COO** | $25,000–$43,000/mo | A real one. If you can afford one, you're not in our ICP. |
+| **Full-time Chief AI Officer** | $33,000–$208,000/mo | The role 76% of enterprises now have. Your agency cannot expense it. |
 | **OpsRadar AI COO** | **$750–$3,000/mo** | 24/7 on your stack. Built only for agencies. Sees every client every day. |
 
-*Source: market data on fractional COO retainers and full-time COO comp for $1M–$5M agencies. The math is in `docs/pricing-depth.md` §1.2.*
+*Sources: ScaleUp Exec + Fractionus 2025 (fractional COO band); IBM IBV 2026 (76% of large enterprises now have a CAIO; comp band $400K–$2.5M/yr). Full math in `docs/pricing-depth.md` §1.2.*
+
+**The macro anchor:** agentic AI delivers a **171% average ROI** vs. ~57% for traditional automation (Onereach.ai 2026). The AI COO is the highest-ROI line item you're not running.
 
 ---
 
@@ -244,7 +247,7 @@
 
 ### "$1,500 is steep for us."
 
-If you compare $1,500 to a software subscription, yes — it's high. If you compare it to manual reporting time, the cost of finding an unprofitable client in month 3 instead of week 2, and the fractional COO you're either paying or thinking about hiring, it's not even close. Tell us what you're paying now to do these things and we'll show you the math in five minutes. If the number isn't 3x what you'd pay us, don't sign.
+If you compare $1,500 to a software subscription, yes — it's high. If you compare it to manual reporting time, the cost of finding an unprofitable client in month 3 instead of week 2, and the fractional COO you're either paying or thinking about hiring, it's not even close. Productive.io's 2026 data: 50% of agencies leave 20%+ of profit untapped to ops inefficiency. On a $2M agency at 20% margins, that's **$80K/year sitting in the spreadsheet.** OpsRadar Growth recovers a single-digit fraction of it and pays for itself 4x over. Tell us what you're paying now and we'll show you the math in five minutes. If the number isn't 3x what you'd pay us, don't sign.
 
 ### "Why is Pro 2x Growth?"
 

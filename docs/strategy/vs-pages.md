@@ -10,7 +10,7 @@ All pricing and feature claims are sourced inline. Items marked `[VERIFY: …]` 
 
 **URL:** `/vs/productive`
 **Meta title:** OpsRadar vs Productive.io: AI COO vs Agency PSA (2026)
-**Meta description:** Productive.io records what happened in your agency. OpsRadar tells you what to do next. The honest alternative to Productive for owners under $5M ARR.
+**Meta description:** Productive.io records what happened in your agency. OpsRadar tells you what to do next. The honest alternative to Productive for owners under $5M ARR — flat pricing from $750/month, no per-seat tax.
 
 ---
 
@@ -18,7 +18,7 @@ All pricing and feature claims are sourced inline. Items marked `[VERIFY: …]` 
 
 **H1:** Productive shows the chart. OpsRadar makes the call.
 
-**Subhead:** Productive starts at $9/user/month and grows into a $24+/user PSA you have to staff. OpsRadar is one flat price starting at $500/month that watches margin, utilization and scope creep across your stack and tells you the next action — no analyst required.
+**Subhead:** Productive now starts at $11/user/month with a 3-seat minimum and grows into a $28+/user PSA you have to staff. OpsRadar is one flat tier starting at $750/month that watches margin, utilization and scope creep across your stack and tells you the next action — no analyst required.
 
 **Primary CTA:** Book a 20-min demo
 **Secondary CTA:** See how the math works → `/pricing`
@@ -35,8 +35,8 @@ Productive shows you what happened. OpsRadar tells you what to do.
 
 | Feature | OpsRadar | Productive.io |
 |---|---|---|
-| Starting price | $500/month flat (founder tier) | $9/user/month Essential, $24/user/month Professional (annual) [1] |
-| 10-person agency, full PSA features | $500–$1,500/month flat | ~$240/month minimum on Professional, before HubSpot/Ultimate add-ons [1] |
+| Starting price | $750/month flat (Starter tier) | $11/user/month Essential (3-seat min), $28+/user/month Ultimate (May 2026) [1] |
+| 10-person agency, full PSA features | $750–$1,500/month flat | ~$280/month minimum on Professional, before HubSpot/Ultimate add-ons; volume discounts only kick in at 50+ users [1] |
 | Pricing model | Flat tier — does not scale with headcount | Per-seat — every hire raises your bill |
 | AI-native (built AI-first) | Yes — the AI COO is the product | No — AI Assistant launched March 2026 as a feature [2] |
 | Tells you what to do next | Yes — recommendations + agentic actions | No — AI helps you build reports and draft tasks [2] |
@@ -48,7 +48,7 @@ Productive shows you what happened. OpsRadar tells you what to do.
 | Pre-built agency stack integrations | HubSpot, ClickUp, Harvest, Stripe + 6 more, ready out of box | 1,000+ via integrations + Zapier; HubSpot gated to Ultimate plan [4] |
 | Replaces a fractional COO | Yes — that is the design brief | No — you still need a human to read the reports |
 
-Sources: [1] productive.io/pricing (Essential $9/user, Professional $24/user annual). [2] productive.io/productive-ai/ + product update March 2026 — AI Assistant launched March 2026. [3] thedigitalprojectmanager.com Productive review — implementation in days, full rollout longer. [4] productive.io/integrations + productive.io HubSpot integration notes.
+Sources: [1] [productive.io/pricing](https://productive.io/pricing/) (Essential $11/user, Professional ~$28/user, Ultimate higher — 3-seat minimum on every plan; verified May 2026 via [G2 Productive Pricing 2026](https://www.g2.com/products/productive/pricing) and [Productive Help Center billing notes](https://help.productive.io/en/articles/2179591-how-billing-and-subscriptions-work)). [2] productive.io/productive-ai/ + product update March 2026 — AI Assistant launched March 2026. [3] thedigitalprojectmanager.com Productive review — implementation in days, full rollout longer. [4] productive.io/integrations + productive.io HubSpot integration notes.
 
 ---
 
@@ -119,7 +119,7 @@ Productive.io is a real PSA built for agencies that have outgrown spreadsheets a
 
 **URL:** `/vs/scoro`
 **Meta title:** OpsRadar vs Scoro: The AI COO Alternative for Agencies
-**Meta description:** Scoro is a $19.90+/user/month PSA with a 5-seat minimum built for consultancies. OpsRadar is the AI COO alternative for agencies under $5M ARR — flat pricing, no migration.
+**Meta description:** Scoro is a $23.90+/user/month PSA with a 5-seat minimum built for consultancies. OpsRadar is the AI COO alternative for agencies under $5M ARR — flat pricing, no migration.
 
 ---
 
@@ -127,7 +127,7 @@ Productive.io is a real PSA built for agencies that have outgrown spreadsheets a
 
 **H1:** Scoro is for consultancies. OpsRadar is for agencies.
 
-**Subhead:** Scoro starts at $19.90/user/month with a 5-seat minimum and a multi-week rollout. OpsRadar starts at $500/month flat, plugs into the tools you already run, and starts producing signal in week one.
+**Subhead:** Scoro now starts at $23.90/user/month (2026 pricing) with a 5-seat minimum and a multi-week rollout. OpsRadar starts at $750/month flat, plugs into the tools you already run, and starts producing signal in week one.
 
 **Primary CTA:** Book a 20-min demo
 **Secondary CTA:** Compare the real bill → `/pricing`
@@ -144,8 +144,8 @@ Scoro is the system of record. OpsRadar is the brain on top of whatever you alre
 
 | Feature | OpsRadar | Scoro |
 |---|---|---|
-| Starting price | $500/month flat | $19.90/user/month Essential, $32.90 Standard, $49.90 Pro [1] |
-| 10-seat agency, mid plan | $500–$1,500/month flat | ~$329/month at Standard (Growth), ~$499 at Pro [1] |
+| Starting price | $750/month flat | $23.90/user/month Core (2026), $38.90 Growth, $59.90+ Performance [1] |
+| 10-seat agency, mid plan | $750–$1,500/month flat | ~$389/month at Growth, ~$599+ at Performance [1] |
 | Seat minimum | None | 5 seats minimum on every plan [1] |
 | Pricing model | Flat tier — independent of headcount | Per-seat — every hire raises your bill |
 | AI-native (built AI-first) | Yes | No — ELI is an AI Assistant added on top of an existing PSA [2] |
@@ -157,7 +157,7 @@ Scoro is the system of record. OpsRadar is the brain on top of whatever you alre
 | Agentic actions (with undo) | Yes | No — ELI can act through MCP, but action design is yours [2] |
 | Replaces a fractional COO | Yes | No — Scoro is the ledger, not the operator |
 
-Sources: [1] scoro.com/pricing (Essential $19.90/user, Growth/Standard $32.90/user, Performance/Pro $49.90/user — 5-seat minimum). [2] thedigitalprojectmanager.com — Scoro ELI AI Assistant. [3] scoro.com — positioned for "consultancies, agencies, IT firms, architecture companies." [4] thedigitalprojectmanager.com Scoro review — 2–4 weeks for full implementation.
+Sources: [1] [scoro.com/pricing](https://www.scoro.com/pricing/) — Core $23.90/user, Growth $38.90/user, Performance $59.90/user (May 2026 pricing, verified via [G2 Scoro Pricing 2026](https://www.g2.com/products/scoro/pricing); 5-seat minimum; up to 16% annual discount). [2] thedigitalprojectmanager.com — Scoro ELI AI Assistant. [3] scoro.com — positioned for "consultancies, agencies, IT firms, architecture companies." [4] thedigitalprojectmanager.com Scoro review — 2–4 weeks for full implementation.
 
 ---
 
@@ -236,7 +236,7 @@ Scoro is the right call if you are a 50+ person professional services firm conso
 
 **H1:** Float schedules people. OpsRadar runs the agency.
 
-**Subhead:** Float starts at $6/person/month and is excellent at one slice — capacity. OpsRadar starts at $500/month flat and watches margin, utilization, scope creep, cash flow and client health across the whole agency, with the recommendation attached.
+**Subhead:** Float now starts at $7.50/person/month (Starter) / $12.50 (Pro) — 2026 pricing — and is excellent at one slice: capacity. OpsRadar starts at $750/month flat and watches margin, utilization, scope creep, cash flow and client health across the whole agency, with the recommendation attached.
 
 **Primary CTA:** Book a 20-min demo
 **Secondary CTA:** Why one slice is not enough → `/pricing`
@@ -253,7 +253,7 @@ Float tells you who is busy. OpsRadar tells you who is profitable.
 
 | Feature | OpsRadar | Float |
 |---|---|---|
-| Starting price | $500/month flat | $6/person/month Starter, $10/person/month Pro [1] |
+| Starting price | $750/month flat | $7.50/person/month Starter, $12.50/person/month Pro (2026 pricing) [1] |
 | Pricing model | Flat tier | Per scheduled person; guests are free [1] |
 | Category | AI COO / agency operations intelligence | Resource management and scheduling |
 | Capacity / resource scheduling | Pulled in from your PM tool; not the core surface | Yes — best-in-class drag-and-drop scheduler [2] |
@@ -266,7 +266,7 @@ Float tells you who is busy. OpsRadar tells you who is profitable.
 | Integrations with the agency stack | HubSpot, ClickUp, Harvest, Stripe + 6 more | Asana, Jira, Slack, Google Calendar, QuickBooks, Xero, Zapier [3] |
 | Replaces a fractional COO | Yes | No — solves capacity, not the COO job |
 
-Sources: [1] float.com/pricing (Starter $6/person, Pro $10/person, per scheduled person, guests free). [2] float.com — finance & estimates, scheduling features. [3] float.com/integrations.
+Sources: [1] [float.com/pricing](https://www.float.com/pricing) — Starter $7.50/person, Pro $12.50/person (2026 pricing; verified via [G2 Float Pricing 2026](https://www.g2.com/products/float-com/pricing) and [Capterra Float 2026](https://www.capterra.com/p/136078/Float/); guests free; Enterprise custom). [2] float.com — finance & estimates, scheduling features (estimates vs. actuals now in Pro). [3] float.com/integrations.
 
 ---
 
@@ -312,7 +312,7 @@ Sources: [1] float.com/pricing (Starter $6/person, Pro $10/person, per scheduled
 Float has been doing capacity scheduling for a decade. We are not trying to replace Float at capacity scheduling. We are trying to replace the fractional COO. Different job. Many customers keep Float and add OpsRadar on top — that is a real, supported pattern.
 
 **We just signed a contract with Float — can we still try OpsRadar?**
-Absolutely. Float owns the schedule. OpsRadar owns the agency-wide intelligence — margin, scope, client health. Run them in parallel. Float costs ~$10/person; OpsRadar is one flat tier. They do not overlap.
+Absolutely. Float owns the schedule. OpsRadar owns the agency-wide intelligence — margin, scope, client health. Run them in parallel. Float costs $7.50–$12.50/person/month (2026); OpsRadar is one flat tier. They do not overlap.
 
 **Will OpsRadar integrate with Float?**
 [VERIFY: confirm Float read API coverage and ETA] — Float integration is on the roadmap. Today, OpsRadar reads time and project data from Harvest, ClickUp and similar tools that overlap with what Float is scheduling, so the financial picture stays accurate.

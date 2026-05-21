@@ -6,6 +6,24 @@
 
 ---
 
+## May 2026 update — bank charter pending, $5.2B valuation
+
+Mercury matters more to OpsRadar in 2026 than it did in 2025 — the trust frame around banking + AI is migrating to ops + AI, and Mercury is writing the playbook:
+
+- **$200M Series D at $5.2B valuation, May 20 2026** — led by TCV, with a16z, Coatue, CRV, Sapphire, Sequoia, Spark participating. **49% step-up in 14 months.** (Source: cnbc.com, May 2026; businesswire.com, May 2026)
+- **$650M annualized revenue, four consecutive years of profitability** — a rare counter-cyclical fintech story. (Source: techstartups.com, May 2026)
+- **OCC conditional approval to become a federally regulated bank** — would let Mercury offer lending, join Zelle, reduce partner-bank dependence. Final approval targeted for 2027. (Source: cnbc.com, May 2026; phemex.com, 2026)
+- **Mercury Insights launched** — first in-product AI tool, "interactive, real-time view of company financial health, no spreadsheets or extra tools required." (Source: businesswire.com, May 2026) — this is *exactly* the language and surface OpsRadar competes against.
+- **Conversational AI agents for accounts** — approve payments, send invoices, manage finances by talking to the platform. Broader AI interface rolling out across 2026. (Source: cnbc.com, May 2026)
+- **CEO Akhund publicly named IPO as the long-term goal.** (Source: cnbc.com, May 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **Mercury Insights is now a direct philosophical competitor**, not just a banking adjacency. The "real-time view of company financial health, no spreadsheets" framing overlaps OpsRadar's hero promise. **OpsRadar's counter**: Mercury sees one slice (cash). OpsRadar sees the whole agency (cash + margin + capacity + scope + AI ROI). Run a "Mercury vs. OpsRadar" comparison page early — Mercury's brand carries our category.
+2. **Watch the conversational-AI-on-financial-data interface.** Mercury's pattern (approve, send, manage via chat) maps 1:1 to where OpsRadar's COO chat needs to go — execution, not just answers. Steal the interaction model wholesale.
+3. **The trust-color move still applies, harder now.** With Mercury about to become a regulated bank, the calm/serif/restrained-color palette is now load-bearing for the entire "trust + AI + money" design genre. OpsRadar handling agency P&L data should sit in the same visual neighborhood — not the neon-AI-startup neighborhood.
+
+---
+
 ## 1. The Visual System
 
 ### 1a. Color palette (exact rgb from computed styles)

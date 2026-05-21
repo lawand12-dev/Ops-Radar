@@ -214,6 +214,17 @@ The drop from 19% (small) to 8% (large) is counterintuitive — larger agencies 
 - **71% reported positive AI ROI within 6 months** (Revenue Memo)
 - Median AI payback period: **4.2 months** (down from 7.8 months in 2024)
 
+### 2026 Agency-Specific AI Data (Q1 2026, n=250 agencies)
+
+A May 2026 deep survey covering agencies at **$1M–$50M ARR, 8–180 FTE** ([Digital Applied 2026](https://www.digitalapplied.com/blog/agentic-ai-adoption-survey-2026-250-agencies)):
+
+- **91% of marketers** now use AI in some form — adoption is universal, **but only 41% can prove AI ROI**, down from 49% the prior year ([Digital Applied AI Marketing Statistics 2026](https://www.digitalapplied.com/blog/ai-marketing-statistics-2026-adoption-data-points))
+- **81% of CMOs** expect AI tool spend to grow in the next 12 months; **median planned increase: +47%**
+- **34% of enterprise marketing teams** now run at least one autonomous agent in production — **more than double the 14%** in Q4 2025
+- **Median agency AI spend: $1,800/month per agent**, with a **10× spread** between top and bottom quartile (top runs frontier models on multi-step workflows; bottom runs small models on narrow tasks)
+- **Top two pain points Q1 2026:** **token cost volatility (42%)** and **prompt injection risk (31%)** — both overtook model reliability as primary concerns
+- **23% of agencies cut junior copywriting headcount in 2025**; **31% plan further cuts in 2026** — shifting to senior strategic, technical, and AI-native roles
+
 ### What AI Tools Agencies Use Internally
 
 From Productive.io's 2025 survey of 180+ agencies:
@@ -288,6 +299,17 @@ One team's actual Monday morning ritual: "Every Monday morning, someone had to o
 - **56% of workers report tool fatigue negatively impacts their work weekly** (Cornell/Lokalise)
 - **79% of respondents said their company has taken no steps to consolidate tools** despite recognizing the problem
 - Knowledge workers spend **60% of their time on "work about work"** (Asana) — switching between tools, searching for data, reformatting reports
+
+### Tool Overwhelm — 2026 Update
+
+The 2026 numbers harden every prior claim:
+
+- **14,106 unique martech solutions** exist as of 2026 — a **27.8% YoY increase** in available tools ([Ciente 2026](https://ciente.io/blogs/saas-marketing-tools))
+- Average B2B organization runs **12–20 marketing technology tools**; **two-thirds of marketers use 16+ tools** for overlapping functions
+- **Martech utilization has dropped to 49%** — half of every stack is collecting digital dust
+- Average enterprise manages **650+ SaaS applications**; mid-market companies (OpsRadar's ICP zone) run **100–300 SaaS apps** ([Zylo SaaS Management Index 2026, via Globalpublicist24](https://www.globalpublicist24.com/reduce-saas-app-sprawl/))
+- **Gartner: organizations will waste ~25% of total cloud spend** by end of 2026, largely driven by unmanaged SaaS sprawl
+- **Tool fatigue costs SaaS marketing managers 7–12 hours/week** — up to **30% of a working week** redirected to tool overhead
 
 ---
 

@@ -183,6 +183,131 @@ Kuwait-born, founded 2013. One of the most active early-stage VCs in MENA. 85 in
 
 ---
 
+## Section 2.5 — Global Vertical AI / Agentic AI VCs (post-YC target list)
+
+> Research date: May 2026. These are the firms most actively writing seed-to-Series-A checks into vertical AI and AI-native services in 2026. Treat this as the target list for *after* YC Demo Day or once a US/UK lead investor is in motion. None of these will lead a cold pre-revenue Iraq deal — but every one is in-pattern for an agency-vertical AI COO with shipped product and design-partner revenue.
+
+---
+
+### a16z (Andreessen Horowitz)
+a16z.com
+
+- **AUM**: $90B+ as of January 2026 after closing a **$15B fund** — the largest single VC fundraise in history — [Aspire US](https://aspireapp.com/us/blog/top-venture-capital-firms-in-the-us)
+- **Thesis**: a16z's American Dynamism + Apps team has pivoted hard toward autonomous AI systems. Portfolio includes OpenAI, xAI, Databricks, Sierra, Glean, Decagon
+- **Relevant partners**: Sarah Wang (apps + AI agents), Martin Casado (infra), Alex Rampell (fintech + vertical SaaS)
+- **OpsRadar fit**: a16z's "Apps" thesis ("AI agents that replace org charts") maps directly to AI COO positioning. They lead Series A, not seed for international founders — but get on their radar via portfolio company intros
+- **Check size**: Seed $1–5M, Series A $10–25M
+
+### Sequoia Capital
+sequoiacap.com
+
+- **2026 thesis**: *"Services: The New Software"* — work budgets are **6x larger** than software budgets. Sequoia is funding "autopilots" that sell completed work, not productivity tools — [Sequoia AI Ascent 2026](https://sequoiacap.com/article/ai-ascent-2026/)
+- **Recent deal**: Led **Auctor's $20M seed (April 2026)** — pitched as "the agentic operating system for software implementation" — same shape of pitch OpsRadar should run — [Innmind](https://blog.innmind.com/sequoia-ai-ascent-2026-what-ai-founders-should-change-in-their-pitch-deck/)
+- **Relevant partners**: Pat Grady (apps/AI), Sonya Huang (AI infra + agents), Konstantine Buhler (vertical SaaS)
+- **OpsRadar fit**: Sequoia's exact 2026 framing — agentic system of action that replaces labor budget, not software budget — is the OpsRadar pitch. Use their language verbatim
+- **Check size**: Seed $5–15M, Series A $20–40M
+
+### Lightspeed Venture Partners
+lsvp.com
+
+- **2024 activity**: 23 AI investments totaling **$890M** — most active AI growth investor outside of a16z — [Affinity](https://www.affinity.co/blog/top-venture-capital-firms-investing-in-ai)
+- **Thesis**: Vertical AI + AI infrastructure
+- **Relevant partners**: Guru Chahal (enterprise AI), Arif Janmohamed (apps), Alex Taussig (consumer)
+- **OpsRadar fit**: Lightspeed has a documented pattern of backing vertical SaaS that becomes "operating system for X industry." Best to approach post-product
+- **Check size**: Seed $3–10M, Series A $15–30M
+
+### Khosla Ventures
+khoslaventures.com
+
+- **Thesis**: One of the most AI-active early-stage funds per [Sky9 Capital's 2026 AI VC map](https://www.sky9capital.com/blog/blog-ai-focused-investors-vc-firms-2026/). Vinod Khosla is publicly bullish on "AI replaces white-collar work" thesis — exact OpsRadar narrative
+- **Notable AI bets**: OpenAI (very early), Anthropic, Cresta
+- **Relevant partners**: Vinod Khosla (founder, AI bull), Samir Kaul (deep tech), Jon Chu
+- **OpsRadar fit**: Khosla writes seed checks into AI-native services without revenue if the team is technically credible. Fit for a Lezzoo-style pitch from Kurdistan
+- **Check size**: Seed $500K–$5M, Series A $10–25M
+
+### Bessemer Venture Partners
+bvp.com
+
+- **2026 thesis**: Bessemer's [Roadmap: AI Systems of Action](https://www.bvp.com/atlas/roadmap-ai-systems-of-action) is the most directly aligned VC publication for OpsRadar's positioning. Quote: *"Vertical AI isn't competing for IT budgets; it's competing for labor budgets, tapping directly into the labor line of a P&L."*
+- **The benchmark Bessemer uses**: Truly AI-native firms show **ARR per FTE of $500K–$1M+** and **70–80% gross margins**. Anything flat-or-declining is "a services business with an AI veneer." OpsRadar should report ARR/FTE in every pitch
+- **Recent thinking**: [State of AI 2025](https://www.bvp.com/atlas/the-state-of-ai-2025) and [AI Infrastructure Roadmap: Five Frontiers for 2026](https://www.bvp.com/atlas/ai-infrastructure-roadmap-five-frontiers-for-2026)
+- **Relevant partners**: Talia Goldberg (vertical SaaS), Janelle Teng (AI infra), Byron Deeter (cloud)
+- **OpsRadar fit**: Bessemer's vertical AI thesis maps almost word-for-word to OpsRadar. They wrote the playbook — use their stat: 6 dollars of labor for every 1 dollar of software
+- **Check size**: Seed $2–8M, Series A $15–30M
+
+### General Catalyst
+generalcatalyst.com
+
+- **2026 activity**: Co-led Tempo Labs' $5M round (alongside BoxGroup). Named by [PitchBook](https://newmarketpitch.com/blogs/news/agentic-ai-funding-analysis) as a top-3 most active investor in AI agents in 2026
+- **Thesis**: "Applied AI" — vertical AI software that automates a specific industry's workflows
+- **Relevant partners**: Hemant Taneja (CEO, AI bull), Daphne Koller (life sciences + AI), Niko Bonatsos (consumer + apps)
+- **OpsRadar fit**: GC has explicit thesis on AI-native services. Hemant's "Responsible Scaling" framework rewards founders who can articulate human-in-the-loop design — OpsRadar's "owner stays in control" positioning fits
+- **Check size**: Seed $3–10M, Series A $15–40M
+
+### Lerer Hippeau
+lererhippeau.com
+
+- **2026 activity**: Active investor with **447 portfolio companies and 11 new investments in the last 12 months** as of January 2026 — [Tracxn](https://tracxn.com/d/venture-capital/lerer-hippeau/__2XS7OxXcw0XAvncPVgCQaxGJMiMFmfSj8TuRZjWSngM)
+- **Recent deal**: Led Forum AI's $3M seed in early 2026
+- **Thesis**: NYC-based, early-stage, founder-friendly. Seed-stage specialist with strong B2B SaaS pattern. Less aggressive on AI infra, very active in vertical AI apps
+- **Relevant partners**: Ben Lerer (managing), Eric Hippeau, Andrea Hippeau (B2B SaaS)
+- **OpsRadar fit**: Best-fit US seed lead for a pre-Series-A vertical SaaS pitch. Writes $500K–$2M checks. Will take meetings off a YC intro
+- **Check size**: Seed $500K–$3M
+
+### BoxGroup
+boxgroup.com
+
+- **Recent activity**: Co-led Tempo Labs' $5M round with General Catalyst. Highly active angel-style seed fund
+- **Thesis**: First-check seed investor with a long track record (Plaid, Warby Parker, Glossier). Will write small checks alongside YC
+- **Relevant partners**: David Tisch, Greg Rosen, Nimi Katragadda
+- **OpsRadar fit**: Classic post-YC follow-on check ($250K–$1M). Best to engage post-Demo Day
+- **Check size**: $250K–$1M first check
+
+### Thrive Capital
+thrivecap.com
+
+- **Ranking**: #1 most-active VC overall per [Affinity 2026 report](https://www.affinity.co/blog/top-venture-capital-firms-investing-in-ai)
+- **Notable AI bets**: OpenAI (significant stake), Stripe, Instacart
+- **Relevant partners**: Josh Kushner (founder), Vince Hankes
+- **OpsRadar fit**: Thrive is growth-stage primarily — relevant only at Series A+. Mention them as "next round target" in YC pitch
+- **Check size**: Series A $20M+
+
+### Founders Fund
+foundersfund.com
+
+- **Thesis**: Strong AI track record (per [Earthian AI 2026 ranking](https://www.earthianai.com/news/articles/2026-03-05/best-ai-venture-capital-funds-2026-ranking)). Contrarian seed-stage bets on bold technical founders
+- **Relevant partners**: Keith Rabois, Trae Stephens, Brian Singerman
+- **OpsRadar fit**: Founders Fund will back unusual geographies if the founder thesis is sharp. Reach via warm intro only — they don't take cold inbound
+- **Check size**: Seed $1–10M, Series A $10–40M
+
+### Pioneer Fund
+pioneerfund.vc
+
+- **2026 activity**: Named by PitchBook as **a top-3 most active investor in AI agents in 2026** — [New Market Pitch](https://newmarketpitch.com/blogs/news/agentic-ai-funding-analysis)
+- **Founded by**: Daniel Gross (ex-YC partner, ex-Apple AI lead)
+- **Thesis**: YC-alumnus-only seed fund. Pre-seed and seed checks into YC companies
+- **OpsRadar fit**: This is the **single most relevant fund for OpsRadar post-YC**. YC-only LP base, AI agent thesis, Daniel Gross writes fast. Aim for a $500K–$1M check at Demo Day
+- **Check size**: $250K–$1M
+
+### Antler (separate from MENAP — global fund)
+antler.co
+
+- **2026 activity**: Top-3 most active investor in AI agents globally per PitchBook
+- **Relevant for OpsRadar**: Already in Section 3 below as the MENAP-specific residency — but worth noting Antler is also the most active *global* seed AI agent investor
+
+---
+
+### How to sequence outreach (when ready)
+
+1. **YC Demo Day** unlocks Pioneer Fund + BoxGroup + Lerer Hippeau within 48 hours — all take YC-batch intros
+2. **Bessemer + Sequoia + General Catalyst** — series A leads. Approach after Demo Day with $300K+ ARR and 2 design partners using the product daily
+3. **a16z + Lightspeed + Thrive** — growth-stage. Year-2 conversation
+4. **Khosla + Founders Fund** — only via warm intro, only if the technical wedge story is sharp
+
+**The pattern across all of them**: every 2026 vertical AI lead investor wants to see (a) **ARR per FTE > $500K** (Bessemer benchmark), (b) **owned workflow, not chatbot** (Sequoia benchmark), and (c) **clear unit economics on inference cost** (every fund's benchmark). Build the deck around these three numbers.
+
+---
+
 ## Section 3 — Global Accelerators
 
 ### Antler MENAP ⭐ Best for pre-product/pre-revenue stage
@@ -209,12 +334,18 @@ ycombinator.com/apply
 - **Relocation**: Yes — 11 weeks in San Francisco. US visa required. Remote exception has only been granted to Ukrainian defense-tech founders in an active warzone
 - **Acceptance rate**: ~1.5–2%
 - **Iraqi/MENA track record**: **Lezzoo** (Erbil, Kurdistan) — first Iraqi YC company, W19 batch. Munify (MENA neobank, YC S2025). By 2022, ~50% of YC companies were international
-- **Deadlines**: W27 ~November 2026; S27 ~April 2027
+- **Deadlines (verified May 2026)**:
+  - **YC Summer 2026 (S26)**: On-time deadline was **May 4, 2026 at 8 PM PT** (passed). Late applications still accepted. Interview invites issued **May 18–26, 2026**. Interviews held by video conference in **May and June 2026**. Final decisions by **June 5, 2026**. Batch runs **July–September 2026 in San Francisco** — [YC Summer 2026 batch info](https://www.startupresearcher.com/opportunity-radar/y-combinator-summer-2026-batch)
+  - **YC Fall 2026 (F26) / Winter 2027 (W27)**: ~November 2026 deadline
+  - **S27**: ~April 2027 deadline
+- **Interview format**: 10 minutes, rapid-fire, 2–3 partners (was historically 4). No presentations, no small talk. Decisions same day. Detailed feedback either way — [YC Interview Guide](https://www.ycombinator.com/interviews)
 - **Tips**:
   - Lead with the **specific non-obvious insight** about your market that a SF investor would miss
   - Emphasize **founder-market fit**: why you, from Kurdistan, are uniquely positioned
-  - Align your application to YC's Requests for Startups (ycombinator.com/rfs)
+  - Align your application to YC's Requests for Startups (ycombinator.com/rfs) — for OpsRadar that's **#2 AI-Native Services, #4 Company Brain, #12 Software for Agents, #15 AI OS for Companies**
   - The interview is 10 minutes — answer "What do you make? Who wants it? Why you?" in under 60 seconds
+  - Per YC's own guide: *"Mock interview prep and prepared presentations are not recommended."* If you can't answer in 2–3 sentences, you're not interview-ready
+  - Expect rapid-fire: "What's your revenue?", "What's your churn?", "Why will customers switch?", "What if [BigCo] builds this?", "Why you?" — [Glassdoor YC 2026](https://www.glassdoor.com/Interview/Y-Combinator-Interview-Questions-E971877.htm)
   - Lezzoo (Erbil) did it. It is possible
 
 ---

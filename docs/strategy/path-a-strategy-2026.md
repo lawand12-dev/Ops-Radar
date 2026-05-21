@@ -13,7 +13,7 @@
 21.5% of marketing agencies are losing money — up from 13% in one year. 99% can't fully track scope creep. They're bleeding 15–30% of potential profit to operational inefficiency every month. The solution — a Chief AI Officer — costs $400K/year. They can't afford it.
 
 **The solution:**
-OpsRadar is the AI COO for marketing agencies. Connect your HubSpot, ClickUp, Harvest, and Stripe — we watch everything in real time and tell you, before it costs you, when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver at $500/month, 24/7.
+OpsRadar is the AI COO for marketing agencies. Connect your HubSpot, ClickUp, Harvest, and Stripe — we watch everything in real time and tell you, before it costs you, when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver from $750/month, 24/7.
 
 **Why now:**
 76% of large enterprises now have a Chief AI Officer. Small agencies have nothing. The fractional COO market is $9.4B and growing. The AI COO product layer doesn't exist yet. Workflow redesign is the #1 driver of AI ROI — and 84% of agencies haven't done it.
@@ -92,7 +92,7 @@ And 84% of organizations haven't done it. OpsRadar does it for them.
 | Full-time CAIO (Fortune 500) | $33K–$208K/month ($400K–$2.5M total comp) |
 | Fractional CAIO (mid-market) | $10K–$15K/month ($60K–$180K/year) |
 | Fractional COO | $8K–$18K/month |
-| **OpsRadar** | **$500–$3,000/month** |
+| **OpsRadar** | **$750–$3,000/month** |
 
 **Performance gap — companies with AI leadership vs. without:**
 
@@ -117,6 +117,8 @@ And 84% of organizations haven't done it. OpsRadar does it for them.
 | Agentic AI enterprise software by 2035 | **$450 billion** (30% of enterprise software) |
 
 **OpsRadar's addressable slice:** ~12,000–18,000 US/Canada agencies fit the Tier 1 ICP. ~4,000–6,000 are reachable through our current channels (see Part 6). At a $1,500/month average contract, the beachhead TAM is **$72M–$108M ARR**.
+
+**The category market itself is now sized:** Global AI Operating System market: **$12.85B (2025) → $107.60B by 2033 at 30.5% CAGR** ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report), 2026). The vertical AI slice is growing faster than the horizontal one — industry-specific AI solutions at **36.5% CAGR vs 18.9%** for general-purpose AI tools ([ACTGSYS 2026](https://actgsys.com/en/blog/vertical-ai-agents-industry-specific-2026)).
 
 ---
 
@@ -245,7 +247,7 @@ $3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in 
 | Fractional COO | $8,000–18,000 | Part-time senior operator — still expensive, not 24/7 |
 | Full-time COO | $25,000–43,000 | Full-time exec — $504K median salary |
 | Full-time CAIO | $33,000–208,000 | AI transformation leadership — enterprise only |
-| **OpsRadar** | **$500–$3,000** | **AI COO: monitoring, alerts, recommendations, ROI proof** |
+| **OpsRadar** | **$750–$3,000** | **AI COO: monitoring, alerts, recommendations, ROI proof** |
 
 ### 4.2 The 4-Tier Pricing Structure
 
@@ -253,7 +255,7 @@ $3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in 
 
 | Tier | Price | Included | Expansion Trigger |
 |------|-------|----------|-------------------|
-| **Starter** | $500/month | 3 integrations, basic dashboard, weekly health score | Hits integration limit as agency grows |
+| **Starter** | $750/month | 3 integrations, basic dashboard, weekly health score | Hits integration limit as agency grows |
 | **Growth** | $1,500/month | All 10 integrations, threshold alerts, COO chat, benchmarks | Wants agentic actions or more seats |
 | **Pro** | $3,000/month | Everything + agentic actions, custom alerts, agentic-action overages | Agency grows headcount |
 | **Fractional Operator** | $2,500 + $250/agency/month | Multi-client dashboard, white-label view, partner permissions | Fractional COOs managing multiple agencies |
@@ -315,7 +317,7 @@ Full spec for each phase: [`docs/dev/specs/2026-05-17-opsradar-product-strategy-
 | **Workflow Redesign Gap** | 84% haven't redesigned workflows (Deloitte) | We redesign the ops layer for them |
 | **Production Gap** | 88% of AI pilots never reach production (Gartner); only 18% of SMBs have AI in production | We are already in production — plug in, not pilot |
 | **ROI Proof Gap** | 95% can't prove AI ROI; 79% report productivity gains but only 29% can tie them to business outcomes | We connect directly to revenue, margin, and retention |
-| **CAIO Gap** | 76% of enterprises have a CAIO at $400K–$2.5M; small firms use AI at 3x less than large firms | We are the productized CAIO at $500/month |
+| **CAIO Gap** | 76% of enterprises have a CAIO at $400K–$2.5M; small firms use AI at 3x less than large firms | We are the productized CAIO from $750/month |
 | **AI Sovereignty Gap** | Only 21% have mature agentic AI governance (Deloitte) | We give agency owners oversight of what runs in their business |
 
 ---
@@ -368,7 +370,7 @@ Every major vertical SaaS winner followed the same path:
 The vertical SaaS playbook ends in embedded fintech. Toast's payments layer generates the majority of gross profit — more than their SaaS subscription. ServiceTitan's embedded financing went from $0 to $170M. Veeva embedded pharma-specific compliance billing.
 
 OpsRadar's path:
-1. **Now:** Ops intelligence SaaS ($500–$3,000/month subscription)
+1. **Now:** Ops intelligence SaaS ($750–$3,000/month subscription)
 2. **Year 2:** Embedded invoicing and payment collection (capture the 63% of agencies with late invoice problems)
 3. **Year 3:** Agency financing, insurance, financial services
 
@@ -455,7 +457,7 @@ Marcel Petitpas (Parakeeto) has built the trust currency in agency finance. A Pa
 | Community seeding | Online Geniuses, Agency Hackers, Mod Agency Insiders | Word-of-mouth cluster adoption |
 | Data flywheel | 50 agencies → meaningful benchmarks → OpsRadar Index | Defensible moat |
 
-**Day 90 target:** 15–30 customers at $500–$1,500/month average = **$7.5K–$45K MRR**
+**Day 90 target:** 15–30 customers at $750–$1,500/month average = **$11.25K–$45K MRR**
 
 ---
 
@@ -560,6 +562,46 @@ OpsRadar's target: 110%+ NRR from Month 6. The expansion triggers that drive thi
 
 ---
 
+## PART 9: YC SUMMER 2026 ALIGNMENT
+
+*Compiled 2026-05-21. Cross-references this strategy doc against YC Summer 2026's published RFS categories. Full sourcing in [`../yc/research-addendum.md`](../yc/research-addendum.md).*
+
+OpsRadar maps cleanly to **four** YC Summer 2026 RFS categories. The table below maps each category to the existing parts of this document and lists the sharpest new May 2026 data point that hardens the claim.
+
+| YC RFS Category | Where it lives in this doc | New May 2026 data point |
+|---|---|---|
+| **#2 — AI-Native Service Companies** ("replace a professional service with software + AI") | Part 1.3 (CAIO Gap), Part 4 (pricing ladder), Part 8.4 (fractional COO market) | Enterprise agentic AI ROI: **171% average; 192% for US enterprises** vs ~57% for traditional automation. Median payback: **4.2 months** (down from 7.8 in 2024). Source: [Onereach Agentic AI Stats 2026](https://onereach.ai/blog/agentic-ai-adoption-rates-roi-market-trends/) · [LoopexDigital 2026](https://www.loopexdigital.com/blog/ai-marketing-statistics) |
+| **#4 — Company Brain** ("a persistent knowledge layer that pulls from every tool and keeps itself current") | Part 1.1 (the gap nobody fills), Part 2.3 (operational waste), Part 5.3 (data moat) | AI-driven Knowledge Management market: **$7.66B (2025) → $11.24B (2026), 46.7% CAGR.** Context switching costs **4 hours per week per employee = 5 working weeks/year lost.** Source: [ResearchAndMarkets KM 2026](https://www.researchandmarkets.com/reports/6103462/ai-driven-knowledge-management-system-market) |
+| **#12 — Software for Agents** ("infrastructure for AI agents: memory, tool registries, orchestration, MCP servers") | Part 5.1 (10 integrations as the moat), Part 5.3 (data moat compounding) | **78%** of enterprise AI teams report at least one MCP-backed agent in production as of April 2026. Public MCP server registry: **1,200 (Q1 2025) → 9,400+ (April 2026), +18% MoM.** **67%** of CTOs name MCP their default integration standard within 12 months. Source: [DigitalApplied MCP Adoption 2026](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol) |
+| **#15 — AI OS for Companies** ("not a SaaS dashboard — a continuously updated intelligence layer that recommends and acts") | Part 1.2 ($2.52T paradox), Part 1.3 (CAIO Gap), Part 5.2 (6-phase arc), Part 5.4 (5 gaps) | Global AI OS market: **$12.85B (2025) → $107.60B by 2033, 30.5% CAGR.** **80% of CEOs** say AI will force operational capability overhauls (Gartner April 2026). Gartner's May 2026 warning: AI layoffs alone do not deliver ROI — **amplification** does. Source: [Grand View AI OS](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report) · [Gartner CEO Survey April 2026](https://www.gartner.com/en/newsroom/press-releases/2026-04-23-gartner-survey-reveals-80-percent-of-ceos-say-artificial-intelligence-will-force-operational-capability-overhauls) |
+
+### 9.1 Why these four — and why nothing else
+
+OpsRadar is **not** applying as a generic horizontal AI play. The four categories above are reinforcing — the same architecture (vertical agent + persistent brain + MCP surface + event-driven OS) satisfies all four. Pursuing #2 alone is a service company. Pursuing #15 alone is a dashboard. Pursuing all four with one vertical wedge (agencies) is the YC-grade story.
+
+### 9.2 The four data points that go in every YC application section
+
+These four numbers are sharper than anything previously in this doc and should appear verbatim in the YC application:
+
+1. **"$107B AI OS market by 2033 (30.5% CAGR)"** — proves the category is real (Part 1 / Part 5).
+2. **"171% average ROI on agentic AI vs 57% on traditional automation"** — proves the wedge value (Part 4 / Part 8.5).
+3. **"78% of enterprise AI teams have an MCP agent in production"** — proves we're building on the winning protocol (Part 5).
+4. **"50% of agencies leave 20%+ of profit untapped"** — proves the vertical pain in dollar terms (Part 2 / Part 8).
+
+### 9.3 Hardening claims already in this doc
+
+Three sections of the master strategy get measurably sharper with May 2026 numbers:
+
+- **Part 2.5 (AI Adoption Paradox).** The "68% using AI vs 8.8% AI in production" gap stays the headline, but add: **median payback on AI tooling is now 4.2 months, down from 7.8 in 2024** — the cost-of-inaction argument is twice as strong as it was 18 months ago (Source: [LoopexDigital 2026](https://www.loopexdigital.com/blog/ai-marketing-statistics)).
+- **Part 5.4 (The 5 Gaps).** Gap 4 (CAIO Gap) gains: enterprise agentic AI delivers **41% ROI in year one, 87% in year two, 124%+ by year three** — the COO-shaped intelligence layer is the bridge that makes those returns accessible to agencies (Source: [Onereach Agentic AI 2026](https://onereach.ai/blog/agentic-ai-adoption-rates-roi-market-trends/)).
+- **Part 6.3 (The Long Game).** Toast/ServiceTitan embedded fintech end-state gains: **Gartner: AI agent software spending hits $206.5B in 2026 → $376.3B in 2027** (from $86.4B in 2025) — the agent surface OpsRadar exposes via MCP is the platform play that compounds past the SaaS subscription (Source: [Gartner Agent Software Spending](https://www.gartner.com/en/newsroom/press-releases/2025-08-26-gartner-predicts-40-percent-of-enterprise-apps-will-feature-task-specific-ai-agents-by-2026-up-from-less-than-5-percent-in-2025)).
+
+### 9.4 The competitive context YC will ask about
+
+YC's S25 batch funded Hyper ("the company brain that just works for AI-first teams") and Bravi ("AI OS for home-services businesses"). Both are horizontal/vertical analogues of OpsRadar's bet. **OpsRadar's defensible moat:** vertical agency data sources (Stripe, Harvest, HubSpot, ClickUp) + agency-specific benchmarks + pre-built COO tool definitions + fractional COO distribution channel. A general-purpose company brain has no agency context; a horizontal AI OS has no per-vertical benchmarks. OpsRadar ships with both.
+
+---
+
 ## THE 3 DEFINING QUOTES
 
 **IBM Gary Cohn:**
@@ -571,7 +613,7 @@ OpsRadar's target: 110%+ NRR from Month 6. The expansion triggers that drive thi
 **McKinsey (direct from the data):**
 > *"The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."*
 
-OpsRadar is the company that rebuilds the operating model. For agencies. At $500/month.
+OpsRadar is the company that rebuilds the operating model. For agencies. From $750/month.
 
 ---
 

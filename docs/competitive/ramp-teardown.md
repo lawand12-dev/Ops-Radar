@@ -8,6 +8,25 @@ The single most important thing to internalize: **Ramp does not look like a SaaS
 
 ---
 
+## May 2026 update — now a $40B AI-finance company
+
+The "$13B+" framing above is now stale. Ramp's 2026 numbers reframe what this design reference actually represents:
+
+- **In talks to raise $750M at $40B+ valuation (May 2026)** — 6 months after a $300M round at $32B (Nov 2025), itself 5 months after $500M at $22.5B (July 2025). **Valuation went $16B → $22.5B → $32B → $40B in under 12 months.** (Source: techcrunch.com, May 2026; whalesbook.com, 2026)
+- **$1B annualized revenue (Nov 2025)** — doubled in a year per CEO Eric Glyman. (Source: techcrunch.com, May 2026)
+- **#5 on CNBC Disruptor 50, 2026.** (Source: cnbc.com, May 2026)
+- **Three sequential agent launches in 10 months**:
+  1. **Agents for Controllers** — July 2025
+  2. **Agents for AP** — October 2025
+  3. **Agents for Procurement (April 2026)** — a *fleet* of AI agents that triage employee requests, source vendors, review contract terms, run compliance checks. Customers averaging **16% annual savings on vendor costs + 46 hours/month saved on manual purchasing.** (Source: prnewswire.com, April 2026; pymnts.com, April 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **Agent fleets, not chatbots.** Ramp doesn't ship "Ramp AI." It ships *named agents per finance role* (Controllers, AP, Procurement). OpsRadar's equivalent should be **named agents per agency role**: "Margin Agent," "Scope Agent," "Cash Agent," "Capacity Agent," "Briefing Agent." Each is a discoverable product on the site with its own page, ROI proof, and demo. Resist the urge to put it all under "OpsRadar AI."
+2. **Hard ROI per agent.** "16% vendor savings + 46 hours/month back" is the *exact* claim format. OpsRadar's per-agent ROI claims should mirror: "Margin Agent: recovers $X/mo in unbilled scope across average client." Not feature bullets — outcome math.
+3. **The editorial-finance design lesson now load-bearing.** At $40B and shipping agent fleets, Ramp's restrained editorial brand is what makes "AI fleet of agents" sound *adult* instead of toy-like. OpsRadar handling agency P&L data needs the same adult dress code — restrained palette, serif accents, dense data tables in screenshots, no neon AI glow.
+
+---
+
 ## 1. The Visual System
 
 ### Color palette (hex, extracted from computed CSS)

@@ -29,6 +29,8 @@
 
 **Why this is the beachhead.** This is the band where the buying decision is made by one person in one meeting, the pain is acute enough to overcome status-quo bias, and our 10 integrations cover ~80% of the real stack. Above $3M, RFPs and committees creep in. Below $1M, the founder hasn't felt the bleed yet.
 
+**2026 validation — the Tier-1 buyer is now AI-active.** A Q1 2026 survey of 250 agencies ($1M–$50M ARR, 8–180 FTE) confirmed the Tier-1 segmentation is now driven by *founder posture and willingness to rebuild the delivery process*, not by revenue or headcount alone. Median agency AI spend is **$1,800/month per active agent** — but with a **10× spread** between top and bottom quartile, meaning the buyer who is already paying for AI but failing to operationalize it is the textbook OpsRadar target. Top two pain points reported Q1 2026: **token cost volatility (42%) and prompt injection risk (31%)** — both overtook model reliability as the top concerns ([Digital Applied 250-Agency Survey 2026](https://www.digitalapplied.com/blog/agentic-ai-adoption-survey-2026-250-agencies)).
+
 **Approximate TAM at Tier 1.** ~12,000–18,000 US/Canada agencies fit; ~4,000–6,000 are reachable via the channels in Section 7.
 
 ---
@@ -117,6 +119,8 @@ The discipline: **every "interesting" inbound from a Tier 3 bucket gets a polite
 - "I don't want another dashboard, I want someone to tell me what's wrong."
 - "If I have to log into one more tool I'm going to scream."
 
+**2026 data point that fits Marcus exactly:** 91% of marketers now use AI but **only 41% can prove AI ROI — down from 49% the prior year** ([Digital Applied 2026](https://www.digitalapplied.com/blog/ai-marketing-statistics-2026-adoption-data-points)). Marcus is in the 59%. The OpsRadar pitch lands because *he already pays for AI* and *he already can't defend the spend* — closing the ROI proof gap is the wedge that opens the demo.
+
 ---
 
 ### Persona B — Priya Shah, Head of Operations, $3.2M social-and-content agency
@@ -200,6 +204,8 @@ The discipline: **every "interesting" inbound from a Tier 3 bucket gets a polite
 - Goes to **AMI Build a Better Agency Summit** in Denver each May to network with agencies hiring fractionals [^4]
 
 **How he evaluates tools.** Wants a 30-min walkthrough, then a free 30-day trial on **one of his clients' data**. Will not pay out of pocket — needs to bill it to the client or get a referral commission. **A 20–25% recurring referral fee is the table-stakes mechanic.**
+
+**2026 channel-validation data:** The fractional executive market reached **$9.4B in 2025 → projected $24.7B by 2034 (11.3% CAGR)**. **37% of mid-sized firms** plan to employ fractional executives by end of 2026 ([Korn Ferry 2025](https://www.kornferry.com)); a new role specifically — **the "Fractional Chief AI Officer"** — is emerging in mid-market companies that can't justify a full-time CAIO ([HatchWorks 2026](https://hatchworks.com)). David's path to **5–7 simultaneous clients** (vs his current 4) is the exact economic story OpsRadar's Fractional Operator SKU enables. AI augments, not replaces — the fractional COO using OpsRadar earns the math to expand the book ([Fractionus + AI Pairing 2025](https://fractionus.com/blog/fractional-talent-ai-cost-effective-business-growth)).
 
 **The words he uses.**
 - "I need to look smart in front of 4 different clients at the same time."

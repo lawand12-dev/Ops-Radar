@@ -16,6 +16,25 @@ OpsRadar is building a structured partner program for **fractional COOs serving 
 
 ---
 
+## 0.1 The 2026 Fractional Market — Fresh Numbers (Verified May 2026)
+
+| Metric | Number | Source |
+|---|---|---|
+| US businesses using fractional hiring (2026) | **25%** today → **35% by year-end 2026** | [Vendux 2026](https://www.vendux.org/blog/10-numbers-that-will-reshape-how-you-think-about-fractional-executives-in-2026) |
+| CEOs planning to *increase* fractional executive use in next 12 months | **72%** | Vendux 2026 |
+| Mid-sized firms planning fractional/interim execs by mid-2026 | **37%** | Korn Ferry 2025 |
+| Average fractional sales-leader monthly compensation (2025) | **$11,732/mo** (up from $9,651 in 2024) | Vendux 2025 State of Fractional Sales Leadership Report |
+| Average hourly rate | **$225/hr** (up from $213 in 2024) | Vendux 2025 |
+| Average assignment length | **9.7 months** (14.6 hrs/week) | Vendux 2025 |
+| % of fractional execs on retainer compensation | **88%** | Vendux 2025 |
+| Fractional COO monthly retainer (2026 US) | **$5,000–$12,000** (Fractionus); **$8,000–$18,000** (ScaleUp Exec range) | [Fractionus 2026](https://fractionus.com/blog/fractional-executive-cost-us-2026) |
+| Fractional COO hourly rate range | **$175–$400** | Fractionus 2026 |
+| Global fractional executive market | **$9.4B today → $24.7B by 2034** (11.3% CAGR) | Fractionus 2025 |
+| FractionalJobs platform referral fee model | **$3,000–$5,000 one-time** then direct contract | [FractionalJobs 2026](https://www.fractionaljobs.io/blog/the-5-best-fractional-coo-platforms-and-services-2026) |
+| Toptal comparable take rate | up to **40%** commission | FractionalJobs 2026 |
+
+**The OpsRadar implication:** the fractional market is growing 14% CAGR and the average fractional now bills $11,732/month — the exact buyer who, with our multi-client dashboard, can expand their book from 2–3 clients to 5–7 because we cut their audit overhead from 15 hrs/client/month to ~2.
+
 ## 1. Program Thesis
 
 ### 1.1 Why fractional COOs are OpsRadar's highest-ROI channel
@@ -24,7 +43,7 @@ Three structural reasons.
 
 **(a) Pre-aggregated demand.** A fractional COO doesn't have one buying signal — they have 3–5. Every fractional COO is a portfolio of agencies that already pay $8–15K/month for operational competence. The buying objection ("do I need ops infrastructure?") is already resolved before we show up.
 
-**(b) Trusted-advisor handoff.** A fractional COO recommending OpsRadar is not "an affiliate" to the agency owner — they're the person the owner already hired to make these decisions. Conversion rates on warm fractional-COO intros run 3–5x cold demos in comparable B2B SaaS (HubSpot Solutions Partner Program internal data; verified via PartnerStack benchmarks).
+**(b) Trusted-advisor handoff.** A fractional COO recommending OpsRadar is not "an affiliate" to the agency owner — they're the person the owner already hired to make these decisions. Conversion rates on warm fractional-COO intros run 3–5x cold demos in comparable B2B SaaS (HubSpot Solutions Partner Program internal data; verified via PartnerStack benchmarks). **Hardened May 2026 data:** Optifai's 939-company benchmark study confirms warm intros / referrals convert at **15–25%** vs **1.5–2% for cold lists** — a **10–15x** gap, not 3–5x. The conservative model in §1.2 is conservative on purpose; the actual lift available from a trusted fractional COO intro is closer to the upper bound. ([Optifai 2026](https://optif.ai/learn/questions/cold-call-to-meeting-conversion-rate/))
 
 **(c) Capacity unlock = product alignment.** Fractional COOs are capacity-bound — their bottleneck is the 2–4 weeks of manual audit work per new client. OpsRadar cuts that to hours. So we don't compete with their economics, we *expand* them: they can take a 5th or 6th client because we did the audit. Their incentive to deploy us aggressively is structural, not financial.
 
@@ -427,7 +446,7 @@ Each template ~180 words, founder-quality, includes the Calendly link for a join
 
 ### 9.1 Sourcing channels (in priority order)
 
-**1. Fractionals United (highest leverage)** — 13K-member Slack (per path-a-strategy; sources differ between 8K and 13K — treat as "biggest fractional community").
+**1. Fractionals United (highest leverage)** — **13,000+ members as of Feb 2025**, founded by Karina Mikhli (former fractional COO), 4-person team operating it. Growth trajectory: 700 members in the first 10 weeks → 2,000 by May 2023 → 13,000+ by Feb 2025. Active local chapters in major US/EU cities. ([MicroEmpires interview](https://www.microempires.cc/p/karina-mikhli-fractionals-united) · [Substack — Your First 10K Members](https://thinkin4d.substack.com/p/fractional-leadership-0-to-10k-communities))
 - **Approach:** founder joins as paid member ($10/mo), posts genuine insights in #intros and topic channels for 14 days *before* mentioning OpsRadar. No pitches.
 - **Then:** in 1-on-1 DMs to fractional COOs who've engaged with my posts, soft intro: "We're building tooling specifically for the fractional COO managing 3+ agencies — would love your read on it."
 - **Target:** 80 DMs in month 1 → 25 calls → 12 signed partners.
@@ -611,4 +630,14 @@ The single decision: **commit to lifetime, commit to 25%, and never walk it back
 - Rewardful vs PartnerStack vs Tolt — tooling cost analysis. [Rewardful vs PartnerStack](https://www.rewardful.com/articles/rewardful-partnerstack) · [PartnerStack Alternative — Tolt](https://tolt.com/alternatives/partnerstack) · [12 Best Affiliate Marketing Software for SaaS Companies (2025)](https://tolt.com/blog/best-saas-affiliate-marketing-software)
 - Fractionals United — community size, structure, perks model. [Fractionals United](https://www.fractionalsunited.com/) · [Hive Index: Fractionals United](https://thehiveindex.com/communities/fractionals-united/)
 - General SaaS affiliate commission ranges (10–30% standard, 20–25% recurring norm). [Best SaaS Affiliate Programs in 2025](https://customgpt.ai/best-saas-affiliate-programs/) · [Affiliate Programs in SaaS — Affiverse](https://www.affiversemedia.com/the-best-affiliate-marketing-software-for-saas-companies-in-2025-a-practical-guide/)
+- **Fresh May 2026 fractional market data:**
+  - [Vendux 2026 — 10 Numbers That Will Reshape How You Think About Fractional Executives in 2026](https://www.vendux.org/blog/10-numbers-that-will-reshape-how-you-think-about-fractional-executives-in-2026) — 25% → 35% adoption, 72% of CEOs planning increase
+  - [Vendux 2025 State of Fractional Sales Leadership Report](https://www.vendux.org/press/2025-state-of-fractional-sales-leadership-report) — $11,732/mo and $225/hr 2025 benchmarks (n=1,000+)
+  - [Fractionus 2026 — Fractional Executive Cost in the US](https://fractionus.com/blog/fractional-executive-cost-us-2026) — fractional COO $5K–$12K/mo, hourly $175–$400
+  - [Fractionus 2026 — Rates by Role](https://fractionus.com/blog/fractional-executive-rates-by-role)
+  - [FractionalJobs 2026 — Best Fractional COO Platforms](https://www.fractionaljobs.io/blog/the-5-best-fractional-coo-platforms-and-services-2026) — platform referral fee structure ($3K–$5K one-time)
+  - [ColumnContent 2026 — Fractional Work Statistics (100+ trends)](https://columncontent.com/fractional-work-statistics/)
+  - [Vendux — AI and the Fractional Executive: A New Operating Model](https://www.vendux.org/blog/ai-and-the-fractional-executive-a-new-operating-model) — direct validation of the OpsRadar+fractional thesis
+  - [Optifai 2026 (939 companies)](https://optif.ai/learn/questions/cold-call-to-meeting-conversion-rate/) — warm intro 15–25% vs cold 1.5–2% conversion (10–15x lift)
+  - [MicroEmpires — Karina Mikhli, Fractionals United](https://www.microempires.cc/p/karina-mikhli-fractionals-united) — community size & operating model
 - Internal: [path-a-strategy-2026.md §10.3](./path-a-strategy-2026.md), [product-marketing.md](../.agents/product-marketing.md), [referrals skill](/home/lawand/.agents/skills/referrals/SKILL.md), [affiliate-programs reference](/home/lawand/.agents/skills/referrals/references/affiliate-programs.md)

@@ -4,6 +4,20 @@
 
 ---
 
+## May 2026 update — company momentum behind the design
+
+The design choices below should be read against the velocity of the business shipping them:
+
+- **Valuation in talks at $50B as of April 2026** (~$2B raise co-led by Andreessen Horowitz + Thrive, with Nvidia as strategic), up from $29.3B five months earlier. (Source: techcrunch.com, April 2026; thenextweb.com, 2026)
+- **$2B annualized revenue in February 2026** — up from $1B in November 2025 and $500M ARR in June 2025. Forecasting **$6B+ ARR run-rate by end of 2026**. (Source: sacra.com, 2026; aifundingtracker.com, 2026)
+- **~60% of revenue now enterprise** — the cream-marketing + enterprise-page pattern in this teardown is the design system of a product that converted from indie-dev word-of-mouth to F500 procurement in 24 months. (Source: techcrunch.com, April 2026)
+- **Composer 2 (March 2026)** — faster premium model variant, API-accessible token pricing. The "Use the best model for every task" homepage section now sells Cursor's *own* frontier model, not just a model gateway. The marketing copy hasn't caught up — yet — which is itself a lesson in restraint.
+- **Pricing**: Pro $20/mo + Ultra $200/mo (power users) remain stable through 2026 — Cursor resists the AI-add-on trap that ClickUp and Notion fell into. (Source: nxcode.io, 2026)
+
+**Sharper positioning lesson for OpsRadar**: the page reads "restrained" because the *business* is over-delivering. When ARR multiplies 4x in 8 months, marketing can shrink. OpsRadar's marketing surface should likewise compress as customer count grows — not expand. Resist the urge to add testimonial walls, feature grids, and badge clutter as a substitute for the velocity Cursor's product is actually showing.
+
+---
+
 ## TL;DR — the headline that should reorient OpsRadar
 
 **Cursor is not a dark-theme product.** The homepage, pricing, and enterprise pages all render on a warm cream/off-white canvas (`rgb(247, 247, 244)`) with near-black ink (`rgb(38, 37, 30)`). The product itself (the IDE) is dark — but the marketing site is the opposite. Cursor uses light theme to feel like a workshop / journal / paper artifact, and reserves dark theme only for the embedded product mockups (so the product feels like a tool sitting on a paper desk). That's the inverse of OpsRadar's current move (dark everywhere).

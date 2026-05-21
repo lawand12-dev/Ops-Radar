@@ -58,7 +58,7 @@
 
 > **The moment.** In 2023, I sat with the founder of a $2M agency while she opened her books for the quarter. Her best client — the one she'd been working until 11pm on for a year — had lost her $40K in Q3. The data was in six places: ClickUp for hours, Harvest for time, HubSpot for the retainer, the contract in a Google Doc, the scope creep in Slack DMs, the actual P&L in QuickBooks. By the time the spreadsheet caught up, the quarter was gone. She didn't have a margin problem. She had a *visibility* problem.
 >
-> **The realization.** I kept seeing it. A fractional COO would solve it — but a good one costs $10,000 a month, takes two months to get up to speed, and walks out with the knowledge when the engagement ends. A full-time Chief AI Officer? IBM says 76% of enterprises have one. The average comp is $400,000. For an agency doing $1–3M, those numbers are a joke. The sub-$5M agency market has 50,000+ companies and the COO layer they need does not exist.
+> **The realization.** I kept seeing it. A fractional COO would solve it — but a good one costs $10,000 a month, takes two months to get up to speed, and walks out with the knowledge when the engagement ends. A full-time Chief AI Officer? IBM says 76% of enterprises now have one — up from 11% in 2023. Average comp: $400K–$2.5M. For an agency doing $1–3M, those numbers are a joke. Meanwhile Productive.io's 2026 data shows 50% of agencies are leaving 20%+ of profit on the table — that's the entire CAIO budget, every year, just sitting in the spreadsheet. The sub-$5M agency market has 50,000+ companies and the COO layer they need does not exist.
 >
 > **What I built.** OpsRadar is the AI COO for marketing agencies. It plugs into the tools you already pay for — HubSpot, ClickUp, Harvest, Stripe, and six more — watches every client in real time, and tells you what's going wrong before it costs you. The four parts are OPERATE (it does the work), OBSERVE (it sees everything), BRAIN (it knows your agency), and GUARD (it watches overnight). What a fractional COO charges $10K/month for, OpsRadar does at $500–3,000.
 >
@@ -71,9 +71,10 @@
 *4 lines. Each one a tweet-worthy principle. No supporting copy underneath each line — let them stand.*
 
 1. **Agencies don't need more dashboards. They need fewer decisions.**
-2. **Horizontal AI is a toy. Vertical AI inside one industry is a system.**
+2. **Horizontal AI is a toy. Vertical AI inside one industry is a system.** (McKinsey: ~5x the ROI of horizontal.)
 3. **The owner should sleep through Sunday night. The AI should work the weekend shift.**
 4. **If you can't see margin in real time, you don't have a margin problem — you have a visibility problem.**
+5. **AI that replaces people doesn't return. AI that amplifies people returns 171%.** (Onereach.ai 2026. The owner stays in control.)
 
 *(Anchor principle — see Report. The one that should carry the page if only one survives: line 4.)*
 

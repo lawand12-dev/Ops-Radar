@@ -27,8 +27,8 @@
 **H1 (primary):**
 `Find the $30K–$80K you're leaking this year — in 3 minutes.`
 
-**Subhead (28 words, single sentence):**
-`Answer 7 questions about your stack, your retainers, and where time goes. I'll come back with a conservative dollar estimate of what's leaking — and the 3 places to plug it first.`
+**Subhead (32 words, single sentence + anchor stat):**
+`Answer 7 questions about your stack, your retainers, and where time goes. I'll come back with a conservative dollar estimate of what's leaking — and the 3 places to plug it first. (Productive.io 2026: 50% of agencies leave 20%+ of profit untapped. The average 7-figure shop runs 18–22% margins; the leak is usually bigger than the margin.)`
 
 **Trust microcopy (· separated, single line):**
 `Free · Results in your inbox in 5 minutes · Built for marketing agencies $1M–$5M`
@@ -149,7 +149,7 @@ Rationale:
 `Two questions on one screen. I need both to size the leak — revenue tells me the order of magnitude, headcount tells me who's overserviced.`
 
 **Why this matters block:**
-`The 21.5% of agencies losing money in 2026 (Planable benchmark) are mostly in the $1M–$5M band. That's where margin math matters most and where one bad client wipes out three good ones. I size every estimate to your actual band.`
+`The 21.5% of agencies losing money in 2026 (Planable — up from 13% the year before, steepest jump on record) are mostly in the $1M–$5M band. 50% leave 20%+ of profit untapped to ops inefficiency (Productive.io 2026). That's where one bad client wipes out three good ones. I size every estimate to your actual band.`
 
 **Sub-question A — Annual revenue:**
 - `Under $1M`
@@ -180,7 +180,7 @@ Rationale:
 `Retainer agencies and project agencies leak in completely different places. I'll calibrate the audit to whichever you actually run.`
 
 **Why this matters block:**
-`Retainer-heavy shops bleed via scope creep and overservicing — the silent kind that shows up in your bank account 60 days late. Project shops bleed via underquoting and unbilled change orders. Same wound, different vein.`
+`Retainer-heavy shops bleed via scope creep and overservicing — the silent kind that shows up in your bank account 60 days late. Average scope creep per project: $8,700 (tmetric.com 2025). 57% of agencies lose $1K–$5K every month to unbilled work (iota-finance 2026). Project shops bleed via underquoting and unbilled change orders. Same wound, different vein.`
 
 **Sub-question A — Billing mix:**
 - `Mostly monthly retainers (60%+ of revenue)`

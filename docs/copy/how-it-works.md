@@ -144,14 +144,14 @@ The Blueprint is the only way to get a real Build price. We cannot price what we
 > Build is where your AI COO comes to life inside your stack. The integrations wire up. The alerts start firing. The agentic actions stage themselves with 30-minute undo. By the end, you have a system that watches utilization, margin, scope creep, cash flow, and client health 24/7 — and tells you what to do next.
 
 **What happens:**
-- We connect your AI COO to your real accounts — HubSpot, ClickUp, Harvest, Stripe, the rest of your stack. Workflows run on your credentials, never ours.
+- We connect your AI COO to your real accounts — HubSpot, ClickUp, Harvest, Stripe, the rest of your stack. Reads and actions run on your credentials, never ours.
 - OPERATE goes live: the AI COO starts pacing budgets, drafting invoices for scope creep, and nudging PMs on the accounts you've authorized.
 - OBSERVE goes live: a single view of every client, every team, every dollar — refreshed live from your stack, not cached.
-- BRAIN starts learning your specific agency. By week four it knows your clients better than a fractional COO would after three months.
+- BRAIN starts learning your specific agency. The loop: **observe your live data → reason against your benchmarks → recommend the next move → wait for your one-click approval → act with a 30-minute undo.** By week four it knows your clients better than a fractional COO would after three months.
 - GUARD watches the system overnight — the API changes, the credential expirations, the things that break at 3 a.m. and compound by morning.
 
 **What you get — the AI COO running 24/7:**
-A live AI COO. Watching your agency every minute. Catching the unprofitable client in week two instead of month three. Drafting the scope-creep invoice before you knew there was scope creep. Telling you what to do next — and, on the Pro tier, doing it for you with a 30-minute undo.
+A live AI COO. Watching your agency every minute. Catching the unprofitable client in week two instead of month three. Drafting the scope-creep invoice before you knew there was scope creep. Telling you what to do next — and, on the Pro tier, doing it for you with a 30-minute undo. **Gartner's May 2026 framing:** autonomous business that works is *amplification*, not headcount replacement. The owner stays in control; the AI handles the data aggregation, surfaces the signals, and queues every decision for approval.
 
 | Timing | Price |
 |---|---|

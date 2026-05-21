@@ -8,6 +8,24 @@
 
 ---
 
+## May 2026 update — Agents took over the platform
+
+Notion reorganized its entire pricing and AI architecture between Sept 2025 and May 2026:
+
+- **AI Agents launched September 2025** (Notion 3.0) — autonomous, multi-step work lasting **20+ minutes per run**. (Source: betanews.com, 2026)
+- **Custom Agents shipped February 2026** (Notion 3.3) — team-wide bots that run on schedules + triggers. **1M+ Custom Agents built by users since launch.** (Source: smartproductivitytools.com, 2026)
+- **Standalone $10 AI add-on retired May 2025** — full AI access now requires the **Business plan at $20/user/mo**. This is the single largest pricing-architecture move in Notion's history. (Source: get-alfred.ai, 2026; felloai.com, 2026)
+- **Custom Agents now usage-priced at $10 per 1,000 Notion credits (May 4 2026)** — explicit shift from seat-only to credit-overlay billing for AI workloads. (Source: aisotools.com, 2026)
+- **April 2026 (Notion 3.4): Custom Agents 35–50% cheaper to run** — new lightweight models (GPT-5.4 Mini/Nano, Haiku 4.5, MiniMax M2.5) cut per-run credit consumption up to 10x. (Source: aiproductivity.ai, 2026)
+- **Tier structure**: Free / Plus $10 / Business $20 (AI threshold) / Enterprise custom. (Source: get-alfred.ai, 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **The "AI tier" pricing move now has two camps.** Notion + ClickUp built AI as a paywall-elevator (forces upgrade to unlock AI). Linear refused (AI on every paid plan). Lovable monetizes via usage credits independent of tier. OpsRadar's $500 / $1.5K / $3K tiers should pick a camp and defend it. Recommendation: **Linear's camp** — every tier includes the AI brain; tiers differ on integration count, action throughput, and team seats. The narrative "the COO is the product, not an upsell" beats "$500 + $9/seat for the chat."
+2. **Credit-based action billing is the second monetization axis.** Notion now bills Custom Agents at $10 per 1,000 credits *on top of* seat pricing. OpsRadar's **agentic actions** (auto-fired invoice reminders, scope alerts, briefings dispatched, COO chat runs) are exactly the unit that should meter — a clean second-revenue stream that scales with value delivered.
+3. **"1M Custom Agents in 3 months" is a usage-as-marketing flex.** OpsRadar should track and publish a comparable counter — *actions taken*, *dollars saved*, *scope drift caught* — as a homepage live-ticker. Notion's million-agent number sells the platform more effectively than any feature copy.
+
+---
+
 ## 1. The Visual System
 
 ### Color palette (empirical, from computed styles + `:root` design tokens)

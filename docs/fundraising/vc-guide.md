@@ -84,6 +84,62 @@ Once you have a prototype or early users, these programs can provide $50K–$500
 
 ---
 
+## 2026 pitch tactics — vertical AI / agentic AI
+
+> Distilled from Sequoia AI Ascent 2026, Bessemer's State of AI 2025/2026, and current YC partner guidance. Use these as the deck-and-narrative checklist before any VC meeting.
+
+### The five pitch mistakes that kill 2026 AI rounds
+
+1. **Showing a chatbot UI instead of agentic workflows.** Per [Innmind's recap of Sequoia AI Ascent 2026](https://blog.innmind.com/sequoia-ai-ascent-2026-what-ai-founders-should-change-in-their-pitch-deck/): *"If you are an AI startup in 2026, please stop showing 'Chatbot' interfaces. Investors are looking for Agentic Workflows."* Lead screenshots with the **action queue**, not the COO chat box.
+2. **Generic SaaS deck template.** Investors pattern-match on AI-native decks; a 2023-style B2B SaaS template signals you don't understand the category shift.
+3. **Leading with technology over value.** "We use LLMs" is not a slide. "We replaced $X of agency labor with $Y of inference" is.
+4. **AI-generated language.** If the copy reads like every other deck, partners flag it within 60 seconds.
+5. **No explicit category choice.** Per [Sequoia's 2026 playbook](https://sequoiacap.com/article/ai-ascent-2026/): every 2026 founder must explicitly choose **tool, copilot, agent, or AI-native service**. OpsRadar is an **AI-native service** (an AI COO that sells the output of operations work). Say it on slide 2.
+
+### The five 2026 must-haves in an agentic AI deck
+
+1. **Pick your category and own the language.** OpsRadar = "AI-native service / system of action for digital agencies." Use Bessemer's *system of action* phrase verbatim — [Bessemer Roadmap](https://www.bvp.com/atlas/roadmap-ai-systems-of-action).
+2. **Defensibility beyond the model.** "We use Claude" is not a moat. Defensibility comes from (a) **proprietary workflow data** (Stripe + Harvest + HubSpot + ClickUp join logic), (b) **agency-vertical benchmarks no horizontal Brain has**, (c) **MCP-native tool surface area**.
+3. **ARR per FTE.** Bessemer's benchmark: **$500K–$1M+ ARR per FTE = truly AI-native; 70–80% gross margins**. Flat-or-declining = "services business with an AI veneer." Report ARR/FTE on the team slide.
+4. **Unit economics on inference.** Show $ cost per COO action, per dashboard refresh, per briefing. Per [Innmind](https://blog.innmind.com/sequoia-ai-ascent-2026-what-ai-founders-should-change-in-their-pitch-deck/): *"If you lose money on every unit, you are uninvestable."*
+5. **Distribution-first slide.** Show pipeline channel, not feature list. For OpsRadar: free audit funnel → fractional operator partnerships → YC network → vertical communities.
+
+### The "Services thesis" frame to steal from Sequoia
+
+Sequoia's 2026 thesis (verbatim from [AI Ascent](https://sequoiacap.com/article/ai-ascent-2026/)):
+
+> *"For every dollar spent on software, six are spent on services. Autopilots can capture value by selling completed work rather than productivity software alone."*
+
+**Direct OpsRadar application**: An agency owner spends ~$300/month on operational software (PM tool, CRM, accounting) and ~$8K–$12K/month on operations labor (ops manager, account coordinators, junior analysts). OpsRadar attacks the $8K labor budget, not the $300 software line. Use this 6:1 ratio in the market-size slide.
+
+**Recent comp to cite**: **Auctor** ($20M seed, April 2026, led by Sequoia) — pitched itself as "the agentic operating system for software implementation" attacking the $6-in-services for every $1-in-software gap. Same shape, different vertical.
+
+---
+
+## YC Summer 2026 — current cycle reality (verified May 2026)
+
+- **S26 on-time deadline**: May 4, 2026 8 PM PT (closed; late apps still accepted) — [LinkedIn YC announcement](https://www.linkedin.com/posts/y-combinator_the-deadline-to-apply-for-the-yc-summer-2026-activity-7454941181660082176-2tfx)
+- **Interview invites**: May 18–26, 2026
+- **Interviews**: Video conference, May–June 2026, **10 minutes with 2–3 partners** (reduced from 4)
+- **Decision deadline**: June 5, 2026
+- **Batch**: July–September 2026, in-person in San Francisco
+- **Next cycle to plan for**: F26/W27, deadline ~November 2026
+
+### YC interview tactics for vertical AI founders (per [YC Interview Guide](https://www.ycombinator.com/interviews) + [Glassdoor 2026 data](https://www.glassdoor.com/Interview/Y-Combinator-Interview-Questions-E971877.htm))
+
+- **YC's own advice**: *"Mock interview prep and prepared presentations are not recommended."* Beyond basic prep, more prep is counter-productive.
+- **The clarity test**: every answer in 2–3 sentences. If you can't, you don't know your business yet.
+- **The 6 rapid-fire questions to drill**:
+  1. What do you make?
+  2. Who's using it / who will use it?
+  3. What's your revenue + growth rate?
+  4. Why will customers switch from [incumbent]?
+  5. What happens if [BigCo — for OpsRadar: HubSpot, ClickUp, or n8n] builds this?
+  6. Why you?
+- **The 2026 YC RFS framing** ([Epsilla analysis](https://www.epsilla.com/blogs/2026-03-08-yc-rfs-2026-agentic-economy)): *"YC isn't asking for AI that helps humans do a job better. YC is looking for AI that is the new operational layer for the job itself."* OpsRadar pitch must be **"AI COO that runs agency operations"** — not **"AI assistant that helps the agency owner."** The verb matters.
+
+---
+
 ## Recommended action plan (in order)
 
 | Step | Action | Timeline |
@@ -123,3 +179,13 @@ Iraq Venture Partners and Five One Labs can advise on the best structure for you
 - [Top VCs in Iraq — OpenVC](https://www.openvc.app/country/Iraq)
 - [Top VCs in Middle East 2026 — Shizune](https://shizune.co/investors/vc-funds-middle-east)
 - [Erbil startup ecosystem — StartupBlink](https://www.startupblink.com/startup-ecosystem/erbil-iq)
+- [Sequoia AI Ascent 2026 — main page](https://sequoiacap.com/article/ai-ascent-2026/)
+- [Sequoia AI Ascent 2026 pitch deck lessons — Innmind](https://blog.innmind.com/sequoia-ai-ascent-2026-what-ai-founders-should-change-in-their-pitch-deck/)
+- [Bessemer Roadmap: AI Systems of Action](https://www.bvp.com/atlas/roadmap-ai-systems-of-action)
+- [Bessemer State of AI 2025](https://www.bvp.com/atlas/the-state-of-ai-2025)
+- [YC Interview Guide](https://www.ycombinator.com/interviews)
+- [YC 2026 interview questions — Glassdoor](https://www.glassdoor.com/Interview/Y-Combinator-Interview-Questions-E971877.htm)
+- [YC Summer 2026 batch overview — StartupResearcher](https://www.startupresearcher.com/opportunity-radar/y-combinator-summer-2026-batch)
+- [YC RFS 2026 analysis — Epsilla](https://www.epsilla.com/blogs/2026-03-08-yc-rfs-2026-agentic-economy)
+- [Top VC firms AI ranking 2026 — Affinity](https://www.affinity.co/blog/top-venture-capital-firms-investing-in-ai)
+- [AI-focused VC firms map 2026 — Sky9 Capital](https://www.sky9capital.com/blog/blog-ai-focused-investors-vc-firms-2026/)

@@ -29,7 +29,8 @@
 
 - **Eyebrow:** `THE PRODUCT`
 - **H1:** `The AI COO for marketing agencies.`
-- **Subhead (one sentence):** `OpsRadar runs the operational work that lives in your team's heads, watches every tool overnight, and tells you what to do next — for $500–$3,000/month instead of the $10K/month a fractional COO charges to do less.`
+- **Subhead (one sentence):** `OpsRadar is the intelligence layer that watches every tool overnight, runs the operational work that lives in your team's heads, and tells you what to do next — for $500–$3,000/month instead of the $10K/month a fractional COO charges to do less.`
+- **Sub-sub (one line under subhead, italic, dollar-anchored):** *Agentic AI delivers 171% average ROI; the AI OS market is $12.85B → $107.60B by 2033 (Grand View Research). You are buying the standard, not a bet.*
 - **Primary CTA (above the fold):** `Book a 20-min call →`
 - **Secondary CTA:** `See how it works in 30 days` (anchor link to timeline section)
 - **Trust line under CTAs:** `Built with operators at $1M–$3M agencies. 10 integrations live. 30-day money-back.`
@@ -87,8 +88,10 @@ A real COO knows your clients, your team, your history. The AI COO does too — 
 - Every campaign you've run, what worked, what didn't
 - Every operational decision and why you made it
 
+**Built as a Company Brain.** BRAIN is a persistent knowledge layer that pulls from every connected tool, keeps itself current, and turns your live data into an executable agent — exactly the primitive YC named in its Summer 2026 RFS. Most agencies have no single source of truth on margin per client. We are that source.
+
 **Dollar outcome:**
-**Replaces $400K/year of CAIO + analyst headcount** that 76% of enterprises now carry and your agency can't justify (IBM IBV 2026).
+**Replaces $400K/year of CAIO + analyst headcount** that 76% of enterprises now carry and your agency can't justify (IBM IBV 2026). The AI-driven knowledge management market itself is **$7.66B → $11.24B in one year (46.7% CAGR)** — and no horizontal player ships with agency data sources baked in (ResearchAndMarkets 2026).
 
 → *See the chat interface below.*
 
@@ -181,6 +184,9 @@ HubSpot · Pipedrive · ClickUp · Asana · Harvest · Toggl · Stripe · QuickB
 
 ### Caption row
 `Don't see your tool? We ship a new integration every 2 weeks. Tell us what you run on the demo call — if it's the 11th most-requested, it's already on the roadmap.`
+
+### Built MCP-native
+Each integration ships as an MCP-compatible tool definition (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`), so the AI COO calls them the same way 78% of enterprise AI teams now call agent tools in production (DigitalApplied 2026 — MCP servers grew from 1,200 in Q1 2025 to 9,400+ in April 2026). When your team adopts Claude, ChatGPT, or any frontier model with tool use, your AI COO is already speaking the standard.
 
 ---
 

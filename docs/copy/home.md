@@ -13,7 +13,7 @@
 - **Description (155 chars):** `21.5% of agencies are losing money in 2026. OpsRadar watches your margin, scope, and utilization in real time — at 5% of a fractional COO's price.`
   *(154 chars. Leads with a Planable 2026 stat. Names the comparison anchor.)*
 - **OG title:** `Your AI COO. Watching your margin while you're on the call.`
-- **OG description:** `Real-time margin, scope, and utilization for marketing agencies. $500–$3,000/mo, not $10K. Plugs into the stack you already pay for.`
+- **OG description:** `Real-time margin, scope, and utilization for marketing agencies. $750–$3,000/mo, not $10K. Plugs into the stack you already pay for.`
 - **OG image direction:** Dark background. Large white type: "21.5% of agencies are losing money in 2026." Below it, smaller: "OpsRadar is the AI COO that catches it in week 2." Bottom-right: a single line of mock alert text in amber — "Margin alert · Client at –$8.4K this month · 1-click invoice for unbilled scope". No logos, no UI chrome — just type + one alert line. Reads in a Slack/LinkedIn preview at 200px wide.
 
 ---
@@ -25,10 +25,11 @@
 *(Replaces the live "AIOS · for agencies under 30 people". Drops the audience floor that contradicts the §11.1 ICP of 10–25 people.)*
 
 **H1 (primary — what ships):**
-`The fractional COO that costs $500, not $10,000.`
+`The fractional COO that costs $750, not $10,000.`
 
-**Subhead (24 words, names a real number):**
-`OpsRadar is the AI COO for marketing agencies. We watch margin, scope, and utilization across your stack — and catch the unprofitable client in week 2, not month 3.`
+**Subhead (26 words, two real numbers):**
+`OpsRadar is the AI COO for marketing agencies. We watch margin, scope, and utilization across your stack — and catch the 50% of profit you're leaving untapped before it leaves with the client.`
+*(Productive.io 2026: 50% of agencies leave 20%+ of profit untapped to ops inefficiency. That's the wedge.)*
 
 **Primary CTA text:** `Book a 20-min call with the founder`
 **Primary CTA hover state:** `→ Lawand picks up — no pitch, no slides`
@@ -46,8 +47,12 @@
    *(Closest to the "Sunday nights are for your family" bar. Specific dollar. Specific timeline. Founder-voiced. Use as test variant if "fractional COO" angle underperforms.)*
 2. `Stop finding out which clients are unprofitable 90 days too late.`
    *(Pure pain framing. Names the detection lag — the central problem language from the strategy doc.)*
-3. `Your fractional COO costs $10K. Ours costs $500 and never sleeps.`
+3. `Your fractional COO costs $10K. Ours costs $750 and never sleeps.`
    *(The cleanest price-anchor version. Risk: reads slightly more "ad" than "founder note" — keep as A/B not primary.)*
+4. `Half of agencies leave 20%+ of profit on the table. Your AI COO finds it.`
+   *(Productive.io 2026 stat. Pure dollar-anchored pain. Reframes the buy as recovery, not cost.)*
+5. `Agentic AI returns 171% on average. Your agency runs on 0%.`
+   *(Onereach.ai 2026 agentic AI ROI stat. Reframes the AI COO as the highest-ROI investment your agency hasn't made.)*
 
 ---
 
@@ -80,8 +85,9 @@ A slim horizontal bar on a slightly darker background. Three columns. Each colum
 | # | Claim | Source |
 |---|-------|--------|
 | 1 | **21.5%** of marketing agencies are losing money in 2026 — up from 13% the year before. | Planable 2026 |
-| 2 | **47%** of agencies lose up to **$500K/year** to untracked billable hours. | Mosaic 2026 |
-| 3 | **A fractional COO is $10K/month.** OpsRadar is $500–$3,000. | Industry benchmark · OpsRadar pricing |
+| 2 | **50%** of agencies leave **20%+ of profit untapped** to ops inefficiency. | Productive.io 2026 |
+| 3 | **Agentic AI returns 171% on average.** Your AI COO is the highest-ROI hire you'll make. | Onereach.ai 2026 |
+| 4 | **A fractional COO is $10K/month.** OpsRadar is $750–$3,000. | Industry benchmark · OpsRadar pricing |
 
 **One-line summary under the bar (small, italicized):**
 *The bleed is well-documented. The fix isn't another tool — it's a brain that watches the margin in real time.*
@@ -215,7 +221,7 @@ The COO starts recommending — and, where you've given it permission, acting. D
 ## Pricing teaser
 
 **Section eyebrow:** `PRICING`
-**Headline:** `$500 to $3,000 a month. Versus a $10K/month fractional COO or a $400K/year Chief AI Officer.`
+**Headline:** `$750 to $3,000 a month. Versus a $10K/month fractional COO or a $400K/year Chief AI Officer.`
 
 **One-line summary:**
 The AI COO that watches your margin 24/7. Three tiers — pick by integration count and team size, not by feature gates. Cancel anytime.
@@ -262,9 +268,9 @@ PSAs record what happened — last quarter's margin, last week's hours, last mon
 
 ---
 
-**Q2: Why is this $500–$3,000 when a fractional COO is $10,000?**
+**Q2: Why is this $750–$3,000 when a fractional COO is $10,000?**
 
-Because software runs 24/7 with no salary, no benefits, no knowledge that leaves when the contract ends. A fractional COO does the same job 4 hours a week at $10K/month — the math says we should cost 1/40th. We charge a margin on top because building this is hard. That gets us to $500–$3,000.
+Because software runs 24/7 with no salary, no benefits, no knowledge that leaves when the contract ends. A fractional COO does the same job 4 hours a week at $10K/month — the math says we should cost 1/40th. We charge a margin on top because building this is hard. That gets us to $750–$3,000.
 
 ---
 
@@ -307,7 +313,7 @@ These are the cross-cutting fixes that this homepage triggers and that need to c
 | **20-min call (not 30)** | Every CTA across every page. Sync the Calendly embed to a 20-min slot. | Audit found 24 occurrences of "30-min" sitewide and 2 of "20-min" on FAQ. Strategy says 20. Strategy wins. |
 | **AIOS → AI COO** | Every page, every headline, every meta description. The pillars stay (OPERATE / OBSERVE / BRAIN / GUARD = 173 mentions, the most-installed vocabulary we have); they're now described as "what the COO does," not "the system." | §11.1 Decision 0 commits this. Audit confirmed half-AIOS/half-COO is the worst of both worlds. |
 | **"Book a call with founders" → "Book a call with the founder"** | Singular. We have one founder doing demos. | Honesty. Plural reads inflated. |
-| **Dollar anchors added throughout** | Every page should now name a number above the fold: $40K leak, $10K COO, $500 OpsRadar, 21.5% losing money, 47% losing $500K/yr. | Audit's single biggest copy gap. Voice rules explicit on this. |
+| **Dollar anchors added throughout** | Every page should now name a number above the fold: $40K leak, $10K COO, $750 OpsRadar, 21.5% losing money, 47% losing $500K/yr. | Audit's single biggest copy gap. Voice rules explicit on this. |
 
 ---
 

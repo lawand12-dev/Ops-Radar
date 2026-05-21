@@ -10,6 +10,22 @@ Net: this teardown is **content + design-system-doc grounded, not computed-CSS g
 
 ---
 
+## May 2026 update — from analytics to AI devtools, now a unicorn
+
+PostHog crossed two important thresholds between the original teardown date and May 2026:
+
+- **Series E: $75M at $1.4B valuation, September 2025**, led by Peak XV Partners — unicorn status. Followed the **$70M Series D at $920M led by Stripe (June 2025)**. Two large rounds in three months. (Source: uxwizz.com, 2025; news.crunchbase.com, 2025)
+- **$57.5M ARR in February 2026** — up ~99% YoY from ~$29M, and up from $53.1M at end-2025. (Source: sacra.com, 2026)
+- **Max AI launched in open beta (2026)** — explicit positioning shift "from open-source analytics platform to AI-powered devtools suite that automates engineering workflows by integrating data insights into code generation." (Source: uxwizz.com, 2025)
+- **Pricing**: usage-based, generous free tier (1M events, 5K recordings, 1M feature flag requests, 1.5K survey responses, 100K error exceptions, 50GB logs, 2K AI credits). **AI credits: first 2K free, then $0.01 per credit.** (Source: posthog.com/pricing, 2026; posthog.com/docs/posthog-ai/pricing, 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **The "boring layer becomes AI layer" pivot is now proven.** PostHog was a Mixpanel/Amplitude alternative; in 2026 it's an AI devtools suite. OpsRadar's analog: don't be remembered as "the agency dashboard that added AI." Be remembered as **the AI COO that happens to read your data sources**. Lead with the agent; the integrations are infrastructure.
+2. **Usage-based pricing + generous free tier is the AI-era playbook.** PostHog's free tier is enormous; the paid pull is volume and AI credit consumption. OpsRadar should test a **free "watch-only" tier**: one connected tool (Stripe-only), read-only insights, no agentic actions — to seed the funnel. Pull the monetization into action throughput.
+3. **Stripe as an investor + customer + adopter is the trifecta.** Stripe led PostHog's Series D, uses PostHog internally, and PostHog ships a Stripe integration. The cleanest GTM loop in B2B SaaS. OpsRadar's equivalent: identify the 1–2 strategic partners (HubSpot / ClickUp / Harvest) whose investment + endorsement + ecosystem fit would unlock the same loop.
+
+---
+
 ## 1. The Visual System
 
 ### Typography *(WebFetch fallback — no computed CSS)*

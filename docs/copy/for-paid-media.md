@@ -38,7 +38,7 @@
 > Sunday nights are for your family.
 
 **Subhead (rewrite to drop AIOS, add dollar anchor):**
-> Reports eat your Sundays. Pacing alerts come too late. BM access takes three weeks. OpsRadar is your AI COO for paid-media agencies — it ships the Monday digest at 8am, flags pacing mid-campaign with a dollar projection, and onboards new accounts under your credentials. Agencies running it claw back roughly $45K/year of senior time per strategist, and stop discovering overserve at quarter-end.
+> Reports eat your Sundays. Pacing alerts come too late. BM access takes three weeks. OpsRadar is your AI COO for paid-media agencies — it ships the Monday digest at 8am, flags pacing mid-campaign with a dollar projection, and onboards new accounts under your credentials. Meta CPMs hit $11.20 in 2026 (up from $9.10 in 2024 — Improvado), and the agencies using SpendOps-style financial discipline see 20–30% higher margins. Agencies running OpsRadar claw back roughly $45K/year of senior time per strategist, and stop discovering overserve at quarter-end.
 
 **Primary CTA:** Book a 20-minute call
 **Secondary CTA:** Or try the 3-minute audit
@@ -75,7 +75,7 @@ The point of the visual: prove that the AI COO is *paid-media-shaped*, not gener
 ### Card 2 — Pacing
 **Tag:** Pacing
 **Title:** Alerts fire mid-campaign, with a dollar projection.
-**Body:** Your AI COO watches MER in real time. The moment it crosses your floor, a Slack alert fires with the projected overserve — "Acme is pacing 32% over, ~$4,200 at risk if you don't adjust by Friday." Not last-click ROAS theatre. Not a Tuesday check that's two days too late. Agencies in their first month catch 3–5 pacing issues they would have eaten at quarter-end.
+**Body:** Your AI COO watches MER in real time. The moment it crosses your floor, a Slack alert fires with the projected overserve — "Acme is pacing 32% over, ~$4,200 at risk if you don't adjust by Friday." Not last-click ROAS theatre. Not a Tuesday check that's two days too late. Ad costs are up 18–25% across major platforms since 2024 (Improvado 2026) — pacing errors cost more than they used to. Agencies in their first month catch 3–5 pacing issues they would have eaten at quarter-end.
 
 ### Card 3 — Onboarding
 **Tag:** Onboarding
@@ -208,7 +208,7 @@ Replace the entire `<blockquote>` block with a short "Built with operators" soci
 **A:** Yes — under your credentials, owned by you from day one. We don't move your BM, your MCC, or your Pixel. The AI COO authenticates via your accounts the same way a senior strategist would. If you part ways with OpsRadar tomorrow, everything stays with you. Nothing is locked in our infrastructure.
 
 ### Q3 — "Do you replace my media planner or augment them?"
-**A:** Augment. The AI COO removes the 39.75 hours/month of routine work (Fluency 2026 benchmark) that buries your planner — reports, pacing checks, BM access requests, onboarding sequencing. What's left is the work that actually requires a strategist: creative strategy, account expansion, the client relationship. Most agencies redirect the freed capacity into one or two more clients per strategist — that's where the $45K/year shows up on the P&L.
+**A:** Augment. The AI COO removes the 39.75 hours/month of routine work (Fluency 2026 benchmark) that buries your planner — reports, pacing checks, BM access requests, onboarding sequencing. What's left is the work that actually requires a strategist: creative strategy, account expansion, the client relationship. Most agencies redirect the freed capacity into one or two more clients per strategist — that's where the $45K/year shows up on the P&L. (Gartner May 2026: AI that *replaces* people doesn't deliver returns; AI that *amplifies* them returns 171%. The math only works the second way.)
 
 ### Q4 — "Can you alert me about creative fatigue?"
 **A:** Yes — cross-platform. Daily creative scan across Meta and TikTok, fatigue scored by CTR decay + frequency + cost-per-result drift. The week's top fatigued sets land in your Monday digest with the recommended replacement queue. Agencies that wire this up catch ~40% more fatigue events in the first month than they were catching manually.

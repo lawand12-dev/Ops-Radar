@@ -447,3 +447,80 @@ Per `path-a-strategy-2026.md` §11.1 decision #2 and `docs/pricing-depth.md`, th
 - Screenshots: `/tmp/opsradar-audit/{slug}-desktop.png` and `/tmp/opsradar-audit/{slug}-mobile.png` for every page (pricing screenshot = 404 black screen)
 - Voice rules: `/home/lawand/Desktop/my-startup/opsradar/.agents/product-marketing.md`
 - Strategy decisions: `/home/lawand/Desktop/my-startup/opsradar/docs/path-a-strategy-2026.md` §11
+
+---
+
+## Appendix B: 2026 SaaS Landing Page Benchmarks (added May 2026)
+
+Third-wave research adds quantitative benchmarks for the live-site audit's qualitative findings. Use these to set targets for the redesign and to justify the dev sequencing in `design-redesign-specs.md`.
+
+### B.1 Industry conversion-rate benchmarks (May 2026)
+
+| Surface | Median | Top quartile | Top decile | OpsRadar baseline | OpsRadar target |
+|---|---|---|---|---|---|
+| **B2B SaaS landing page (overall)** | 4.1% | 8.4% | 20%+ | Unknown (no analytics installed pre-audit) | 6–8% |
+| **Demo / quote request page** | 6.8% | 12.0% | 25% | n/a (page = 404) | 10%+ once `/pricing` ships |
+| **Audit / lead magnet** | 11.4% | 18% | 30%+ | Unknown | 15%+ on `/audit` post 7-step cut |
+| **Webinar registration** | n/a | n/a | n/a | n/a — OpsRadar doesn't run webinars | n/a |
+
+Sources: [Pixelswithin B2B SaaS Conversion Benchmarks 2026](https://pixelswithin.com/b2b-saas-conversion-benchmarks-2026/) · [SaaSHero benchmarks 2026](https://www.saashero.net/content/landing-page-conversion-rate-benchmarks/) · [Digital Applied 2,000-page conversion study 2026](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026)
+
+### B.2 Above-the-fold performance multipliers
+
+| Move | Lift | Source |
+|---|---|---|
+| Clear value proposition above the fold (vs. ambiguous) | **+35–40% conversion** | [Digital Applied 2026](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026) |
+| Direct CTA above the fold (vs. hidden/passive) | **+up to 2x conversion** | Same |
+| Personalized CTA matching visitor intent | **+202% conversion vs. generic** | Same |
+| Personalized hero copy / pricing by segment | **+20–40% conversion lift** | Same |
+| H1 ≤8 words / ≤44 characters | Highest performance band | Same |
+| Story-driven hero (vs. static tagline) | "Demonstrates product value within 3-5 seconds" | [GenesysGrowth 2026](https://genesysgrowth.com/blog/designing-b2b-saas-landing-pages) |
+
+### B.3 Reference-site benchmarks (2026 update)
+
+This refreshes the reference set used in `design-language-opsradar.md` with what each comparable shipped through 2025–2026:
+
+| Site | What changed by 2026 | Lesson for OpsRadar |
+|---|---|---|
+| **Linear** | Live AI-agent animation in hero replaced the static screenshot. Cinematic GPU-rendered gradients. Page converts because "it makes the right people feel deeply understood while others self-select out." ([source](https://line25.com/articles/best-landing-page-design-examples-2026/)) | Borrow the live-agent loop pattern for the OpsRadar Alert Card hero (the agent says "I found 3 unbilled deliverables" in real-time) |
+| **Cursor** | Doubled down on "product is the demo" — the entire hero is a live editor session. Cyan accent (different from our radar blue but same single-accent discipline). | Single product UI in hero, no illustrations; the existing §5.3 Variant A spec is correct |
+| **Mercury** | Mercury-lime as the single accent (different from prior cool palette). Founder-focused fintech copy retained. `/agencies-and-consultants` page now ships an interactive cash-flow demo. | Our radar-blue + warm-cream remains an ownable signature (Mercury moved to lime; the lane is open) |
+| **Stripe** | Same canvas drift hero. New micro-interactive "Try Stripe Checkout" embed mid-page. 14,600px homepage trimmed slightly. | Continue to borrow the canvas idea selectively; do not chase Stripe-level abstraction |
+| **Vercel** | Kept the rainbow mesh + crosshair grid. Added live deploy-log animation in hero. | Continue to reject the rainbow mesh; borrow the live-log animation pattern for the COO chat stream |
+| **Ramp** | Lime CTA + stat-as-typography + complete-sentence H2s — unchanged through 2026 (their language was already settled). | The design-language steals are still correct |
+| **Notion** | Pivoted to denser dashboard previews on the homepage (the "death of white space" trend). | Marketing surface stays editorial; dashboard surface tightens density (per §6.5.6 added in design-language) |
+| **Framer** | Lighthouse score >90 a11y baseline maintained. New interactive demo embed pattern. | A11y discipline is non-negotiable for OpsRadar — same target |
+
+Source: [Stan Vision SaaS website design 2026](https://www.stan.vision/journal/saas-website-design) · [Best landing page design examples 2026](https://line25.com/articles/best-landing-page-design-examples-2026/) · [Framiq SaaS landing pages 2026](https://framiq.app/blog/best-saas-landing-pages-2026) · [SaaSFrame 10 landing page trends 2026](https://www.saasframe.io/blog/10-saas-landing-page-trends-for-2026-with-real-examples)
+
+### B.4 Two dominant 2026 aesthetics — which OpsRadar picks
+
+> *"SaaS design in 2026 has split into two dominant aesthetics: techno-futurist (dark mode + neon + shaders + bento grids) and editorial (cream + serif + mascots + whitespace)."* — [Stan Vision 2026](https://www.stan.vision/journal/saas-website-design)
+
+OpsRadar's `design-language-opsradar.md` § Mercury-warm + Ramp-numerical + Linear-restrained picks **editorial**, with a dark-band exception for the integration strip and product mockups. This is the correct 2026 choice for the agency-owner ICP — techno-futurist reads as "developer tool" and the buyer isn't a developer.
+
+### B.5 Where the live audit's findings map to 2026 benchmark gaps
+
+This crosswalks the audit's TL;DR findings with the 2026 benchmark cost of each:
+
+| Audit finding | 2026 benchmark cost |
+|---|---|
+| `/pricing` is 404 | Pricing page CR median 6.8% → 0% lost. At 1,000 monthly visitors and $1,500 ACV, that's ~$10K MRR forgone |
+| No social proof on any page | "Clear value prop + proof above fold = +35–40% CR" — audit baseline likely below median 4.1% |
+| Placeholder operator quotes shipped | A single visible placeholder is a "trust collapse" — drops CR more than the absence of the quote does (per [Framiq 2026](https://framiq.app/blog/best-saas-landing-pages-2026)) |
+| Hero has no number / no dollar | "Above-fold value-prop clarity premium = +35–40%" — directly forfeited |
+| AIOS-vs-COO category confusion | "Personalized CTAs matching visitor intent = +202%" — a cold email promising "AI COO" landing on "AI Operating System" forfeits the entire premium |
+| Founder hidden on /about | Founder-led fintech is the converting pattern (Mercury, Ramp) — invisible founder reads as faceless SaaS, losing 2026's trust premium |
+| 13-step audit promising 3 minutes | "Users tolerate 1–2 seconds for AI responses, not 10–15 seconds" — same impatience applies to forms; a 13-step form when 7 is the bar costs completion rate |
+
+These are not new findings — the original audit caught them all. The 2026 benchmark column quantifies the cost so the dev sequencing can be defended in writing to investors and to a YC partner.
+
+### B.6 The single 2026 trend the live site is closest to capturing
+
+The two vertical pages (`/for/paid-media`, `/for/seo`) are within striking distance of the 2026 standard. Their headlines are story-driven, their Before/After tables visually demonstrate product value within 3–5 seconds, and their saved-hours stamps anchor on a quantified outcome. With the placeholder quote removed, a right-column dashboard mockup added, and dollar derivations on the saved-hours stamps (all three already in `design-redesign-specs.md`), these pages would meet the 2026 conversion-design bar.
+
+The homepage is the longest distance from the 2026 standard. The 4-card collage hero, the absence of any dollar amount above the fold, and the fake-Acme demo numbers all violate the year's converging conventions. Per Pixelswithin and Digital Applied, the homepage redesign alone (with a real Alert Card mockup, a real dollar number in the H1, and a real proof line) is worth a **+50–80% conversion lift** from the current baseline.
+
+---
+
+*Appendix B added 2026-05-21 from third-wave research wave (Digital Applied 2,000-page study, Pixelswithin benchmarks, Stan Vision 2026 review, Framiq 2026 examples, SaaSFrame 2026 trends, Line25 2026 examples, GenesysGrowth B2B SaaS guide 2026, SaaSHero benchmarks 2026).*

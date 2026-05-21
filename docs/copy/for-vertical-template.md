@@ -47,7 +47,7 @@ HERO (above the fold)
 ────────────────────────────────────────────
 Eyebrow:        AI COO · for {{vertical-name}} agencies
 H1:             {{vertical-emotional-truth}}  (one specific, vivid line — the founder's drive-home thought)
-Subhead:        {{Three 2026 pains specific to this vertical, comma-separated}}. Your AI COO for {{vertical-name}} agencies catches them in real time — and surfaces the ${{X}}/quarter you're missing.
+Subhead:        {{One named 2026 stat with source in parentheses — e.g. "Ahrefs Dec 2025: AIO cuts top-page CTR 58%"}}. {{Two more vertical pains, comma-separated}}. Your AI COO for {{vertical-name}} agencies catches them in real time — and surfaces the ${{X}}/quarter you're missing.
 Primary CTA:    Book a 20-min demo with the founder
 Secondary CTA:  Or run the 3-minute audit
 Trust row:      20 minutes · founder takes the call · we tell you if it's not a fit
@@ -95,6 +95,7 @@ PRICING TEASER
 Three card row pointing to /pricing:
   Starter $500/mo · Growth $1,500/mo · Pro $3,000/mo
 Subline: "A fractional COO is $10K/month for a quarterly PDF. OpsRadar is your COO 24/7."
+Macro anchor (italic, small): "Agentic AI returns 171% on average — vs. 57% for traditional automation (Onereach.ai 2026). Your AI COO is the highest-ROI line item you're not running."
 CTA: "See full pricing →"
 
 ────────────────────────────────────────────
@@ -118,6 +119,10 @@ Repeats hero CTAs. Adds: "If you're not a {{vertical-name}} agency between 10–
 5. **Every page resolves call length to 20 minutes** (per strategy + customer-research doc). Replace any "30-minute" copy globally.
 6. **Vertical hero visual ≠ generic dashboard.** Show the one chart that *only matters in this vertical*.
 7. **Bottom CTA ends with a self-disqualifier.** Founder-led sale costs less when the wrong-fit visitors qualify themselves out.
+8. **Subhead must carry one fresh 2026 vertical stat with source name in parentheses.** What worked in paid-media (Meta CPM $11.20 — Improvado 2026) and SEO (Ahrefs Dec 2025: 58% CTR loss when AIO appears) is that the stat is the credibility — not the adjective. Generic "AI is changing things" subheads fail; named numbers with named sources convert.
+9. **The "3 pains, 3 fixes" middle column needs a proof hook column** — what worked on `/for/seo` is the third column ("the agencies catching this in week 2 are quoting $3K–$8K/mo of paid recovery..."). Every fix must end with a peer-validation hook, not a feature claim.
+10. **Macro anchor stat in the pricing teaser.** Add the universal anchor: "agentic AI returns 171% on average (Onereach.ai 2026); your AI COO is the highest-ROI line item you're not running." Adapt the dollar comp to the vertical (e.g., for /for/seo: "less than one client's monthly retainer").
+11. **FAQ row 1 must address the vertical-specific "is this hype" question with measured data.** What worked on `/for/seo` Q5 was citing Ahrefs + ALM Corp + zero-click percentages — three sources stacked. Each vertical page should have one FAQ that does the same with that vertical's leading 2026 stats.
 
 ---
 

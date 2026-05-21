@@ -10,6 +10,25 @@
 
 ---
 
+## May 2026 update — the fastest revenue ramp in SaaS history
+
+The Lovable that this teardown captures is now the fastest-growing SaaS product ever measured:
+
+- **$400M ARR in February 2026** — up from $300M (Jan 2026), $250M (end-2025), $200M (Nov 2025), $100M (July 2025). **0 → $400M ARR in roughly 18 months from launch.** (Source: sacra.com, 2026; aifundingtracker.com, 2026)
+- **$330M Series B at $6.6B valuation (Dec 2025)** — CapitalG + Menlo Ventures' Anthology fund led; participation from NVentures, Salesforce Ventures, Databricks Ventures, Atlassian Ventures, HubSpot Ventures. Valuation 3.6x in five months ($1.8B → $6.6B). (Source: techcrunch.com, Dec 2025; lovable.dev/blog/series-b)
+- **~8M users, 146 FTE** (Feb 2026). Revenue per employee is industry-best by a wide margin. (Source: sacra.com, 2026)
+- **Pricing unchanged**: $20/mo entry → $100/mo premium → custom enterprise. **Usage-based credit fees** on top — basic game = ~$1, complex app = $50+. The credit overlay is now the dominant revenue mechanic, not seat count. (Source: flowstep.ai, 2026)
+- **Lovable 2.0 shipped** with deeper full-stack scaffolding (auth, DB, API integrations from a single prompt). (Source: aitoolanalysis.com, 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **The "vibe" voice is the moat, not the feature list.** Lovable's homepage barely talks about features — "vibe code apps and websites with AI, fast." OpsRadar's equivalent: stop listing 10 integrations on the hero. Lead with the feeling — *"finally see your agency"* / *"stop running blind"* / *"the brain you couldn't afford."*
+2. **Credit-based usage layer over seat pricing.** Lovable proves users will pay $50+ per complex action on top of the seat fee. OpsRadar should consider a thin **"action credits"** overlay — e.g., the COO chat is included, but agentic-action runs (invoice reminders fired, scope alerts dispatched, briefings generated) meter against a credit pool. Aligns price with value delivered, not seat count.
+3. **Logo-list-as-validation:** When CapitalG + Salesforce Ventures + HubSpot Ventures + Atlassian Ventures + Databricks Ventures all participate in one round, the *investor logo wall* on the homepage carries more weight than the customer logo wall. For OpsRadar — once any name-brand agency lands — surface investor + customer logos in two distinct rows, not a mixed grid.
+
+---
+
+---
+
 ## 1. The Visual System
 
 ### Color palette (extracted from CSS custom properties)

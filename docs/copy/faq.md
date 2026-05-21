@@ -138,6 +138,22 @@ Frontier LLMs from leading AI labs, plus our own evaluator and grounding layer t
 
 No. Your data is never used to train any model — ours, the underlying LLM providers', or anyone else's. Provider settings are configured to opt out of training across the board, and your data is partitioned per-agency at every layer. The only thing that informs the *OpsRadar Index* (our anonymized agency benchmark) is aggregated, fully anonymized metrics — and only if you opt in.
 
+### Q8: "How do you stop the AI from hallucinating about my agency?"
+
+Three layers. (1) **Grounding**: every answer pulls from your live connected tools — the model is constrained to cite the tool, the field, and the value it used. If it can't cite, it doesn't answer. (2) **5-evaluator safety net**: every agentic action (draft invoice, PM nudge, scope alert) is checked by a separate evaluator chain for factual consistency, scope adherence, and dollar-amount sanity before it leaves the queue. (3) **30-minute undo on everything**: any action the AI COO takes can be reversed before it's irreversible. Combined, these collapse the hallucination surface to roughly the same as a junior analyst on their second week — and unlike a junior, the AI COO never gets tired and never misremembers a client name.
+
+### Q9: "Are you MCP-compatible? Will my own AI tools work with OpsRadar?"
+
+Yes. Every OpsRadar tool definition (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`, and 12 more) ships as an MCP server so any frontier model your team uses — through their own Claude, ChatGPT, or in-house agent — can call the same live agency data the AI COO uses. The Model Context Protocol is now the standard (78% of enterprise AI teams have an MCP-backed agent in production as of April 2026, per DigitalApplied). When the standard shifts again, we move with it. You're not locked into our chat interface.
+
+### Q10: "Where does my data physically live, and what about residency?"
+
+Aggregated metrics and account configuration are stored on infrastructure in US-East (Vercel + Supabase). The live business data from your connected integrations is **not warehoused** — it's read just-in-time and cached briefly (3–60 minutes depending on the data type) and then dropped. Concretely: when you ask "which client is unprofitable this month," the AI COO calls Stripe and Harvest at that moment, computes, answers, and the raw rows are not persisted. EU and Canada residency are available on Pro tier with a 2-week setup. SOC 2 Type II audit kicks off Q3 2026; HIPAA is not in scope (we don't serve healthcare).
+
+### Q11: "What's your defensible moat against a horizontal Company Brain like Hyper or ChatGPT?"
+
+Vertical data sources + agency benchmarks. Horizontal Company Brain products have no access to anonymized utilization rates, project margins, scope creep patterns, or pacing benchmarks across hundreds of marketing agencies. That dataset only exists inside OpsRadar — and it compounds. At 50 agencies we have meaningful benchmarks by team size and service mix; at 200 we have predictive scope-creep alerts; at 1,000 we have an AI COO that knows the marketing-agency vertical cold. McKinsey: sector-specific AI delivers ~5x the ROI of horizontal. ChatGPT can write you a polite email; it cannot tell you which of your 22 retainer clients is bleeding margin this Tuesday.
+
 ---
 
 ## Bottom: "Still have questions?" CTA

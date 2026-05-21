@@ -6,6 +6,21 @@
 
 ---
 
+## May 2026 update — "issue tracking is dead"
+
+The most consequential positioning move of 2026 in this category came from Linear:
+
+- **March 2026: Linear launched Linear Agent in public beta** — works in the web/mobile/desktop apps and as a plug-in for Slack, Teams, Zendesk. CEO Karri Saarinen publicly declared **"issue tracking is dead"** and reframed Linear as an agentic work platform rather than a tracker. (Source: theregister.com, March 2026; linear.app/changelog, March 2026)
+- **AI is included on every paid plan at no extra cost** — Agent and Skills ship across all tiers; Automations and Code Intelligence gate to Business/Enterprise; usage-based pricing for heavy compute only kicks in at GA. Explicit contrast with ClickUp Brain's +$9–$28/seat add-on. (Source: ai-tools-hq.com, 2026)
+- **Pricing unchanged**: Free / Basic $10 / Business $16 / Enterprise custom. The decision *not* to launch an "AI tier" is itself the positioning move. (Source: aiproductivity.ai, 2026)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **The category-rename move.** Linear's CEO publicly buried his own category ("issue tracking is dead") to lead the next one ("agentic work platform"). OpsRadar's equivalent is to publicly bury "agency dashboards" / "PSA reporting" — name them dead — and lead with **"the agency brain."** Don't be the better dashboard; declare dashboards over.
+2. **Bundle AI into every tier rather than gating it.** OpsRadar's Starter ($500) should include the COO chat and the action queue — not relegate them to Growth/Pro. The competitor narrative is "AI add-on doubles your bill"; the OpsRadar counter-narrative is "AI *is* the product, not an upsell."
+3. **Plug-in distribution.** Linear Agent shipped Slack/Teams/Zendesk plug-ins on day one. OpsRadar's COO alerts should ship as a Slack app first, not as an email-only or dashboard-only channel — meet the founder where they already triage.
+
+---
+
 ## 1. The Visual System
 
 ### Color palette (verbatim from `:root`)

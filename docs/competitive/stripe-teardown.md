@@ -2,6 +2,28 @@
 
 *Captured 2026-05-18 from desktop 1440×900 against stripe.com, /payments, /atlas, /customers, /pricing, /sessions. All CSS values are computed-style readings — not memory.*
 
+## May 2026 update — $159B valuation, agentic commerce protocol owner
+
+Stripe's 2026 has been the most consequential of any company in this teardown set — they're effectively writing the protocol layer for AI-to-AI commerce:
+
+- **$159B valuation, Feb 2026** tender offer — **74% jump from the $91.5B Feb 2025 round** and surpassing the 2021 peak. (Source: techcrunch.com, Feb 2026; pymnts.com, 2026)
+- **$1.9T total payment volume in 2025** (+34% YoY), ~1.6% of global GDP. **$5.84B net revenue in 2025**, up from $5.1B in 2024. (Source: backlinko.com, 2026; coinlaw.io, 2026)
+- **Agentic Commerce Protocol shipped** — a "shared technical language for AI platforms and businesses." (Source: fueler.io, 2026)
+- **Agentic Commerce Suite** — for selling across multiple AI interfaces and protocols.
+- **Shared Payment Tokens** — let AI agents initiate payments without exposing credentials.
+- **Machine payments via stablecoin micropayments** — agents pay agents at sub-cent unit economics.
+- **OpenAI + Microsoft partnerships** to power shopping inside ChatGPT and Copilot.
+- **Stripe Billing now manages 200M active subscriptions for 300K+ companies** — the Revenue suite is on track for **$1B ARR in 2026**, a near-doubling. (Source: fueler.io, 2026)
+- **Four M&A in 12 months**: Bridge ($1.1B stablecoin infra, Feb 2025), Privy (crypto wallets, Jun 2025), Orum (payment orchestration, Jul 2025), Metronome (~$1B usage-based billing, Dec 2025).
+- **350+ product updates in 2025** — the design system is being stress-tested against unprecedented surface-area expansion.
+
+**Sharper positioning lesson for OpsRadar**:
+1. **The platform layer for AI agents is being claimed in 2026.** Stripe owns commerce-between-agents. Anthropic owns reasoning. OpsRadar should claim **agency-operations-between-agents** as cleanly — "the agency operations layer agents act on top of." The OpsRadar MCP server isn't a feature; it's the wedge into being a platform.
+2. **Stripe's design system survived 350 product updates because every shipped surface inherits the same 4 tokens.** OpsRadar should formalize a similar contract: every new dashboard widget, every new email, every new alert card inherits the same color, type, motion, voice — *before* shipping the 20th surface. Otherwise the brand drift kills the trust we're trying to build.
+3. **Metronome acquisition is a tell.** Stripe just paid ~$1B for usage-based billing infrastructure. The market consensus is now that **usage/credit billing is the AI-era default**. OpsRadar's pricing roadmap should bake in a credit-overlay path (per the Notion / Lovable / PostHog patterns above), not a pure-seat model.
+
+---
+
 Screenshots saved at repo root (move them to `docs/design-references/stripe-screenshots/` when convenient):
 - `stripe-01-homepage-hero.png` (viewport)
 - `stripe-01b-homepage-full.png` (full scroll)

@@ -19,6 +19,8 @@
 
 Source data: B2B SaaS benchmarks; agency-specific reply data from our own May 2026 cold campaign (250 sent, 1 hot, 1 warm = 0.8% qualified rate).
 
+**The 2026 benchmark that hardens the thesis:** Optifai's 939-company B2B study (May 2026) puts the gap at **warm intro/referral 15–25% vs cold list 1.5–2%** — a **10–15x** conversion delta, not 8–13x. Our 30–40% upper-bound number assumes vertical community trust on top of the warm-intro baseline; the underlying B2B benchmark is now industry-confirmed at 10x. ([Optifai 2026](https://optif.ai/learn/questions/cold-call-to-meeting-conversion-rate/))
+
 A 35% close rate from a warm intro is not a marketing claim — it is what happens when the *introducer* has already done the work of qualifying the lead and lending us their credibility. Cold prospects ask "who are you?". Warm-intro prospects ask "when can we start?".
 
 ### Why vertical SaaS NRR is community-led
@@ -50,23 +52,25 @@ Community-led growth has a 6-12 month payback period. Our cold campaign expects 
 
 Ranking criteria: (buyer concentration × engagement temperature × access feasibility × posting tolerance for vendor voice) / 4.
 
-| Rank | Community | Buyer concentration | Engagement temp | Verdict |
-|------|-----------|--------------------|-----------------|---------|
-| 1 | Online Geniuses | 8 | Hot | Commit deeply |
-| 2 | Mod Agency Insiders | 9 | Warm | High-leverage |
-| 3 | HighLevel Official Community | 7 | Hot | Adjacent — qualifier needed |
-| 4 | Fractionals United | 10 (channel partners) | Warm | Strategic, slow burn |
-| 5 | Agency Hackers | 9 | Hot (paid = serious) | Apply, invest in events |
-| 6 | r/agency (Reddit) | 6 | Warm-hot | Public learning ground |
-| 7 | AMI Peer Groups | 10 | Hot | Locked — channel via Drew |
-| 8 | Indie Hackers | 4 | Warm | The AI-builder angle only |
+| Rank | Community | Members (May 2026) | Buyer concentration | Engagement temp | Verdict |
+|------|-----------|---------|--------------------|-----------------|---------|
+| 1 | Online Geniuses | **53,000+** | 8 | Hot | Commit deeply |
+| 2 | Mod Agency Insiders | 5K–15K (unverified) | 9 | Warm | High-leverage |
+| 3 | HighLevel Official Community | 50K+ FB / 91K aggregate | 7 | Hot | Adjacent — qualifier needed |
+| 4 | Fractionals United | **13,000+** (Feb 2025) | 10 (channel partners) | Warm | Strategic, slow burn |
+| 5 | Agency Hackers | **700+ paid, 6K LinkedIn** | 9 | Hot (paid = serious) | Apply, invest in events |
+| 6 | r/agency (Reddit) | ~50K | 6 | Warm-hot | Public learning ground |
+| 7 | AMI Peer Groups | 300+ paying principals | 10 | Hot | Locked — channel via Drew |
+| 8 | Indie Hackers | 200K+ | 4 | Warm | The AI-builder angle only |
+
+**Combined verified reach across the 4 highest-priority surfaces (OG + Mod + Fractionals + HighLevel): ~120K–130K agency-adjacent professionals.** This is the audience the 90-day plan touches; even at 0.5% conversion to demo (well below the warm-intro 15–25% benchmark), the channel ceiling is hundreds of qualified prospects.
 
 ---
 
 ### 2.1 Online Geniuses (Slack)
 
 - **URL**: https://onlinegeniuses.com/
-- **Members**: 53,000+ verified marketers globally; founded by David Markovich
+- **Members (verified May 2026)**: **53,000+ vetted members globally** per Online Geniuses' own About page; founder David Markovich confirms "the largest SEO and digital marketing Slack community in the world." (Earlier interviews cited 25K+ — the official site number is now 53K, growth of ~2x over 24 months.) [Online Geniuses About](https://onlinegeniuses.com/about-us/) · [Loganix 2026 Slack Communities](https://loganix.com/marketing-communities/) · founded 2015
 - **Access**: Free; application + vetting (every member screened)
 - **Buyer concentration**: 8/10 — heavy SEO/PPC/social agency owner presence; not exclusively owners but the right cohort posts daily
 - **Engagement temperature**: Hot. Real-time questions; replies in minutes during US/EU daytime
@@ -84,7 +88,7 @@ Ranking criteria: (buyer concentration × engagement temperature × access feasi
 ### 2.2 Mod Agency Insiders (Facebook)
 
 - **URL**: https://www.facebook.com/groups/modagencyinsiders/
-- **Members**: 15K+ (research note: public sources show 5K-15K depending on count year; Mandy McEwen claims 15K in 2026 promo materials)
+- **Members (verified May 2026)**: **Unverified current count** — last independent verification was **5,000+ members with 3,000+ monthly-active** at the 2-year-anniversary post (Feb 2019). Mandy McEwen's 2026 promo materials still cite "15K+" but no fresh third-party confirmation exists. **Treat as 5K–15K; deprioritize relative to Online Geniuses (53K) and HighLevel (50K+) for raw reach.** ([Mod Girl Marketing 2-yr anniversary post](https://www.modgirlmarketing.com/facebook-group-anniversary/) · [Medium archive](https://medium.com/@MandyModGirl/top-facebook-groups-for-marketers-celebrating-our-2-year-anniversary-3e2284a34681))
 - **Host**: Mandy McEwen (Mod Girl Marketing)
 - **Access**: Application + manual approval; questions about your agency required
 - **Buyer concentration**: 9/10 — explicitly "agency owners/leaders only"; very few sales reps approved
@@ -103,7 +107,7 @@ Ranking criteria: (buyer concentration × engagement temperature × access feasi
 ### 2.3 HighLevel Official Community (Facebook + community.gohighlevel.com)
 
 - **URL**: https://www.facebook.com/groups/gohighlevel/ and https://community.gohighlevel.com
-- **Members**: 50K+ active in core Facebook group; HighLevel partner ecosystem reports 91K total across all official surfaces
+- **Members (verified May 2026)**: **50K+ active in the core Facebook group** ("HighLevel — Official Community"); HighLevel's partner ecosystem reports 91K+ aggregate across Facebook + community.gohighlevel.com + the in-app Communities feature launched in 2026. Facebook does not publish a public total — verify by visiting the group directly. ([HighLevel Official Community FB](https://www.facebook.com/groups/gohighlevel/) · [HighLevel Communities help docs](https://help.gohighlevel.com/support/solutions/articles/155000000280-how-to-setup-customize-and-manage-your-communities) · [SupplyGem GoHighLevel Communities Overview 2026](https://supplygem.com/gohighlevel-communities/))
 - **Access**: Free join; community.gohighlevel.com is HighLevel-customer adjacent
 - **Buyer concentration**: 7/10 — HighLevel agencies are mostly SMB-services and "agency-in-a-box" resellers, smaller than our ideal $500K-$5M ICP, but the high-end 20% is exactly us
 - **Engagement temperature**: Hot. Constant posting, very transactional
@@ -121,7 +125,7 @@ Ranking criteria: (buyer concentration × engagement temperature × access feasi
 ### 2.4 Fractionals United (Slack + Coda)
 
 - **URL**: https://www.fractionalsunited.com/join
-- **Members**: "Thousands" of fractional executives; founder Karina Mikhli; active local chapters in major cities
+- **Members (verified May 2026)**: **13,000+ as of Feb 2025**, founded by Karina Mikhli (former fractional COO), operated by a 4-person team. Growth: 700 → 2,000 (May 2023) → **13,000+ (Feb 2025)** → unverified for 2026 but trajectory implies 15K+. Active local chapters in NYC, SF, Austin, Chicago. Karina formally stepped into consultancy work in 2026 while continuing to operate the community. ([MicroEmpires interview](https://www.microempires.cc/p/karina-mikhli-fractionals-united) · [Thinkin4D — Your First 10K Members](https://thinkin4d.substack.com/p/fractional-leadership-0-to-10k-communities))
 - **Access**: Application required; senior leadership experience required
 - **Buyer concentration**: 10/10 — these are not the buyer, they are the *channel*. A fractional COO who likes OpsRadar carries 3-5 agency clients into the funnel
 - **Engagement temperature**: Warm, deliberate, professional
@@ -139,7 +143,7 @@ Ranking criteria: (buyer concentration × engagement temperature × access feasi
 ### 2.5 Agency Hackers (Guild + events, UK)
 
 - **URL**: https://www.agencyhackers.com/ (community hosted on Guild)
-- **Members**: 500+ paid members + larger event audience
+- **Members (verified May 2026)**: **700+ paid members on Guild + ~6,000 LinkedIn followers**. UK's largest agency community; typical member sits at **15–60 FTE, £2M–£6M revenue** — overlapping our Tier-1 ICP almost exactly. Founded by Sam Burne James. Cited by path-a-strategy as a Tier-1 UK target. ([Agency Hackers Membership](https://www.agencyhackers.com/membership/) · [Crunchbase profile](https://www.crunchbase.com/organization/agency-hackers) · [LinkedIn](https://www.linkedin.com/company/agency-hackers))
 - **Access**: Paid (cost not publicly listed — request from membership team); application + fit interview
 - **Buyer concentration**: 9/10 — UK agency leaders, $1M-$10M+, exactly our shape
 - **Engagement temperature**: Hot. Paid = invested. Very high reply rates per post
@@ -1022,4 +1026,12 @@ If warm-intro rate is trending up at week 8, the system is working even if custo
 - [Mirren Live 2026](https://live.mirren.com/) — agency new business conference
 - [SaaStr AI Annual 2026](https://www.saastrannual.com/) — SaaS conference
 - [Sakas & Company](https://sakasandcompany.com/agency-conferences-2026/) — Karl Sakas's 2026 agency conference guide
+- **Fresh May 2026 community / engagement data:**
+  - [Online Geniuses About Us](https://onlinegeniuses.com/about-us/) — 53K+ members verified
+  - [Loganix 12 Slack Communities for SEOs and Marketers 2026](https://loganix.com/marketing-communities/) — independent confirmation of OG ranking
+  - [MicroEmpires: 13K+ Fractionals United, Karina Mikhli & 4-person team](https://www.microempires.cc/p/karina-mikhli-fractionals-united) — community ops model
+  - [Thinkin4D — Your First 10K Members (Erica Heinz × Karina Mikhli)](https://thinkin4d.substack.com/p/fractional-leadership-0-to-10k-communities) — growth playbook
+  - [Agency Hackers Membership](https://www.agencyhackers.com/membership/) — 700+ paid, member firmographics
+  - [SupplyGem GoHighLevel Communities Feature Overview 2026](https://supplygem.com/gohighlevel-communities/) — HL's 2026 in-app community feature
+  - [Optifai Warm vs Cold Conversion 2026 (n=939)](https://optif.ai/learn/questions/cold-call-to-meeting-conversion-rate/) — warm 15–25% vs cold 1.5–2%
 - Internal: `.agents/product-marketing.md`, `docs/path-a-strategy-2026.md` §10.6

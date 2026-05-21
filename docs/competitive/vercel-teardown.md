@@ -5,6 +5,23 @@
 
 All computed CSS values below were extracted from a fresh headless Chromium session against the live Vercel marketing site. No values are guessed. Where ranges appear, they reflect actual variance between pages.
 
+## May 2026 update — "AI Cloud" rebrand + v0 enterprise wedge
+
+Vercel re-bannered itself around AI in late 2025 and is now monetizing the move:
+
+- **Series F: $300M at $9.3B valuation, Sept 2025** — co-led by Accel + GIC, plus a parallel ~$300M tender offer for early employees/investors. (Source: vercel.com/blog/series-f; businesswire.com, Sept 2025)
+- **Platform repositioned as "AI Cloud"** — the explicit framing across the homepage, Series F blog post, and Next.js 16 release. "Combining enterprise-grade security with exceptional developer experience for teams building intelligent applications." (Source: techfundingnews.com, 2025)
+- **v0 hit 3.5M unique users** — "Teams and Enterprise accounts contributing more than half of v0 revenue." The vibe-coding tool became an enterprise wedge in 18 months. (Source: vercel.com/blog/series-f)
+- **v0 iOS app shipped in 2026** — beta → GA on the back of the insight that "70% of development happens outside traditional work hours." Mobile app pitched as "your Notes app, except your ideas get built for you in the background." (Source: vercel.com/blog/series-f)
+- **Next.js 16 roadmap**: positioning Next.js as "the canonical framework for agentic applications — apps where AI agents operate autonomously within the request-response cycle." DevTools for agent traces, streaming UI scaffolding, server-side AI integration. (Source: vercel.com/blog/series-f)
+
+**Sharper positioning lesson for OpsRadar**:
+1. **"AI Cloud" is a category claim, not a feature claim.** Vercel didn't say "Vercel now has AI features." It rebadged its entire product surface as a category-defining platform. OpsRadar's equivalent — already in motion in the strategy doc — is **"AI COO"** as the category, not as a feature. The lesson: ship the category name *across every page header and footer*, not just the homepage hero.
+2. **v0 went enterprise in 18 months by reading the "outside work hours" insight.** The agency-owner ICP overlaps that pattern — most agency founders check margin late at night, between client emails. OpsRadar's **mobile-first alert UX** (Slack on phone, email on phone, briefing on phone) is the equivalent surface that compounds.
+3. **"Built on the same platform we sell" loop.** Vercel ships v0 on Vercel, Next.js builds the agentic apps Vercel hosts, and so on. OpsRadar's equivalent loop: dogfood the COO on the OpsRadar business itself, publish the dashboard publicly ("our own OpsRadar live"), turn the marketing site into a **screenshot of the product running our company**. The strongest possible proof.
+
+---
+
 Pages studied:
 - `vercel.com/home` — homepage
 - `vercel.com/products/observability` — product page

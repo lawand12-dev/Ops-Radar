@@ -138,6 +138,8 @@ Flat caps NRR. OpenView 2025: usage-based adds +6pp NRR over flat. Top-quartile 
 3. **OpenView data:** usage-based pricing → +10pp higher NRR, 22pp lower churn, 2× faster growth.
 4. **The agency vertical specifically:** Stripe-style "per transaction" is already familiar. So is HubSpot's contact-tier ladder. The model is not new to this buyer.
 
+**2026 pricing-model validation.** By 2030, **at least 40% of enterprise SaaS spend** is expected to shift toward usage-, agent-, or outcome-based pricing ([Monetizely 2026 Guide to SaaS, AI, and Agentic Pricing Models](https://www.getmonetizely.com/blogs/the-2026-guide-to-saas-ai-and-agentic-pricing-models)). Salesforce's Agentforce already runs the **exact hybrid we're proposing**: Flex Credits at **$0.10/action (100K credits for $500)**, or per-conversation at $2 prepaid / $2.50 overage, or per-user unlimited at $125–$550/user/month. The "prepaid credit wallet + overage" pattern is now the canonical agentic-AI architecture — a credit wallet **caps risk from unbounded usage** and protects margins, which is the exact reason 78% of IT leaders report **unexpected charges from consumption-based AI pricing** as their top concern ([Monetizely 2026](https://www.getmonetizely.com/blogs/the-2026-guide-to-saas-ai-and-agentic-pricing-models)).
+
 ### The proposed value-metric structure
 
 | Tier | Flat base | Included agentic actions/mo | Overage |
@@ -244,6 +246,8 @@ The fractional COO channel runs on its own Fractional Operator SKU: **$1,200/mo 
 
 ### Annual prepay discount trade-off
 Industry median: **18% (Vendr 2024); Recurly 2025 = "2 months free" (16.7%).** Cloud 100 average is 20–30% but those are mature companies optimizing for cash.
+
+**2026 NRR target validation.** Top-quartile vertical SaaS NRR is now **115–125%**; companies in the **120–130% NRR range** grow **2.5× faster** than low-NRR counterparts ([SaaS Mag 2026 Hybrid Pricing](https://www.saasmag.com/hybrid-pricing-saas-growth-2026/)). The 110%+ NRR target stated in `path-a-strategy-2026.md` Part 8.6 is a *floor* — top-quartile aim is 120%+. The agentic-action overage axis is the right lever to get there.
 
 **Recommendation: 17% annual prepay discount (= 2 months free, billed annually).**
 - Aligns with the most common SaaS rendering ("2 months free")

@@ -566,6 +566,146 @@ Works on every background because the inner ring matches page bg.
 
 ---
 
+## 6.5 AI-Native UI Patterns (added May 2026)
+
+OpsRadar is an AI COO product. Per the [YC build architecture](../yc/build-architecture.md), the COO chat surface streams tool calls, queues actions, and renders inline cards from agent output. The design language must encode the patterns that 2026 production AI-native products converged on. None of these existed in the original 9-site teardown — they are additive specs sourced from May 2026 industry research.
+
+### What the 2026 AI-native baseline looks like
+
+> *"Users have learned to watch tokens appear in real time, and a response that waits until completion before rendering feels broken by comparison."* — [AI Chat UI Best Practices 2026](https://thefrontkit.com/blogs/ai-chat-ui-best-practices)
+
+> *"Inline tool visualization shows what tools the agent used without separate debug panels — Chainlit pioneered this with automatic intermediate step cards where users see 'Searched database' or 'Called weather API' as the agent works."* — [Generative UI 2026](https://www.copilotkit.ai/blog/the-developer-s-guide-to-generative-ui-in-2026)
+
+The four production patterns ([AG-UI / A2UI / Vercel AI SDK convergence, 2026](https://blog.logrocket.com/build-real-ai-with-ag-ui/)):
+
+1. **Streaming text** — tokens render as they arrive; blinking-cursor or "AI is typing" indicator
+2. **Tool-call cards** — every tool invocation surfaces as an inline card ("Reading Stripe charges…") visible in the conversation
+3. **Generative UI cards** — agent returns structured component data, not raw text, and the client renders charts/alerts/action cards inline
+4. **Action gates (HITL)** — write actions render as confirm/reject cards inside the chat, never auto-execute
+
+### 6.5.1 Streaming response specification
+
+When the COO agent (or any LLM response in OpsRadar — audit generation, briefing, narrative) is streaming:
+
+- **Latency rule:** "Users tolerate 1–2 seconds for AI responses, not 10–15 seconds" — if the first token doesn't arrive in 1.2s, show a streaming indicator immediately ([source](https://thefrontkit.com/blogs/ai-chat-ui-best-practices))
+- **Token render:** text appears character-by-character (or word-by-word) using Vercel AI SDK's `useChat` `streamText` primitive. Cursor: a 2px-wide vertical bar in `--radar-500`, blinking 1s on / 0.5s off, attached to the trailing token.
+- **Markdown buffering rule:** render plain text immediately, but buffer code fences and bullet groups until the closing fence or empty line arrives — partial markdown rendering causes layout thrash. ([source](https://thefrontkit.com/blogs/ai-chat-ui-best-practices))
+- **Visible stop button:** every streaming response shows a `Stop ■` pill-button at the bottom-right of the message; 32px square, `--ink-card` background, `--radar-500` icon. Click cancels the SSE stream via AbortController.
+- **Streaming indicator pill:** before the first token, show an `--text-eyebrow` uppercase pill reading `THINKING…` with three pulsing dots at `--radar-500`, animated 0.6s stagger. Replace with the streamed text once the first token arrives.
+
+### 6.5.2 Tool-call card specification
+
+Whenever the COO agent invokes a read tool (`get_finance`, `get_profitability`, `get_capacity`, etc.) — pulled from the COO agent loop in [build-architecture.md](../yc/build-architecture.md) — the tool call must surface as a **collapsed inline card** above the eventual answer.
+
+```
+┌─────────────────────────────────────────────┐
+│ ⚙ Reading client profitability…   │ 1.2s ▼ │ ← --text-eyebrow uppercase + duration
+└─────────────────────────────────────────────┘
+```
+
+**Specification:**
+- Background: `--paper-1` `#F4F2EE` on light surfaces, `--ink-card` `#13141A` on dark
+- Padding: `8px 12px` (compact — half a regular card)
+- Radius: `6px` (smaller than the 8px standard so it visually subordinates to the answer)
+- Left icon: a 16px monoline glyph (`⚙` for tools, `🔍` for search, `📥` for fetch, `📤` for write) in `--radar-500`
+- Label: tool name in human language at `--text-small` weight 500 (`Reading client profitability…` not `getProfitability()`)
+- Duration: trailing `--text-small` `--text-muted` count, animated `1.2s` once complete
+- Expand chevron: `▼` toggles a 200ms open animation showing inputs and outputs
+- Color states:
+  - **Pending:** label suffix `…` with the chevron rotating once per 1.2s
+  - **Complete:** duration shown, no animation
+  - **Error:** left icon in `--flare-500`, label in `--flare-500`, expandable to show the error
+
+**Why this matters for OpsRadar specifically:** the agent will read 5+ tools per typical COO question. Hiding them looks like "magic AI" (bad — no trust); listing them all expanded is noise. Collapsed cards with hover-to-expand is the 2026 standard ([Patterns.dev AI UI patterns](https://www.patterns.dev/react/ai-ui-patterns/)).
+
+### 6.5.3 Generative UI cards (Vercel AI SDK v6 pattern)
+
+When the agent returns structured output (a margin chart, a profitability table, an alert recommendation), the client renders a **typed React component**, not raw markdown. This is the AI SDK v6 "generative UI" primitive — `streamObject` + Zod schemas + typed React render targets ([AI SDK UI: Generative User Interfaces](https://ai-sdk.dev/docs/ai-sdk-ui/generative-user-interfaces)).
+
+> *"Instead of returning JSON that the client renders, you stream actual React components — the loading spinner appears immediately, then gets replaced by the [chart/card/table] once the data arrives."* — [Vercel AI SDK v6 docs, 2026](https://ai-sdk.dev/docs/ai-sdk-ui/generative-user-interfaces)
+
+**Important 2026 update:** AI SDK RSC is paused; Vercel now recommends **AI SDK UI** (`useChat` + tool-result rendering) for production. OpsRadar should adopt the production path. Source: [AI SDK docs](https://ai-sdk.dev/docs/introduction).
+
+**OpsRadar generative-UI component vocabulary** (5 reusable inline cards the COO agent can emit):
+
+| Component | Trigger | What it renders |
+|---|---|---|
+| `<MarginCard client />` | Agent answer references a single client's margin | Mini bar chart + `<DollarStamp>` + "View details →" |
+| `<ProfitabilityTable />` | "Show me my unprofitable clients" | Compact 3-column table inline; clickable rows |
+| `<HealthScoreInline value />` | "What's my agency health?" | 64px score gauge embedded mid-paragraph |
+| `<ActionProposal action />` | Any agent recommendation that requires owner approval | The §6.5.4 Action Gate card (see below) |
+| `<IntegrationCallout name />` | "You haven't connected Pipedrive" | Compact card with the integration logo + a Connect CTA |
+
+All five use the existing card hierarchy (§5.2) — they are *not* new visual primitives, they are the existing primitives embedded inline in a streaming chat. The discipline is to keep the visual language consistent so a chat answer looks like a richer version of the dashboard, not a separate UI universe.
+
+### 6.5.4 Action Gate cards (HITL — Human-In-The-Loop)
+
+Per the [YC build architecture](../yc/build-architecture.md), every write action by the agent **must** gate through owner confirmation. The Action Gate card is the design primitive for this. It is the most distinctive AI-native pattern in OpsRadar — and the YC application's positioning angle: *"Our HITL gates are the product, not a limitation."*
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ ⚡ Proposed action                       Confidence: 87%   │  ← eyebrow + confidence
+│                                                            │
+│ Send invoice reminder to Acme Inc. for INV-2701 ($4,200,   │  ← --text-body
+│ 17 days overdue). Email goes from billing@youragency.com.  │
+│                                                            │
+│ Reasoning: Acme's avg days-to-pay is 32d; this is 17d      │  ← --text-small --text-muted
+│ overdue and matches the pattern from your June recovery.   │
+│                                                            │
+│ ┌─────────────────────┐  ┌────────────────────────────┐   │
+│ │ Confirm and send →  │  │ Reject                     │   │  ← PRIMARY + GHOST
+│ └─────────────────────┘  └────────────────────────────┘   │
+│                                                            │
+│ Auto-confirms in 23h if no response · Edit before sending  │  ← --text-micro
+└────────────────────────────────────────────────────────────┘
+```
+
+**Specification:**
+- Background: `--paper-card` on light, `--ink-card` on dark
+- Left edge: `4px solid var(--radar-500)` (always blue — action gates are info, not warning, not error)
+- Eyebrow: `⚡ PROPOSED ACTION` in `--text-eyebrow` uppercase, `--radar-500`
+- Confidence: right-aligned percentage from the agent's structured output; if confidence <70%, prefix with `⚠` in `--smoke-500` and add a "low confidence — review carefully" microcopy below
+- Reasoning section: ALWAYS present — never hide the why. Founders need to learn the agent's logic. ([per the Gartner 2026 HITL positioning quote in build-architecture.md](https://www.gartner.com/en/newsroom/press-releases/2026-05-05-gartner-says-autonomous-business-and-artificial-intelligence-layoffs-may-create-budget-room-but-do-not-deliver-returns))
+- Two CTAs: PRIMARY "Confirm" + GHOST "Reject" — never a single confirm button (creates ambiguity)
+- Auto-confirm countdown: optional micro-copy; the agent's spec sets the TTL per action type
+- Inline "Edit before sending" link: opens a drawer with the action's payload editable before submit (e.g., the email body, the invoice amount)
+
+**Why this is the OpsRadar signature:** no fractional-COO product, no PSA tool, and no horizontal agent platform ships HITL gates as a first-class card. This is the single most OpsRadar-distinctive UI surface and earns the AI COO category claim more than any marketing copy can.
+
+### 6.5.5 The empty / loading / error state matrix for AI surfaces
+
+Add to the §6 loading-state spec the matrix that 2026 production AI surfaces ship:
+
+| State | When | Visual |
+|---|---|---|
+| **Idle / Empty** | First chat load, no message sent | A small prompt strip with 4 starter questions in `--paper-1` cards (Mercury restraint applied). Each starter is one verb-led sentence: "Show me my unprofitable clients" · "What's my margin this month?" · "Which projects are over scope?" · "What should I do today?" |
+| **Streaming** | Agent is generating | See §6.5.1 — cursor + stop button + tool-call cards as they arrive |
+| **Tool-call in progress** | One tool firing | See §6.5.2 — collapsed card with pending state |
+| **Complete** | Stream closed cleanly | Final tokens render; tool cards stay collapsed; action gates appear inline |
+| **Error (model)** | LLM returns 5xx, rate limit, content block | A `--flare-500`-bordered card: "Couldn't reach the model. Retry?" with a PRIMARY pill. Never expose raw error JSON. |
+| **Error (tool)** | A read tool failed mid-stream | The tool-call card flips red (§6.5.2 error state), the chat answer says "I couldn't read [tool name] — try reconnecting it in Integrations." Inline link to `/dashboard/integrations`. |
+| **Rate-limited** | Customer hit tier action limit | The Action Gate card is shown but the Confirm CTA is disabled, replaced with an upgrade prompt: "You've used 47/50 actions this month — upgrade to Pro for unlimited." Links to `/pricing`. |
+| **Compaction** | Context window approaching 30k tokens | A muted `--paper-1` strip appears: "Older messages compacted to keep this conversation fast." Mastra-pattern memory compression made visible. ([source](https://www.speakeasy.com/blog/ai-agent-framework-comparison)) |
+
+### 6.5.6 Density and "death of white space" — the 2026 dashboard pivot
+
+> *"The State of SaaS UX Design 2026: The Death of White Space"* — [LaderaLabs 2026](https://laderalabs.io/blog/saas-ux-trends-2026)
+
+A 2026 shift worth noting: top-tier SaaS dashboards (Linear, Vercel, Cursor) are tightening density. White-space-maximalist dashboards (the 2022–2024 Notion era) are giving way to information-dense single-screen views where the data is the design.
+
+**OpsRadar implication:** the marketing site stays in the editorial register (this design language is correct as-is). But the `/dashboard` product surface should **resist over-spacing**. The customer wants their full agency state visible without scrolling. This affects `/dashboard` redesign (which the user has flagged as "design last, with full focus") — capture this as a spec constraint when that work starts.
+
+**Concrete dashboard density rules (for when `/dashboard` redesign begins):**
+- 24px section gap, not 64px
+- 16px card padding, not 32px (cards are dense data surfaces, not marketing tiles)
+- Numeric content in mono at 14px minimum (not 18px)
+- Multi-column dense grids over single-column scrolls
+- Sticky page header with the agency health score visible from any scroll position
+
+This is captured separately from the marketing design language because the two surfaces deliberately diverge — marketing is editorial, dashboard is instrumented.
+
+---
+
 ## 7. The Brand-Distinctive Patterns (the 5 things only OpsRadar does)
 
 These are the patterns that, if a designer saw them on a billboard, they'd recognize as OpsRadar. None of them is borrowed wholesale from any single reference — each combines two or three teardown moves into something OpsRadar-specific.
@@ -682,4 +822,60 @@ Why distinctive: founder-led sale is the differentiator. PostHog hides their CEO
 
 ---
 
-*The design language is the constraint. The redesign specs (`docs/design-redesign-specs.md`) are the per-page application of these constraints to ship work this week.*
+---
+
+## 9. 2026 SaaS Design Trend Calibration (added May 2026)
+
+This section reconciles the design language above against 2026 industry research. The goal: confirm what holds, flag what to evolve, and identify what NOT to chase.
+
+### What 2026 research confirms about OpsRadar's direction
+
+| OpsRadar choice | 2026 trend it matches | Source |
+|---|---|---|
+| Single accent (radar blue), restraint over rainbow | "Roughly three-quarters of top design-led SaaS sites now follow the pattern of dark-as-default with one neon accent — Linear-purple, Raycast-red, Mercury-lime, Cursor-cyan variations" | [SaaS website design 2026](https://www.stan.vision/journal/saas-website-design) |
+| Real product UI as hero, not illustrations | "The shift from illustration to actual product UI is near-universal in 2026's top SaaS designs — Figma, Miro, Calendly, and Loom all placing real, interactive product moments at the top of the page" | [Gridrebels 2026 SaaS designs](https://www.gridrebels.studio/post/20-best-saas-website-designs-in-2026-examples-that-actually-convert) |
+| H1 under 8 words, dollar-anchored | "The average high-performing H1 headline contains under 8 words (44 characters maximum)" | [Digital Applied 2,000-page study 2026](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026) |
+| Above-fold direct CTA | "Above-fold, direct CTAs perform up to 2x better than passive or hidden buttons" | Same |
+| Mercury / Ramp / Linear as primary anchors | "Linear, Loom, Mercury, and Ramp consistently benchmark well on conversion metrics, with sites converting visitors-to-trial above 4 percent" | [Stan.vision SaaS design 2026](https://www.stan.vision/journal/saas-website-design) |
+| Lighthouse a11y discipline | "Framer, Linear, and Vercel score above 90 on Lighthouse accessibility audits — their design systems enforce accessibility at the component level" | Same |
+
+### 2026 trends to selectively adopt
+
+1. **Story-driven hero with micro-animations (3–5s value demo)** — *"The 2026 design standard shifts from static taglines to story-driven hero sections that visually demonstrate product value within 3-5 seconds, with leading examples like Notion, Linear, and Framer using micro-animations and product workflow illustrations to show transformation."* ([source](https://genesysgrowth.com/blog/designing-b2b-saas-landing-pages))
+   - **OpsRadar application:** the Alert Card hero composite (§5.3 Variant A) should animate a single state change on viewport entry — e.g., the "Acme is 23% over scope" badge appears with a 200ms fade-in 800ms after page load. One animation, single-purpose, no loop.
+
+2. **Live AI agent animation in hero** — *"The 'product is the demo' pattern has matured — live AI agent animations in the hero have replaced static screenshots, with Linear, Cursor, and Attio setting the benchmark."* ([source](https://www.stan.vision/journal/saas-website-design))
+   - **OpsRadar application:** on `/` and `/aios`, the hero composite can show a 5-second loop of the COO agent typing "I found 3 unbilled deliverables on Acme — recommend sending the invoice" using the streaming-text spec from §6.5.1. Loop pauses on hover (accessibility).
+
+3. **Interactive embedded demo (Guideflow / Storylane / Arcade)** — *"2026's standout trend is interactive demos embedded directly on the landing page — Amplitude, Forest Admin, and Zendesk using tools like Guideflow to deliver guided product tours."* ([source](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026))
+   - **OpsRadar application:** post-MVP, embed an Arcade clip of the COO chat answering a real margin question on `/aios`. Defer to Wave 4.
+
+4. **Personalized hero copy by traffic source** — *"Personalized CTAs outperform generic versions by 202% when they match visitor intent — modern high-converting pages use AI-powered personalization that adapts hero copy, product visuals, and pricing previews by segment, delivering conversion lifts of 20-40%."* ([source](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026))
+   - **OpsRadar application:** when traffic comes from a `/vs/*` page or a fractional-COO community link, swap the hero H1 to the matching frame. Use Vercel Edge Config to A/B without redeploys.
+
+### 2026 trends to explicitly REJECT for OpsRadar
+
+| Trend | Why we reject |
+|---|---|
+| Bento-grid hero (16+ rectangles) | Reads as 2023 launch-platform aesthetic; doesn't fit "operator-grade" — Linear killed theirs in late 2025 |
+| Shader / WebGL hero canvas as background (Lovable, Vercel current homepage) | Reads as "creative tool"; agency owners read it as "this is not serious" — keep the single Stripe-style canvas drift only if it appears subtle |
+| 3D pyramid / mesh gradient blob | Same — reads as developer-platform, not operator-tool |
+| "Death of white space" applied to marketing | Density is for the dashboard. Marketing stays editorial. The two surfaces deliberately diverge in this design language. |
+| AI mascot / Olllama-style character on hero | We are not a developer tool and we are not Notion. Founder block is our human element. |
+
+### Conversion-rate benchmarks to design against
+
+From the [Pixelswithin 2026 B2B SaaS benchmarks](https://pixelswithin.com/b2b-saas-conversion-benchmarks-2026/) and [SaaSHero benchmarks 2026](https://www.saashero.net/content/landing-page-conversion-rate-benchmarks/):
+
+| Surface | Median CR | Top-quartile CR | OpsRadar target |
+|---|---|---|---|
+| B2B SaaS landing page (overall) | **4.1%** | **20%+** (top performers) | 6–8% post-redesign |
+| Quote / demo request page | **6.8%** | 12%+ | 10%+ on `/audit` post-redesign |
+| Webinar / lead-magnet registration | **11.4%** | 25%+ | n/a (we don't run webinars) |
+| Above-fold value-prop clarity premium | "+35–40% better than ambiguous messaging" | — | The §5.3 Variant A hero must name a dollar number above the fold |
+| Above-fold CTA placement premium | "2x better than passive/hidden buttons" | — | The pill PRIMARY appears in every hero |
+| Personalized CTAs vs generic | "+202% when matching visitor intent" | — | Per-vertical hero variants on `/for/*` |
+
+---
+
+*The design language is the constraint. The redesign specs (`docs/design-redesign-specs.md`) are the per-page application of these constraints to ship work this week. §6.5 AI-Native UI Patterns and §9 2026 Trend Calibration were added 2026-05-21 from third-wave industry research.*

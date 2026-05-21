@@ -11,7 +11,7 @@
 
 - **Title (60 chars max — single brand suffix):** `The AI COO for SEO agencies — OpsRadar`
   *(56 chars. Fixes the live `Page — OpsRadar — OpsRadar` double-suffix template bug. Keyword "SEO agencies" is the search target; "AI COO" is the category we're installing.)*
-- **Description (155 chars):** `AI Overviews cut SEO CTRs by 30%+. The AI COO for SEO agencies tracks AIO presence and LLM citations per client — and flags traffic loss in week 2.`
+- **Description (155 chars):** `Ahrefs Dec 2025: AI Overviews cut top-page CTR 58%. Track AIO + LLM citations per client, catch traffic loss in week 2 — not at the QBR.`
   *(154 chars. Leads with the 2026 reality. Names the displacement. Specifies the unit of value: per-client tracking + week-2 detection.)*
 - **OG title:** `Your AI COO for SEO. Watching AI Overviews while you're on the call.`
 - **OG description:** `Track AIO presence, LLM citations, and rank movement per client. Catch the traffic bleed in week 2 — not the quarter-end "why is our retainer up for review?" call.`
@@ -29,8 +29,8 @@
 `Track what matters in 2026.`
 *(Preserved verbatim from live. The audit flagged this as one of the strongest headlines on the site — current-year-specific, gives the page a freshness signal, sets up the "what changed in 2026" pivot in the subhead. Do not touch.)*
 
-**Subhead (47 words — names the 2026 problem, anchors a dollar, commits to "AI COO"):**
-`AI Overviews cut your CTRs. LLM citations replaced position one for branded queries. Manual rank-tracking still takes 30 hours a week. OpsRadar is the AI COO for SEO agencies — it tracks the signals that actually matter now and flags which clients are bleeding traffic to AI before they ask why.`
+**Subhead (52 words — names the 2026 problem with the freshest data, anchors a dollar, commits to "AI COO"):**
+`Ahrefs (Dec 2025) measured a 58% lower CTR for the top page when AI Overviews show. 60% of all Google searches now end without a click (77% on mobile, 93% in AI Mode). Manual rank-tracking still takes 30 hours a week. OpsRadar is the AI COO for SEO agencies — it tracks the signals that actually matter now and flags which clients are bleeding traffic to AI before they ask why.`
 *(Drops "AIOS" → "AI COO for SEO agencies". Adds the per-client framing ("which clients are bleeding"). Keeps every 2026-specific reference the audit called out as strong: AI Overviews, LLM citations, manual rank-tracking. Adds the foresight promise — "before they ask why" — which is the only thing an agency owner actually buys this for.)*
 
 **Primary CTA text:** `Book a 20-min call with the founder`
@@ -68,8 +68,8 @@ The right side of the hero shows a single dark card — not a 4-card collage, an
 
 | # | The 2026 reality | What the AI COO does | The proof hook |
 |---|---|---|---|
-| 1 | **AI Overviews are answering 25–35% of informational queries with zero click.** Your top-of-funnel keywords are now answered above the fold of Google itself. | Tracks AIO presence per query, per client, every week. When a branded or money keyword flips to AIO-answered, you get a Slack alert with the recovery brief — paid retargeting plan, content rewrite priority, or LLM citation play. | The agencies catching this in week 2 are quoting clients **$3K–$8K/mo of paid recovery work** that the agencies catching it at QBR are losing to churn. |
-| 2 | **LLM citations replaced position one for branded queries.** When a buyer asks Claude, ChatGPT, or Perplexity "best [your client's category]," the citation list — not the SERP — is what they screenshot. | Measures LLM citation share across ChatGPT, Claude, and Perplexity for each client's top 20 branded and category queries. Compares your client to the 3 named competitors you flagged at onboarding. Weekly digest. | **~80% of SEO agencies are not tracking LLM citations yet.** The 20% who are catch competitor displacement before the client's CMO does — and that's the conversation that defends the retainer. |
+| 1 | **AI Overviews now appear in 13% of Google queries (up from <5% in 2025); informational queries see 30–40% organic traffic declines** (DigitalApplied 2026). Position-1 CTR drops 18% when AIO appears; Position 2 drops 39% (ALM Corp 2026). | Tracks AIO presence per query, per client, every week. When a branded or money keyword flips to AIO-answered, you get a Slack alert with the recovery brief — paid retargeting plan, content rewrite priority, or LLM citation play. | The agencies catching this in week 2 are quoting clients **$3K–$8K/mo of paid recovery work** that the agencies catching it at QBR are losing to churn. |
+| 2 | **The citation/ranking overlap collapsed from ~75% (mid-2025) to 17–38% (Feb 2026)** — sites cited by AI are no longer the same sites that rank organically (Position.digital 2026). LLM citations replaced position one for branded queries. | Measures LLM citation share across ChatGPT, Claude, and Perplexity for each client's top 20 branded and category queries. Compares your client to the 3 named competitors you flagged at onboarding. Weekly digest. | **~80% of SEO agencies are not tracking LLM citations yet.** Sites cited in AIO see **35% more organic clicks** (Position.digital 2026) — the 20% who track citations are winning the conversation that defends the retainer. |
 | 3 | **Manual rank-tracking still takes 30+ hours a week** across Ahrefs, GSC, SEMrush, and a Google Doc that nobody opens. The work doesn't go away because the surface changed. | OPERATE merges Ahrefs + GSC + SEMrush + LLM-citation data into one branded digest, delivered to the client's Slack or inbox every Monday at 8am. Movement flags, AIO flips, citation deltas — one view. | A 9-person SEO agency reclaims **~30 hours/strategist/month** — at $50/hr loaded cost, that's **$1,500/mo per strategist** back to billable work, or just back to the strategist's life. |
 
 *(Each row is 2026-anchored, names a real mechanism, and ends with a dollar or hour figure. This section IS the page's wedge. The audit specifically asked: "Quantify the AIO tracking value." This is the answer.)*
@@ -205,7 +205,7 @@ No — and that's deliberate. Content briefs, content scoring, and the pipeline 
 You're at the floor of our ICP, not under it. The Starter tier ($500/mo) is shaped for 5–10 person agencies running 8–15 retainer clients. Below 5 people you're likely a solo + contractor model, and the per-client digest pattern doesn't pay for itself yet. If you're 5 people and growing toward 10, the AI COO is the layer that lets you grow without hiring an ops lead first.
 
 **5. Are AI Overviews and LLM citations actually killing organic traffic, or is this hype?**
-Both. AI Overviews are documented to cut click-through on informational queries by 25–35% (varies by intent and SERP). LLM citations are newer, harder to measure, and the floor — not the ceiling — is "your client's category gets a 200-word answer with 4 citations, and you're not one of them." We don't sell hype. We sell tracking. If your clients aren't losing traffic to AI yet, the digest tells you the same thing — and you get the win of telling them, "we're tracking it, and you're fine."
+Both real, both measured. Ahrefs (Dec 2025): a 58% lower CTR for top pages when AIO appears. ALM Corp 2026: Position 1 loses 18% CTR, Position 2 loses 39%. Zero-click searches are now 60% of Google traffic (77% on mobile, 93% in AI Mode). Healthcare and finance YMYL pages are taking the hardest hits because AIO dominates those queries. LLM citations are newer, harder to measure, and the floor — not the ceiling — is "your client's category gets a 200-word answer with 4 citations, and you're not one of them." We don't sell hype. We sell tracking. If your clients aren't losing traffic to AI yet, the digest tells you the same thing — and you get the win of telling them, "we're tracking it, and you're fine."
 
 ---
 

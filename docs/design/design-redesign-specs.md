@@ -578,4 +578,109 @@ Defer for Wave 3 (after the AIOS-vs-AI-COO commit):
 
 ---
 
-*End of redesign specs. Cross-reference design tokens, components, and patterns in `docs/design-language-opsradar.md`.*
+---
+
+## 2026 SaaS Pattern Addendum (added May 2026)
+
+The per-page specs above remain accurate. This addendum captures four 2026-specific design pattern updates worth incorporating into the existing specs without rewriting them. Each maps to an existing per-page section above.
+
+### A1 — Hero animation upgrade (`/`, `/aios`)
+
+**Pattern:** "Live AI-agent animation in hero replaced static screenshots — Linear, Cursor, and Attio set the benchmark" ([source](https://www.stan.vision/journal/saas-website-design)).
+
+**Apply to `/` Section 2 (Hero composite):** the single Alert Card mockup specified in the existing per-page hero composite spec should *additionally* animate one state change on viewport entry:
+
+1. On page load, the Alert Card renders with placeholder text "Watching Acme…" and a pulsing `--radar-500` dot
+2. 800ms after viewport entry, the dot fades, the alert text streams in character-by-character over 1.2s using the streaming-text spec from `design-language-opsradar.md` §6.5.1
+3. Final state: `"Acme is 23% over scope this month. 3 unbilled deliverables. Send invoice →"`
+4. The CTA at the bottom of the card animates in 400ms later
+
+**Single animation, single purpose, no loop. Pauses if `prefers-reduced-motion` is set.**
+
+**Apply to `/aios` Section 2 (per-pillar capability sections):** the BRAIN section's example queries should render with the same streaming-text treatment to demonstrate what the chat looks like in production. Visitors learn the product surface from the marketing page.
+
+### A2 — Embedded interactive demo (`/aios`, future `/customers`)
+
+**Pattern:** "2026's standout trend is interactive demos embedded directly on the landing page — Amplitude, Forest Admin, Zendesk using Guideflow / Arcade / Storylane" ([source](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026)).
+
+**New section to insert into `/aios` between Section 3 (BRAIN queries) and Section 4 (Before/After table):**
+
+```
+[ Eyebrow: WALK THROUGH OPSRADAR · 3 MINUTES · NO SIGNUP ]
+[ H2: "See it work on a real agency's data." ]
+[ Embedded Arcade / Storylane / Guideflow clip — 960px wide, 540px tall ]
+[ The clip shows: log in → see overserved-client alert → confirm action → see outcome ]
+[ Below the embed: a CTA pill "Run this on your own data — book a demo →" ]
+```
+
+Defer to Wave 4 (after dashboard exists in a recordable state). Cost: $79–$249/mo for the tool; rate-of-return implied by Digital Applied study: embedded demos lift demo-request CR by 20–40%.
+
+### A3 — Personalized hero by traffic source (cross-page)
+
+**Pattern:** "Personalized CTAs outperform generic versions by 202% when they match visitor intent — modern high-converting pages use AI-powered personalization that adapts hero copy, product visuals, and pricing previews by segment" ([source](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026)).
+
+**Apply via Vercel Edge Config or middleware** — no full A/B platform needed. The simplest version (ship in Wave 3 after positioning commit):
+
+| Traffic source | Hero H1 swap | Hero CTA swap |
+|---|---|---|
+| Direct / unknown | Default H1 from positioning commit | "Book a demo" |
+| From a `/vs/*` page click-through | Use the competitor-aware H1 ("Most agencies on [competitor] still can't see margin — we built the layer they didn't.") | "Book a demo (we'll compare side-by-side)" |
+| From a fractional-COO community (UTM=fractional) | Fractional Operator SKU teaser in H1 ("The COO multiplier for fractional operators.") | "Apply to the Fractional Operator program" |
+| From cold-email (UTM=cold) | Match the cold-email subject line in the H1 | "Talk to the founder" |
+
+**Files affected:** `src/middleware.ts` (route-based variant), each page's hero component (read variant from `headers().get('x-opsradar-variant')` or from Edge Config). Defer payload work to Wave 3.
+
+### A4 — COO chat surface (the entire `/dashboard/coo` page — out of marketing-redesign scope but flagged here)
+
+The marketing redesign specs above don't cover `/dashboard/coo` because it's a product surface, not a marketing surface. But the 2026 AI-native pattern set added to `design-language-opsradar.md` §6.5 (streaming responses, tool-call cards, generative UI cards, action-gate cards) defines that surface.
+
+**When `/dashboard/coo` redesign begins (per user's directive to design the dashboard LAST, with full focus):**
+- Use the §6.5.1 streaming-text spec for every model response
+- Use the §6.5.2 tool-call card spec for every read tool invocation
+- Use the §6.5.3 generative UI card vocabulary (`<MarginCard>`, `<ProfitabilityTable>`, `<HealthScoreInline>`, `<ActionProposal>`, `<IntegrationCallout>`)
+- Use the §6.5.4 Action Gate card spec for every write proposal
+- Use the §6.5.5 state matrix for idle/streaming/error/rate-limit
+- Apply the §6.5.6 density rules (24px gaps, 16px card padding, mono numeric at 14px)
+
+These are the YC application's most distinctive product surfaces. They are deliberately out of the marketing redesign scope but their visual language must be coherent with the marketing system (same tokens, same card primitives, same accent discipline).
+
+### A5 — H1 length compliance check (cross-page, fast win)
+
+**Pattern:** "The average high-performing H1 headline contains under 8 words (44 characters maximum)" ([source](https://www.digitalapplied.com/blog/landing-page-conversion-study-2000-pages-tested-2026)).
+
+**Apply as a content lint rule across every page's H1 spec above:**
+
+| Page | Spec calls for | 2026 length cap |
+|---|---|---|
+| `/` | "Specific number + outcome verb + JTBD" | ≤8 words, ≤44 chars (count includes spaces) |
+| `/aios` | "5-word verb-led category claim ending in period" | ≤6 words, ≤40 chars (extra-tight for the category page) |
+| `/how-it-works` | "Verb-led complete sentence about the journey, ≤8 words" | ≤8 words, ≤44 chars — already correct |
+| `/services` | "Verb-led complete sentence about deliverables" | ≤8 words, ≤44 chars |
+| `/pricing` | "Two-clause balanced couplet" | ≤8 words total across both clauses, ≤50 chars (paired-sentence exception) |
+| `/about` | "Single specific declarative sentence distinguishing from /" | ≤10 words, ≤55 chars (manifesto exception — serif allows slightly more breathing) |
+| `/faq` | "Things we get asked." | 4 words, 19 chars — already correct |
+| `/audit` | "Verb-led promise with a dollar amount" | ≤8 words, ≤44 chars |
+| `/for/paid-media` | "Sunday nights are for your family." | 6 words, 32 chars — already correct |
+| `/for/seo` | "Track what matters in 2026." | 5 words, 27 chars — already correct |
+
+The two strongest existing H1s (`/for/paid-media`, `/for/seo`) are within the 2026 cap. The to-be-written homepage H1 must be too — count characters before approving the copy.
+
+### A6 — Reject list (2026 trends OpsRadar will NOT chase)
+
+Per `design-language-opsradar.md` §9.3, these trends appear in the 2026 SaaS design discourse but do not fit OpsRadar's positioning:
+
+- Bento-grid hero (16+ rectangles) — reads as 2023 launch-platform aesthetic
+- Shader / WebGL hero canvas as background — reads as "creative tool"
+- 3D pyramid / mesh gradient blob — reads as developer-platform
+- "Death of white space" applied to marketing — keep editorial; tighten the dashboard
+- AI mascot / Olllama-style character on hero — founder block is our human element
+
+If a designer or a contractor proposes any of these for OpsRadar's marketing surface, surface this reject list as the conversation-ender.
+
+---
+
+*2026 SaaS Pattern Addendum added 2026-05-21. Sources: Digital Applied 2,000-page conversion study, Stan Vision SaaS website design 2026, GenesysGrowth B2B SaaS guide 2026, Pixelswithin B2B SaaS Conversion Benchmarks 2026, SaaSFrame 10 landing page trends 2026, Vercel AI SDK docs (May 2026).*
+
+---
+
+*End of redesign specs. Cross-reference design tokens, components, and patterns in `docs/design-language-opsradar.md` (including the new §6.5 AI-native UI patterns and §9 2026 trend calibration).*
