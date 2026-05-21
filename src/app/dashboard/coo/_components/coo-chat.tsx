@@ -44,14 +44,21 @@ export function CooChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streaming, loading]);
 
+  useEffect(() => () => abortRef.current?.abort(), []);
+
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
+
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
 
     const userMsg: UserMessage = { role: 'user', content: trimmed };
     const history = [...messages, userMsg];
@@ -61,12 +68,14 @@ export function CooChat() {
 
     const draft: AssistantMessage = { role: 'assistant', content: '', toolSteps: [], actionCard: null };
     setStreaming(draft);
+    let current: AssistantMessage = draft;
 
     try {
       const res = await fetch('/api/dashboard/coo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history.map((m) => ({ role: m.role, content: m.content })) }),
+        signal: ac.signal,
       });
 
       if (!res.ok || !res.body) {
@@ -90,59 +99,50 @@ export function CooChat() {
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          const event = JSON.parse(line.slice(6)) as AgentEvent;
+          let event: AgentEvent;
+          try { event = JSON.parse(line.slice(6)) as AgentEvent; } catch { continue; }
 
           if (event.type === 'tool_call') {
-            setStreaming((prev) => {
-              if (!prev) return prev;
-              return { ...prev, toolSteps: [...prev.toolSteps, { name: event.name, label: event.label, done: false }] };
-            });
+            current = { ...current, toolSteps: [...current.toolSteps, { name: event.name, label: event.label, done: false }] };
+            setStreaming(current);
           }
 
           if (event.type === 'tool_done') {
-            setStreaming((prev) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                toolSteps: prev.toolSteps.map((s) => s.name === event.name ? { ...s, done: true } : s),
-              };
-            });
+            current = {
+              ...current,
+              toolSteps: current.toolSteps.map((s) => s.name === event.name ? { ...s, done: true } : s),
+            };
+            setStreaming(current);
           }
 
           if (event.type === 'text_delta') {
-            setStreaming((prev) => {
-              if (!prev) return prev;
-              return { ...prev, content: prev.content + event.delta };
-            });
+            current = { ...current, content: current.content + event.delta };
+            setStreaming(current);
           }
 
           if (event.type === 'action_proposed') {
-            setStreaming((prev) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                actionCard: {
-                  action_id: event.action_id,
-                  action_type: event.action_type,
-                  label: event.label,
-                  status: 'pending',
-                },
-              };
-            });
+            current = {
+              ...current,
+              actionCard: {
+                action_id: event.action_id,
+                action_type: event.action_type,
+                label: event.label,
+                status: 'pending',
+              },
+            };
+            setStreaming(current);
           }
 
           if (event.type === 'done' || event.type === 'error') {
-            setStreaming((prev) => {
-              if (!prev) return prev;
-              const finalContent = event.type === 'error' ? event.message : prev.content;
-              const finalMsg: AssistantMessage = { ...prev, content: finalContent };
-              setMessages((m) => [...m, finalMsg]);
-              return null;
-            });
+            const finalContent = event.type === 'error' ? event.message : current.content;
+            const finalMsg: AssistantMessage = { ...current, content: finalContent };
+            setMessages((m) => [...m, finalMsg]);
+            setStreaming(null);
           }
         }
       }
     } catch {
+      if (ac.signal.aborted) return;
       setStreaming(null);
       setMessages([...history, { role: 'assistant', content: 'Connection error. Please try again.', toolSteps: [], actionCard: null }]);
     } finally {
@@ -215,12 +215,14 @@ export function CooChat() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => void confirmAction(m.actionCard!.action_id, index)}
+                    aria-label="Confirm action"
                     className="rounded-[var(--radius)] bg-emerald-600 px-3 py-1 text-[12px] font-medium text-white hover:bg-emerald-500"
                   >
                     Confirm
                   </button>
                   <button
                     onClick={() => void dismissAction(m.actionCard!.action_id, index)}
+                    aria-label="Cancel action"
                     className="rounded-[var(--radius)] border border-[var(--color-border)] px-3 py-1 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
                   >
                     Cancel
@@ -251,7 +253,7 @@ export function CooChat() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-4" role="log" aria-live="polite" aria-busy={loading}>
         {messages.length === 0 && !streaming && (
           <div className="pt-2">
             <p className="mb-4 text-[13px] text-[var(--color-fg-muted)]">
@@ -302,6 +304,7 @@ export function CooChat() {
           <button
             onClick={() => void send(input)}
             disabled={loading || !input.trim()}
+            aria-label="Send message"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[var(--color-primary)] text-white hover:opacity-90 disabled:opacity-40"
           >
             <Send size={14} />
