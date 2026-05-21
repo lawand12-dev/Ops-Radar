@@ -13,6 +13,13 @@ export type HubspotDealRow = {
   close_date: string | null;  // YYYY-MM-DD or null
 };
 
+export type HubspotWonDeal = {
+  id: string;
+  name: string;
+  amount: number; // USD
+  closed_at: string; // ISO8601
+};
+
 export type HubspotSalesData = {
   pipeline_value: number;             // sum of `amount` for all open deals (USD)
   open_deals_count: number;
@@ -22,6 +29,7 @@ export type HubspotSalesData = {
   currency: 'USD';
   truncated: boolean;                 // true if either deals or contacts response had a next page
   rows: HubspotDealRow[];
+  recent_deals_won: HubspotWonDeal[]; // last 5 won deals in 30 days for activity feed
 };
 
 export type AdapterValidation =
@@ -159,6 +167,7 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
   let pipelineValue = 0;
   let openDealsCount = 0;
   let dealsWonThisMonth = 0;
+  const recentWon: HubspotWonDeal[] = [];
   const sparkBuckets: Record<string, number> = {};
   for (let i = 0; i < 30; i++) sparkBuckets[dayKey(daysAgo(now, i))] = 0;
 
@@ -175,6 +184,14 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     }
     if (isClosedWon && closeIso && new Date(closeIso) >= monthStart) {
       dealsWonThisMonth += 1;
+    }
+    if (isClosedWon && closeIso && new Date(closeIso) >= thirtyAgo) {
+      recentWon.push({
+        id: deal.id,
+        name: deal.properties?.dealname ?? 'Untitled deal',
+        amount,
+        closed_at: new Date(closeIso).toISOString(),
+      });
     }
     if (createIso) {
       const k = dayKey(createIso);
@@ -215,6 +232,8 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
   const contactsHasNext = typeof contactsResp.paging?.next?.after === 'string' && contactsResp.paging.next.after.length > 0;
   const truncated = dealsHasNext || contactsHasNext;
 
+  recentWon.sort((a, b) => new Date(b.closed_at).getTime() - new Date(a.closed_at).getTime());
+
   return {
     pipeline_value: pipelineValue,
     open_deals_count: openDealsCount,
@@ -224,5 +243,6 @@ export async function fetchHubspotSalesData(token: string): Promise<HubspotSales
     currency: 'USD',
     truncated,
     rows,
+    recent_deals_won: recentWon.slice(0, 5),
   };
 }

@@ -45,19 +45,41 @@ async function fetchUpstream(
 // Each adapter reads upstream shape and emits 0–5 events.
 // Adapters MUST be defensive — any missing field is silently skipped.
 //
-// Stripe finance response: { status, data: { invoiced, paid, overdue, sparkline, currency } }
-// No recent_charges field — sparkline has daily totals but no per-charge events.
-// Returns empty array until a future version of the finance endpoint exposes a charges list.
-function adaptStripe(_data: unknown): ActivityEvent[] {
-  return [];
+// Stripe finance response: { status, data: { ..., recent_charges: [{ id, customer_name, amount, timestamp }] } }
+function adaptStripe(data: unknown): ActivityEvent[] {
+  const charges = (data as { data?: { recent_charges?: Array<{ id?: string; customer_name?: string | null; amount?: number; timestamp?: string }> } } | null)
+    ?.data?.recent_charges ?? [];
+  return charges.flatMap((ch) => {
+    if (!ch.timestamp) return [];
+    const label = ch.customer_name ?? 'Customer';
+    const amount = ch.amount != null ? `$${ch.amount.toFixed(2)}` : '';
+    return [{
+      type: 'stripe_charge' as const,
+      icon: '$',
+      entity_label: label,
+      message: `Payment received${amount ? ` · ${amount}` : ''}`,
+      source: 'stripe' as const,
+      timestamp: ch.timestamp,
+    }];
+  });
 }
 
-// HubSpot sales-live response: { status, data: { pipeline_value, open_deals_count,
-//   new_leads, deals_won_this_month, sparkline, currency, truncated } }
-// No recent_transitions field — aggregate counts only, no per-event list.
-// Returns empty array until a future version exposes deal-transition events.
-function adaptHubspot(_data: unknown): ActivityEvent[] {
-  return [];
+// HubSpot sales-live response: { status, data: { ..., recent_deals_won: [{ id, name, amount, closed_at }] } }
+function adaptHubspot(data: unknown): ActivityEvent[] {
+  const deals = (data as { data?: { recent_deals_won?: Array<{ id?: string; name?: string; amount?: number; closed_at?: string }> } } | null)
+    ?.data?.recent_deals_won ?? [];
+  return deals.flatMap((d) => {
+    if (!d.closed_at) return [];
+    const amount = d.amount != null ? ` · $${d.amount.toFixed(2)}` : '';
+    return [{
+      type: 'hubspot_deal' as const,
+      icon: '🤝',
+      entity_label: d.name ?? 'Deal',
+      message: `Deal closed-won${amount}`,
+      source: 'hubspot' as const,
+      timestamp: d.closed_at,
+    }];
+  });
 }
 
 // Workflow-health response: { status, workflows: Array<{ name, last_run_at, status, ... }> }
@@ -92,10 +114,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<ActivityRe
     return NextResponse.json({ status: 'unavailable', message: 'unauthorized' }, { status: 401 });
   }
 
-  const redis = Redis.fromEnv();
+  const redis = (() => { try { return Redis.fromEnv(); } catch { return null; } })();
   const cacheKey = `dashboard:activity:${userId}`;
-  const cached = await redis.get<ActivityResponse>(cacheKey);
-  if (cached?.status === 'ok') return NextResponse.json(cached);
+  if (redis) {
+    const cached = await redis.get<ActivityResponse>(cacheKey);
+    if (cached?.status === 'ok') return NextResponse.json(cached);
+  }
 
   const settled = await Promise.allSettled([
     fetchUpstream(request, 'finance').then(adaptStripe),
@@ -118,6 +142,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<ActivityRe
     generated_at: new Date().toISOString(),
   };
 
-  await redis.set(cacheKey, body, { ex: CACHE_TTL_SECONDS });
+  if (redis) await redis.set(cacheKey, body, { ex: CACHE_TTL_SECONDS });
   return NextResponse.json(body);
 }

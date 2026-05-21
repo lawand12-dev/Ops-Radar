@@ -1,20 +1,38 @@
 # Path A: The AI COO for Marketing Agencies
-## Why This Is the Right Bet, Backed by Research
+## Strategy Document — May 2026
 
-> **Five research agents. 50+ sources. One conclusion:**
-> The "AI COO for marketing agencies" category is genuinely unoccupied,
-> the pain is quantified in billions, and the playbook has been proven
-> by Toast, ServiceTitan, Veeva, and Clio.
+> **Research base:** 15+ parallel research agents, 80+ primary sources, IBM IBV, McKinsey, Gartner,
+> Deloitte, PwC, BCG, MIT, OECD, Federal Reserve, Fluency, Basis, Planable, SaaS Capital,
+> Fractionus, GoHighLevel public data, Federal Reserve FEDS Notes, AgentMarketCap, and 30+ agency-specific benchmarks.
 
 ---
 
-## 1. THE CATEGORY IS UNOWNED — RIGHT NOW
+## THE ONE-PAGE PITCH
+
+**The problem:**
+21.5% of marketing agencies are losing money — up from 13% in one year. 99% can't fully track scope creep. They're bleeding 15–30% of potential profit to operational inefficiency every month. The solution — a Chief AI Officer — costs $400K/year. They can't afford it.
+
+**The solution:**
+OpsRadar is the AI COO for marketing agencies. Connect your HubSpot, ClickUp, Harvest, and Stripe — we watch everything in real time and tell you, before it costs you, when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver at $500/month, 24/7.
+
+**Why now:**
+76% of large enterprises now have a Chief AI Officer. Small agencies have nothing. The fractional COO market is $9.4B and growing. The AI COO product layer doesn't exist yet. Workflow redesign is the #1 driver of AI ROI — and 84% of agencies haven't done it.
+
+**Why us:**
+We already have the 10 integrations, the health score, the audit engine, and the COO chat. We didn't start from scratch — we started from a working foundation. We're claiming the category before anyone else names it.
+
+**The comp set:**
+Toast (restaurants). ServiceTitan (home services). Veeva (pharma). Clio (legal). OpsRadar (marketing agencies).
+
+---
+
+## PART 1: THE MARKET OPPORTUNITY
+
+### 1.1 The Category Is Unowned — Right Now
 
 After mapping 27+ competitors across 7 tiers of the agency software market, the finding is unambiguous:
 
-**No funded, scaled product exists that is positioned as an AI-native operations brain for marketing agencies.**
-
-Here is the full competitive map and why none of them are your competitor:
+**No funded, scaled product exists positioned as an AI-native operations brain for marketing agencies.**
 
 | Tier | Who | What They Do | Why They're Not You |
 |------|-----|-------------|-------------------|
@@ -29,566 +47,549 @@ Here is the full competitive map and why none of them are your competitor:
 **The gap no one fills:**
 > An AI-native system that monitors an agency's full operations across their existing tools, surfaces what's going wrong before it becomes a crisis, recommends specific actions, and acts as an always-on strategic operator — without requiring the agency to replace their current stack.
 
-**Productive.io** is the closest competitor. Bootstrapped, ~$1.07M raised, ~136 employees as of early 2026. They are a PSA with reporting bolted on, and as of March 2026 they ship an "AI Assistant" that helps users build reports, set up automations, and create projects/tasks faster. That AI accelerates work *inside* the PSA — it does not recommend the next operational action. They tell you what happened. They do not tell you what to do. (Earlier ARR figures circulated for Productive are unverifiable in public sources — see `docs/competitor-teardowns.md` for the full teardown.)
+**Three underestimated threats to watch (updated May 2026):**
 
-**The quote that seals it** (from the competitive research):
-> "89% of agencies use AI for efficiency, but only 7% have embedded AI in ways that deliver measurable business results."
+1. **ClickUp Super Agents** — Launched May 2026. Persistent-memory autonomous agents from their Qatalog acquisition. 100+ integrations, agentic execution, 100K+ customers, $9/seat Brain add-on. A non-savvy buyer might think "ClickUp Super Agents = AI COO." Our wedge: vertical benchmarks + financial layer (Stripe/Harvest margins, delivery cost) that horizontal ClickUp will never own.
 
-That 82-point gap is your entire market.
+2. **Kantata** — Launched AI Resourcing Agent + AI Forecast Accelerator in October 2025. Moving in our direction, one tier up. Their pricing and motion are enterprise-only — they will never serve $1–3M agencies — but the "PSA has no AI" line is gone.
 
----
+3. **Float** — Has the cleanest positioning language: "Foresight" + "profitable delivery at scale" + "#1 solution for profitable resource management." Resource management only, not full-stack ops intelligence. Borrow the tone (forward-looking, dollar-anchored, "profitable" front-and-center).
 
-## 2. THE PRICING GAP IS REAL AND PROVEN
+### 1.2 The $2.52 Trillion Spending Paradox
 
-The fractional COO market is $5.7–9.4 billion and growing at 14% CAGR. Here is the pricing ladder that defines OpsRadar's exact position:
+AI spending has reached historic scale — and historic failure:
 
-| Option | Monthly Cost | What You Get | Problem |
-|--------|-------------|-------------|---------|
-| EOS/DIY tools (Strety, etc.) | $50–200 | Framework templates | No intelligence, no AI, no agency-specific |
-| Parakeeto | $1,000–5,000 | Agency profitability consulting | Human service, not SaaS; knowledge leaves |
-| Fractional COO | $5,000–15,000 | Part-time senior operator | Still expensive; not monitoring 24/7 |
-| Full-time COO | $25,000–43,000/mo | Full-time exec | $504K median salary — impossible for agencies |
-| Full-time CAIO | $35,000–125,000/mo | AI transformation leadership | $400K–2.5M total comp — enterprise only |
-| **OpsRadar** | **$500–3,000** | **AI COO: monitoring, alerts, recommendations, ROI proof** | **Nothing** |
+| Metric | Number | Source |
+|--------|--------|--------|
+| Worldwide AI spending in 2026 | **$2.52 trillion** | Gartner, Jan 2026 |
+| YoY increase | **+44%** | Gartner |
+| Organizations reporting ZERO measurable ROI | **95%** | MIT Project NANDA, 2025 |
+| CEOs who say they've gotten "nothing" from AI | **56%** | PwC 2026 |
+| AI rollouts described as "mature" | **Only 1%** | McKinsey |
+| Fortune 500 companies that abandoned most AI projects | **42%** | S&P Global, 2025 |
+| Agentic AI projects that will be canceled by 2027 | **40%+** | Gartner, Jun 2025 |
 
-**The market is explicitly moving toward this:**
-> "Much of the day-to-day operational and financial work that fractionals historically handled is now being absorbed by better tools, systems, and automation, which no longer require continuous senior human input."
-
-That sentence, from fractional COO market research, describes exactly what OpsRadar should become. The fractional COO market is creating the demand. You are building the product that replaces the most expensive part of it.
-
-**Sub-$5M agencies have neither a COO nor a CAIO.** The OECD confirms small firms (10–49 employees) use AI at 11.9% the rate of large firms — not because they don't want to, but because there is no affordable leadership layer to make it happen. You are that layer.
-
----
-
-## 2.5 THE MACRO CONTEXT — WHY THIS MOMENT IS UNIQUE
-
-**$2.52 trillion is being spent on AI in 2026. 95% of organizations report zero measurable ROI.**
-
-That is the biggest ROI gap in the history of enterprise technology. And the reason is documented:
-
-- Enterprise AI budgets split **93% technology / 7% organizational layer** — the exact inverse of what produces results
-- High-ROI organizations invest **4x more on process redesign** than on AI technology itself
-- McKinsey (1,993 companies, 105 nations): only **6% of companies are actually winning** with AI
-- PwC: **75% of AI's economic gains are captured by just 20% of companies**
-
-**The IBM 61-Point Gap** (2,000 CEOs, 33 geographies, 2026):
-- 86% of CEOs believe their employees already have the skills to use AI
-- 25% of the workforce is actually using AI regularly
-- The gap: **61 percentage points** — the largest verified capability-utilization gap in business history
-- 83% of CEOs say AI success depends more on **people's adoption** than on the technology
-
-**The McKinsey verdict in one sentence:**
-> "The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."
+The #1 driver of AI value, from McKinsey's 1,993-company study:
+> **"The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."**
 
 And 84% of organizations haven't done it. OpsRadar does it for them.
 
+### 1.3 The CAIO Gap — The Role Agencies Need But Can't Afford
+
+| Metric | Number | Source |
+|--------|--------|--------|
+| Large enterprises with a Chief AI Officer (2026) | **76%** | IBM IBV, 2026 |
+| Same metric in 2025 | **26%** | IBM IBV |
+| Same metric in 2023 | **11%** | IBM IBV |
+| Large firms using AI overall | **52%** | OECD, Dec 2025 |
+| Small firms (10–49 employees) using AI | **11.9%** | OECD, Dec 2025 |
+| Small-large adoption gap | **3x** | OECD |
+
+**What a CAIO costs:**
+
+| Option | Monthly Cost |
+|--------|-------------|
+| Full-time CAIO (Fortune 500) | $33K–$208K/month ($400K–$2.5M total comp) |
+| Fractional CAIO (mid-market) | $10K–$15K/month ($60K–$180K/year) |
+| Fractional COO | $8K–$18K/month |
+| **OpsRadar** | **$500–$3,000/month** |
+
+**Performance gap — companies with AI leadership vs. without:**
+
+| Metric | With AI Leadership | Without |
+|--------|-------------------|---------|
+| Revenue growth | **1.5x higher** | baseline |
+| Shareholder returns | **1.6x higher** | baseline |
+| AI initiatives reaching production | **62%** | **12%** |
+| Expected to fall behind | n/a | **78%** at risk |
+
+> The math: A $2M agency cannot spend $400K on a CAIO. But BCG confirms AI leaders deliver **double the revenue growth**. The gap is not a tool problem — it's a leadership layer problem. OpsRadar is that layer at an accessible price.
+
+### 1.4 Market Size
+
+| Market | Size |
+|--------|------|
+| US marketing agencies (2026) | **$192.45 billion** |
+| Global marketing agencies (2026) | **$473.57 billion** |
+| Fractional executive market (2025) | **$9.4 billion** → $24.7B by 2034 |
+| Vertical AI investment (2025) | **$3.5 billion** — nearly 3x from 2024 |
+| Agentic AI sector funding (2025) | **$6.42 billion** |
+| Agentic AI enterprise software by 2035 | **$450 billion** (30% of enterprise software) |
+
+**OpsRadar's addressable slice:** ~12,000–18,000 US/Canada agencies fit the Tier 1 ICP. ~4,000–6,000 are reachable through our current channels (see Part 6). At a $1,500/month average contract, the beachhead TAM is **$72M–$108M ARR**.
+
 ---
 
-## 3. THE PAIN IS QUANTIFIED — IN MONEY, NOT FEELINGS
+## PART 2: THE PAIN — QUANTIFIED IN DOLLARS, NOT FEELINGS
 
-Every single pain point for the target customer has a dollar amount attached to it:
-
-### Revenue Leaking Right Now
+### 2.1 The Agency Profitability Crisis
 
 | Pain | Scale | Source |
 |------|-------|--------|
+| Agencies losing money (2026) | **21.5%** (up from 13% in one year — steepest jump on record) | Planable 2026 |
+| Single-client agencies losing money | **53.3%** | Planable 2026 |
+| Only lever combination with ZERO loss-making agencies | **AI optimization + labor optimization combined** | Planable 2026 |
+| Agencies that grew revenue but NOT margins (same year) | **59% grew revenue; only 31% improved margins** | Productive.io 2025 |
+| Agencies that can't report their own margins | **~20%** | Productive.io 2025 (n=93) |
 | Revenue lost to operational inefficiency | **15–30% of potential profit** | Multiple 2026 benchmarks |
-| Agencies losing money in 2026 | **21.5%** (up from 13% — steepest jump on record) | Planable 2026 |
-| Lost to untracked/unbilled time | **Up to 23% of potential profit** | Multiple |
-| Lost to scope creep monthly | **$1K–$20K+/month** (57–87% of agencies) | StopScopeCreep 2026 |
-| % of agencies that NEVER fully bill out-of-scope work | **99%** | Multiple sources |
-| Agencies overservicing clients "all the time" | **52% of agency leaders** | Multiple |
-| Time manual entry loses vs. automated tracking | **20–33% of billable hours** | Multiple |
-| Agencies losing up to $500K/year on untracked hours | **47% of agencies** | Mosaic 2026 |
-| Cash flow disrupted by late payment | **63% of agencies** | Ignition 2025 |
-| Client relationships at active risk annually | **78% of marketers planning agency review** | Multiple |
 
-### The Detection Lag Problem (OpsRadar's Core Feature)
-
-Without real-time per-client profitability dashboards, agencies typically discover overserviced accounts **only at quarter-end reviews** — meaning a problem client can drain margin for **30–90 days before detection.**
-
-The agency that turns on OpsRadar stops hemorrhaging money the day it connects.
-
-### The Operational Waste Problem (Fluency + Basis 2026)
+### 2.2 Revenue Left on the Table
 
 | Pain | Scale | Source |
 |------|-------|--------|
+| Lost to untracked/unbilled time | **23% of billable time** | tmetric.com 2025 |
+| At $1M revenue, that unbilled 23% equals | **$230,000/year** | Calculated |
+| Agencies losing $1K–$5K/month to unbilled work | **57%** | iota-finance 2026 |
+| Firms losing up to $500K/year on untracked hours | **47%** | Mosaic 2026 |
+| Scope creep average cost per project | **$8,700** | tmetric.com 2025 |
+| Agencies that NEVER fully bill out-of-scope work | **99%** | Multiple |
+| Manual time entry capture vs. automated tracking | **67% vs. 91%+** | Swydo 2025 |
+
+### 2.3 The Operational Waste Problem
+
+| Pain | Scale | Source |
+|------|-------|--------|
+| Hours/week wasted on manual reporting | **56 hours** | Agorapulse 2026 |
+| Annual cost of reporting waste (15-client agency, $25/hr) | **$30,000/year** | Calculated |
+| Agency professionals saying job is harder than 2 years ago | **70%** | Basis 2026 |
+| Agencies juggling 10+ tools (YoY increase) | **+131%** | Basis 2026 |
 | Ad ops teams where manual processes put campaigns at risk | **71%** | Fluency 2026 |
-| Still manually pacing budgets in 2026 (up +14.5% YoY — going backwards) | **87%** | Fluency 2026 |
-| Hours per strategist per month on routine tasks | **39.75 hours** | Fluency 2026 |
-| Total hours to launch a new client | **76 hours** | Fluency 2026 |
-| Agencies where a new campaign launch takes 1+ week | **1 in 4** | Fluency 2026 |
-| Agencies with clients who moved work in-house in past 12 months | **65.3%** | Basis 2026 |
-| Agencies that conducted layoffs in past 12 months | **Nearly 40%** | Basis 2026 |
-| Agency professionals saying their job is harder than 2 years ago | **70%** | Basis 2026 |
-| YoY increase in agencies juggling 10+ tools | **+131%** | Basis 2026 |
-| Hours per week wasted on manual reporting | **56 hours** | Agorapulse 2026 |
-| Annual cost of reporting waste (15-client agency at $25/hr) | **$30,000/year** | Multiple |
-| Average billable utilization (target is 75%) | **66.4%** | Multiple |
+| Still manually pacing budgets in 2026 (up +14.5% YoY) | **87%** | Fluency 2026 |
+| Hours per strategist/month on routine tasks | **39.75 hours** | Fluency 2026 |
+| Average billable utilization (target is 75%) | **66.4%** | Professional services benchmarks |
 
-### The Scale Problem Agencies Can't Solve
+### 2.4 The Detection Lag Problem
 
-- Agencies want account managers to handle **64 clients** — current average is **35**
-- That's an **83% increase in desired capacity with 0% additional headcount**
-- Leading automated agencies are managing **2–4x more accounts** with automation
-- The only lever that produces zero loss-making agencies: **AI optimization + labor optimization combined** (Planable 2026)
+Without real-time per-client profitability dashboards:
+- Agencies typically discover overserviced accounts **only at quarter-end reviews**
+- A problem client drains margin for **30–90 days before detection**
+- "By the time they're looking at this data, it can be almost 2 months old." — Parakeeto
+
+The agency that connects OpsRadar stops hemorrhaging money the day it connects.
+
+### 2.5 The AI Adoption Paradox — The Agency-Specific Version
+
+| Layer | Reality |
+|-------|---------|
+| Small agencies that "use AI" in some form | **68%** (U.S. Chamber of Commerce, 2026) |
+| Small businesses with AI embedded in actual operations | **Only 8.8%** (Federal Reserve FEDS Notes, April 2026) |
+| Top barrier to adoption for small businesses | "AI isn't applicable to my business" — **62%** of non-adopters (OECD Dec 2025) |
+| ROI when AI IS properly adopted | **$3.70 per $1 invested** (Salesforce, June 2025) |
+
+The gap between 68% "using AI" and 8.8% "AI embedded in operations" is OpsRadar's entire market. The barrier isn't cost (median AI tool spend is $75–$150/month). It's the belief that it doesn't apply — and the absence of a product that makes it obviously apply.
+
+### 2.6 Proof Points for Sales and Marketing
+
+| Hook | Source | Best Used In |
+|------|--------|-------------|
+| "95% of AI pilots are failing" | MIT Project NANDA 2025 | Cold email subject |
+| "87% of agencies are still pacing budgets manually in 2026" | Fluency 2026 | Sales deck |
+| "56% of CEOs say they've gotten nothing from AI investments" | PwC 2026 | Investor pitch |
+| "Only 6% of companies are actually winning with AI" | McKinsey 2025 | Landing page |
+| "84% haven't redesigned their operations around AI" | Deloitte 2026 | Lead magnet |
+| "76% of enterprises now have a Chief AI Officer. You don't." | IBM IBV 2026 | Website hero |
+| "The redesign of workflows has the biggest effect on AI ROI" | McKinsey (direct) | Blog / SEO |
+| "SMBs waste $18,000/year on AI tools they're not using right" | 10xclaw.com 2026 | Cold outreach |
+| "Agencies losing money grew from 13% to 21.5% in one year" | Planable 2026 | Sales call |
+| "Manual processes are putting 71% of agency campaigns at risk" | Fluency 2026 | Webinar hook |
+| "AI leaders generate 7.2x more ROI than average competitors" | PwC 2026 | Investor |
+| "Only 9% of SMBs have AI fully embedded in their operations" | SAS/IDC May 2026 | Positioning |
+| "23% of billable time never gets invoiced" | tmetric.com 2025 | Discovery call |
+| "At $1M revenue, that's $230K left on the table every year" | Calculated | Demo close |
 
 ---
 
-## 4. THE PLAYBOOK IS PROVEN — TOAST, SERVICETITAN, VEEVA, CLIO
+## PART 3: THE CUSTOMER
 
-Every major vertical SaaS winner followed the same path. Here is the proof:
+### 3.1 The Beachhead ICP (First 50 Customers)
+
+> **One-sentence definition:** A US/Canada-based, $1M–$3M-revenue retainer-heavy digital agency (paid media, SEO, social, or full-service) with 10–25 employees, a founder-CEO still running ops herself, at least 4 of OpsRadar's 10 stack integrations already in place, and one acute moment of margin pain.
+
+| Attribute | Hard Criterion |
+|-----------|----------------|
+| Revenue | **$1M–$3M ARR** — below $1M the pain isn't felt yet; above $3M a real COO usually exists |
+| Headcount | **10–25 FTEs** |
+| Agency type | Paid media, SEO, social, content, full-service digital — **retainer ≥ 60% of revenue** |
+| Geography | US + Canada (English-first, USD-billed) |
+| Decision-maker | Founder-CEO still running ops daily — the buyer = the user = the budget owner |
+| Stack | 4+ of: HubSpot/Pipedrive · ClickUp/Asana/Monday · Harvest/Toggl · Stripe · Calendly · Apollo |
+| Buying trigger | ONE of: 5-figure overserved client caught late / layoff in last 12 months / active or recently-fired fractional COO at $5K–$15K/mo |
+
+**The 15-minute qualifier question (one question, told to all SDRs):**
+> "When was the last time you discovered a client had been losing you money for more than a month — and what did it cost you?"
+
+If they have an answer and a dollar figure, they qualify. Full persona research, disqualifiers, and sourcing playbook are in [`docs/strategy/icp-customer-research.md`](./icp-customer-research.md).
+
+### 3.2 Expansion ICP (Customers 50–200)
+
+$3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in seat, multi-stakeholder buying process (30–60 days). Win Tier 1 first — Tier 2 inbounds itself once case studies exist.
+
+### 3.3 What NOT to Chase
+
+- Sub-$1M agencies: pain not acute enough yet
+- $8M+ agencies: procurement complexity and compliance requirements we're not ready for
+- Production studios (video, dev, design-only): different ops shape, different stack
+- International non-English markets: stack mismatch, currency complexity
+- Holding-co subsidiaries: procurement is impossible from a 1-person sale
+
+---
+
+## PART 4: THE PRICING ARCHITECTURE
+
+### 4.1 Where OpsRadar Sits in the Pricing Ladder
+
+| Option | Monthly Cost | What You Get |
+|--------|-------------|-------------|
+| EOS/DIY tools (Strety, etc.) | $50–200 | Framework templates — no intelligence |
+| Parakeeto | $1,000–5,000 | Agency profitability consulting — human, non-SaaS |
+| Fractional COO | $8,000–18,000 | Part-time senior operator — still expensive, not 24/7 |
+| Full-time COO | $25,000–43,000 | Full-time exec — $504K median salary |
+| Full-time CAIO | $33,000–208,000 | AI transformation leadership — enterprise only |
+| **OpsRadar** | **$500–$3,000** | **AI COO: monitoring, alerts, recommendations, ROI proof** |
+
+### 4.2 The 4-Tier Pricing Structure
+
+*(Van Westendorp validated — see `docs/strategy/pricing-depth.md` for full analysis)*
+
+| Tier | Price | Included | Expansion Trigger |
+|------|-------|----------|-------------------|
+| **Starter** | $500/month | 3 integrations, basic dashboard, weekly health score | Hits integration limit as agency grows |
+| **Growth** | $1,500/month | All 10 integrations, threshold alerts, COO chat, benchmarks | Wants agentic actions or more seats |
+| **Pro** | $3,000/month | Everything + agentic actions, custom alerts, agentic-action overages | Agency grows headcount |
+| **Fractional Operator** | $2,500 + $250/agency/month | Multi-client dashboard, white-label view, partner permissions | Fractional COOs managing multiple agencies |
+
+**Van Westendorp finding:** Growth's Indifference Point lands at $1,475 — within $25 of the $1,500 sticker. Pro sits below the Point of Marginal Expensiveness, leaving room for usage-based agentic-action overages (+6pp NRR per OpenView 2025).
+
+**Why a 4th tier for Fractional Operators:** Agency owners score multi-client view willingness-to-pay at 2/5 (they don't need it). Fractional COOs score it 5/5 — different buyer, different budget. Bundling it in Pro loses the channel. The Fractional Operator SKU is the unlock for our highest-leverage acquisition channel (1 fractional = 3–5 agencies).
+
+---
+
+## PART 5: THE PRODUCT
+
+### 5.1 Our Unfair Advantages
+
+| Advantage | Why It Matters |
+|-----------|---------------|
+| **10 integrations already built** | Months of work competitors don't have; cross-stack visibility is the product |
+| **Integration coverage matches ICP stack** | HubSpot + ClickUp + Harvest + Stripe covers 80% of real agency stacks |
+| **Agency audit + health score already shipped** | Working proof of concept of the intelligence layer |
+| **COO chat feature already live** | The "AI COO" product already exists in prototype form |
+| **Vertical focus from day 1** | No horizontal tech debt; no generalist UX debt |
+| **First mover in unoccupied category** | No incumbent with brand recognition to fight |
+
+### 5.2 The 6-Phase Product Arc
+
+| Phase | Code | What | Core Value |
+|-------|------|------|------------|
+| 1 | **C** | Client Profitability Dashboard | First aha moment in under 2 minutes |
+| 2 | **B** | AI COO Briefings | Daily habit — they can't live without it |
+| 3 | **A** | Viral Free Audit | Discovery channel — customers come themselves |
+| 4 | **D** | Agentic Actions | Moat — AI that handles things for them |
+| 5 | **E** | Benchmark Network | Network effect — better with every new agency |
+| 6 | **F** | White-Label Platform | Distribution multiplier — agencies become sales team |
+
+Full spec for each phase: [`docs/dev/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/specs/2026-05-17-opsradar-product-strategy-design.md)
+
+### 5.3 The Data Moat — How It Compounds
+
+**The benchmarks become the moat.** At 50–100 agencies, OpsRadar has statistically meaningful benchmarks for a narrow vertical. No competitor can replicate these without first getting 50–100 agencies on their platform:
+- Average utilization rate by team size
+- Average project margin by service type (SEO, paid media, social, full-service)
+- Average scope creep rate by contract type
+- Cash flow patterns by agency revenue band
+
+**The Toast/Veeva flywheel applied to agencies:**
+
+| Stage | Toast | OpsRadar |
+|-------|-------|----------|
+| Year 1 | 1,000 locations → basic benchmarks | 50 agencies → utilization & margin benchmarks |
+| Year 2 | 10,000 locations → daily price intelligence | 200 agencies → predictive scope creep alerts |
+| Year 3 | 100,000+ → AI that predicts demand | 1,000 agencies → AI COO that knows your vertical cold |
+
+**Why horizontal AI cannot replicate this:** GPT, Copilot, and HubSpot AI have no access to anonymized utilization rates, delivery margins, and automation ROI outcomes across hundreds of agencies. That dataset can only exist inside OpsRadar.
+
+### 5.4 The 5 Gaps Nobody Has Productized
+
+| Gap | The Data | OpsRadar's Answer |
+|-----|----------|-------------------|
+| **Workflow Redesign Gap** | 84% haven't redesigned workflows (Deloitte) | We redesign the ops layer for them |
+| **Production Gap** | 88% of AI pilots never reach production (Gartner); only 18% of SMBs have AI in production | We are already in production — plug in, not pilot |
+| **ROI Proof Gap** | 95% can't prove AI ROI; 79% report productivity gains but only 29% can tie them to business outcomes | We connect directly to revenue, margin, and retention |
+| **CAIO Gap** | 76% of enterprises have a CAIO at $400K–$2.5M; small firms use AI at 3x less than large firms | We are the productized CAIO at $500/month |
+| **AI Sovereignty Gap** | Only 21% have mature agentic AI governance (Deloitte) | We give agency owners oversight of what runs in their business |
+
+---
+
+## PART 6: THE PLAYBOOK — WHY THIS WINS
+
+### 6.1 The Vertical SaaS Proof
+
+Every major vertical SaaS winner followed the same path:
 
 | Company | Vertical | Strategy | Result |
 |---------|----------|----------|--------|
-| **Toast** | Restaurants only | Own the daily operational workflow | $2B+ ARR, $25B market cap, 20–40% US market share |
-| **ServiceTitan** | Home services only | System of record for scheduling + payments | $8.9B IPO, 95%+ gross retention |
-| **Veeva** | Pharma only | Rebuilt Salesforce for one vertical | $2.7B revenue, 80% market share, 120%+ NRR |
-| **Clio** | Legal only | Matter-based billing + trust accounting | $3B valuation, 150K professionals, #1 G2 Legal |
-| **Procore** | Construction only | Compliance paper trail = switching cost | Legally mandated audit trail, no one switches |
+| **Toast** | Restaurants | Own the daily operational workflow | $2B+ ARR, $25B market cap |
+| **ServiceTitan** | Home services | System of record for scheduling + payments | $8.9B IPO, 95%+ gross retention |
+| **Veeva** | Pharma | Rebuilt Salesforce for one vertical | $2.7B revenue, 80% market share |
+| **Clio** | Legal | Matter-based billing + trust accounting | $3B valuation, 150K professionals |
+| **GoHighLevel** | Marketing agencies | White-label ops + CRM platform | **$82.7M ARR, bootstrapped, 120K+ customers, 781% 3-year growth** |
 
-**The hard numbers on vertical vs. horizontal:**
+**GoHighLevel is the most important comparable.** They prove the white-label agency SaaS model at scale. $82.7M ARR, no outside funding, ranked No. 516 on the 2025 Inc. 5000. Their reseller economics: agencies pay $297–$497/month for master access and resell sub-accounts at $97–$497/month per client — 83%+ gross margin per reseller. OpsRadar's Phase F mirrors this exact distribution model.
+
+**Vertical vs. horizontal SaaS performance:**
 
 | Metric | Vertical SaaS | Horizontal SaaS |
 |--------|--------------|----------------|
 | Annual growth rate | **18–22%** | 9–11% |
-| Net Revenue Retention | **108–130%+** | 90–105% |
+| Net Revenue Retention | **108–120%+** | 90–105% |
 | Gross customer retention | **90–95%+** | 75–85% |
 | Valuation premium | **+25–30%** over horizontal | baseline |
 
-**The new moat (2025–2026 consensus):**
-> "In vertical SaaS, real defensibility comes from owning the workflow where the business actually runs." — Vendep 2025
-
-Data moats are being commoditized by LLMs. Workflow ownership at the point of consequence is the new moat. For agencies, that means: own the operational layer where profitability is decided, capacity is managed, and client health is monitored.
-
-**Vertical AI specifically:**
+**Vertical AI specifically (2025–2026):**
 - Vertical AI captured **$3.5 billion in investment in 2025** — nearly 3x from 2024
-- Sector-specific AI delivers **500% ROI vs. horizontal AI deployments** (McKinsey)
-- Vertical AI improves with **compounding learning loops** — horizontal AI delivers one-time gains
+- Sector-specific AI delivers **500% ROI vs. horizontal AI** (McKinsey)
+- Industry-specific SaaS growing at **28% YoY** — 3x the pace of horizontal software (Euclid Ventures, 2026)
 
----
+### 6.2 Win Conditions
 
-## 5. THE 5 REASONS PATH A WINS
+| Milestone | Target | What It Proves |
+|-----------|--------|----------------|
+| First 3 customers | Month 1–2 | Product-market fit signal |
+| First customer who cancels their fractional COO because of us | Month 3–4 | Direct value displacement proven |
+| NRR above 110% | Month 6+ | Agencies expanding, not churning |
+| First referral (agency to agency) | Month 4–6 | Word-of-mouth in vertical |
+| First "we can't operate without this" testimonial | Month 6+ | System of Consequence achieved |
+| 50 agencies on platform | Month 9–12 | Data moat becomes meaningful |
 
-### Reason 1: The Category Has No Name Yet — You Can Own It
+**The number that matters:** First customer who cancels their fractional COO because of OpsRadar. Everything else is noise until then.
 
-No competitor has claimed "AI COO for agencies." The vocabulary is available. The positioning is open. The first company to occupy it with a real product wins by default — exactly what Clio did for legal, what ServiceTitan did for home services, what Toast did for restaurants.
+### 6.3 The Long Game — Toward Embedded Fintech
 
-**Window:** The research says C-suite software organizations have **"a 3–6 month window"** to define their agentic AI product strategy before falling behind (Gartner, Aug 2025). That window applies to you too, in your favor — move now.
+The vertical SaaS playbook ends in embedded fintech. Toast's payments layer generates the majority of gross profit — more than their SaaS subscription. ServiceTitan's embedded financing went from $0 to $170M. Veeva embedded pharma-specific compliance billing.
 
-### Reason 2: You Already Built the Foundation
-
-OpsRadar's 10 integrations map perfectly to agency operations:
-
-| OpsRadar Integration | Agency Function It Covers |
-|---------------------|--------------------------|
-| HubSpot + Pipedrive | Client relationship health, deal pipeline |
-| ClickUp + Asana + Monday | Project delivery, capacity, deadlines |
-| Harvest + Toggl | Billable utilization, time tracking |
-| Stripe | Cash flow, invoice status, revenue |
-| Calendly + Apollo | Business development, meeting pipeline |
-
-No competitor has this cross-stack visibility pre-built. Building these 10 integrations is months of work. You have them. That is a real head start.
-
-### Reason 3: The Pain Has Dollar Amounts on It
-
-You are not selling "efficiency." You are selling money back:
-- "We will recover the 15–23% of revenue you're leaking to untracked time"
-- "We will alert you 30–90 days earlier when a client goes unprofitable"
-- "We will prevent the $1K–$20K/month you lose to scope creep you never bill"
-- "We will bring your utilization from 65% to 75% — that's 10–15% more revenue from the same team"
-
-Every feature maps to a specific financial outcome. That makes sales conversations simple.
-
-### Reason 4: The Fractional COO Market Proves Willingness to Pay
-
-Agencies are already paying **$5,000–$15,000/month** for a human to do exactly what OpsRadar should do automatically. The market has validated the problem — people pay real money to solve it. You are offering the same outcome at **$500–$3,000/month**, running 24/7, connected to live data, with no knowledge-leaves-when-they-do risk.
-
-This is not a vitamin. This is a painkiller with a proven price point already set by the human market.
-
-### Reason 5: The Toast/ServiceTitan Roadmap Leads to Fintech
-
-The vertical SaaS playbook ends in embedded fintech. Toast's payments layer now generates the majority of gross profit — more than their SaaS subscription. ServiceTitan's embedded financing went from $0 to $170M. Veeva embedded pharma-specific compliance billing.
-
-For OpsRadar the path is identical:
-1. **Now:** Ops intelligence SaaS ($500–3,000/month subscription)
-2. **Year 2:** Embedded invoicing and payment collection (capture the $71% of agencies with late invoice problems)
+OpsRadar's path:
+1. **Now:** Ops intelligence SaaS ($500–$3,000/month subscription)
+2. **Year 2:** Embedded invoicing and payment collection (capture the 63% of agencies with late invoice problems)
 3. **Year 3:** Agency financing, insurance, financial services
 
 The subscription is the wedge. The fintech is the business.
 
 ---
 
-## 6. YOUR UNFAIR ADVANTAGES
+## PART 7: THE EXECUTION PLAN
 
-| Advantage | Why It Matters |
-|-----------|---------------|
-| **10 integrations already built** | Months of work competitors don't have; cross-stack visibility is the product |
-| **Agency audit + health score already shipped** | You have a working proof of concept of the intelligence layer |
-| **COO chat feature already live** | The "AI COO" product already exists in prototype form |
-| **Vertical focus from day 1** | No horizontal tech debt; no generalist UX debt |
-| **First mover in unoccupied category** | No incumbent with brand recognition to fight |
+### 7.1 Cold Outreach Engine
 
----
+**The one fix that lifts reply rates 2.3x:** Switch from problem hooks to timeline + dollar hooks.
 
-## 7. YOUR IDEAL FIRST CUSTOMER (ICP)
+| Hook Type | Avg. Reply Rate |
+|-----------|-----------------|
+| Problem hook ("do you struggle with X?") | 4.39% |
+| Timeline + dollar hook ("By Q3 you're leaving $18K on the table") | **10.01%** |
 
-Based on deep customer research (see `docs/icp-customer-research.md` for the full personas, JTBD map, buying triggers, and disqualifier list), the operationally tight beachhead profile is:
+At 5% reply rate on 500 total sends → 25 replies → 40–50% convert to demos → 10–12 demo calls → 55–75% demo-to-paid = **5–8 customers**.
 
-**The one-sentence beachhead definition:**
-> A US/Canada-based, $1M–$3M-revenue retainer-heavy digital agency (paid media, SEO, social, or full-service) with 10–25 employees, a founder-CEO still running ops herself (no COO), at least 4 of OpsRadar's 10 stack integrations already in place, and a recent acute moment of margin pain — a 5-figure overserviced client caught late, a layoff in the last 12 months, or an active/recently-fired $5K–$15K-per-month fractional COO.
+Full 5-touch sequence, 15 subject line templates, and reply handlers: [`docs/go-to-market/cold-email-playbook.md`](../go-to-market/cold-email-playbook.md)
 
-This is tighter than "$500K–$5M, 5–50 employees" because every disqualifier in the longer band is a costly false positive. Sub-$1M agencies don't have the margin pain yet. Over $5M and there's usually a real COO or analytics function. Production-only studios (video, dev, design) and promotional products companies are NOT the ICP (see the disqualifier list).
+### 7.2 The Fractional COO Channel — Highest Leverage Untapped
 
-| Attribute | Beachhead Target | Why |
-|-----------|------------------|-----|
-| Company type | Retainer-heavy digital agency: PPC, SEO, social, full-service | Project-based studios have different ops shape |
-| Revenue | $1M–$3M ARR (tighter than $500K–$5M) | Below $1M = no margin pain yet; above $3M = often has a real COO |
-| Team size | 10–25 employees | Smaller = no ops complexity; larger = has analytics team |
-| Geography | US / Canada | English-first, $-denominated, EST/PST overlap |
-| Decision-maker | Founder-CEO still running ops daily | The buyer = the user = the budget owner |
-| Stack already in place | 4+ of our 10 integrations | Cuts time-to-value from weeks to hours |
-| Buying trigger (must have ONE) | Recent 5-figure overserved client, layoff in last 12 months, OR active/just-fired fractional COO | "Now" moment that drives a buy decision |
-| Current spend | $5K–$15K/month for fractional COO, OR nothing while bleeding margin | Budget validated either way |
+**The market:**
+- 80,000–120,000 fractional executives in US/Canada
+- 5,000–15,000 fractional COOs specifically
+- Each serves 3–5 agency clients simultaneously at $8,000–$18,000/month
+- 37% of mid-sized firms plan to employ fractional executives by end of 2026 (Korn Ferry 2025)
+- Fractional COOs are using AI to instrument operations they used to map by hand (Vendux 2025)
 
-**The 15-minute qualifier (single question to ask on a discovery call):**
-> "When was the last time you discovered a client had been losing you money for more than a month — and what did it cost?"
+**Why they become our distribution channel:**
+- One fractional COO with 4 agencies = 4 customers from one relationship
+- OpsRadar cuts their manual onboarding audit from weeks to hours
+- OpsRadar makes their impact measurable — they look better because of us
 
-If they have an answer and a dollar figure, they qualify. If they don't, they're not feeling the pain hard enough yet.
+**The one-sentence pitch:**
+> "OpsRadar cuts your agency onboarding from weeks to hours, makes your impact measurable to clients, and pays you $200–$500/month per agency you bring on."
 
----
+**What unlocks this channel:**
+1. Multi-client dashboard (mandatory — one login, all client agencies visible)
+2. 25% lifetime recurring commission (no vesting cliff — this is the number that makes the Fractionals United flywheel self-replicating)
+3. A genuine post in Fractionals United (13,000 members) — not a pitch, a data point
 
-## 8. THE WIN CONDITIONS — HOW YOU KNOW PATH A IS WORKING
+Full partner program spec: [`docs/go-to-market/fractional-coo-partner-program.md`](../go-to-market/fractional-coo-partner-program.md)
 
-| Milestone | Target | What It Proves |
-|-----------|--------|----------------|
-| First 3 customers | Month 1–2 | Product-market fit signal |
-| First customer who cancels their fractional COO because of you | Month 3–4 | Direct value displacement proven |
-| NRR above 110% | Month 6+ | Agencies expanding, not churning |
-| First agency that refers another agency | Month 4–6 | Word-of-mouth in vertical |
-| First "we can't operate without this" testimonial | Month 6+ | System of Consequence achieved |
+### 7.3 Community Seeding
 
----
+**Where the ICP hangs out:**
 
-## 8.5 THE 5 GAPS NOBODY HAS PRODUCTIZED FOR AGENCIES
+| Community | Members | Why |
+|-----------|---------|-----|
+| **Online Geniuses** (Slack) | 53,000 | Largest digital marketing community; ICP in #agency-life daily |
+| **Agency Hackers** | Paid members | UK's largest agency community; high intent |
+| **Mod Agency Insiders** (Facebook) | 15,000 | Agency owner FB group, highly active |
+| **Fractionals United** | 13,000 | Partner channel; also contains ICP |
+| **HighLevel Community** | 91,000 | Agency-dense; GoHighLevel already proven this works |
 
-Cross-referenced from IBM, McKinsey, Gartner, Deloitte, SAS/IDC, and agency-specific reports:
+**Posting pattern:** Data point → real finding from OpsRadar or the research → non-pitched answer to a real question. Bio carries the OpsRadar tag. Trust is earned through the answer. Full 90-day plan: [`docs/go-to-market/community-90-day-plan.md`](../go-to-market/community-90-day-plan.md)
 
-| Gap | The Data | OpsRadar's Answer |
-|-----|----------|-------------------|
-| **Workflow Redesign Gap** | 84% haven't redesigned workflows (Deloitte); 79% layer AI on broken processes (McKinsey) | We redesign the ops layer for them |
-| **Production Gap** | 88% of AI pilots never reach production (Gartner); only 18% of SMBs have AI in production | We are already in production — plug in, not pilot |
-| **ROI Proof Gap** | 95% can't prove AI ROI; 79% report productivity gains but only 29% can tie them to business outcomes | We connect directly to revenue, margin, and retention |
-| **CAIO Gap** | 76% of enterprises have a CAIO at $400K–$2.5M; small firms use AI at 3x less than large firms | We are the productized CAIO at $500/month |
-| **AI Sovereignty Gap** | Only 21% have mature agentic AI governance (Deloitte); 83% of CEOs say guardrails are essential | We give agency owners oversight of what's running in their business |
+### 7.4 Partner Channels (ZenPilot and Parakeeto)
 
----
+Both companies compete with the consulting side of OpsRadar — but their engagements end. We are the always-on layer after they leave.
 
-## 8.6 PROOF POINTS — USE THESE IN SALES AND MARKETING
+**Partnership pitch:**
+> "Your engagement closes → OpsRadar continues → better client outcome for both of us. 25% recurring on every agency you hand off."
 
-| Hook | Source | Use In |
-|------|--------|--------|
-| "95% of AI pilots are failing" | MIT Project NANDA 2025 | Cold email subject |
-| "87% of agencies are still pacing budgets manually in 2026" | Fluency 2026 | Sales deck |
-| "56% of CEOs say they've gotten nothing from AI investments" | PwC 2026 | Investor pitch |
-| "Only 6% of companies are actually winning with AI" | McKinsey 2025 | Landing page |
-| "84% haven't redesigned their operations around AI — yet" | Deloitte 2026 | Lead magnet |
-| "76% of enterprises now have a Chief AI Officer. You don't." | IBM IBV 2026 | Website hero |
-| "The redesign of workflows has the biggest effect on AI ROI" | McKinsey direct quote | Blog / SEO |
-| "SMBs waste $18,000/year on AI tools they're not using right" | 10xclaw.com 2026 | Cold outreach |
-| "Agencies losing money grew from 13% to 21.5% in one year" | Planable 2026 | Sales call |
-| "Manual processes are putting 71% of agency campaigns at risk" | Fluency 2026 | Webinar hook |
-| "AI leaders generate 7.2x more ROI than average competitors" | PwC 2026 | Investor |
-| "Only 9% of SMBs have AI fully embedded in their operations" | SAS/IDC May 2026 | Positioning |
+Marcel Petitpas (Parakeeto) has built the trust currency in agency finance. A Parakeeto endorsement converts at 30–40% vs. 3–5% cold.
 
----
+### 7.5 The One-Week Action Sequence
 
-## 9. THE ONE-PAGE PITCH (INVESTOR/CUSTOMER VERSION)
+1. **Monday** — Rewrite next 30 cold emails with timeline + dollar hook. Send SwishAd follow-up.
+2. **Tuesday** — Join Online Geniuses Slack. Write first genuine answer post in #agency-life.
+3. **Wednesday** — Ship Fractional Operator SKU on pricing page. Pull multi-client view spec.
+4. **Thursday** — Ship `/vs/productive` to marketing site.
+5. **Friday** — Send partnership pitch to ZenPilot and Parakeeto. DM 10 fractional COOs from Fractionals United.
 
-**The problem:**
-> 21.5% of marketing agencies are losing money. 99% can't fully track scope creep. They're bleeding 15–30% of potential profit to operational inefficiency every month. And the solution — a Chief AI Officer — costs $400K/year. They can't afford it.
+### 7.6 90-Day Targets
 
-**The solution:**
-> OpsRadar is the AI COO for marketing agencies. We connect your HubSpot, ClickUp, Harvest, and Stripe, watch everything in real time, and tell you — before it costs you — when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver at $500/month, 24/7.
+| Channel | Mechanism | Target |
+|---------|-----------|--------|
+| Cold outreach at scale | 50+ personalized emails/week + LinkedIn + 5-touch | 5–8 customers by Day 45 |
+| Fractional COO channel | Fractionals United + multi-client dashboard + 25% referral | 1 fractional = 3–5 agencies |
+| Community seeding | Online Geniuses, Agency Hackers, Mod Agency Insiders | Word-of-mouth cluster adoption |
+| Data flywheel | 50 agencies → meaningful benchmarks → OpsRadar Index | Defensible moat |
 
-**Why now:**
-> 76% of large enterprises now have a Chief AI Officer. Small agencies have nothing. The market for fractional COOs is $9B and growing. The AI COO product layer doesn't exist yet. The research is unanimous: workflow redesign is the #1 driver of AI ROI — and 84% of agencies haven't done it yet.
-
-**Why us:**
-> We already have the 10 integrations, the health score, the audit engine, and the COO chat. We didn't start from scratch — we started from a working foundation. We're claiming the category before anyone else names it.
-
-**The comp set:**
-> Toast (restaurants). ServiceTitan (home services). Veeva (pharma). Clio (legal). OpsRadar (marketing agencies).
+**Day 90 target:** 15–30 customers at $500–$1,500/month average = **$7.5K–$45K MRR**
 
 ---
 
+## PART 8: NEW RESEARCH — MAY 2026
+
+*From a third research wave commissioned May 21, 2026. Six new areas not covered in prior versions.*
+
+### 8.1 The Automation Agency Market
+
+The "AI automation agency" market is the upstream market that creates OpsRadar's customers. These are the agencies OpsRadar serves:
+
+- AI automation agencies charge clients **$2,000–$5,000/month** (entry) to **$15,000–$50,000/month** (multi-agent enterprise). Average mid-market retainer: ~$3,200/month (Arsum AI, 2025)
+- 38% of US digital agencies have shifted at least one service line toward outcome-based or retainer-plus-performance pricing in 2026 — a structural signal of AI-driven model change
+- 23% of agencies cut junior copywriting headcount in 2025; 31% plan further cuts in 2026 (Digital Applied)
+- Only 30% of media agencies have fully integrated AI into campaign lifecycles, despite 75% of US marketers saying AI saves costs (Digital Applied 2026)
+- The broader AI automation market: **$129.92B in 2025 → $169.46B in 2026** (31.4% CAGR through 2033) — Grand View Research
+
+### 8.2 AI Adoption in Small Businesses — The Precise Gap
+
+The Federal Reserve's April 2026 FEDS Notes paper is the most rigorous measurement of real AI adoption in the US economy:
+
+| Layer | Reality |
+|-------|---------|
+| Small businesses "using AI in some capacity" | **68%** (U.S. Chamber of Commerce 2026) |
+| Small businesses with AI **embedded in actual production** | **8.8%** (Federal Reserve, April 2026) |
+| Gap between "using AI" and "AI in production" | **~60 percentage points** |
+
+This gap is not a cost problem. The top barrier to AI adoption for small agencies is the belief that AI "isn't applicable" (62% of non-adopters, OECD Dec 2025). OpsRadar's positioning must address this directly: this is an education and positioning problem, not a price problem.
+
+When AI IS properly adopted by SMBs:
+- Average ROI: **$3.70 per $1 invested** (Salesforce, June 2025)
+- Average time savings: **5.6 hours/week per employee**
+- 91% of SMBs using AI say it boosts revenue (Business.com 2026)
+- Median payback: **4.2 months** (Revenue Memo)
+
+### 8.3 GoHighLevel — The White-Label SaaS Template
+
+GoHighLevel is the most important comparable for OpsRadar's Phase F (white-label platform) and validates the agency-reseller distribution model:
+
+| Metric | Data |
+|--------|------|
+| ARR (2024) | **$82.7M** (Latka) |
+| ARR (2023) | $38.5M — 115% YoY growth |
+| Inc. 5000 rank (2025) | **#516** (781% three-year revenue growth) |
+| Direct agency customers | **120,000+** |
+| SMBs served through reseller layer | **1,000,000+** |
+| Funding | **Bootstrapped — zero outside capital** |
+
+**Reseller economics:** Agencies pay $297–$497/month for master access. Each agency resells sub-accounts to clients at $97–$497/month. At 10 clients billed at $297: $2,970 MRR on a $497 cost = **83% gross margin per reseller**. OpsRadar's Fractional Operator SKU and Phase F mirror this model directly.
+
+### 8.4 Fractional Executive Market — Updated 2026
+
+| Metric | Data | Source |
+|--------|------|--------|
+| Global fractional executive market (2025) | **$9.4 billion** → $24.7B by 2034 | Fractionus 2025 |
+| US businesses currently using fractional hiring | **25%** | InsidePartners 2026 |
+| Projected by end of 2026 | **35%** | InsidePartners 2026 |
+| Mid-sized firms planning fractional/interim execs by mid-2026 | **37%** | Korn Ferry 2025 |
+| Fractional COO monthly retainer range | **$8,000–$18,000/month** | ScaleUp Exec, Fractionus |
+| Average simultaneous clients per fractional COO | **2–3** (sweet spot), up to 4–5 | Fractionus 2025 |
+| New role emerging: "Fractional Chief AI Officer" | Mid-market companies hiring fractional CAIOs instead of full-time | HatchWorks 2026 |
+
+**AI's impact on fractional executives:** AI augments, not replaces. A fractional COO using OpsRadar can potentially manage 5–7 clients instead of 2–3 — directly expanding their capacity and making them more economically attractive to hire. This is the core value proposition for the Fractional Operator SKU.
+
+### 8.5 Vertical AI Funding — The Capital Is Flowing
+
+| Metric | Data |
+|--------|------|
+| Agentic AI funding in 2025 | **$6.42 billion** |
+| Agentic AI funding YTD (Q1–Q2 2026) | **$2.66 billion** |
+| Average deal size Q4 2025 / Q1 2026 | **$155 million** (nearly 2x H1 2025) |
+| Industry-specific SaaS YoY growth | **28%** — 3x horizontal software (Euclid Ventures 2026) |
+| AI share of all VC funding in 2026 | **33%** |
+
+**Named competitors to watch:**
+- **Distyl AI** — Raised $175M led by Lightspeed/Khosla, valued at $1.8B (Sept 2025). Helps Fortune 500 become "AI-native." Not in the agency segment.
+- **Legora** (legal AI) — $550M Series D at $5.55B valuation (April 2026). Validates vertical AI scale at speed.
+- **Rebar** (HVAC/trades) — $14M Series A, doubled ARR in first 6 weeks of 2026. Founded October 2024. The speed of vertical AI traction is accelerating.
+- **CharacterQuilt** — AI infrastructure for marketing teams, described as compressing "3 agencies, 10 tools, 6 weeks into a single platform." Early-stage, no disclosed funding.
+
+**Bottom line:** The agentic AI sector is attracting capital at unprecedented speed. The agency operations intelligence sub-category has no funded category-defining player as of May 2026. The window is real.
+
+### 8.6 Agency SaaS Retention Benchmarks
+
+| Metric | Data | Source |
+|--------|------|--------|
+| Good B2B SaaS churn | **Below 1%/month** / below 5%/annually | Industry standard |
+| Annual contracts vs. monthly billing churn | **8.5% vs. 16% annually** | MRRSaver 2026 |
+| Vertical SaaS NRR | **108–120%** | SaaS Mag 2026 |
+| Top-performer vertical SaaS NRR | **115–125%** | SaaS Mag 2026 |
+| ServiceTitan gross retention (S-1 filing) | **Above 95%** | Public filing |
+| Median B2B SaaS NRR | **106%** | SaaS Capital 2025 |
+| Agency client retention — retainer model | **82% annually** (18% churn) | Focus Digital 2026 |
+| Agency client retention — project-based | **58% annually** (42% churn) | Focus Digital 2026 |
+
+OpsRadar's target: 110%+ NRR from Month 6. The expansion triggers that drive this are ordered by impact:
+1. Integration count limit hit (most natural, zero sales required)
+2. Threshold alert clicked but locked behind a tier
+3. COO chat query that surfaces a locked insight
+4. Team member invited but seat limit hit
+5. Benchmark comparison for a locked peer group
+
 ---
 
-## THE 3 QUOTES THAT DEFINE THE CATEGORY
+## THE 3 DEFINING QUOTES
 
 **IBM Gary Cohn:**
-> "Enterprises that succeed will operate AI-first — not as a layer of technology, but as a new operating model."
+> *"Enterprises that succeed will operate AI-first — not as a layer of technology, but as a new operating model."*
 
 **Gartner:**
-> "AI is not simply another layer of automation. It is a catalyst for rebuilding the enterprise itself."
+> *"AI is not simply another layer of automation. It is a catalyst for rebuilding the enterprise itself."*
 
 **McKinsey (direct from the data):**
-> "The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."
+> *"The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."*
 
 OpsRadar is the company that rebuilds the operating model. For agencies. At $500/month.
 
 ---
 
----
+## COMPANION DOCUMENTS
 
-## 10. HOW WE WIN THE FIRST 90 DAYS — THE EXECUTION PLAN
-
-*Backed by cold outreach benchmarks, community research, land-and-expand data, data moat research, and fractional COO market analysis. All numbers are sourced.*
-
----
-
-### 10.1 The Cold Outreach Reality
-
-You have already sent 250+ hyper-personalized cold emails. Here is what the research says about where you stand:
-
-| Metric | Benchmark | Your Situation |
-|--------|-----------|----------------|
-| Cold email reply rate (B2B SaaS) | 3–5% | 250 emails → expect 7–12 replies |
-| Reply window | 48–96 hours | Most emails 24–72 hours old |
-| Lift from first follow-up | +49% | May 7 batch follow-ups sent May 17 ✓ |
-| Demo-to-paid conversion (demo-first) | 55–75% | Demo-first is the correct model |
-| Sales cycle (SMB, owner decides) | 30–45 days | 1–2 stakeholders, fast |
-
-**The one fix that will lift reply rates 2.3x:** Switch from problem hooks to timeline + dollar hooks.
-
-| Hook Type | Avg. Reply Rate | |
-|-----------|-----------------|--|
-| Problem hook ("do you struggle with X?") | 4.39% | What most emails use |
-| Timeline + dollar hook ("By Q3 you're leaving $18K on the table") | **10.01%** | 2.3x lift |
-
-Your emails are specific and well-researched. Adding one crisp closing line with a dollar amount and a timeline is the single change that moves the needle most.
-
----
-
-### 10.2 The 90-Day Acquisition Sequence
-
-**Days 1–14: Close what's already warm**
-
-- **SwishAd (Sean + Bill + Lisa)** — You sent them demo access on May 5. They responded, got team access, then silence. Follow up today: *"Sean — did Bill and Lisa get a chance to look at the workflow? Happy to walk through it live with the three of you — 20 minutes."* This is your hottest lead.
-- **Ala Obeidat** — Gave you substantive feedback on the system overview in April. Said he'd look at results from a real agency test. Follow up with one real example of what OpsRadar caught.
-- Your network: every agency contact you know personally gets a personal message — not a pitch, a request for their opinion. 10–20% of these convert to paid pilots at a founder discount.
-
-**Days 15–45: Cold outreach engine**
-
-- Continue your current pace (50+ personalized emails/week)
-- Add LinkedIn connection + DM after email touch 2 — omnichannel lifts response +287%
-- 5-touch sequence over 14 days: Email 1 → LinkedIn view → Email 2 (dollar + timeline hook) → LinkedIn DM → Email 3 (one-sentence breakup)
-- At 5% reply rate on 500 total sends → 25 replies → 40–50% convert to demos = 10–12 demo calls → 55–75% demo-to-paid = **5–8 customers**
-
-**Days 46–90: Community + referral flywheel**
-
-Post in 3 agency communities weekly with genuinely useful content — not a pitch:
-- **Online Geniuses** (53,000 members) — largest agency Slack community
-- **Agency Hackers** — UK's largest agency community, paid members
-- **Mod Agency Insiders Facebook group** (15,000 members)
-- **HighLevel Community** (91,000 members) — agency-dense
-
-The pattern: show up with a specific insight ("87% of agencies still pace budgets manually in 2026 — here's what the automated ones do differently"). One warm intro from a happy customer converts at 30–40% vs. 3–5% cold. Ask your first 5 customers for one referral each.
-
-**Target by Day 90:** 15–30 customers at $500–$1,500/month average = **$7.5K–$45K MRR**
-
----
-
-### 10.3 The Fractional COO Channel — Untapped Distribution
-
-This is the most underutilized channel for OpsRadar and has no incumbent competitor using it.
-
-**The market:**
-- 80,000–120,000 fractional executives in US/Canada
-- Estimated 5,000–15,000 fractional COOs specifically
-- Each serves 3–5 agency clients simultaneously at $8,000–$15,000/month per client
-- **Fractionals United** (13,000 members) is the single highest-leverage community to enter
-
-**Why they become your distribution channel:**
-- A fractional COO managing 4 agencies can deploy OpsRadar to all 4 — you get 4 customers from one relationship
-- OpsRadar cuts their manual onboarding audit from weeks to hours — directly expanding their capacity to take more clients
-- OpsRadar makes their impact legible to clients (utilization, margin, alerts) — they look better because of you
-- The fractional CFO channel is the proven precedent: Ramp, Float, and Dryrun are all distributed this way
-
-**What you need to unlock this channel:**
-1. A multi-client dashboard (one login, all agency clients visible) — this is the mandatory UX requirement
-2. A 20–25% recurring referral commission — the market norm; one fractional COO with 4 agency clients = $400–$2,000/month in referral revenue for them
-3. A presence in Fractionals United — post a genuine insight, not a pitch
-
-**The one-sentence pitch to a fractional COO:**
-> "OpsRadar cuts your agency onboarding from weeks to hours, makes your impact measurable to clients, and pays you $200–$500/month per agency you bring on."
-
----
-
-### 10.4 Land-and-Expand Pricing Architecture
-
-**The 4-tier structure (research-backed, Van Westendorp validated — see `docs/pricing-depth.md`):**
-
-| Tier | Price | What's Included | Expansion Trigger |
-|------|-------|-----------------|-------------------|
-| **Starter** | $500/month | 3 integrations, basic dashboard, weekly health score | Hits integration limit as agency connects more tools |
-| **Growth** | $1,500/month | All 10 integrations, threshold alerts, COO chat, benchmarks | Wants agentic actions or more seats |
-| **Pro** | $3,000/month | Everything + agentic actions, custom alerts, agentic-action overages | Agency grows headcount or refers others |
-| **Fractional Operator** | $2,500 + $250/agency/month | Multi-client dashboard, white-label view, partner permissions | New SKU for fractional COOs — see `docs/fractional-coo-partner-program.md` |
-
-**Why the 4th tier:** the multi-client dashboard is bundled in Pro at $3K but the agency owner persona scores its willingness-to-pay at 2/5 (they don't need it). Fractional COOs score it 5/5 — different buyer, different budget. Bundling it loses the channel. Spinning it out as `Fractional Operator` unlocks the highest-leverage acquisition channel OpsRadar has (1 fractional = 3–5 agencies).
-
-**The Van Westendorp finding:** Growth's Indifference Point lands at $1,475 — within $25 of the $1,500 sticker. Pro sits $200 below the Point of Marginal Expensiveness, meaning there is room to capture more value through usage-based agentic-action overages without raising headline prices (+6pp NRR per OpenView's 2025 data).
-
-**Key findings from vertical SaaS NRR research:**
-- Top-quartile vertical SaaS NRR: **108–120%**
-- Usage-based pricing adds +6 percentage points NRR vs. flat rate
-- Expansion revenue should be ~44% of net new ARR by month 6
-- Customers who connect 3+ integrations have dramatically higher retention — gate integrations to drive upgrade
-- **43% of all SMB customer losses happen in the first 90 days** — onboarding is the single highest-leverage retention investment
-
-**The expansion triggers that work best for ops tools (in order):**
-1. Integration count limit hit (most natural, zero sales required)
-2. Threshold alert clicked but locked behind a tier
-3. COO chat query that surfaces a locked insight
-4. Team member invited but seat limit hit
-5. Benchmark comparison requested for a locked peer group
-
----
-
-### 10.5 The Data Moat — How It Compounds
-
-This is the long-term defensibility the strategy doc needs to articulate.
-
-**The benchmarks become the moat.** At 50–100 agencies, you have statistically meaningful benchmarks for a narrow vertical (research consensus). This is the minimum viable corpus:
-- Average utilization rate by team size (5–10, 10–25, 25–50 employees)
-- Average project margin by service type (SEO, paid, social, full-service)
-- Average scope creep rate by contract type
-- Cash flow patterns by agency revenue band
-
-No competitor can replicate these benchmarks without first getting 50–100 agencies on their platform.
-
-**The Toast / Veeva flywheel applied to agencies:**
-
-| Stage | Toast (restaurants) | OpsRadar (agencies) |
-|-------|--------------------|--------------------|
-| Year 1 | 1,000 locations → basic benchmarks | 50 agencies → utilization & margin benchmarks |
-| Year 2 | 10,000 locations → daily price intelligence | 200 agencies → predictive scope creep alerts |
-| Year 3 | 100,000+ → AI that predicts demand | 1,000 agencies → AI COO that knows your vertical cold |
-
-**Why horizontal AI cannot replicate this:** GPT, Copilot, and HubSpot AI have no access to anonymized utilization rates, delivery margins, tool adoption patterns, and automation ROI outcomes across hundreds of agencies. That dataset can only exist inside OpsRadar. Each agency that joins makes the AI recommendations better for every other agency — the data flywheel.
-
-**The Veeva Pulse parallel:** Veeva built a benchmark product from anonymized pharma CRM data across all clients. OpsRadar's equivalent: **OpsRadar Index** — quarterly agency benchmarks surfaced back to every customer. "Your utilization is 66.4% — top-quartile agencies your size run at 74%. Here's what they do differently."
-
----
-
-### 10.6 Agency Community Amplification
-
-**The influencers whose audiences are your ICP:**
-
-| Influencer | Reach | Why They Matter |
-|------------|-------|-----------------|
-| Jason Swenk (Smart Agency Masterclass) | 500,000 listeners/week | #1 agency owner podcast; guests are buyers |
-| Drew McLellan (Build a Better Agency) | 300+ agency clients | AMI peer groups = direct line to agency principals |
-| Karl Sakas | Targeted agency community | Publishes the agency conference guide annually |
-
-**The conferences where agency owners buy software:**
-- AMI Build a Better Agency Summit — May, Denver — 300–500 agency principals, $2,595/ticket (high intent)
-- Mirren Live — May, NYC — 500–1,000, agency new business focus
-- Agency Hackers events — UK, recurring — 500+ paid members
-
-**The GoHighLevel playbook applied to OpsRadar:**
-HighLevel hit $82.7M ARR in 2024 by turning agencies into resellers. The agency buys the product → uses it internally → sells it to their own clients → brings in sub-accounts. OpsRadar's equivalent: agencies use OpsRadar for their own ops → recommend it to peer agencies → earn referral commissions. Community grew 56% YoY (58K → 91K members) without paid advertising.
-
----
-
-### 10.7 Summary: The Four Bets
-
-| Bet | Mechanism | Target Outcome |
-|-----|-----------|----------------|
-| **Cold outreach at scale** | 50+ personalized emails/week + LinkedIn + 5-touch follow-up | 5–8 customers by Day 45 |
-| **Fractional COO channel** | Enter Fractionals United, multi-client dashboard, 25% referral | 1 fractional COO = 3–5 agencies |
-| **Community seeding** | Online Geniuses, Agency Hackers, Mod Agency Insiders | Word-of-mouth cluster adoption |
-| **Data flywheel** | 50 agencies → meaningful benchmarks → OpsRadar Index | Defensible moat no competitor can buy |
-
-**The number that matters:** First customer who cancels their fractional COO because of OpsRadar. That is the proof of concept. Everything else is noise until then.
-
----
-
-*Document compiled from 10 parallel research agents covering: agency management software (27 competitors), fractional COO market, agency profitability drivers, AI COO competitive landscape, vertical SaaS case studies, IBM IBV 2026, McKinsey 2025/2026, Gartner 2025/2026, Deloitte 2026, PwC 2026, Fluency 2026, Basis 2026, SAS/IDC May 2026, OECD Dec 2025, cold outreach benchmarks 2026, agency community research, land-and-expand SaaS data, vertical SaaS data moat research, and fractional executive market data.*
-
----
-
----
-
-## 11. THE DEEP-RESEARCH REFINEMENTS (MAY 2026)
-
-*This section captures the seven decisions the strategy now treats as settled, based on a second wave of seven parallel research agents commissioned May 18, 2026. Each decision links to its full companion document under `docs/`.*
-
-### 11.1 The Decisions Now Made
-
-**Decision 0 (committed 2026-05-18, after live-site audit):** **AI COO is the category language.** The live site currently runs 110 AIOS mentions / 0 AI COO mentions; the strategy, cold emails, /vs pages, ICP research, and partner program all run 100% AI COO. The audit verdict: "Half-AIOS / half-COO loses to either pure system. Pick one." We pick AI COO. The OPERATE / OBSERVE / BRAIN / GUARD pillars (173 mentions on the live site) stay as the description of *what* the AI COO does. The category sentence is: **"OpsRadar is the AI COO for marketing agencies."** Every page, every email, every /vs page rewrites from AIOS → AI COO. Source: `docs/design-audit-live-site.md`.
-
-
-
-| # | Decision | The Number / Move | Source Doc |
-|---|----------|-------------------|------------|
-| 1 | **Beachhead ICP narrowed** | $1M–$3M ARR (not $500K–$5M), 10–25 people, retainer-heavy, 4+ of our integrations live, with ONE acute trigger (5-figure overserve / layoff in 12 mo / active fractional COO) | `docs/icp-customer-research.md` |
-| 2 | **Pricing held at $500/$1,500/$3,000** | Van Westendorp confirms Growth's optimal point is $1,475. Don't move headline prices; capture upside via usage-based agentic-action overages | `docs/pricing-depth.md` |
-| 3 | **New SKU: Fractional Operator** | $2,500 + $250/agency/month — unlocks the channel without bundling multi-client view into Pro | `docs/pricing-depth.md` + `docs/fractional-coo-partner-program.md` |
-| 4 | **Partner commission: 25% lifetime, no vesting cliff** | One number determines whether the channel becomes self-replicating. "20% for 12 months" loses the Fractionals United word-of-mouth flywheel | `docs/fractional-coo-partner-program.md` |
-| 5 | **Cold email hook switch** | Stop sending problem hooks. Next 30 sends use timeline + dollar hook format. 2.3x reply lift takes Day 90 from ~10 customers to ~25 *without* sending more email | `docs/cold-email-playbook.md` |
-| 6 | **Community focus: Online Geniuses first 30 days** | 53K Slack, free + vetted, daily ICP questions in `#agency-life`. First move = answer utilization/margin questions with a real data point + a sheet template. Bio carries the OpsRadar tag, the answer earns trust | `docs/community-90-day-plan.md` |
-| 7 | **`/vs/productive` is the launch page** | Highest-converting comparison. The winning row: "Tells you what to do next." Productive's March 2026 AI Assistant accelerates work *inside* the PSA; it does not recommend the next operational action. That single row makes the AI COO category language stick | `docs/vs-pages.md` + `docs/competitor-teardowns.md` |
-
-### 11.2 The Three Things We Underestimated
-
-1. **ClickUp shipped Super Agents in May 2026.** Persistent-memory autonomous agents from their Qatalog acquisition. They have the integrations (100+), agentic execution, 100K+ customers, and a $9/seat Brain add-on that undercuts everyone. A non-savvy buyer might convince themselves "ClickUp Super Agents = AI COO." Our wedge has to be loud about vertical benchmarks + financial-layer integration (Stripe/Harvest) horizontal ClickUp will never own. See `docs/competitor-teardowns.md`.
-
-2. **Kantata launched real AI in October 2025.** AI Resourcing Agent + AI Forecast Accelerator. They are *not* the dumb enterprise PSA we implied — they are moving in our direction, just one tier up. They'll never serve $1–3M agencies because their pricing and motion are enterprise-only, but they remove the easy "PSA has no AI" line from the deck.
-
-3. **Float quietly has the cleanest category language.** "Foresight" + "profitable delivery at scale" + "#1 solution for profitable resource management." Borrow the tone (forward-looking, dollar-anchored, "profitable" front-and-center) without copying the words. Don't be afraid to say *"profitable agency operations"* instead of *"agency operations."*
-
-### 11.3 The Two New Channel Plays
-
-| Play | Why | The Move |
-|------|-----|---------|
-| **ZenPilot + Parakeeto as referral partners** | Both compete with the consulting *side* of OpsRadar but their engagements end — we are the always-on layer after they leave. Marcel Petitpas (Parakeeto) has built the trust currency in agency finance | Send each a partnership pitch: 25% recurring on agencies they hand off. Their engagement → OpsRadar continuity = better client outcome for them |
-| **Sean / SwishAd reactivation** | Still the hottest lead in the pipeline. Demo access sent May 5, then silence | Use the exact follow-up template in `docs/cold-email-playbook.md` (one paragraph, one dollar amount specific to paid media DTC, one 20-minute CTA) — send Monday |
-
-### 11.4 What Hasn't Changed
-
-- The Path A thesis (AI COO for marketing agencies, vertical, $500–$3K) — confirmed by every research agent across both waves
-- The Toast / ServiceTitan / Veeva / Clio comp set — still the right roadmap
-- The 50–100-agency data moat threshold — still the gating number for the OpsRadar Index
-- The fact that no funded competitor occupies "AI COO for agencies" — still true on May 18, 2026
-
----
-
-## 12. THE COMPANION DOCUMENTS
-
-Each artifact below is independently usable — hand to a salesperson, dev, designer, or yourself when you need to act.
-
-| Document | What it gives you | When to use |
+| Document | What It Gives You | When to Use |
 |----------|-------------------|-------------|
-| [`competitor-teardowns.md`](./competitor-teardowns.md) | 10 deep competitor profiles + battle card matrix + sales lines | Before any sales call where the prospect mentions a competitor |
-| [`cold-email-playbook.md`](./cold-email-playbook.md) | 5-touch sequence, 15 subject line templates, hook frameworks, Sean/SwishAd follow-up, reply handlers | This Monday — rewrite the next 30 sends with the timeline+dollar hook |
-| [`pricing-depth.md`](./pricing-depth.md) | Van Westendorp model, expansion trigger ranking, pricing page copy, objection bank | Before the next pricing-page revision and any tier conversation with a prospect |
-| [`icp-customer-research.md`](./icp-customer-research.md) | 3 personas (Founder-CEO, Head of Ops, Fractional COO), 10 ranked buying triggers, disqualifier list, JTBD map, 15-channel sourcing playbook | Before any cold-prospecting batch — qualify in 15 min, not 50 emails |
-| [`vs-pages.md`](./vs-pages.md) | 3 launch-ready pages (`/vs/productive`, `/vs/scoro`, `/vs/float`) + dev implementation notes | When the marketing site is ready for SEO landing pages — `/vs/productive` first |
-| [`fractional-coo-partner-program.md`](./fractional-coo-partner-program.md) | Program spec, 25% lifetime commission rationale, multi-client dashboard PRD, partner tiers, recruitment plan for first 25 partners | Before posting in Fractionals United — the program design is the offer |
-| [`community-90-day-plan.md`](./community-90-day-plan.md) | 8 communities mapped, 30+ post drafts, 12 podcasts to pitch, OpsRadar Index concept, 90-day targets | This week — pick Online Geniuses and start answering questions |
-
-### 12.1 The One-Week Action List (sequenced)
-
-1. **Monday** — Rewrite next 30 cold emails using timeline+dollar hook (`cold-email-playbook.md` section 2). Send the Sean/SwishAd follow-up.
-2. **Tuesday** — Join Online Geniuses Slack if not in already. Read `community-90-day-plan.md` section 2. Write the first answer-style post.
-3. **Wednesday** — Draft and ship the `Fractional Operator` SKU on the pricing page. Pull the multi-client view spec from `fractional-coo-partner-program.md`.
-4. **Thursday** — Ship `/vs/productive` to the marketing site (the page is dev-ready in `vs-pages.md`).
-5. **Friday** — Send the partnership pitch to ZenPilot and Parakeeto. Send a partner-program first-touch email to 10 fractional COOs sourced from Fractionals United.
-
-Everything else in `docs/` is reference material for the moment it's needed.
+| [`icp-customer-research.md`](./icp-customer-research.md) | 3 personas, 10 ranked buying triggers, disqualifier list, JTBD map | Before any cold-prospecting batch |
+| [`ai-market-research-2026.md`](./ai-market-research-2026.md) | Full IBM/McKinsey/Gartner/Deloitte data for investor/customer narratives | Investor pitch, sales deck |
+| [`agency-tools-research-2026.md`](./agency-tools-research-2026.md) | Agency tech stacks, tool deep-dives, profitability benchmarks | Product decisions, positioning |
+| [`pricing-depth.md`](./pricing-depth.md) | Van Westendorp model, expansion triggers, objection bank | Pricing page revisions, tier conversations |
+| [`vs-pages.md`](./vs-pages.md) | `/vs/productive`, `/vs/scoro`, `/vs/float` — ready to ship | SEO landing pages — `/vs/productive` first |
+| [`../competitive/competitor-teardowns.md`](../competitive/competitor-teardowns.md) | 10 competitor profiles + battle card matrix | Before any sales call |
+| [`../go-to-market/cold-email-playbook.md`](../go-to-market/cold-email-playbook.md) | 5-touch sequence, 15 subject lines, reply handlers | This Monday — rewrite next 30 sends |
+| [`../go-to-market/fractional-coo-partner-program.md`](../go-to-market/fractional-coo-partner-program.md) | Partner program spec, 25% commission rationale, recruitment plan | Before posting in Fractionals United |
+| [`../go-to-market/community-90-day-plan.md`](../go-to-market/community-90-day-plan.md) | 8 communities, 30+ post drafts, 12 podcasts to pitch | This week — start with Online Geniuses |
+| [`../dev/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/specs/2026-05-17-opsradar-product-strategy-design.md) | Full 6-phase product arc with specs | Product planning |
 
 ---
 
-*Section 11 added May 18, 2026 from a second wave of seven parallel research agents covering: competitor teardowns (10 profiles), cold email playbook (5-touch sequence), pricing stress-test (4 frameworks), ICP refinement (3 personas + JTBD), `/vs` landing pages (3 competitors), fractional COO partner program (12-section spec), and community 90-day plan (8 communities, 30+ post drafts).*
+*Strategy document compiled from three research waves: May 2026 (IBM IBV, McKinsey, Gartner, Deloitte, PwC, BCG, MIT, OECD, Federal Reserve, Fluency, Basis, Planable, SAS/IDC, Supermetrics, 27 competitors, ICP research, pricing research, community research, cold outreach benchmarks, vertical SaaS case studies, fractional COO market, GoHighLevel data, agentic AI funding, agency retention benchmarks, AI automation agency pricing, Federal Reserve FEDS Notes April 2026, and Euclid Ventures Vertical Report 2026).*

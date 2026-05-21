@@ -12,7 +12,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const CACHE_TTL_SECONDS = 60 * 60;
+const STALE_TTL_SECONDS = 24 * 60 * 60;
 const CACHE_KEY = (userId: string) => `dash:finance:${userId}`;
+const STALE_KEY = (userId: string) => `dash:finance:${userId}:stale`;
 
 type FinanceResponse =
   | { status: 'ok'; data: StripeFinanceData; last_synced_at: string; from_cache: boolean }
@@ -81,6 +83,12 @@ export async function GET(_req: NextRequest): Promise<NextResponse<FinanceRespon
       return NextResponse.json({ status: 'requires_reconnect' });
     }
     console.error('[finance] stripe fetch failed:', err);
+    if (redis) {
+      const stale = await redis.get<FinanceResponse>(STALE_KEY(userId));
+      if (stale && stale.status === 'ok') {
+        return NextResponse.json({ ...stale, from_cache: true });
+      }
+    }
     return NextResponse.json({
       status: 'unavailable',
       message: err instanceof Error ? err.message : 'fetch_failed',
@@ -101,7 +109,10 @@ export async function GET(_req: NextRequest): Promise<NextResponse<FinanceRespon
     from_cache: false,
   };
   if (redis) {
-    await redis.set(CACHE_KEY(userId), payload, { ex: CACHE_TTL_SECONDS });
+    await Promise.all([
+      redis.set(CACHE_KEY(userId), payload, { ex: CACHE_TTL_SECONDS }),
+      redis.set(STALE_KEY(userId), payload, { ex: STALE_TTL_SECONDS }),
+    ]);
   }
   return NextResponse.json(payload);
 }

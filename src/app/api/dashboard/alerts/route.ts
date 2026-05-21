@@ -34,10 +34,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ status: 'unavailable', message: 'unauthorized' }, { status: 401 });
 
-  const redis = Redis.fromEnv();
+  const redis = (() => { try { return Redis.fromEnv(); } catch { return null; } })();
   const key = `dashboard:alerts:${userId}`;
-  const cached = await redis.get<AlertsResponse>(key);
-  if (cached?.status === 'ok') return NextResponse.json(cached);
+  if (redis) {
+    const cached = await redis.get<AlertsResponse>(key);
+    if (cached?.status === 'ok') return NextResponse.json(cached);
+  }
 
   const settled = await Promise.allSettled([
     fetchJson(request, 'finance'),
@@ -147,6 +149,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
   ).slice(0, MAX_COCKPIT_ALERTS);
 
   const body: AlertsResponse = { status: 'ok', alerts };
-  await redis.set(key, body, { ex: CACHE_TTL_SECONDS });
+  if (redis) await redis.set(key, body, { ex: CACHE_TTL_SECONDS });
   return NextResponse.json(body);
 }

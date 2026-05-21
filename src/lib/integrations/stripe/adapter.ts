@@ -17,6 +17,13 @@ export type StripeInvoiceRow = {
   days_overdue: number;
 };
 
+export type StripeRecentCharge = {
+  id: string;
+  customer_name: string | null;
+  amount: number; // USD
+  timestamp: string; // ISO8601
+};
+
 export type StripeFinanceData = {
   invoiced: number; // USD, this month-to-date (sum of invoice amount_due)
   paid: number; // USD, this month-to-date (sum of paid invoice amount_paid)
@@ -24,6 +31,7 @@ export type StripeFinanceData = {
   sparkline: Array<{ date: string; amount: number }>; // last 30 days, daily charge totals
   currency: 'USD';
   rows: StripeInvoiceRow[];
+  recent_charges: StripeRecentCharge[]; // last 5 succeeded charges for activity feed
 };
 
 export type AdapterValidation =
@@ -140,5 +148,16 @@ export async function fetchStripeFinanceData(apiKey: string): Promise<StripeFina
     .sort((a, b) => b.days_overdue - a.days_overdue)
     .slice(0, 5);
 
-  return { invoiced, paid, overdue, sparkline, currency: 'USD', rows };
+  const recent_charges: StripeRecentCharge[] = charges.data
+    .filter((ch) => ch.status === 'succeeded')
+    .slice(0, 5)
+    .map((ch) => ({
+      id: ch.id,
+      customer_name:
+        typeof ch.billing_details?.name === 'string' ? ch.billing_details.name : null,
+      amount: (ch.amount ?? 0) / 100,
+      timestamp: new Date(ch.created * 1000).toISOString(),
+    }));
+
+  return { invoiced, paid, overdue, sparkline, currency: 'USD', rows, recent_charges };
 }

@@ -1,6 +1,6 @@
 # OpsRadar Docs — Index
 
-*Last updated: 2026-05-19*
+*Last updated: 2026-05-21*
 
 This folder is the operating system for OpsRadar's go-to-market, copy, design, and product development. Every document is action-shaped — opened the moment you need to do the thing it describes.
 
@@ -10,14 +10,16 @@ This folder is the operating system for OpsRadar's go-to-market, copy, design, a
 
 ```
 docs/
-├── strategy/          ← why this bet, market research, pricing framework
+├── strategy/          ← master strategy, market research, pricing, ICP
 ├── go-to-market/      ← outbound playbooks, partner program, community plan
 ├── competitive/       ← 10 SaaS teardowns + competitor battle cards
 ├── copy/              ← finalized copy for every marketing page
-├── design/            ← design language, audit findings, redesign specs
+├── design/            ← design language, audit findings
 └── dev/
-    ├── plans/         ← shipped implementation plans (dated)
-    └── specs/         ← architecture specs for each plan
+    ├── branch-organization.md   ← domain ownership: what goes on main vs chatv2
+    ├── plans/                   ← active implementation plans (May 19+)
+    ├── proposals/               ← shipped reliability + KPI snapshots (May 21)
+    └── archive/                 ← all plans + specs from Apr 30 – May 18
 ```
 
 ---
@@ -26,11 +28,12 @@ docs/
 
 | Document | What it is | When to read |
 |----------|------------|--------------|
-| [`strategy/ai-market-research-2026.md`](./strategy/ai-market-research-2026.md) | 10-section market research with 30+ sources. The $2.52T AI spend / 95% zero ROI / IBM 61-point gap data | Before any investor conversation or category-level positioning decision |
-| [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) | The master strategy. Why AI COO for agencies wins, 27-competitor gap analysis, 4-tier pricing, 90-day execution plan, Section 11 settled decisions | Always. This is the working document |
-| [`strategy/pricing-depth.md`](./strategy/pricing-depth.md) | Van Westendorp + WTP + competitive anchor + value-based pricing. Tiers: $750 / $1,500 / $3,000 / $1,200+$300. Expansion triggers ranked, full objection bank | Before any pricing conversation or tier change |
-| [`strategy/icp-customer-research.md`](./strategy/icp-customer-research.md) | 3 detailed personas, 10 ranked buying triggers, disqualifier list, JTBD map, 15-channel sourcing playbook, 10 qualifying questions | Before any cold-prospecting batch |
-| [`strategy/vs-pages.md`](./strategy/vs-pages.md) | 3 launch-ready landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` + dev implementation notes | When the marketing site is ready for SEO landing pages |
+| [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) | The master strategy. AI COO for agencies thesis, 27-competitor gap, 4-tier pricing, YC #15 fit, 90-day execution plan | Always. This is the working document |
+| [`strategy/agency-tools-research-2026.md`](./strategy/agency-tools-research-2026.md) | Deep research on agency tool fragmentation — HubSpot/Pipedrive/ClickUp/Harvest adoption patterns, 59-65% cite fragmentation, 20% can't report margins | Before ICP calls or product prioritization |
+| [`strategy/ai-market-research-2026.md`](./strategy/ai-market-research-2026.md) | $2.52T AI spend / 8.8% actual production adoption gap / CAIO trend data | Before investor conversations |
+| [`strategy/icp-customer-research.md`](./strategy/icp-customer-research.md) | 3 personas, 10 buying triggers, disqualifier list, JTBD map, 15-channel sourcing, 10 qualifying questions | Before any cold-prospecting batch |
+| [`strategy/pricing-depth.md`](./strategy/pricing-depth.md) | Van Westendorp + WTP + competitive anchor. Tiers: $750 / $1,500 / $3,000 / $1,200+$300 | Before any pricing conversation or tier change |
+| [`strategy/vs-pages.md`](./strategy/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
 
 ---
 
@@ -38,24 +41,24 @@ docs/
 
 | Document | What it gives you | When to open it |
 |----------|-------------------|-----------------|
-| [`go-to-market/cold-email-playbook.md`](./go-to-market/cold-email-playbook.md) | 5-touch sequence, 15 subject line templates, 6 hook frameworks, reply handlers | This Monday. Rewrite the next 30 sends |
-| [`go-to-market/fractional-coo-partner-program.md`](./go-to-market/fractional-coo-partner-program.md) | Full program spec — 25% lifetime commission, multi-client dashboard PRD, partner tier criteria, 90-day partner onboarding, recruitment plan for first 25 partners | Before posting in Fractionals United |
-| [`go-to-market/community-90-day-plan.md`](./go-to-market/community-90-day-plan.md) | 8 communities mapped + ranked, 30+ specific post drafts, influencer outreach plan, conference list, 90-day targets | This week. Pick Online Geniuses and start answering questions |
+| [`go-to-market/cold-email-playbook.md`](./go-to-market/cold-email-playbook.md) | 5-touch sequence, 15 subject line templates, 6 hook frameworks, reply handlers | Rewrite the next 30 sends |
+| [`go-to-market/fractional-coo-partner-program.md`](./go-to-market/fractional-coo-partner-program.md) | Full program spec — 25% lifetime commission, multi-client dashboard PRD, partner tier criteria, 90-day onboarding, recruitment plan for first 25 partners | Before posting in Fractionals United |
+| [`go-to-market/community-90-day-plan.md`](./go-to-market/community-90-day-plan.md) | 8 communities mapped + ranked, 30+ post drafts, influencer outreach, conference list, 90-day targets | This week |
 
 ---
 
 ## Competitive
 
-| Document | What it gives you | When to open it |
-|----------|-------------------|-----------------|
-| [`competitive/competitor-teardowns.md`](./competitive/competitor-teardowns.md) | 10 deep competitor profiles (Productive, Scoro, Kantata, Accelo, Float, Resource Guru, AgencyAnalytics, ClickUp, ZenPilot, Parakeeto) + battle-card matrix + sales lines | Before any sales call where a prospect mentions a competitor |
-| `competitive/*-teardown.md` | Individual teardowns for Cursor, Linear, Lovable, Mercury, Notion, PostHog, Ramp, Stripe, Vercel — design and positioning lessons | Design and copy reference |
+| Document | What it gives you |
+|----------|-------------------|
+| [`competitive/competitor-teardowns.md`](./competitive/competitor-teardowns.md) | 10 deep profiles (Productive, Scoro, Kantata, Accelo, Float, Resource Guru, AgencyAnalytics, ClickUp, ZenPilot, Parakeeto) + battle-card matrix + sales lines |
+| `competitive/*-teardown.md` | Individual teardowns for Cursor, Linear, Lovable, Mercury, Notion, PostHog, Ramp, Stripe, Vercel — design and positioning lessons |
 
 ---
 
 ## Copy (Live Page Drafts)
 
-Finalized copy for every marketing page. These are the source of truth for what's on the live site — update here when copy changes.
+Finalized copy for every marketing page. Update here when copy changes.
 
 | Document | Page |
 |----------|------|
@@ -77,43 +80,38 @@ Finalized copy for every marketing page. These are the source of truth for what'
 | Document | What it is |
 |----------|------------|
 | [`design/design-language-opsradar.md`](./design/design-language-opsradar.md) | Design token system, typography scale, color palette, spacing rules |
-| [`design/design-audit-live-site.md`](./design/design-audit-live-site.md) | Findings from the May 2026 live-site design audit vs 10 SaaS benchmarks |
-| [`design/design-redesign-specs.md`](./design/design-redesign-specs.md) | Redesign spec: light mode, Mercury spacing, sans headline cascade, radar-blue tokens |
+| [`design/design-audit-live-site.md`](./design/design-audit-live-site.md) | May 2026 live-site design audit findings vs 10 SaaS benchmarks |
 
 ---
 
-## Dev — Plans & Specs
+## Dev — Active
 
-Dated implementation plans and architecture specs. These are reference documents — the code is the source of truth once a plan is shipped.
+| Document | What it is |
+|----------|------------|
+| [`dev/branch-organization.md`](./dev/branch-organization.md) | Domain ownership matrix: what lives on `main` (Supabase) vs `chatv2` (MySQL). Read this before any new feature. |
+| [`dev/plans/2026-05-19-chatv2-integration-architecture.md`](./dev/plans/2026-05-19-chatv2-integration-architecture.md) | chatv2 typed client, project mapping, service-key auth pattern |
+| [`dev/plans/2026-05-19-backend-gap-closure.md`](./dev/plans/2026-05-19-backend-gap-closure.md) | Tier enforcement, retainer, FO dashboard, action limits, webhooks |
+| [`dev/proposals/dashboard-reliability-fixes.md`](./dev/proposals/dashboard-reliability-fixes.md) | 6 reliability fixes + KPI snapshots — all shipped 2026-05-21 |
 
-**Recent plans** (most relevant for context on shipped features):
-
-| Plan | What shipped |
-|------|-------------|
-| [`dev/plans/2026-05-18-ai-coo-intelligence-engine.md`](./dev/plans/2026-05-18-ai-coo-intelligence-engine.md) | AI COO intelligence engine |
-| [`dev/plans/2026-05-17-agentic-actions.md`](./dev/plans/2026-05-17-agentic-actions.md) | Agentic actions with 30-min undo + 5 evaluators |
-| [`dev/plans/2026-05-17-ai-coo-briefings.md`](./dev/plans/2026-05-17-ai-coo-briefings.md) | Weekly AI COO briefings |
-| [`dev/plans/2026-05-16-full-integration-expansion.md`](./dev/plans/2026-05-16-full-integration-expansion.md) | 10 live integrations |
-| [`dev/plans/2026-05-15-dashboard-redesign.md`](./dev/plans/2026-05-15-dashboard-redesign.md) | Dashboard redesign |
-| [`dev/plans/2026-05-12-api-key-integrations-framework.md`](./dev/plans/2026-05-12-api-key-integrations-framework.md) | Model C customer API-key framework |
-
-Older plans in [`dev/plans/`](./dev/plans/) and specs in [`dev/specs/`](./dev/specs/).
+Historical plans and specs are in [`dev/archive/`](./dev/archive/).
 
 ---
 
-## Start Here
+## Quick Reference
 
-**The bet in 10 minutes:** [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) sections 1, 5, 9, and 11.
+**The bet in 10 minutes:** [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) — Parts 1, 3, 5, and 8.
 
-**What to do this week:** `path-a-strategy-2026.md` section 12.1.
+**YC Summer 2026 fit:** Category #15 "AI Operating System for Companies" (primary), #2 "AI-Native Service Companies" (secondary).
 
 **Current prices:** Starter $750/mo · Growth $1,500/mo · Pro $3,000/mo · Fractional Operator $1,200/mo + $300/agency
+
+**Domain rule:** Customer state → Supabase (`main`). Platform compute/AI/n8n → chatv2 (MySQL, CTO-managed).
 
 ---
 
 ## Voice Rules (Apply to Everything in This Folder)
 
-- **Use:** AI COO, intelligence layer, ops brain, real-time, before it costs you, recommendations, what to do next, agency-specific, vertical, margin, utilization, scope creep, fractional COO replacement
-- **Avoid:** dashboard (as commodity), platform, holistic, enterprise-grade, AI assistant (generic), ChatGPT-powered, automation (alone), efficiency (without a $ amount), specific feature counts, specific delivery times
-- **Never reference internally:** n8n, Claude, specific model providers — implementation details, not product surface
+- **Use:** AI COO, intelligence layer, ops brain, real-time, before it costs you, recommendations, what to do next, agency-specific, margin, utilization, scope creep, fractional COO replacement
+- **Avoid:** dashboard (as commodity), platform, holistic, enterprise-grade, AI assistant (generic), automation (alone), efficiency (without a $ amount), specific feature counts
+- **Never surface internally:** n8n, Claude, specific model providers — implementation details, not product surface
 - **Direct, founder-to-founder.** Dollar amounts over adjectives. Active voice. Short sentences.
