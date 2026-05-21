@@ -46,24 +46,41 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'queue_action',
-      description: 'Queue an action for the user to approve in-chat. Use when you identify a concrete problem that warrants an action (overdue invoice reminder, reprice a client, scope alert). Always call this AFTER explaining the problem in your response.',
+      description: 'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do.',
       parameters: {
         type: 'object',
         properties: {
           action_type: {
             type: 'string',
-            description: 'One of: invoice_reminder, reprice_client, scope_alert, margin_alert',
+            enum: ['margin_alert', 'hours_budget_exceeded', 'scope_approaching', 'retainer_overage'],
+            description: 'margin_alert: client margin is below target (use after get_profitability). hours_budget_exceeded: a project has logged more hours than its budget (use after get_scope where in_scope is false). scope_approaching: a project is using 80%+ of its hours budget but hasn\'t crossed yet. retainer_overage: a client has logged more hours than their monthly retainer covers.',
           },
           label: {
             type: 'string',
-            description: 'Human-readable description shown to the user, e.g. "Send invoice reminder to Acme Corp — $4,200 overdue 18 days"',
+            description: 'One-line summary shown to the user in chat, e.g. "Margin alert for Acme Co — currently at -13%"',
           },
-          payload: {
+          client_name: {
+            type: 'string',
+            description: 'Client name exactly as it appeared in the prior tool call',
+          },
+          project_name: {
+            type: 'string',
+            description: 'Project name from get_scope. Required for hours_budget_exceeded and scope_approaching. Omit for margin_alert and retainer_overage.',
+          },
+          metrics: {
             type: 'object',
-            description: 'Action-specific data. For invoice_reminder: { client_name, amount_usd, days_overdue }. For reprice_client: { client_name, current_usd, suggested_usd }. For scope_alert: { client_name, budget_hours, logged_hours }.',
+            description: 'Numeric metrics from your prior tool call. For margin_alert: { margin_pct, revenue_mtd_usd, cost_usd }. For hours_budget_exceeded: { hours_logged, budget_hours, overrun_pct }. For scope_approaching: { hours_logged, budget_hours, used_pct }. For retainer_overage: { hours_logged }.',
+          },
+          draft_subject: {
+            type: 'string',
+            description: 'Draft email subject line, e.g. "Quick chat about the retainer for Acme Co"',
+          },
+          draft_body: {
+            type: 'string',
+            description: 'Draft email body — 3-6 sentences, professional, warm tone. Reference the specific numbers. End with a clear ask (call, meeting, etc.).',
           },
         },
-        required: ['action_type', 'label', 'payload'],
+        required: ['action_type', 'label', 'client_name', 'metrics', 'draft_subject', 'draft_body'],
       },
     },
   },

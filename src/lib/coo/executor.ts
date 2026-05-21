@@ -1,4 +1,5 @@
 // src/lib/coo/executor.ts
+import Stripe from 'stripe';
 import { fetchStripeFinanceData } from '<npm>/lib/integrations/stripe/adapter';
 import { fetchHubspotSalesData } from '<npm>/lib/integrations/hubspot/adapter';
 import { fetchStripePerClientRevenue } from '<npm>/lib/integrations/stripe/profitability-adapter';
@@ -7,6 +8,13 @@ import { computeClientProfitability } from '<npm>/lib/profitability';
 import { fetchClickupProjectBudgets } from '<npm>/lib/integrations/clickup/scope-adapter';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import type { Json } from '<npm>/lib/database.types';
+import type {
+  MarginAlertPayload,
+  HoursBudgetPayload,
+  ScopeApproachingPayload,
+  RetainerOveragePayload,
+  ActionPayload,
+} from '<npm>/lib/actions/types';
 
 export type ExecutorContext = {
   stripeKey: string | null;
@@ -23,11 +31,25 @@ export type ToolResult =
   | { success: false; reason: string };
 
 const KNOWN_ACTION_TYPES = [
-  'invoice_reminder',
-  'reprice_client',
-  'scope_alert',
   'margin_alert',
+  'hours_budget_exceeded',
+  'scope_approaching',
+  'retainer_overage',
 ] as const;
+type KnownActionType = typeof KNOWN_ACTION_TYPES[number];
+
+async function findStripeCustomerId(stripeKey: string, clientName: string): Promise<string> {
+  try {
+    const stripe = new Stripe(stripeKey, { typescript: true, maxNetworkRetries: 2 });
+    const search = await stripe.customers.search({
+      query: `name:"${clientName.replace(/"/g, '')}"`,
+      limit: 1,
+    });
+    return search.data[0]?.id ?? '';
+  } catch {
+    return '';
+  }
+}
 
 function teamSizeMin(raw: string): number | null {
   if (!raw) return null;
@@ -168,6 +190,7 @@ async function runQueueAction(
   args: Record<string, unknown>,
   ctx: ExecutorContext,
 ): Promise<ToolResult> {
+  // Validation
   const actionType = args.action_type;
   if (
     typeof actionType !== 'string' ||
@@ -175,25 +198,114 @@ async function runQueueAction(
   ) {
     return {
       success: false,
-      reason:
-        'Unknown action_type. Must be one of: invoice_reminder, reprice_client, scope_alert, margin_alert.',
+      reason: 'Unknown action_type. Must be one of: margin_alert, hours_budget_exceeded, scope_approaching, retainer_overage.',
     };
   }
-  if (typeof args.label !== 'string') {
-    return { success: false, reason: 'label must be a string.' };
-  }
-  if (!isPlainObject(args.payload)) {
-    return { success: false, reason: 'payload must be an object.' };
-  }
+  if (typeof args.label !== 'string') return { success: false, reason: 'label must be a string.' };
+  if (typeof args.client_name !== 'string') return { success: false, reason: 'client_name must be a string.' };
+  if (typeof args.draft_subject !== 'string') return { success: false, reason: 'draft_subject must be a string.' };
+  if (typeof args.draft_body !== 'string') return { success: false, reason: 'draft_body must be a string.' };
+  if (!isPlainObject(args.metrics)) return { success: false, reason: 'metrics must be an object.' };
+
+  const clientName = args.client_name;
+  const metrics = args.metrics as Record<string, unknown>;
+  const num = (v: unknown, fallback = 0): number => (typeof v === 'number' ? v : fallback);
 
   try {
+    let payload: ActionPayload;
+
+    switch (actionType as KnownActionType) {
+      case 'margin_alert': {
+        const stripeCustomerId = ctx.stripeKey
+          ? await findStripeCustomerId(ctx.stripeKey, clientName)
+          : '';
+        payload = {
+          stripe_customer_id: stripeCustomerId,
+          client_name: clientName,
+          margin_pct: num(metrics.margin_pct),
+          margin_prior_pct: null,
+          revenue_mtd: num(metrics.revenue_mtd_usd ?? metrics.revenue_mtd),
+          cost_mtd: num(metrics.cost_usd ?? metrics.cost_mtd),
+          draft_subject: args.draft_subject,
+          draft_body: args.draft_body,
+        } satisfies MarginAlertPayload;
+        break;
+      }
+
+      case 'hours_budget_exceeded': {
+        if (typeof args.project_name !== 'string') {
+          return { success: false, reason: 'project_name is required for hours_budget_exceeded.' };
+        }
+        payload = {
+          client_name: clientName,
+          project_name: args.project_name,
+          harvest_project_id: '',
+          hours_logged: num(metrics.hours_logged),
+          budget_hours: num(metrics.budget_hours),
+          overage_pct: num(metrics.overrun_pct ?? metrics.overage_pct),
+          draft_subject: args.draft_subject,
+          draft_body: args.draft_body,
+        } satisfies HoursBudgetPayload;
+        break;
+      }
+
+      case 'scope_approaching': {
+        if (typeof args.project_name !== 'string') {
+          return { success: false, reason: 'project_name is required for scope_approaching.' };
+        }
+        payload = {
+          client_name: clientName,
+          project_name: args.project_name,
+          harvest_project_id: '',
+          hours_logged: num(metrics.hours_logged),
+          budget_hours: num(metrics.budget_hours),
+          used_pct: num(metrics.used_pct ?? metrics.overrun_pct),
+          draft_subject: args.draft_subject,
+          draft_body: args.draft_body,
+        } satisfies ScopeApproachingPayload;
+        break;
+      }
+
+      case 'retainer_overage': {
+        const supabase = getServerSupabaseClient();
+        const clientNameNorm = clientName.trim().toLowerCase();
+        const { data: retainer } = await supabase
+          .from('retainer_configs')
+          .select('monthly_amount_usd, included_hours')
+          .eq('user_id', ctx.userId)
+          .eq('client_name_norm', clientNameNorm)
+          .maybeSingle();
+
+        const monthlyAmount = num(retainer?.monthly_amount_usd, 0);
+        const includedHours = num(retainer?.included_hours, 0);
+        const hoursLogged = num(metrics.hours_logged);
+        const overageHours = Math.max(0, hoursLogged - includedHours);
+        const impliedRate = includedHours > 0 ? monthlyAmount / includedHours : ctx.blendedRate;
+        const overageCost = overageHours * impliedRate;
+
+        payload = {
+          client_name: clientName,
+          client_name_norm: clientNameNorm,
+          monthly_amount_usd: monthlyAmount,
+          included_hours: includedHours,
+          logged_hours: hoursLogged,
+          overage_hours: overageHours,
+          overage_cost_usd: Math.round(overageCost * 100) / 100,
+          implied_hourly_rate: Math.round(impliedRate * 100) / 100,
+          draft_subject: args.draft_subject,
+          draft_body: args.draft_body,
+        } satisfies RetainerOveragePayload;
+        break;
+      }
+    }
+
     const supabase = getServerSupabaseClient();
     const { data, error } = await supabase
       .from('agent_actions')
       .insert({
         user_id: ctx.userId,
         action_type: actionType,
-        payload: args.payload as unknown as Json,
+        payload: payload as unknown as Json,
         status: 'pending',
       })
       .select('id')
@@ -202,7 +314,7 @@ async function runQueueAction(
     if (error || !data) return { success: false, reason: 'Failed to save action.' };
     return { success: true, data: { action_id: data.id, label: args.label } };
   } catch {
-    return { success: false, reason: 'Failed to save action.' };
+    return { success: false, reason: 'Failed to build or save action.' };
   }
 }
 
