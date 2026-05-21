@@ -37,6 +37,7 @@ export type ExecutorContext = {
   blendedRate: number;
   teamSizeRaw: string;
   userId: string;
+  lastUserQuestion: string;
 };
 
 export type ToolResult =
@@ -324,20 +325,38 @@ async function runGetMeetings(ctx: ExecutorContext): Promise<ToolResult> {
   }
 }
 
-function runSearchKb(args: Record<string, unknown>): ToolResult {
+async function runSearchKb(args: Record<string, unknown>, ctx: ExecutorContext): Promise<ToolResult> {
   if (typeof args.query !== 'string' || !args.query.trim()) {
     return { success: false, reason: 'query must be a non-empty string.' };
   }
   const chunks = retrieveCooKnowledge(args.query);
+
+  // Self-improving loop: log gaps for the admin backlog
   if (chunks.length === 0) {
+    try {
+      const supabase = getServerSupabaseClient();
+      await supabase.from('coo_kb_gaps').insert({
+        user_id: ctx.userId,
+        user_question: ctx.lastUserQuestion,
+        kb_query: args.query,
+        found_results: false,
+      });
+    } catch {
+      // Don't break the agent if logging fails
+    }
     return { success: false, reason: 'No relevant knowledge found for that query.' };
   }
+
   return {
     success: true,
     data: {
       results: chunks.map((c) => ({
         source: c.sourceFile,
         category: c.category,
+        title: c.frontmatter?.title ?? null,
+        summary: c.frontmatter?.summary ?? null,
+        authority: c.frontmatter?.authority ?? null,
+        publication_date: c.frontmatter?.publication_date ?? null,
         content: c.content,
       })),
     },
@@ -501,7 +520,7 @@ export async function executeToolCall(
     case 'get_meetings':
       return runGetMeetings(ctx);
     case 'search_kb':
-      return Promise.resolve(runSearchKb(args));
+      return runSearchKb(args, ctx);
     case 'queue_action':
       return runQueueAction(args, ctx);
     default:
