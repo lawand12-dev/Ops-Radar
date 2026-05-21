@@ -186,20 +186,24 @@ async function runQueueAction(
     return { success: false, reason: 'payload must be an object.' };
   }
 
-  const supabase = getServerSupabaseClient();
-  const { data, error } = await supabase
-    .from('agent_actions')
-    .insert({
-      user_id: ctx.userId,
-      action_type: actionType,
-      payload: args.payload as unknown as Json,
-      status: 'pending',
-    })
-    .select('id')
-    .single();
+  try {
+    const supabase = getServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('agent_actions')
+      .insert({
+        user_id: ctx.userId,
+        action_type: actionType,
+        payload: args.payload as unknown as Json,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
 
-  if (error || !data) return { success: false, reason: 'Failed to save action.' };
-  return { success: true, data: { action_id: data.id, label: args.label } };
+    if (error || !data) return { success: false, reason: 'Failed to save action.' };
+    return { success: true, data: { action_id: data.id, label: args.label } };
+  } catch {
+    return { success: false, reason: 'Failed to save action.' };
+  }
 }
 
 export async function executeToolCall(
