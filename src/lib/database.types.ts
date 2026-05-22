@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
@@ -787,6 +785,45 @@ export type Database = {
           snapshot_date?: string
           user_id?: string
           utilization_pct?: number | null
+        }
+        Relationships: []
+      }
+      mcp_invocations: {
+        Row: {
+          args: Json | null
+          caller: string | null
+          created_at: string
+          error_message: string | null
+          id: number
+          latency_ms: number | null
+          result_status: string
+          scope: string | null
+          tool_name: string
+          user_id: string | null
+        }
+        Insert: {
+          args?: Json | null
+          caller?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: number
+          latency_ms?: number | null
+          result_status: string
+          scope?: string | null
+          tool_name: string
+          user_id?: string | null
+        }
+        Update: {
+          args?: Json | null
+          caller?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: number
+          latency_ms?: number | null
+          result_status?: string
+          scope?: string | null
+          tool_name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
