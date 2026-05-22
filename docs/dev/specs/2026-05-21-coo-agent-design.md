@@ -128,3 +128,129 @@ New env var required: `TAVILY_API_KEY` or `PERPLEXITY_API_KEY`.
 - No changes to other dashboard routes
 - No new Supabase tables (uses existing `agent_actions`)
 - No Phase 2 web search (separate spec)
+
+---
+
+## Addendum — Server-Side Chat Persistence (2026-05-23)
+
+The original spec relied on localStorage for chat history. That broke
+cross-device sync and capped users to one active conversation per
+browser. This addendum replaces it with a Supabase-backed store and a
+ChatGPT-style sidebar of saved chats.
+
+### Why
+
+- Paying customers expect cross-device sync. A founder opens the COO
+  on their laptop in the morning and their phone in the afternoon and
+  expects the same conversation to be there.
+- One active chat per browser is a regression vs. every modern AI chat
+  product. Customers want to keep separate threads ("payroll forecast"
+  vs. "which client to fire") without losing context.
+- Persisted tool steps + action cards give us a real audit trail of
+  what the COO recommended and when — useful for the outcomes loop
+  ([[coo-outcomes]]) and for support when a customer asks "what did
+  it tell me last week?"
+
+### Tables (`supabase/migrations/20260523_coo_chat_sessions.sql`)
+
+```
+coo_chat_sessions
+  id              uuid pk
+  user_id         uuid → auth.users (RLS: auth.uid() = user_id)
+  title           text  default 'New chat'
+  message_count   int   default 0    -- bumped by trigger
+  last_message_at timestamptz        -- bumped by trigger
+  created_at, updated_at
+
+coo_chat_messages
+  id          uuid pk
+  session_id  uuid → coo_chat_sessions (ON DELETE CASCADE)
+  user_id     uuid → auth.users (RLS: auth.uid() = user_id)
+  role        text  CHECK IN ('user', 'assistant')
+  content     text  default ''
+  tool_steps  jsonb           -- [{ name, label, done }]
+  action_card jsonb           -- { action_id, action_type, label }
+  created_at  timestamptz
+```
+
+A trigger (`coo_chat_messages_after_insert`) bumps
+`last_message_at`, `updated_at`, and `message_count` on the parent
+session after every insert. This keeps the sidebar order and count
+correct without bookkeeping in the API layer.
+
+Indexes: `(user_id, last_message_at DESC)` for sidebar listing and
+`(session_id, created_at)` for message loading.
+
+### New API routes
+
+- `GET /api/dashboard/coo/sessions` — user's sessions, sorted by
+  `last_message_at` desc, capped at 50.
+- `POST /api/dashboard/coo/sessions` — creates an empty session
+  (title defaults to "New chat"). Currently unused by the UI because
+  the agent creates the session on first message instead.
+- `GET /api/dashboard/coo/sessions/[id]` — session metadata + ordered
+  messages.
+- `PATCH /api/dashboard/coo/sessions/[id]` — rename (max 120 chars).
+- `DELETE /api/dashboard/coo/sessions/[id]` — cascades to messages.
+
+### `/api/dashboard/coo` changes
+
+- POST body now accepts `session_id?: string` alongside `messages`.
+- On receipt, validates the session id belongs to the user. If absent
+  or tampered, creates a new session with the first user message
+  (sliced to 60 chars) as the title.
+- Persists the user message immediately so it survives if the
+  assistant stream is aborted mid-flight.
+- Emits a new SSE event as the **first** frame:
+
+  ```json
+  { "type": "session", "session_id": "<uuid>", "title": "<resolved title>" }
+  ```
+
+  This lets the client (which may not have a session id yet) learn
+  which row this conversation is being written to.
+- Accumulates the final assistant message (content + toolSteps +
+  actionCard) during streaming.
+- Calls `persistAssistant()` before emitting `done`, on MAX_ITER
+  exhaustion, on unexpected `finish_reason`, and in the catch block.
+  An aborted client connection therefore leaves a complete record on
+  the server.
+
+### UI architecture
+
+```
+/dashboard/coo/page.tsx
+  └── <CooShell>                            owns active session id,
+                                            persists it to localStorage
+                                            so refresh returns to the
+                                            same chat
+       ├── <SessionsSidebar>                lists past chats, "+ New
+       │                                    chat" (sets active=null),
+       │                                    hover-reveal two-click
+       │                                    delete
+       └── <CooChat sessionId=...>          controlled — loads server
+                                            messages on session change,
+                                            forwards session_id with
+                                            each POST, listens for the
+                                            `session` SSE event so
+                                            brand-new chats get
+                                            assigned an id mid-stream
+```
+
+`CooChat` no longer owns localStorage history. The only client-side
+state that survives a refresh is the active session id; everything
+else is hydrated from Supabase.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `supabase/migrations/20260523_coo_chat_sessions.sql` | New — two tables + RLS + trigger |
+| `src/lib/database.types.ts` | Add Row/Insert/Update types for both tables |
+| `src/app/api/dashboard/coo/sessions/route.ts` | New — list + create |
+| `src/app/api/dashboard/coo/sessions/[id]/route.ts` | New — get + rename + delete |
+| `src/app/api/dashboard/coo/route.ts` | Accept `session_id`, persist messages, emit `session` event |
+| `src/app/dashboard/coo/_components/coo-shell.tsx` | New — sidebar + chat layout, owns active session |
+| `src/app/dashboard/coo/_components/sessions-sidebar.tsx` | New — sidebar list, new chat, delete |
+| `src/app/dashboard/coo/_components/coo-chat.tsx` | Refactor to controlled component (server-loaded messages, session id forwarded) |
+| `src/app/dashboard/coo/page.tsx` | Render `<CooShell>` instead of `<CooChat>` directly |

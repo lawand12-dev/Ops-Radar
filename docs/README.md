@@ -144,7 +144,7 @@ Finalized copy for every marketing page. Update here when copy changes.
 | [`dev/plans/2026-05-19-chatv2-integration-architecture.md`](./dev/plans/2026-05-19-chatv2-integration-architecture.md) | chatv2 typed client, project mapping, service-key auth pattern |
 | [`dev/plans/2026-05-19-backend-gap-closure.md`](./dev/plans/2026-05-19-backend-gap-closure.md) | Tier enforcement, retainer, FO dashboard, action limits, webhooks |
 | [`dev/plans/2026-05-21-coo-agent.md`](./dev/plans/2026-05-21-coo-agent.md) | COO agent v1 — tool use, SSE streaming, 5 read tools + queue_action |
-| [`dev/specs/2026-05-21-coo-agent-design.md`](./dev/specs/2026-05-21-coo-agent-design.md) | COO agent architecture: agent loop, SSE protocol, tool definitions |
+| [`dev/specs/2026-05-21-coo-agent-design.md`](./dev/specs/2026-05-21-coo-agent-design.md) | COO agent architecture: agent loop, SSE protocol, tool definitions (incl. 2026-05-23 addendum on Supabase-backed chat history + sidebar) |
 | [`dev/specs/2026-05-21-kb-upgrade-design.md`](./dev/specs/2026-05-21-kb-upgrade-design.md) | KB frontmatter + ranking + `coo_kb_gaps` capture + admin view |
 | [`dev/proposals/dashboard-reliability-fixes.md`](./dev/proposals/dashboard-reliability-fixes.md) | 6 reliability fixes + KPI snapshots — all shipped 2026-05-21 |
 | [`dev/chatv2/service-api-spec.md`](./dev/chatv2/service-api-spec.md) | chatv2 service-key REST API spec (user-centric, no project_id) |

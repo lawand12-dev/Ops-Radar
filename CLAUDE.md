@@ -126,7 +126,9 @@ OpsRadar consumes chatv2 via two proxied API routes using a shared `CHATV2_SERVI
 
 | Route | Purpose |
 |-------|---------|
-| `coo/` | AI COO chat completions (GPT-4o, context-injected) |
+| `coo/` | AI COO agent — GPT-4o function-calling loop, SSE stream, accepts `session_id`, persists user + assistant messages to Supabase as it streams |
+| `coo/sessions/` | `GET` lists the user's chat sessions (last_message_at desc, limit 50). `POST` creates an empty session |
+| `coo/sessions/[id]/` | `GET` returns session metadata + ordered messages. `PATCH` renames. `DELETE` cascades to messages |
 | `briefing/` | Daily AI-generated operations briefing |
 | `narrative/` | Short AI narrative summary for dashboard overview |
 | `score/` | Agency health score computation |
