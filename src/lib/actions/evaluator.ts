@@ -11,6 +11,7 @@ import { evalRetainerOverage } from './evaluators/retainer-overage';
 import { evalRetainerInvoiceDraft } from './evaluators/retainer-invoice-draft';
 import { evalCashFlow } from './evaluators/cash-flow';
 import { evalCapacityDrift } from './evaluators/capacity-drift';
+import { evalPatternAlerts } from './evaluators/pattern-alert';
 import { executeAction } from './executor';
 import { ACTION_RISK } from './types';
 import type { NewAction, AgentAction, UserContext } from './types';
@@ -84,6 +85,7 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
     stripeKey ? evalRetainerInvoiceDraft(ctx, stripeKey) : Promise.resolve([]),
     stripeKey ? evalCashFlow(ctx, stripeKey) : Promise.resolve([]),
     harvestKey ? evalCapacityDrift(ctx, harvestKey) : Promise.resolve([]),
+    evalPatternAlerts(ctx), // no API key gate — reads from per-user pattern_cards
   ]);
 
   const proposed: NewAction[] = [];

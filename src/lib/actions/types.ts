@@ -9,6 +9,7 @@ export type ActionType =
   | 'retainer_invoice_draft'
   | 'cash_flow_alert'
   | 'capacity_drift'
+  | 'pattern_alert'
 
 export type ActionStatus =
   | 'pending'
@@ -30,6 +31,7 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   retainer_invoice_draft: 'approval',
   cash_flow_alert:       'approval',
   capacity_drift:        'approval',
+  pattern_alert:         'approval',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -43,6 +45,7 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   retainer_invoice_draft: 'Retainer invoice — Stripe draft ready',
   cash_flow_alert:       'Cash flow risk — advisory ready',
   capacity_drift:        'Capacity drift — staffing advisory ready',
+  pattern_alert:         'New pattern detected — recommendation ready',
 }
 
 // ─── Payload types ────────────────────────────────────────────────────────────
@@ -152,6 +155,18 @@ export type CapacityDriftPayload = {
   draft_body: string
 }
 
+export type PatternAlertPayload = {
+  pattern_card_id: string
+  pattern_type: string
+  pattern_title: string
+  pattern_description: string
+  confidence: number
+  source_breadcrumb_count: number
+  recommended_action: string          // 1-3 sentence operator brief on what to DO
+  draft_subject: string
+  draft_body: string
+}
+
 export type ActionPayload =
   | InvoiceReminderPayload
   | MarginAlertPayload
@@ -163,6 +178,7 @@ export type ActionPayload =
   | RetainerInvoiceDraftPayload
   | CashFlowAlertPayload
   | CapacityDriftPayload
+  | PatternAlertPayload
 
 export type NewAction = {
   action_type: ActionType
