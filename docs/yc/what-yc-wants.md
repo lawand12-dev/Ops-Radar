@@ -109,7 +109,7 @@ YC's term for ideas that look shiny and easy but get crushed:
 |---------|------------------|-----|
 | Vague claims ("strong interest") | Medium — easy to slip into | Use specific numbers in every answer |
 | No traction signal | High if customer count is 0 | Onboard 1-3 pilots this week even at $0; cite them as "engaged design partners" |
-| Solo founder no demonstrated execution | You're solo → must compensate with velocity | Show shipping velocity (6 fixes shipped May 21; 30+ docs reorganized + enriched this week) |
+| Solo founder no demonstrated execution | N/A — 2-cofounder team (Lawand CEO + Atta CTO, both Halabja Iraq, 60/40 split). See `founder-profile.md` for the full team breakdown | N/A |
 | Reapplying with same pitch as last batch | N/A — first-time apply | Skip |
 | Failed to address "Why now? Why you?" | Medium | Frame around the 60pp gap (Signal 1) + Iraq angle + 6-12 month YC window |
 
@@ -166,8 +166,11 @@ The discovery must come from doing the work, not reading about it.
 
 > *"YC considers this the most important question on the application."*
 
-**Solo-founder draft (replace with your truth):**
-> [Founder] shipped [N] production features for OpsRadar in the last 90 days as a solo technical founder operating from Iraq, with constrained access to standard founder infrastructure (Mercury Bank prohibits Iraqi founders; Stripe Connect is blocked for the country). Built the full Next.js 16 + React 19 + Supabase application, the 10-integration adapter framework with AES-256-GCM encrypted customer keys, the dashboard live-fetch architecture, the audit funnel, and a complete chatv2 backend in Hono+MySQL deployed independently. Reorganized and research-enriched 30+ strategy documents in one week using a multi-agent harness. Maintained shipping velocity through 6 reliability fixes + 4-doc theory stack across two repositories.
+**The Q4 form is per-founder — each cofounder writes their own one-or-two sentence answer.** Final drafts for both Lawand and Atta are in [`founder-profile.md`](./founder-profile.md) Part 8. Short version below; use the doc's versions for the actual submission:
+
+**Lawand:** Self-taught English, business, AI tools, web building, and automation from Kurdistan with no ecosystem or formal training, while spending 3 years (age 15–18) as Sales & Inventory Manager at one of Halabja's largest wholesale + retail stores — learning firsthand how operations break under volume, the insight that shaped OpsRadar.
+
+**Atta:** Has been independently building, deploying, and monetising software products since age 14 — Telegram bots, browser extensions, backend infrastructure for paying clients, Kurdish subtitle translator browser extension + mobile app — and is currently top of his class in Information Technology at Halabja Technical Institute.
 
 (Adapt to be true. The Iraq constraint is a feature here — it shows resourcefulness.)
 
