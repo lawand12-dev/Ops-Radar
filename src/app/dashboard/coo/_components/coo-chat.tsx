@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Send, Loader2, CheckCircle, XCircle, Plus } from 'lucide-react';
+
+const STORAGE_KEY = 'opsradar:coo-chat:v1';
+// Cap how many messages we persist — avoids unbounded localStorage growth
+// over months of chat history. Keeps the last 50 messages (~25 turns).
+const PERSIST_LIMIT = 50;
 
 type ToolStep = { name: string; label: string; done: boolean };
 
@@ -40,17 +45,54 @@ const SUGGESTED: string[] = [
 
 export function CooChat() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [streaming, setStreaming] = useState<AssistantMessage | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Hydrate from localStorage on mount — keeps the conversation
+  // alive across navigation away from /dashboard/coo and back.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Message[];
+        if (Array.isArray(parsed)) setMessages(parsed);
+      }
+    } catch {
+      // Corrupt JSON — ignore and start fresh
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist on every change (but only after hydration so we don't blow
+  // away saved history on first render before useEffect above has run).
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      const toPersist = messages.slice(-PERSIST_LIMIT);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
+    } catch {
+      // localStorage full / disabled / private browsing — silently drop
+    }
+  }, [messages, hydrated]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streaming, loading]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  function newChat() {
+    abortRef.current?.abort();
+    setMessages([]);
+    setStreaming(null);
+    setInput('');
+    setLoading(false);
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+  }
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -329,9 +371,22 @@ export function CooChat() {
             <Send size={14} />
           </button>
         </div>
-        <p className="mt-1.5 text-[11px] text-[var(--color-fg-subtle)]">
-          Enter to send · Shift+Enter for new line
-        </p>
+        <div className="mt-1.5 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-[var(--color-fg-subtle)]">
+            Enter to send · Shift+Enter for new line
+          </p>
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={newChat}
+              disabled={loading}
+              className="flex items-center gap-1 text-[11px] text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] disabled:opacity-40"
+              aria-label="Start a new chat"
+            >
+              <Plus size={11} /> New chat
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
