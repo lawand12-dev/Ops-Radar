@@ -9,13 +9,18 @@
 //   the call to the JWT's user_id. No multi-tenant leakage possible.
 // Audit: every invocation written to mcp_invocations.
 //
-// First-cut tool surface (v1):
-//   - opsradar.search_kb (scope: kb:read)  — public KB content; non-tenant-sensitive
-//
-// Future tools (Sprint 4+):
-//   opsradar.get_finance · get_profitability · get_capacity · get_scope
-//   opsradar.propose_action (HITL-gated)
-//   opsradar.generate_workflow
+// Tool surface (v1):
+//   READ TOOLS (load the tenant's integration keys + call the existing executor)
+//   - opsradar.get_finance         (scope: finance:read)
+//   - opsradar.get_sales           (scope: sales:read)
+//   - opsradar.get_profitability   (scope: profitability:read)
+//   - opsradar.get_capacity        (scope: capacity:read)
+//   - opsradar.get_scope           (scope: scope:read)
+//   - opsradar.get_outbound        (scope: outbound:read)
+//   - opsradar.get_meetings        (scope: meetings:read)
+//   - opsradar.search_kb           (scope: kb:read)
+//   ACTION TOOLS (HITL-gated — never auto-executes)
+//   - opsradar.propose_action      (scope: actions:write) — queues to agent_actions
 //
 // Install in Claude Desktop:
 //   ~/Library/Application Support/Claude/claude_desktop_config.json
@@ -27,7 +32,8 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { retrieveCooKnowledge } from '<npm>/lib/knowledge-retrieval';
+import { executeToolCall } from '<npm>/lib/coo/executor';
+import { buildExecutorContext } from '<npm>/lib/coo/build-executor-context';
 import type { Json } from '<npm>/lib/database.types';
 
 export const dynamic = 'force-dynamic';
@@ -52,16 +58,77 @@ type McpTool = {
   description: string;
   inputSchema: Record<string, unknown>;
   scope: string;
+  // Maps the MCP tool name → the executor tool name (which may have a different shape).
+  // null = handled inline (e.g. KB search has its own handler in runTool).
+  executorName: string | null;
 };
 
 // ─── Tool registry ───────────────────────────────────────────────────────
 
 const TOOLS: McpTool[] = [
+  // ─── Read tools ────────────────────────────────────────────────────────
+  {
+    name: 'opsradar.get_finance',
+    description:
+      'Fetch live Stripe financial data for the authenticated agency: invoiced MTD, paid MTD, overdue invoices, open invoice total, cash due in 30 days. Returns a snapshot — no historical series.',
+    scope: 'finance:read',
+    executorName: 'get_finance',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_sales',
+    description:
+      "Fetch live CRM pipeline data: total pipeline value, open deal count, deals won this month. Uses HubSpot if connected, otherwise Pipedrive.",
+    scope: 'sales:read',
+    executorName: 'get_sales',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_profitability',
+    description:
+      'Per-client profitability: revenue vs hours vs margin for each active client. Use for any question about unprofitable clients, repricing decisions, or where the agency is losing money.',
+    scope: 'profitability:read',
+    executorName: 'get_profitability',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_capacity',
+    description:
+      'Team capacity: utilization %, hours tracked this month, available hours remaining. Uses Harvest if connected, otherwise Toggl.',
+    scope: 'capacity:read',
+    executorName: 'get_capacity',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_scope',
+    description:
+      'Project delivery and scope-creep signals: which projects are over budget, by how much, and which are approaching their hours cap. Uses ClickUp + Harvest if both connected, otherwise Asana or Monday.',
+    scope: 'scope:read',
+    executorName: 'get_scope',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_outbound',
+    description:
+      'Outbound marketing/sales metrics from Apollo: emails sent, open rate, reply rate, top sequences.',
+    scope: 'outbound:read',
+    executorName: 'get_outbound',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'opsradar.get_meetings',
+    description:
+      'Meeting bookings from Calendly: number of meetings booked, conversion rate, upcoming meetings.',
+    scope: 'meetings:read',
+    executorName: 'get_meetings',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
   {
     name: 'opsradar.search_kb',
     description:
-      "Search OpsRadar's agency operations knowledge base for industry benchmarks, operational patterns, and best practices. Use for questions about agency norms, what's typical, what to charge, why clients churn, or how other agencies handle a problem.",
+      "Search OpsRadar's agency-operations knowledge base for industry benchmarks, operational patterns, and best practices. Use for questions about agency norms, what's typical, what to charge, why clients churn, or how other agencies handle a problem.",
     scope: 'kb:read',
+    executorName: 'search_kb',
     inputSchema: {
       type: 'object',
       properties: {
@@ -71,6 +138,35 @@ const TOOLS: McpTool[] = [
         },
       },
       required: ['query'],
+    },
+  },
+
+  // ─── Action tools (HITL-gated) ─────────────────────────────────────────
+  {
+    name: 'opsradar.propose_action',
+    description:
+      "Propose a draft action for the agency owner to review in their Actions queue. Never auto-executes — the owner reviews and decides what to do. Use this AFTER calling the relevant read tool so the proposal references real numbers. Only these action types are supported: margin_alert, hours_budget_exceeded, scope_approaching, retainer_overage.",
+    scope: 'actions:write',
+    executorName: 'queue_action',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action_type: {
+          type: 'string',
+          enum: ['margin_alert', 'hours_budget_exceeded', 'scope_approaching', 'retainer_overage'],
+        },
+        label: { type: 'string', description: 'One-line summary shown to the owner' },
+        client_name: { type: 'string' },
+        project_name: { type: 'string', description: 'Required for hours_budget_exceeded and scope_approaching' },
+        metrics: {
+          type: 'object',
+          description:
+            'Numeric metrics. margin_alert: { margin_pct, revenue_mtd_usd, cost_usd }. hours_budget_exceeded: { hours_logged, budget_hours, overrun_pct }. scope_approaching: { hours_logged, budget_hours, used_pct }. retainer_overage: { hours_logged }.',
+        },
+        draft_subject: { type: 'string' },
+        draft_body: { type: 'string', description: '3-6 sentences, professional, references the numbers, ends with a clear ask' },
+      },
+      required: ['action_type', 'label', 'client_name', 'metrics', 'draft_subject', 'draft_body'],
     },
   },
 ];
@@ -136,30 +232,29 @@ async function logInvocation(input: {
 
 // ─── Tool execution ──────────────────────────────────────────────────────
 
-async function runTool(toolName: string, args: Record<string, unknown>): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-  switch (toolName) {
-    case 'opsradar.search_kb': {
-      const query = typeof args.query === 'string' ? args.query : '';
-      if (!query.trim()) throw new Error('query must be a non-empty string');
-      const chunks = retrieveCooKnowledge(query);
-      if (chunks.length === 0) {
-        return { content: [{ type: 'text', text: `No knowledge-base content found for: "${query}"` }] };
-      }
-      const formatted = chunks
-        .map(
-          (c, i) =>
-            `## Result ${i + 1} — ${c.frontmatter?.title ?? c.sourceFile}\n` +
-            `Category: ${c.category}\n` +
-            (c.frontmatter?.summary ? `Summary: ${c.frontmatter.summary}\n` : '') +
-            `Source: ${c.sourceFile}\n\n` +
-            c.content.slice(0, 2000),
-        )
-        .join('\n\n---\n\n');
-      return { content: [{ type: 'text', text: formatted }] };
-    }
-    default:
-      throw new Error(`Unknown tool: ${toolName}`);
+async function runTool(
+  toolName: string,
+  args: Record<string, unknown>,
+  userId: string,
+): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
+  const tool = TOOLS.find((t) => t.name === toolName);
+  if (!tool) throw new Error(`Unknown tool: ${toolName}`);
+  if (!tool.executorName) throw new Error(`Tool ${toolName} has no executor binding`);
+
+  const lastQuestion =
+    typeof args.context === 'string' ? args.context : `MCP call to ${toolName}`;
+  const ctx = await buildExecutorContext(userId, lastQuestion);
+  const result = await executeToolCall(tool.executorName, args, ctx);
+
+  if (!result.success) {
+    return {
+      content: [{ type: 'text', text: `Tool returned no usable data: ${result.reason}` }],
+    };
   }
+
+  return {
+    content: [{ type: 'text', text: JSON.stringify(result.data, null, 2) }],
+  };
 }
 
 function scopeFor(toolName: string): string | null {
@@ -171,16 +266,10 @@ function scopeFor(toolName: string): string | null {
 async function handleInitialize(): Promise<unknown> {
   return {
     protocolVersion: '2024-11-05',
-    serverInfo: {
-      name: 'opsradar',
-      version: '0.1.0',
-      title: 'OpsRadar',
-    },
-    capabilities: {
-      tools: { listChanged: false },
-    },
+    serverInfo: { name: 'opsradar', version: '0.2.0', title: 'OpsRadar' },
+    capabilities: { tools: { listChanged: false } },
     instructions:
-      'OpsRadar is the AI COO for marketing agencies. Use the search_kb tool to query agency-operations knowledge: benchmarks, playbooks, patterns. Future tools will expose live per-tenant data (finance, profitability, capacity, scope).',
+      'OpsRadar is the AI COO for marketing agencies. Use the get_* tools for live per-tenant data (finance, profitability, capacity, scope, outbound, meetings). Use search_kb for industry benchmarks and operational patterns. Use propose_action to queue a draft action for owner review — never auto-executes.',
   };
 }
 
@@ -205,7 +294,7 @@ async function handleToolsCall(
 
   const started = Date.now();
   try {
-    const result = await runTool(name, args);
+    const result = await runTool(name, args, ctx.userId);
     await logInvocation({
       userId: ctx.userId,
       caller: ctx.caller,
@@ -234,11 +323,10 @@ async function handleToolsCall(
 
 // ─── Route handlers ──────────────────────────────────────────────────────
 
-// GET — discovery + health
 export async function GET(): Promise<NextResponse> {
   return NextResponse.json({
     server: 'opsradar',
-    version: '0.1.0',
+    version: '0.2.0',
     transport: 'http',
     protocol_version: '2024-11-05',
     tools: TOOLS.map((t) => ({ name: t.name, description: t.description, scope: t.scope })),
@@ -247,7 +335,6 @@ export async function GET(): Promise<NextResponse> {
   });
 }
 
-// POST — JSON-RPC 2.0 entry point
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: JsonRpcRequest;
   try {
@@ -269,13 +356,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const id = body.id ?? null;
   const params = body.params ?? {};
 
-  // initialize is the only unauthenticated method
   if (body.method === 'initialize') {
     const result = await handleInitialize();
     return NextResponse.json({ jsonrpc: '2.0', id, result } satisfies JsonRpcResponse);
   }
 
-  // All other methods require auth
   const auth = await authenticate(request);
   if (!auth.ok) {
     await logInvocation({
@@ -289,11 +374,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       latencyMs: 0,
     });
     return NextResponse.json(
-      {
-        jsonrpc: '2.0',
-        id,
-        error: { code: -32001, message: 'Unauthorised', data: auth.message },
-      } satisfies JsonRpcResponse,
+      { jsonrpc: '2.0', id, error: { code: -32001, message: 'Unauthorised', data: auth.message } } satisfies JsonRpcResponse,
       { status: 401 },
     );
   }
@@ -310,11 +391,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       default:
         return NextResponse.json(
-          {
-            jsonrpc: '2.0',
-            id,
-            error: { code: -32601, message: `Method not found: ${body.method}` },
-          } satisfies JsonRpcResponse,
+          { jsonrpc: '2.0', id, error: { code: -32601, message: `Method not found: ${body.method}` } } satisfies JsonRpcResponse,
           { status: 404 },
         );
     }
