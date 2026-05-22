@@ -18,6 +18,8 @@ import {
   FileText,
   Building2,
   Webhook,
+  Sparkles,
+  Network,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -46,6 +48,7 @@ const navSections: NavSection[] = [
       { label: 'Retainers',       href: '/dashboard/retainer',        icon: FileText        },
       { label: 'Actions',         href: '/dashboard/actions',         icon: Zap             },
       { label: 'COO',             href: '/dashboard/coo',             icon: BrainCircuit    },
+      { label: 'Brain',           href: '/dashboard/brain',           icon: Sparkles        },
       { label: 'Score',           href: '/dashboard/score',           icon: BarChart2       },
       { label: 'Index',           href: '/dashboard/benchmarks',      icon: BarChart2       },
     ],
@@ -62,6 +65,7 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
       { label: 'Webhooks',     href: '/dashboard/webhooks',     icon: Webhook },
+      { label: 'MCP',          href: '/dashboard/settings/mcp', icon: Network },
       { label: 'Team',         href: '/dashboard/settings/team', icon: Building2 },
       { label: 'Settings',     href: '/dashboard/settings',     icon: Settings },
     ],
