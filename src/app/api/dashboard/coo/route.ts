@@ -149,38 +149,77 @@ export async function POST(request: NextRequest): Promise<Response> {
         while (iterations < MAX_ITER) {
           iterations++;
 
-          const completion = await openai.chat.completions.create({
+          // STREAMING: tokens arrive incrementally for both text and tool calls.
+          // We accumulate tool_call deltas by index (the OpenAI streaming
+          // protocol delivers function name + arguments as a series of partial
+          // chunks under the same index). When the model finishes a turn we
+          // either dispatch tool calls or close the stream.
+          const stream = await openai.chat.completions.create({
             model: 'gpt-4o',
             messages: [{ role: 'system', content: systemPrompt }, ...history],
             tools: COO_TOOLS,
             temperature: 0.2,
             max_tokens: 800,
+            stream: true,
           });
 
-          const choice = completion.choices[0];
-          if (!choice) break;
+          const toolCallAcc: Record<number, { id: string; name: string; arguments: string }> = {};
+          let assistantTextSoFar = '';
+          let finishReason: OpenAI.Chat.Completions.ChatCompletionChunk.Choice['finish_reason'] = null;
 
-          if (choice.finish_reason === 'stop') {
-            emit({ type: 'text_delta', delta: choice.message.content ?? '' });
+          for await (const chunk of stream) {
+            const choice = chunk.choices[0];
+            if (!choice) continue;
+
+            // Text token — forward immediately for the typing effect
+            const contentDelta = choice.delta?.content;
+            if (typeof contentDelta === 'string' && contentDelta.length > 0) {
+              assistantTextSoFar += contentDelta;
+              emit({ type: 'text_delta', delta: contentDelta });
+            }
+
+            // Tool-call streaming deltas — assemble by index
+            const tcDeltas = choice.delta?.tool_calls ?? [];
+            for (const tcDelta of tcDeltas) {
+              const idx = tcDelta.index;
+              if (typeof idx !== 'number') continue;
+              const acc = toolCallAcc[idx] ?? { id: '', name: '', arguments: '' };
+              if (tcDelta.id) acc.id = tcDelta.id;
+              if (tcDelta.function?.name) acc.name = tcDelta.function.name;
+              if (tcDelta.function?.arguments) acc.arguments += tcDelta.function.arguments;
+              toolCallAcc[idx] = acc;
+            }
+
+            if (choice.finish_reason) finishReason = choice.finish_reason;
+          }
+
+          // Stream is done for this turn
+          if (finishReason === 'stop') {
             emit({ type: 'done' });
             close();
             return;
           }
 
-          if (choice.finish_reason === 'tool_calls') {
-            const toolCalls = choice.message.tool_calls ?? [];
-            const functionCalls = toolCalls.filter(
-              (tc): tc is OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall => tc.type === 'function',
+          if (finishReason === 'tool_calls') {
+            const assembled = Object.values(toolCallAcc).filter((tc) => tc.name);
+            const functionCalls: OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall[] = assembled.map(
+              (tc) => ({
+                id: tc.id,
+                type: 'function' as const,
+                function: { name: tc.name, arguments: tc.arguments || '{}' },
+              }),
             );
+
             history.push({
               role: 'assistant',
-              content: choice.message.content ?? null,
+              content: assistantTextSoFar || null,
               tool_calls: functionCalls,
             });
 
             for (const tc of functionCalls) {
               const name = tc.function.name;
-              const args = JSON.parse(tc.function.arguments || '{}') as Record<string, unknown>;
+              let args: Record<string, unknown> = {};
+              try { args = JSON.parse(tc.function.arguments || '{}') as Record<string, unknown>; } catch { args = {}; }
 
               emit({ type: 'tool_call', name, label: TOOL_LABELS[name] ?? `Running ${name}...` });
 
@@ -207,9 +246,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             continue;
           }
 
-          // Unexpected finish_reason (length, content_filter, etc.) — emit any partial text and stop
-          const partial = choice.message.content ?? '';
-          if (partial) emit({ type: 'text_delta', delta: partial });
+          // Unexpected finish_reason (length, content_filter, etc.)
           emit({ type: 'done' });
           close();
           return;

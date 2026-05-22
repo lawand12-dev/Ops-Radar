@@ -186,13 +186,29 @@ export function CooChat() {
   }
 
   function renderAssistant(m: AssistantMessage, index: number) {
+    // The streaming message is the last one when `streaming` is set.
+    // We use this to know when to show the cursor / thinking dots.
+    const isStreaming = streaming !== null && index === messages.length;
+    const isThinking = isStreaming && m.toolSteps.length === 0 && m.content.length === 0 && !m.actionCard;
+
     return (
-      <div key={index} className="flex justify-start">
+      <div key={index} className="flex justify-start coo-msg-enter">
         <div className="max-w-[85%] space-y-2">
+          {isThinking && (
+            <div className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12px] text-[var(--color-fg-muted)]">
+              <span className="coo-thinking-dots" aria-hidden>
+                <span className="coo-dot" />
+                <span className="coo-dot" />
+                <span className="coo-dot" />
+              </span>
+              <span>Thinking…</span>
+            </div>
+          )}
+
           {m.toolSteps.map((step, si) => (
             <div
               key={si}
-              className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] text-[var(--color-primary)]"
+              className="coo-step-enter flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] text-[var(--color-primary)]"
             >
               {step.done
                 ? <CheckCircle size={12} className="shrink-0 text-emerald-400" />
@@ -203,8 +219,11 @@ export function CooChat() {
           ))}
 
           {m.content && (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-[1.6] text-[var(--color-fg)]">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-[1.6] text-[var(--color-fg)] whitespace-pre-wrap">
               {m.content}
+              {isStreaming && (
+                <span className="coo-cursor" aria-hidden>▍</span>
+              )}
             </div>
           )}
 
@@ -276,7 +295,7 @@ export function CooChat() {
         {allMessages.map(({ msg, index }) => {
           if (msg.role === 'user') {
             return (
-              <div key={index} className="flex justify-end">
+              <div key={index} className="flex justify-end coo-msg-enter">
                 <div className="max-w-[80%] rounded-[var(--radius-lg)] bg-[var(--color-primary)] px-4 py-3 text-[13px] leading-[1.6] text-white">
                   {msg.content}
                 </div>

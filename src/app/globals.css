@@ -458,3 +458,55 @@
 .bg-surface-container-high     { background-color: var(--color-surface); }
 .bg-surface-container-lowest   { background-color: var(--color-surface-sunken); }
 .border-outline-variant { border-color: var(--color-border); }
+
+/* ── COO chat animations ──────────────────────────────────────────
+   Streaming-text cursor, message + tool-step enter, thinking dots.
+   ──────────────────────────────────────────────────────────────── */
+
+@keyframes coo-cursor-blink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes coo-msg-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes coo-dot-bounce {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+.coo-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--color-primary);
+  animation: coo-cursor-blink 1s steps(1) infinite;
+  font-weight: 500;
+}
+
+.coo-msg-enter {
+  animation: coo-msg-fade-up 180ms ease-out both;
+}
+
+.coo-step-enter {
+  animation: coo-msg-fade-up 160ms ease-out both;
+}
+
+.coo-thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.coo-thinking-dots .coo-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  animation: coo-dot-bounce 1.2s ease-in-out infinite both;
+}
+
+.coo-thinking-dots .coo-dot:nth-child(2) { animation-delay: 0.15s; }
+.coo-thinking-dots .coo-dot:nth-child(3) { animation-delay: 0.3s;  }
