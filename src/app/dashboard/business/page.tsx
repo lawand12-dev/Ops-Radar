@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { NarrativeCard } from '../_components/narrative-card';
 import { EmptyStateConnect } from '../_components/empty-state-connect';
 
 type StripeInvoiceRow = {
@@ -133,11 +132,8 @@ export default function BusinessPage() {
   return (
     <div className="flex flex-col gap-3.5">
       <Topbar />
-      <Kpis />
-      <div className="grid grid-cols-[3fr_2fr] gap-3">
-        <NarrativeCard section="business" persona="ceo" title="This week's business pulse" />
-        <BusinessAlerts />
-      </div>
+      <Header />
+      <BusinessAlerts />
       <RevenueSection />
       <PipelineSection />
       <PipedriveSection />
@@ -150,52 +146,30 @@ export default function BusinessPage() {
   );
 }
 
+function Header() {
+  return (
+    <div>
+      <h1 className="font-serif text-[22px] font-normal leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)]">
+        Live Data
+      </h1>
+      <p className="mt-1 text-body-sm text-[var(--color-fg-muted)]">
+        Raw per-integration data. Top-line numbers live on the Overview — this is where you drill into the underlying records.
+      </p>
+    </div>
+  );
+}
+
 function Topbar() {
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
       <div className="text-body-sm text-[var(--color-fg-muted)]">
         Dashboard /{' '}
-        <span className="font-semibold text-[var(--color-fg)]">Business</span>
+        <span className="font-semibold text-[var(--color-fg)]">Live Data</span>
       </div>
       <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
         <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
         Live
       </span>
-    </div>
-  );
-}
-
-function Kpis() {
-  const [fin, setFin] = useState<{ status: string; data?: StripeFinanceData } | null>(null);
-  const [sales, setSales] = useState<{ status: string; data?: HubspotSalesData } | null>(null);
-  const [mkt, setMkt] = useState<{ status?: string; data?: MarketingWidgetData } | null>(null);
-
-  useEffect(() => {
-    fetch('/api/dashboard/finance').then((r) => r.json()).then(setFin).catch(() => {});
-    fetch('/api/dashboard/sales-live').then((r) => r.json()).then(setSales).catch(() => {});
-    fetch('/api/dashboard/marketing').then((r) => r.json()).then(setMkt).catch(() => {});
-  }, []);
-
-  const paid = fin?.data?.paid;
-  const pipeline = sales?.data?.pipeline_value;
-  const calls = mkt?.data?.meetings_booked;
-  const emails = mkt?.data?.emails_sent;
-
-  return (
-    <div className="grid grid-cols-4 gap-2.5">
-      <Kpi label="Revenue · MTD" value={typeof paid === 'number' ? fmtMoney(paid) : '—'} />
-      <Kpi label="Active pipeline" value={typeof pipeline === 'number' ? fmtMoney(pipeline) : '—'} />
-      <Kpi label="Emails sent" value={typeof emails === 'number' ? String(emails) : '—'} />
-      <Kpi label="Booked calls · 7d" value={typeof calls === 'number' ? String(calls) : '—'} />
-    </div>
-  );
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5">
-      <div className="mb-1.5 text-label text-[var(--color-fg-subtle)]">{label}</div>
-      <div className="text-h3 font-serif leading-none text-[var(--color-fg)]">{value}</div>
     </div>
   );
 }

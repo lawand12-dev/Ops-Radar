@@ -6,8 +6,6 @@ import { CockpitAlertsRibbon } from './_components/cockpit-alerts-ribbon';
 import { CockpitHeroNarrative } from './_components/cockpit-hero-narrative';
 import { CockpitIntegrationHealth } from './_components/cockpit-integration-health';
 import { CockpitActivityFeed } from './_components/cockpit-activity-feed';
-import { AutomationsCtaCard, BusinessCtaCard } from './_components/pillar-cta-card';
-import { BriefingInbox } from './_components/briefing-inbox';
 import { HealthReportBanner } from './_components/health-report-banner';
 import { OnboardingChecklist } from './_components/onboarding-checklist';
 
@@ -15,22 +13,30 @@ export default function DashboardPage() {
   const greeting = useGreeting();
 
   return (
-    <div className="flex flex-col gap-3.5">
+    <div className="flex flex-col gap-5">
       <HealthReportBanner />
       <OnboardingChecklist />
       <Topbar />
       <Greeting greeting={greeting} />
-      <CockpitKpiStrip />
-      <CockpitAlertsRibbon />
-      <CockpitHeroNarrative />
-      <BriefingInbox />
-      <CockpitIntegrationHealth />
-      <div className="grid grid-cols-[3fr_2fr] gap-3">
+
+      <div className="overview-section" style={{ animationDelay: '40ms' }}>
+        <CockpitKpiStrip />
+      </div>
+
+      <div className="overview-section" style={{ animationDelay: '90ms' }}>
+        <CockpitAlertsRibbon />
+      </div>
+
+      <div className="overview-section" style={{ animationDelay: '140ms' }}>
+        <CockpitHeroNarrative />
+      </div>
+
+      <div
+        className="overview-section grid grid-cols-1 gap-3 lg:grid-cols-[3fr_2fr]"
+        style={{ animationDelay: '190ms' }}
+      >
         <CockpitActivityFeed />
-        <div className="flex flex-col gap-2.5">
-          <AutomationsCtaCard />
-          <BusinessCtaCard />
-        </div>
+        <CockpitIntegrationHealth />
       </div>
     </div>
   );
@@ -51,8 +57,6 @@ function LiveIndicator() {
     const id = setInterval(() => setTick((t) => t + 1), 30_000);
     return () => clearInterval(id);
   }, []);
-  // The actual "synced Nm ago" comes from individual widgets' last_synced_at.
-  // This indicator is just the cockpit heartbeat.
   void tick;
   return (
     <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">

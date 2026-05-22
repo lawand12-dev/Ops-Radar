@@ -6,8 +6,6 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Activity,
-  TrendingUp,
-  DollarSign,
   Plug,
   Settings,
   ChevronRight,
@@ -20,6 +18,9 @@ import {
   Webhook,
   Sparkles,
   Network,
+  Inbox,
+  Users,
+  Database,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -40,34 +41,54 @@ const navSections: NavSection[] = [
   {
     tag: null,
     items: [
-      { label: 'Overview',     href: '/dashboard',             icon: LayoutDashboard },
-      { label: 'Automations',    href: '/dashboard/automations',    icon: Activity        },
-      { label: 'Business',       href: '/dashboard/business',       icon: TrendingUp      },
-      { label: 'Profitability',  href: '/dashboard/profitability',  icon: DollarSign      },
-      { label: 'Scope',          href: '/dashboard/scope',          icon: Target          },
-      { label: 'Retainers',       href: '/dashboard/retainer',        icon: FileText        },
-      { label: 'Actions',         href: '/dashboard/actions',         icon: Zap             },
-      { label: 'COO',             href: '/dashboard/coo',             icon: BrainCircuit    },
-      { label: 'Brain',           href: '/dashboard/brain',           icon: Sparkles        },
-      { label: 'Score',           href: '/dashboard/score',           icon: BarChart2       },
-      { label: 'Index',           href: '/dashboard/benchmarks',      icon: BarChart2       },
+      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    tag: 'TODAY',
+    items: [
+      { label: 'Actions',    href: '/dashboard/actions',    icon: Zap   },
+      { label: 'Briefings',  href: '/dashboard/briefings',  icon: Inbox },
+    ],
+  },
+  {
+    tag: 'CLIENTS',
+    items: [
+      { label: 'Profitability', href: '/dashboard/profitability', icon: FileText },
+      { label: 'Scope',         href: '/dashboard/scope',         icon: Target   },
+      { label: 'Retainers',     href: '/dashboard/retainer',      icon: Users    },
+    ],
+  },
+  {
+    tag: 'INTELLIGENCE',
+    items: [
+      { label: 'Ask COO',       href: '/dashboard/coo',         icon: BrainCircuit },
+      { label: 'Company Brain', href: '/dashboard/brain',       icon: Sparkles     },
+      { label: 'Performance',   href: '/dashboard/performance', icon: BarChart2    },
+    ],
+  },
+  {
+    tag: 'OPERATIONS',
+    items: [
+      { label: 'Automations', href: '/dashboard/automations', icon: Activity },
+      { label: 'Live Data',   href: '/dashboard/business',    icon: Database },
     ],
   },
   {
     tag: 'PARTNER',
     items: [
-      { label: 'My Agencies',     href: '/dashboard/fo',              icon: Building2       },
-      { label: 'Branding',        href: '/dashboard/fo/branding',     icon: Settings        },
+      { label: 'My Agencies', href: '/dashboard/fo',          icon: Building2 },
+      { label: 'Branding',    href: '/dashboard/fo/branding', icon: Settings  },
     ],
   },
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
-      { label: 'Webhooks',     href: '/dashboard/webhooks',     icon: Webhook },
-      { label: 'MCP',          href: '/dashboard/settings/mcp', icon: Network },
+      { label: 'Integrations', href: '/dashboard/integrations',  icon: Plug     },
+      { label: 'MCP',          href: '/dashboard/settings/mcp',  icon: Network  },
+      { label: 'Webhooks',     href: '/dashboard/webhooks',      icon: Webhook  },
       { label: 'Team',         href: '/dashboard/settings/team', icon: Building2 },
-      { label: 'Settings',     href: '/dashboard/settings',     icon: Settings },
+      { label: 'Settings',     href: '/dashboard/settings',      icon: Settings },
     ],
   },
 ];
@@ -141,8 +162,10 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
                   <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
                     {label}
                   </span>
-                  {href === '/dashboard' && unreadBriefings > 0 && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+                  {href === '/dashboard/briefings' && unreadBriefings > 0 && (
+                    <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
+                      {unreadBriefings}
+                    </span>
                   )}
                   {href === '/dashboard/actions' && pendingActions > 0 && (
                     <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
