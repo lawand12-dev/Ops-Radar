@@ -1,3 +1,17 @@
+---
+id: workflow-invoicing-retainer
+version: 1
+intent: send_recurring_invoice
+triggers: [invoice, invoicing, retainer, billing, recurring, monthly, quarterly, quickbooks, xero, stripe]
+tools:
+  - n8n-nodes-base.scheduleTrigger
+  - n8n-nodes-base.quickBooks
+  - n8n-nodes-base.xero
+  - n8n-nodes-base.stripe
+  - n8n-nodes-base.httpRequest
+output_kind: workflow_json
+---
+
 # Workflow: Recurring Retainer Invoicing
 
 **Category:** Patterns  

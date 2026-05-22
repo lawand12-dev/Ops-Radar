@@ -1,3 +1,17 @@
+---
+id: workflow-onboarding-seo
+version: 1
+intent: onboard_seo_client
+triggers: [onboarding, onboard, kickoff, client, seo, intake, welcome, setup]
+tools:
+  - n8n-nodes-base.webhook
+  - n8n-nodes-base.gmail
+  - n8n-nodes-base.googleDrive
+  - n8n-nodes-base.slack
+  - n8n-nodes-base.httpRequest
+output_kind: workflow_json
+---
+
 # SEO Client Onboarding Workflow
 
 **Category:** Patterns

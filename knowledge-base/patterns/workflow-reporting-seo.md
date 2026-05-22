@@ -1,3 +1,17 @@
+---
+id: workflow-reporting-seo
+version: 1
+intent: build_seo_report
+triggers: [seo, reporting, report, rankings, traffic, ga4, analytics, search, console, ahrefs, semrush]
+tools:
+  - n8n-nodes-base.scheduleTrigger
+  - n8n-nodes-base.httpRequest
+  - n8n-nodes-base.googleAnalytics
+  - n8n-nodes-base.googleSheets
+  - n8n-nodes-base.slack
+output_kind: workflow_json
+---
+
 # Workflow: Reporting OS for SEO Agencies
 
 **Category:** Patterns  

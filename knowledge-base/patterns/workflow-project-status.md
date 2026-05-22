@@ -1,3 +1,16 @@
+---
+id: workflow-project-status
+version: 1
+intent: report_project_status
+triggers: [project, status, report, dashboard, weekly, update, clickup, asana, monday, jira]
+tools:
+  - n8n-nodes-base.scheduleTrigger
+  - n8n-nodes-base.httpRequest
+  - n8n-nodes-base.set
+  - n8n-nodes-base.slack
+output_kind: workflow_json
+---
+
 # Project Status Workflow
 
 **Category:** Patterns

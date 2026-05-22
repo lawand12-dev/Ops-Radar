@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import { serve as serveNode } from "@hono/node-server";
 import { bootstrapAdmin } from "./modules/auth/admin-bootstrap";
 import { startMonitoringScheduler } from "./modules/monitoring/workflow-health-service";
+import { startOutcomeReconciler } from "./modules/ai/outcome-reconciler";
 
 function startServer() {
   if (typeof Bun !== "undefined") {
@@ -29,6 +30,7 @@ function startServer() {
 
 startServer();
 startMonitoringScheduler();
+startOutcomeReconciler();
 // Fire-and-forget: any failure is logged inside bootstrapAdmin and must not
 // block the HTTP listener (which is already accepting traffic by this point).
 void bootstrapAdmin();

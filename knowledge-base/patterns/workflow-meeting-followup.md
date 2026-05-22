@@ -1,3 +1,16 @@
+---
+id: workflow-meeting-followup
+version: 1
+intent: send_meeting_followup
+triggers: [meeting, followup, follow, recap, transcript, notes, calendar, zoom, calendly]
+tools:
+  - n8n-nodes-base.calendly
+  - n8n-nodes-base.googleCalendar
+  - n8n-nodes-base.gmail
+  - n8n-nodes-base.httpRequest
+output_kind: workflow_json
+---
+
 # Meeting Follow-Up Workflow
 
 **Category:** Patterns

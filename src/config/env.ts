@@ -85,6 +85,29 @@ const envSchema = z.object({
   MONITORING_EXECUTION_LIMIT: z.coerce.number().int().positive().default(20),
   MONITORING_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().positive().default(14),
 
+  // --- AI memory: outcome reconciliation + breadcrumbs + pattern cards ---
+  // Outcome reconciler closes the lineage edge on ai_interactions by reading
+  // workflows.status + recent workflow_events. Off by default so legacy
+  // deployments without migration 019 don't crash; flip after migrating.
+  OUTCOME_RECONCILER_ENABLED: boolFromEnv(true),
+  OUTCOME_RECONCILER_INTERVAL_SECONDS: z.coerce.number().int().positive().default(300),
+  OUTCOME_RECONCILER_BATCH_SIZE: z.coerce.number().int().positive().default(200),
+  OUTCOME_RECONCILER_STALE_DAYS: z.coerce.number().int().positive().default(7),
+
+  // Pattern Cards: deterministic selector over knowledge-base/patterns/*.md
+  // files that carry YAML frontmatter. Top-N per request injected into the
+  // workflow-generation system prompt alongside the legacy KB block.
+  AI_PATTERN_CARDS_ENABLED: boolFromEnv(true),
+  AI_PATTERN_CARDS_DIR: z.string().default("knowledge-base/patterns"),
+  AI_PATTERN_CARDS_TOP_N: z.coerce.number().int().positive().default(3),
+
+  // Breadcrumbs: per-user operational timeline fed into AI prompts to ground
+  // the model in *what just happened in this tenant*. Strictly tenant-scoped.
+  AI_BREADCRUMBS_ENABLED: boolFromEnv(true),
+  AI_BREADCRUMBS_LIMIT: z.coerce.number().int().positive().default(10),
+  AI_BREADCRUMBS_HOURS: z.coerce.number().int().positive().default(24),
+  AI_BREADCRUMBS_MAX_CHARS: z.coerce.number().int().positive().default(4000),
+
   // --- Silent-failure detection layer (hardening flags) ---
   // All default to FALSE so the new pipeline is dormant until the operator
   // explicitly opts in. Existing legacy monitoring keeps running regardless.

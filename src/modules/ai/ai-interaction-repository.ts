@@ -1,6 +1,6 @@
-import type { PoolConnection } from "mysql2/promise";
+import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { dbQuery, getDb } from "../../lib/db";
-import { logError } from "../../lib/logger";
+import { logError, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
 
 // Cap per-field text size before storage. LONGTEXT can hold up to 4GB but
@@ -17,6 +17,20 @@ const MAX_ERROR_MESSAGE_LENGTH = 4000;
 
 export type AIInteractionStatus = "success" | "error";
 
+/**
+ * Lifecycle of the artifact produced by an AI interaction. Set by the chat
+ * flow on insert (`pending` / `rejected`) and advanced out-of-band by the
+ * outcome reconciler — see `src/modules/ai/outcome-reconciler.ts`.
+ */
+export type AIInteractionOutcome =
+  | "pending"
+  | "validated"
+  | "rejected"
+  | "deployed"
+  | "failed_in_n8n"
+  | "superseded"
+  | "unknown";
+
 export interface AIInteractionRecord {
   userId: string | null;
   provider: string;
@@ -31,6 +45,12 @@ export interface AIInteractionRecord {
   errorMessage: string | null;
   tokensUsed: number | null;
   latencyMs: number | null;
+  /**
+   * Pattern Card ids (with @version) the prompt assembler grounded this call
+   * on. JSON-encoded array of strings, e.g. ["workflow-slack-digest@v1"].
+   * Optional — failure analysis and background calls may omit it.
+   */
+  matchedPatternIds?: string[] | null;
 }
 
 function truncateForStorage(value: string | null | undefined): string {
@@ -88,14 +108,26 @@ export async function saveAIInteraction(
     ? redactString(record.errorMessage).slice(0, MAX_ERROR_MESSAGE_LENGTH)
     : null;
 
+  // `outcome` is set by the column default ('pending') for success rows; we
+  // override here to mark error rows as 'rejected' immediately so the
+  // reconciler doesn't sweep them.
+  const initialOutcome: AIInteractionOutcome =
+    record.status === "error" ? "rejected" : "pending";
+  const safePatternIds =
+    record.matchedPatternIds && record.matchedPatternIds.length > 0
+      ? JSON.stringify(record.matchedPatternIds.slice(0, 32))
+      : null;
+
   await dbQuery(
     runner,
     `INSERT INTO ai_interactions (
       user_id, provider, model,
       system_prompt, user_prompt, response,
       raw_response, status, error_message,
-      tokens_used, latency_ms
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      tokens_used, latency_ms,
+      matched_pattern_ids, outcome,
+      outcome_settled_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       record.userId,
       record.provider,
@@ -107,9 +139,114 @@ export async function saveAIInteraction(
       record.status,
       safeError,
       record.tokensUsed,
-      record.latencyMs
+      record.latencyMs,
+      safePatternIds,
+      initialOutcome,
+      initialOutcome === "rejected" ? new Date() : null
     ]
   );
+}
+
+/**
+ * Best-effort post-hoc linkage of the most recent AI interaction to the
+ * workflow it produced. Called from the chat flow after the workflow is
+ * persisted, so the reconciler can advance `outcome` based on workflow
+ * status / events.
+ *
+ *  - Strictly tenant-scoped: WHERE user_id = ? gates the UPDATE; refusing
+ *    cross-tenant links by construction.
+ *  - Matches the latest 'pending' success row for this user without a
+ *    workflow binding yet — narrow enough to avoid clobbering a parallel
+ *    AI call (concurrent chats per user are rare).
+ *  - Best-effort: failure logs a warning and returns false. The reconciler
+ *    will eventually mark unlinked rows as 'superseded' after the stale
+ *    window passes.
+ */
+export async function bindLatestAIInteractionToWorkflow(input: {
+  userId: string;
+  projectId: string;
+  workflowId: string;
+  matchedPatternIds?: string[] | null;
+  /**
+   * Lower bound on created_at — pass the timestamp captured BEFORE the AI
+   * call started, so we never bind to an older orphan row.
+   */
+  createdAfter: Date;
+  /**
+   * Initial outcome after binding. Chat flow passes 'validated' or 'rejected'
+   * synchronously from its security check result so the reconciler doesn't
+   * need to re-derive it.
+   */
+  initialOutcome: AIInteractionOutcome;
+}): Promise<boolean> {
+  if (!input.userId) {
+    // Refuse silently — cross-tenant binding is the highest-priority invariant
+    // and surfacing it as a thrown error would crash the chat path on legacy
+    // unauthenticated callers we may still have in tests.
+    logWarn("ai-db", "bindLatestAIInteractionToWorkflow called without userId — refusing", {
+      project_id: input.projectId,
+      workflow_id: input.workflowId
+    });
+    return false;
+  }
+
+  const settledAt = input.initialOutcome === "pending" ? null : new Date();
+  const patternIdsJson =
+    input.matchedPatternIds && input.matchedPatternIds.length > 0
+      ? JSON.stringify(input.matchedPatternIds.slice(0, 32))
+      : null;
+
+  // Find the id first so we can emit a clear log line and avoid touching
+  // multiple rows on a malformed clock. LIMIT 1 ensures atomicity per call.
+  const [rows] = await dbQuery<Array<RowDataPacket & { id: number }>>(
+    getDb(),
+    `SELECT id FROM ai_interactions
+      WHERE user_id = ?
+        AND status = 'success'
+        AND outcome = 'pending'
+        AND project_id IS NULL
+        AND workflow_id IS NULL
+        AND created_at >= ?
+      ORDER BY created_at DESC
+      LIMIT 1`,
+    [input.userId, input.createdAfter]
+  );
+
+  const firstRow = Array.isArray(rows) ? rows[0] : undefined;
+  if (!firstRow) {
+    logWarn("ai-db", "No pending AI interaction found to bind to workflow", {
+      user_id: input.userId,
+      project_id: input.projectId,
+      workflow_id: input.workflowId,
+      created_after: input.createdAfter.toISOString()
+    });
+    return false;
+  }
+
+  const interactionId = firstRow.id;
+
+  await dbQuery(
+    getDb(),
+    `UPDATE ai_interactions
+        SET project_id = ?,
+            workflow_id = ?,
+            matched_pattern_ids = COALESCE(?, matched_pattern_ids),
+            outcome = ?,
+            outcome_settled_at = ?
+      WHERE id = ?
+        AND user_id = ?`,
+    [
+      input.projectId,
+      input.workflowId,
+      patternIdsJson,
+      input.initialOutcome,
+      settledAt,
+      interactionId,
+      input.userId
+    ]
+  );
+
+  return true;
 }
 
 /**

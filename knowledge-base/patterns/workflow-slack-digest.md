@@ -1,3 +1,16 @@
+---
+id: workflow-slack-digest
+version: 1
+intent: send_periodic_digest
+triggers: [slack, digest, daily, weekly, standup, summary, schedule, recap, briefing]
+tools:
+  - n8n-nodes-base.scheduleTrigger
+  - n8n-nodes-base.slack
+  - n8n-nodes-base.httpRequest
+  - n8n-nodes-base.set
+output_kind: workflow_json
+---
+
 # Daily Slack Digest Workflow
 
 **Category:** Patterns

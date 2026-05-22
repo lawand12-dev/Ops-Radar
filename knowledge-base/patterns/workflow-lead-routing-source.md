@@ -1,3 +1,17 @@
+---
+id: workflow-lead-routing-source
+version: 1
+intent: route_lead_by_source
+triggers: [lead, leads, routing, route, source, webhook, hubspot, pipedrive, salesforce, inbound]
+tools:
+  - n8n-nodes-base.webhook
+  - n8n-nodes-base.if
+  - n8n-nodes-base.switch
+  - n8n-nodes-base.httpRequest
+  - n8n-nodes-base.hubspot
+output_kind: workflow_json
+---
+
 # Lead Routing by Source Workflow
 
 **Category:** Patterns
