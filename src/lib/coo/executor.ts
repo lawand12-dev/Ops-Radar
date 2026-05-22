@@ -14,6 +14,7 @@ import { fetchApolloMarketingData } from '<npm>/lib/integrations/apollo/adapter'
 import { fetchCalendlyBookingsData } from '<npm>/lib/integrations/calendly/adapter';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { retrieveCooKnowledgeHybrid } from '<npm>/lib/knowledge-retrieval';
+import { searchBrain, formatBrainContext } from './brain-search';
 import type { Json } from '<npm>/lib/database.types';
 import type {
   MarginAlertPayload,
@@ -521,9 +522,38 @@ export async function executeToolCall(
       return runGetMeetings(ctx);
     case 'search_kb':
       return runSearchKb(args, ctx);
+    case 'search_brain':
+      return runSearchBrain(args, ctx);
     case 'queue_action':
       return runQueueAction(args, ctx);
     default:
       return { success: false, reason: `Unknown tool: ${name}` };
   }
+}
+
+async function runSearchBrain(
+  args: Record<string, unknown>,
+  ctx: ExecutorContext,
+): Promise<ToolResult> {
+  if (typeof args.query !== 'string' || !args.query.trim()) {
+    return { success: false, reason: 'query must be a non-empty string.' };
+  }
+  const matches = await searchBrain(ctx.userId, args.query, 10);
+  if (matches.length === 0) {
+    return {
+      success: false,
+      reason:
+        'Your brain is empty (no breadcrumbs ingested yet). Upload a Slack/Gmail/Zoom export via /dashboard/brain, or click Seed sample data to populate it.',
+    };
+  }
+  return {
+    success: true,
+    data: {
+      query: args.query,
+      patterns_found: matches.filter((m) => m.kind === 'pattern_card').length,
+      breadcrumbs_found: matches.filter((m) => m.kind === 'breadcrumb').length,
+      formatted: formatBrainContext(matches),
+      raw: matches,
+    },
+  };
 }

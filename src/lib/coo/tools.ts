@@ -78,6 +78,23 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'search_brain',
+      description: "Search the agency's OWN brain — past conversations (Slack/email/meeting breadcrumbs) and detected patterns. Use this for any question about the agency's history, recurring issues, what was said about a specific client/employee/project, past decisions, or detected patterns. This is the user's PER-AGENCY memory, distinct from search_kb (which is industry research). Call this first when the user asks 'what patterns have you seen', 'what did we say about X', 'has this happened before', 'what's the history with this client'.",
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Natural-language query, e.g. "Q4 scope expansion patterns" or "conversations about Client Acme" or "history of capacity issues".',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'queue_action',
       description: 'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do.',
       parameters: {
@@ -128,5 +145,6 @@ export const TOOL_LABELS: Record<string, string> = {
   get_outbound: 'Fetching outbound metrics...',
   get_meetings: 'Fetching meeting bookings...',
   search_kb: 'Searching the knowledge base...',
+  search_brain: 'Searching your agency brain...',
   queue_action: 'Queuing action for your approval...',
 };
