@@ -415,6 +415,176 @@ export type Database = {
         }
         Relationships: []
       }
+      breadcrumbs: {
+        Row: {
+          consent_verified: boolean
+          created_at: string
+          embedding: string | null
+          id: string
+          occurred_at: string
+          participants: string[] | null
+          source_id: string | null
+          source_ref: string | null
+          source_type: string
+          summary: string
+          tags: string[] | null
+          user_id: string
+        }
+        Insert: {
+          consent_verified?: boolean
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          occurred_at: string
+          participants?: string[] | null
+          source_id?: string | null
+          source_ref?: string | null
+          source_type: string
+          summary: string
+          tags?: string[] | null
+          user_id: string
+        }
+        Update: {
+          consent_verified?: boolean
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          occurred_at?: string
+          participants?: string[] | null
+          source_id?: string | null
+          source_ref?: string | null
+          source_type?: string
+          summary?: string
+          tags?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breadcrumbs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_sources: {
+        Row: {
+          created_at: string
+          cursor: Json | null
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          oauth_state: Json | null
+          source_label: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cursor?: Json | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          oauth_state?: Json | null
+          source_label?: string | null
+          source_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cursor?: Json | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          oauth_state?: Json | null
+          source_label?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      living_briefs: {
+        Row: {
+          brief_content: string
+          generated_at: string
+          id: string
+          is_current: boolean
+          model_used: string | null
+          prompt_version: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          brief_content: string
+          generated_at?: string
+          id?: string
+          is_current?: boolean
+          model_used?: string | null
+          prompt_version?: string | null
+          user_id: string
+          version: number
+        }
+        Update: {
+          brief_content?: string
+          generated_at?: string
+          id?: string
+          is_current?: boolean
+          model_used?: string | null
+          prompt_version?: string | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      pattern_cards: {
+        Row: {
+          confidence: number
+          created_at: string
+          description: string
+          first_observed_at: string
+          id: string
+          is_active: boolean
+          last_refreshed_at: string
+          pattern_type: string
+          source_breadcrumb_ids: string[]
+          title: string
+          user_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          description: string
+          first_observed_at: string
+          id?: string
+          is_active?: boolean
+          last_refreshed_at?: string
+          pattern_type: string
+          source_breadcrumb_ids: string[]
+          title: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          description?: string
+          first_observed_at?: string
+          id?: string
+          is_active?: boolean
+          last_refreshed_at?: string
+          pattern_type?: string
+          source_breadcrumb_ids?: string[]
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coo_outcomes: {
         Row: {
           action_id: string
