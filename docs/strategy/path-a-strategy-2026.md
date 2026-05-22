@@ -320,6 +320,27 @@ Full spec for each phase: [`docs/dev/specs/2026-05-17-opsradar-product-strategy-
 | **CAIO Gap** | 76% of enterprises have a CAIO at $400K–$2.5M; small firms use AI at 3x less than large firms | We are the productized CAIO from $750/month |
 | **AI Sovereignty Gap** | Only 21% have mature agentic AI governance (Deloitte) | We give agency owners oversight of what runs in their business |
 
+### 5.5 The Execution Layer — Chat-to-Workflow Generation on Customer-Owned Infrastructure
+
+OpsRadar's hardest-to-replicate technical asset is the **chat-to-workflow generation pipeline** in the chatv2 backend, paired with the **customer-owned execution model** (each agency runs their own self-hosted n8n instance, OpsRadar deploys generated workflows to it via per-user encrypted API keys).
+
+**The flow that no PSA tool can replicate:**
+
+1. Owner (or any external agent via the OpsRadar MCP server) describes the desired automation in natural language: *"Every time a Stripe invoice goes overdue more than 14 days, post the client name + amount + last invoice date to our #revenue Slack channel."*
+2. chatv2 runs the multi-pass generation pipeline (PLAN → CRITIQUE → GENERATE → VALIDATE → REPAIR), produces validated workflow JSON, blocks unsafe node types (command execution / file write / ssh).
+3. The deploy-check confirms the agency has the required credentials bound (Stripe + Slack).
+4. Owner confirms in the HITL gate; the workflow deploys to the agency's own n8n instance.
+5. Every execution from that point on posts events back into chatv2 → OpsRadar Brain → outcome memory feeds the next round of agent reasoning.
+
+**Why this is a strategic moat, not just a feature:**
+
+- **Customers own their workflows forever.** Even if an agency leaves OpsRadar, the workflows continue running on their own n8n. This is a trust differentiator vs ClickUp Super Agents (locked to ClickUp's workspace) and a regulatory + sovereignty story for enterprise upmarket motion later.
+- **The architecture compounds with model progress.** When Claude Sonnet 5 ships, OpsRadar can regenerate every customer's deployed workflows from the original natural-language prompt — better JSON, same intent, no engineering effort required. Customers' value compounds with model quality, not with our engineering hours.
+- **It makes the COO agent agentic, not advisory.** Without an execution layer, the agent is a smart dashboard that tells you what's wrong. With it, the agent replaces the fractional COO function end-to-end: observe → reason → propose → act on confirmation → learn from outcome.
+- **It is what makes the OpsRadar MCP server (YC RFS #12) genuinely strategic.** External agents calling OpsRadar via MCP don't just query data — they can `generate_workflow` and have it deployed to the customer's n8n on owner approval. This is "programmable by external agents," not just "queryable by external agents."
+
+This execution layer is the thread that runs through all four YC categories. The product surface remains "actions" and "what to do next" (per voice rules); the implementation detail is invisible to customers — exactly like Stripe is invisible behind a checkout flow. Internal architecture detail in [`docs/yc/four-categories-build.md`](../yc/four-categories-build.md) and the chatv2 strengthening plan in [`docs/architecture-2026.md`](../architecture-2026.md).
+
 ---
 
 ## PART 6: THE PLAYBOOK — WHY THIS WINS
