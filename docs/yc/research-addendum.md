@@ -1,6 +1,8 @@
 # YC Summer 2026 — Research Addendum
 
-*Compiled 2026-05-21. Strengthens [`path-a-strategy-2026.md`](../strategy/path-a-strategy-2026.md) with fresh data for the 4 YC categories OpsRadar targets.*
+*Compiled 2026-05-21, updated 2026-05-22. Strengthens [`path-a-strategy-2026.md`](../strategy/path-a-strategy-2026.md) with fresh data for the 4 YC categories OpsRadar targets.*
+
+> **🚨 URGENT — YC S26 deadline EXTENDED to May 25, 2026.** OpsRadar has 3 days from today (2026-05-22) to submit. YC announced the extension on 2026-05-21 alongside a **$2M OpenAI tokens grant** for every spring + summer batch company. See [`fundraising/vc-guide.md`](../fundraising/vc-guide.md) for the updated economic implications. The application draft must land in the YC form this week.
 
 ---
 

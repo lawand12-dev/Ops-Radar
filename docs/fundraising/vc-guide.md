@@ -116,14 +116,21 @@ Sequoia's 2026 thesis (verbatim from [AI Ascent](https://sequoiacap.com/article/
 
 ---
 
-## YC Summer 2026 — current cycle reality (verified May 2026)
+## YC Summer 2026 — current cycle reality (verified 2026-05-22)
 
-- **S26 on-time deadline**: May 4, 2026 8 PM PT (closed; late apps still accepted) — [LinkedIn YC announcement](https://www.linkedin.com/posts/y-combinator_the-deadline-to-apply-for-the-yc-summer-2026-activity-7454941181660082176-2tfx)
-- **Interview invites**: May 18–26, 2026
+- **🚨 S26 DEADLINE EXTENDED TO MAY 25, 2026** — YC extended the deadline 3 weeks past the original May 4 close. Announced 2026-05-21 alongside the **$2M OpenAI tokens grant** for every spring + summer batch company. **OpsRadar has 3 days from today (2026-05-22) to submit.** — [@ycombinator on X, 2026-05-21](https://twitter.com/ycombinator)
+- **$2M OpenAI token grant**: Every accepted YC S26 company receives $2M in OpenAI API credits. At Claude Sonnet 4.5 / GPT-4o average pricing this covers ~500M tokens of tier-1 inference — enough to run the OpsRadar COO agent, audit funnel, and KB pipelines for the entire YC batch period without paying for AI inference. This **changes OpsRadar's unit economics**: AI cost-of-revenue effectively zero during the batch.
+- **Interview invites**: May 18–26, 2026 (overlaps the extended deadline — some founders will hear back days after submitting)
 - **Interviews**: Video conference, May–June 2026, **10 minutes with 2–3 partners** (reduced from 4)
 - **Decision deadline**: June 5, 2026
 - **Batch**: July–September 2026, in-person in San Francisco
 - **Next cycle to plan for**: F26/W27, deadline ~November 2026
+
+### What this changes about OpsRadar's YC strategy
+
+1. **Submit before May 25, 2026.** Don't wait. The application draft in [`docs/yc/`](../yc/) needs to land in the form this week.
+2. **The pitch deck slide on "AI cost economics" needs updating.** With the $2M token grant, OpsRadar's gross margin in the batch period is ~99% (vs ~85% baseline). Plan around this in the financial slide.
+3. **The "OpenAI partnership" is a 3-month accelerant, not the moat.** Post-batch, costs normalize. The fundamentals still need to work without the grant.
 
 ### YC interview tactics for vertical AI founders (per [YC Interview Guide](https://www.ycombinator.com/interviews) + [Glassdoor 2026 data](https://www.glassdoor.com/Interview/Y-Combinator-Interview-Questions-E971877.htm))
 

@@ -335,7 +335,7 @@ ycombinator.com/apply
 - **Acceptance rate**: ~1.5–2%
 - **Iraqi/MENA track record**: **Lezzoo** (Erbil, Kurdistan) — first Iraqi YC company, W19 batch. Munify (MENA neobank, YC S2025). By 2022, ~50% of YC companies were international
 - **Deadlines (verified May 2026)**:
-  - **YC Summer 2026 (S26)**: On-time deadline was **May 4, 2026 at 8 PM PT** (passed). Late applications still accepted. Interview invites issued **May 18–26, 2026**. Interviews held by video conference in **May and June 2026**. Final decisions by **June 5, 2026**. Batch runs **July–September 2026 in San Francisco** — [YC Summer 2026 batch info](https://www.startupresearcher.com/opportunity-radar/y-combinator-summer-2026-batch)
+  - **YC Summer 2026 (S26)**: **🚨 DEADLINE EXTENDED TO MAY 25, 2026** (announced 2026-05-21 alongside the **$2M OpenAI tokens grant** for every spring + summer batch company). Original deadline was May 4. Interview invites **May 18–26, 2026**. Interviews by video conference in May and June 2026. Decisions by **June 5, 2026**. Batch runs **July–September 2026 in San Francisco**. The $2M token grant makes AI cost-of-revenue effectively zero during the batch — OpsRadar's gross margin spikes to ~99% in the batch period (vs ~85% baseline). — [@ycombinator on X, 2026-05-21](https://twitter.com/ycombinator)
   - **YC Fall 2026 (F26) / Winter 2027 (W27)**: ~November 2026 deadline
   - **S27**: ~April 2027 deadline
 - **Interview format**: 10 minutes, rapid-fire, 2–3 partners (was historically 4). No presentations, no small talk. Decisions same day. Detailed feedback either way — [YC Interview Guide](https://www.ycombinator.com/interviews)
