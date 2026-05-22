@@ -8,6 +8,7 @@ import { openai } from '<npm>/lib/openai';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { COO_TOOLS, TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { executeToolCall, type ExecutorContext } from '<npm>/lib/coo/executor';
+import { getRecentOutcomes, formatOutcomesForPrompt } from '<npm>/lib/coo/outcomes';
 import type OpenAI from 'openai';
 
 export const dynamic = 'force-dynamic';
@@ -106,6 +107,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     lastUserQuestion,
   };
 
+  const recentOutcomes = await getRecentOutcomes(userId, 10);
+  const outcomesBlock = formatOutcomesForPrompt(recentOutcomes);
+
   const systemPrompt = `You are the AI COO of ${companyName}. You answer questions about the business using live data from your tools.
 
 Rules you MUST follow:
@@ -115,12 +119,13 @@ Rules you MUST follow:
 4. For questions about industry norms, benchmarks, best practices, or "what's typical" — call search_kb FIRST to ground your answer in OpsRadar's research library
 5. When you spot a concrete problem (low-margin client, scope overrun, retainer over its hours), call queue_action AFTER explaining it. The action saves a draft email/note to the user's Actions queue — nothing is sent automatically. Only use queue_action for the 4 supported types: margin_alert, hours_budget_exceeded, scope_approaching, retainer_overage.
 6. Be concise and direct. Dollar amounts over adjectives. No markdown headers.
+7. LEARN FROM PAST DECISIONS — see the "Recent decisions" block below. Do NOT propose actions the owner has dismissed for the same reason recently. If you see a relevant past decision, reference it briefly.
 
 Account context (from settings — do not fetch via tools):
 - Company: ${companyName}
 - Blended hourly rate: $${blendedRate}/hr
 - Team size: ${teamSizeRaw || 'not set in settings'}
-- Pending actions awaiting approval: ${pendingActionsCount}`;
+- Pending actions awaiting approval: ${pendingActionsCount}${outcomesBlock ? `\n\n${outcomesBlock}` : ''}`;
 
   const encoder = new TextEncoder();
 

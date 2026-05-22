@@ -14,6 +14,9 @@ import { ACTION_RISK } from './types';
 import type { NewAction, AgentAction, UserContext } from './types';
 import { hasQuotaRemaining } from './usage';
 import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
+import { getRecentOutcomes } from '<npm>/lib/coo/outcomes';
+
+const DISMISSAL_COOLDOWN_DAYS = 14;
 
 const DEFAULT_BLENDED_RATE = 85;
 
@@ -84,7 +87,28 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
     if (r.status === 'fulfilled') proposed.push(...r.value);
   }
 
+  // Outcome-memory loop: skip action types the owner has DISMISSED within
+  // the last DISMISSAL_COOLDOWN_DAYS days. Prevents re-proposing the same
+  // pattern the owner just rejected — turns the COO from "noisy" to "smart".
+  const recentOutcomes = await getRecentOutcomes(userId, 50);
+  const cutoff = Date.now() - DISMISSAL_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+  const recentlyDismissed = new Set(
+    recentOutcomes
+      .filter((o) => o.decision === 'dismissed' && new Date(o.decided_at).getTime() > cutoff)
+      .map((o) => o.action_type),
+  );
+
   for (const action of proposed) {
+    if (recentlyDismissed.has(action.action_type)) {
+      console.log(
+        '[evaluator] skipping recently-dismissed action_type',
+        action.action_type,
+        'for',
+        userId,
+      );
+      continue;
+    }
+
     // Enforce per-tier monthly quota. Starter has quota 0 (blocks all actions);
     // Growth = 50, Pro = 200, FO = unlimited. Quota covers all action_types together.
     const allowed = await hasQuotaRemaining(userId);

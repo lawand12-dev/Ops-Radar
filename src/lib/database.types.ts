@@ -415,6 +415,53 @@ export type Database = {
         }
         Relationships: []
       }
+      coo_outcomes: {
+        Row: {
+          action_id: string
+          action_type: string
+          created_at: string
+          decided_at: string
+          decision: string
+          id: number
+          outcome_summary: string | null
+          outcome_value_usd: number | null
+          owner_reasoning: string | null
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          action_type: string
+          created_at?: string
+          decided_at?: string
+          decision: string
+          id?: number
+          outcome_summary?: string | null
+          outcome_value_usd?: number | null
+          owner_reasoning?: string | null
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          action_type?: string
+          created_at?: string
+          decided_at?: string
+          decision?: string
+          id?: number
+          outcome_summary?: string | null
+          outcome_value_usd?: number | null
+          owner_reasoning?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coo_outcomes_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "agent_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_interactions: {
         Row: {
           channel: string

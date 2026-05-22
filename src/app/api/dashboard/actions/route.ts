@@ -4,6 +4,7 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { executeAction } from '<npm>/lib/actions/executor';
 import type { AgentAction } from '<npm>/lib/actions/types';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
+import { logOutcome } from '<npm>/lib/coo/outcomes';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -85,6 +86,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'cannot_dismiss' }, { status: 409 });
     }
     await supabase.from('agent_actions').update({ status: 'dismissed' }).eq('id', id);
+    await logOutcome({
+      actionId: id,
+      userId,
+      actionType: agentAction.action_type,
+      decision: 'dismissed',
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -99,6 +106,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       .from('agent_actions')
       .update({ status: 'undone', undone_at: new Date().toISOString() })
       .eq('id', id);
+    await logOutcome({
+      actionId: id,
+      userId,
+      actionType: agentAction.action_type,
+      decision: 'undone',
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -118,6 +131,13 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       .eq('id', id)
       .single();
     if (freshRow) await executeAction(freshRow as AgentAction);
+
+    await logOutcome({
+      actionId: id,
+      userId,
+      actionType: agentAction.action_type,
+      decision: 'approved',
+    });
 
     return NextResponse.json({ ok: true });
   }
