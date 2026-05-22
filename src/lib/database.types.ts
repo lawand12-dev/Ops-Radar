@@ -388,6 +388,77 @@ export type Database = {
         }
         Relationships: []
       }
+      coo_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          message_count: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coo_chat_messages: {
+        Row: {
+          action_card: Json | null
+          content: string
+          created_at: string
+          id: string
+          role: string
+          session_id: string
+          tool_steps: Json | null
+          user_id: string
+        }
+        Insert: {
+          action_card?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role: string
+          session_id: string
+          tool_steps?: Json | null
+          user_id: string
+        }
+        Update: {
+          action_card?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string
+          tool_steps?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coo_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "coo_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coo_kb_gaps: {
         Row: {
           created_at: string

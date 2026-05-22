@@ -1,4 +1,4 @@
-import { CooChat } from './_components/coo-chat';
+import { CooShell } from './_components/coo-shell';
 
 export default function CooPage() {
   return (
@@ -19,8 +19,8 @@ export default function CooPage() {
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xs)]">
-        <CooChat />
+      <div className="min-h-0 flex-1">
+        <CooShell />
       </div>
     </div>
   );

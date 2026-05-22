@@ -1,13 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, CheckCircle, XCircle, Plus } from 'lucide-react';
+import { Send, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { MarkdownContent } from '<npm>/components/dashboard/markdown-content';
-
-const STORAGE_KEY = 'opsradar:coo-chat:v1';
-// Cap how many messages we persist — avoids unbounded localStorage growth
-// over months of chat history. Keeps the last 50 messages (~25 turns).
-const PERSIST_LIMIT = 50;
 
 type ToolStep = { name: string; label: string; done: boolean };
 
@@ -28,12 +23,22 @@ type AssistantMessage = {
 type Message = UserMessage | AssistantMessage;
 
 type AgentEvent =
+  | { type: 'session'; session_id: string; title: string }
   | { type: 'tool_call'; name: string; label: string }
   | { type: 'tool_done'; name: string }
   | { type: 'text_delta'; delta: string }
   | { type: 'action_proposed'; action_id: string; action_type: string; label: string }
   | { type: 'done' }
   | { type: 'error'; message: string };
+
+type ServerMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  tool_steps: ToolStep[] | null;
+  action_card: { action_id: string; action_type: string; label: string } | null;
+  created_at: string;
+};
 
 const SUGGESTED: string[] = [
   'How did we do this month?',
@@ -44,56 +49,71 @@ const SUGGESTED: string[] = [
   'What should I do today?',
 ];
 
-export function CooChat() {
+function serverToMessage(m: ServerMessage): Message {
+  if (m.role === 'user') return { role: 'user', content: m.content };
+  return {
+    role: 'assistant',
+    content: m.content,
+    toolSteps: (m.tool_steps ?? []).map((s) => ({ ...s, done: true })),
+    actionCard: m.action_card
+      ? { ...m.action_card, status: 'pending' }
+      : null,
+  };
+}
+
+type Props = {
+  sessionId: string | null;
+  onSessionResolved: (sessionId: string, title: string) => void;
+  onMessagePersisted: () => void;
+};
+
+export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [hydrated, setHydrated] = useState(false);
   const [streaming, setStreaming] = useState<AssistantMessage | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Track which session is currently displayed so we know when a fetched
+  // session race condition lands after the user has already switched away.
+  const displayedSessionRef = useRef<string | null>(null);
 
-  // Hydrate from localStorage on mount — keeps the conversation
-  // alive across navigation away from /dashboard/coo and back.
+  // Load messages whenever the active session changes
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Message[];
-        if (Array.isArray(parsed)) setMessages(parsed);
-      }
-    } catch {
-      // Corrupt JSON — ignore and start fresh
-    }
-    setHydrated(true);
-  }, []);
+    abortRef.current?.abort();
+    setStreaming(null);
+    setLoading(false);
 
-  // Persist on every change (but only after hydration so we don't blow
-  // away saved history on first render before useEffect above has run).
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      const toPersist = messages.slice(-PERSIST_LIMIT);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
-    } catch {
-      // localStorage full / disabled / private browsing — silently drop
+    if (!sessionId) {
+      setMessages([]);
+      displayedSessionRef.current = null;
+      return;
     }
-  }, [messages, hydrated]);
+
+    const targetId = sessionId;
+    setLoadingSession(true);
+    fetch(`/api/dashboard/coo/sessions/${targetId}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('load_failed'))))
+      .then((data: { messages: ServerMessage[] }) => {
+        if (displayedSessionRef.current !== targetId && sessionId !== targetId) {
+          // User switched sessions mid-fetch — drop stale result
+          return;
+        }
+        displayedSessionRef.current = targetId;
+        setMessages((data.messages ?? []).map(serverToMessage));
+      })
+      .catch(() => {
+        if (sessionId === targetId) setMessages([]);
+      })
+      .finally(() => setLoadingSession(false));
+  }, [sessionId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streaming, loading]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
-
-  function newChat() {
-    abortRef.current?.abort();
-    setMessages([]);
-    setStreaming(null);
-    setInput('');
-    setLoading(false);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
-  }
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -117,7 +137,10 @@ export function CooChat() {
       const res = await fetch('/api/dashboard/coo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history.map((m) => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({
+          session_id: sessionId,
+          messages: history.map((m) => ({ role: m.role, content: m.content })),
+        }),
         signal: ac.signal,
       });
 
@@ -144,6 +167,11 @@ export function CooChat() {
           if (!line.startsWith('data: ')) continue;
           let event: AgentEvent;
           try { event = JSON.parse(line.slice(6)) as AgentEvent; } catch { continue; }
+
+          if (event.type === 'session') {
+            displayedSessionRef.current = event.session_id;
+            onSessionResolved(event.session_id, event.title);
+          }
 
           if (event.type === 'tool_call') {
             current = { ...current, toolSteps: [...current.toolSteps, { name: event.name, label: event.label, done: false }] };
@@ -181,6 +209,7 @@ export function CooChat() {
             const finalMsg: AssistantMessage = { ...current, content: finalContent };
             setMessages((m) => [...m, finalMsg]);
             setStreaming(null);
+            onMessagePersisted();
           }
         }
       }
@@ -229,8 +258,6 @@ export function CooChat() {
   }
 
   function renderAssistant(m: AssistantMessage, index: number) {
-    // The streaming message is the last one when `streaming` is set.
-    // We use this to know when to show the cursor / thinking dots.
     const isStreaming = streaming !== null && index === messages.length;
     const isThinking = isStreaming && m.toolSteps.length === 0 && m.content.length === 0 && !m.actionCard;
 
@@ -315,8 +342,15 @@ export function CooChat() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4" role="log" aria-live="polite" aria-busy={loading}>
-        {messages.length === 0 && !streaming && (
+      <div className="flex-1 overflow-y-auto space-y-4 pb-4 px-1" role="log" aria-live="polite" aria-busy={loading}>
+        {loadingSession && (
+          <div className="flex items-center gap-2 pt-4 text-[12px] text-[var(--color-fg-muted)]">
+            <Loader2 size={12} className="animate-spin" />
+            Loading chat…
+          </div>
+        )}
+
+        {!loadingSession && messages.length === 0 && !streaming && (
           <div className="pt-2">
             <p className="mb-4 text-[13px] text-[var(--color-fg-muted)]">
               Ask me anything about your agency — I have access to your live data.
@@ -372,22 +406,9 @@ export function CooChat() {
             <Send size={14} />
           </button>
         </div>
-        <div className="mt-1.5 flex items-center justify-between gap-3">
-          <p className="text-[11px] text-[var(--color-fg-subtle)]">
-            Enter to send · Shift+Enter for new line
-          </p>
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={newChat}
-              disabled={loading}
-              className="flex items-center gap-1 text-[11px] text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)] disabled:opacity-40"
-              aria-label="Start a new chat"
-            >
-              <Plus size={11} /> New chat
-            </button>
-          )}
-        </div>
+        <p className="mt-1.5 text-[11px] text-[var(--color-fg-subtle)]">
+          Enter to send · Shift+Enter for new line
+        </p>
       </div>
     </div>
   );
