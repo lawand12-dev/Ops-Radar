@@ -5,6 +5,7 @@ import { logInfo, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
 import { getRequestContext } from "../../lib/request-context";
 import { generateWorkflowFromMessage } from "../ai/ai-service";
+import { bindLatestAIInteractionToWorkflow } from "../ai/ai-interaction-repository";
 import { createProject } from "../projects/project-repository";
 import { createWorkflow } from "../workflows/workflow-repository";
 import { createChatMessage, createChatSession } from "./chat-repository";
@@ -42,6 +43,10 @@ export async function handleChatMessage(
   // to a specific user in the admin console (it's nullable, so unauthenticated
   // background callers still work — they just record as anonymous).
   const ctx = getRequestContext();
+  // Capture a timestamp BEFORE the AI call so the post-commit binder can
+  // narrow its UPDATE to "the row this chat just produced" rather than an
+  // older orphan for the same user.
+  const aiCallStartedAt = new Date(Date.now() - 1000);
   const aiOutput = await generateWorkflowFromMessage(message, {
     traceId,
     userId: ctx?.userId
@@ -184,16 +189,60 @@ export async function handleChatMessage(
     return {
       project_id: project.id,
       session_id: session.id,
+      workflow_id: workflow.id,
       project_name: aiOutput.project_name,
       description: aiOutput.description,
       workflow: workflowToPersist,
       validation,
       trace_id: traceId
-    } satisfies ChatResult;
+    };
   });
 
-  if (logProgress) {
-    logInfo("chat", "Chat request completed", { project_id: result.project_id }, traceId);
+  // Best-effort post-commit linkage: stamp the just-produced workflow on the
+  // most recent pending ai_interactions row for this user. The reconciler
+  // takes it from here — moving outcome to 'deployed'/'failed_in_n8n' once
+  // the workflow lifecycle progresses. Failure logs a warning; the row stays
+  // 'pending' and gets retired by the reconciler's stale guard after a week.
+  if (ctx?.userId) {
+    try {
+      const initialOutcome = result.validation.valid ? "validated" : "rejected";
+      const bound = await bindLatestAIInteractionToWorkflow({
+        userId: ctx.userId,
+        projectId: result.project_id,
+        workflowId: result.workflow_id,
+        initialOutcome,
+        createdAfter: aiCallStartedAt
+      });
+      if (logProgress && bound) {
+        logInfo(
+          "chat",
+          "AI interaction linked to workflow",
+          { workflow_id: result.workflow_id, outcome: initialOutcome },
+          traceId
+        );
+      }
+    } catch (error) {
+      logWarn(
+        "chat",
+        "Failed to link AI interaction to workflow (non-fatal)",
+        { error: error instanceof Error ? error.message : String(error) },
+        traceId
+      );
+    }
   }
-  return result;
+
+  const publicResult: ChatResult = {
+    project_id: result.project_id,
+    session_id: result.session_id,
+    project_name: result.project_name,
+    description: result.description,
+    workflow: result.workflow,
+    validation: result.validation,
+    trace_id: result.trace_id
+  };
+
+  if (logProgress) {
+    logInfo("chat", "Chat request completed", { project_id: publicResult.project_id }, traceId);
+  }
+  return publicResult;
 }

@@ -26,6 +26,16 @@ import {
 } from "./knowledge-base-loader";
 import { persistAIInteraction } from "./ai-interaction-repository";
 import { getRequestContext } from "../../lib/request-context";
+import {
+  buildPatternCardsPromptBlock,
+  patternCardCitation,
+  selectPatternCards
+} from "../memory/pattern-cards";
+import {
+  buildBreadcrumbsPromptBlock,
+  failureClusterFor,
+  recentBreadcrumbs
+} from "../memory/breadcrumbs";
 
 /**
  * Resolves the platform RAG agent endpoint config. The agent is a single
@@ -280,6 +290,12 @@ export interface AiRequestContext {
    * adding auth later doesn't require schema changes.
    */
   userId?: string;
+  /**
+   * Pattern Card ids (with @version) selected by the deterministic memory
+   * layer for this prompt. Recorded on the resulting ai_interactions row
+   * via matched_pattern_ids so we can later measure card→outcome quality.
+   */
+  matchedPatternIds?: string[];
 }
 
 export interface FixWorkflowInput {
@@ -538,15 +554,95 @@ function assertWithinBudget(deadlineEpochMs: number): void {
 
 function buildWorkflowGenerationSystemPrompt(
   message: string,
-  traceId?: string
+  traceId?: string,
+  extras?: { patternCardsBlock?: string; breadcrumbsBlock?: string }
 ): string {
   const selection = selectKnowledgeForRequest(message);
   logInfo("ai", "Knowledge base selected", buildKnowledgeBaseSelectionLogMeta(selection), traceId);
-  const promptBlock = buildKnowledgeBasePromptBlock(selection);
-  if (!promptBlock) {
-    return WORKFLOW_SYSTEM_PROMPT;
+  const kbBlock = buildKnowledgeBasePromptBlock(selection);
+
+  // Order matters: rules → KB → pattern cards (curated) → breadcrumbs (live
+  // tenant context). The breadcrumbs go last so the model treats them as the
+  // most recent grounding, not as competing background reference.
+  const parts: string[] = [WORKFLOW_SYSTEM_PROMPT];
+  if (kbBlock) parts.push(kbBlock);
+  if (extras?.patternCardsBlock) parts.push(extras.patternCardsBlock);
+  if (extras?.breadcrumbsBlock) parts.push(extras.breadcrumbsBlock);
+  return parts.join("\n\n");
+}
+
+/**
+ * Tenant-scoped memory fetch — pattern cards (global, intent-matched) +
+ * recent breadcrumbs (per-tenant). Errors here are non-fatal: we still
+ * attempt the AI call without the extra context rather than fail the user
+ * request because a memory query timed out.
+ */
+async function buildMemoryContext(
+  message: string,
+  context?: AiRequestContext
+): Promise<{
+  patternCardsBlock: string;
+  breadcrumbsBlock: string;
+  matchedPatternIds: string[];
+}> {
+  let patternCardsBlock = "";
+  let matchedPatternIds: string[] = [];
+
+  try {
+    const scored = selectPatternCards({
+      prompt: message,
+      outputKind: "workflow_json"
+    });
+    if (scored.length > 0) {
+      patternCardsBlock = buildPatternCardsPromptBlock(scored);
+      matchedPatternIds = scored.map((s) => patternCardCitation(s.card));
+      logInfo(
+        "ai",
+        "Pattern cards selected",
+        {
+          ids: matchedPatternIds,
+          scores: scored.map((s) => ({ id: s.card.id, score: s.score, matched: s.matched_triggers }))
+        },
+        context?.traceId
+      );
+    }
+  } catch (error) {
+    logWarn(
+      "ai",
+      "Pattern card selection failed; continuing without",
+      { error: error instanceof Error ? error.message : String(error) },
+      context?.traceId
+    );
   }
-  return `${WORKFLOW_SYSTEM_PROMPT}\n\n${promptBlock}`;
+
+  let breadcrumbsBlock = "";
+  if (env.AI_BREADCRUMBS_ENABLED && context?.userId) {
+    try {
+      const rows = await recentBreadcrumbs({
+        ownerUserId: context.userId,
+        sinceHours: env.AI_BREADCRUMBS_HOURS,
+        limit: env.AI_BREADCRUMBS_LIMIT
+      });
+      if (rows.length > 0) {
+        breadcrumbsBlock = buildBreadcrumbsPromptBlock(rows);
+        logInfo(
+          "ai",
+          "Breadcrumbs attached",
+          { count: rows.length, chars: breadcrumbsBlock.length },
+          context.traceId
+        );
+      }
+    } catch (error) {
+      logWarn(
+        "ai",
+        "Breadcrumb retrieval failed; continuing without",
+        { error: error instanceof Error ? error.message : String(error) },
+        context?.traceId
+      );
+    }
+  }
+
+  return { patternCardsBlock, breadcrumbsBlock, matchedPatternIds };
 }
 
 function buildWorkflowFixSystemPrompt(
@@ -1117,7 +1213,8 @@ async function instrumentedCall(
       status: "success",
       errorMessage: null,
       tokensUsed: extractTokenCount(response.raw),
-      latencyMs: Date.now() - startedAt
+      latencyMs: Date.now() - startedAt,
+      matchedPatternIds: input.context?.matchedPatternIds ?? null
     });
     return response;
   } catch (error) {
@@ -1132,7 +1229,8 @@ async function instrumentedCall(
       status: "error",
       errorMessage: error instanceof Error ? error.message : String(error),
       tokensUsed: null,
-      latencyMs: Date.now() - startedAt
+      latencyMs: Date.now() - startedAt,
+      matchedPatternIds: input.context?.matchedPatternIds ?? null
     });
     throw error;
   }
@@ -1440,7 +1538,8 @@ async function generateWorkflowViaRagAgent(
           status: "success",
           errorMessage: null,
           tokensUsed: extractTokenCount(response.raw),
-          latencyMs: Date.now() - startedAt
+          latencyMs: Date.now() - startedAt,
+          matchedPatternIds: context?.matchedPatternIds ?? null
         });
       } catch (callError) {
         persistAIInteraction({
@@ -1454,7 +1553,8 @@ async function generateWorkflowViaRagAgent(
           status: "error",
           errorMessage: callError instanceof Error ? callError.message : String(callError),
           tokensUsed: null,
-          latencyMs: Date.now() - startedAt
+          latencyMs: Date.now() - startedAt,
+          matchedPatternIds: context?.matchedPatternIds ?? null
         });
         throw callError;
       }
@@ -1547,13 +1647,22 @@ export async function generateWorkflowFromMessage(
     return buildMockWorkflow(message);
   }
 
+  // Pre-fetch tenant memory (pattern cards + breadcrumbs) once before the
+  // model fallback loop. The selection is deterministic on the user message
+  // so it doesn't need to vary per attempt.
+  const memory = await buildMemoryContext(message, context);
+  const ctxWithPatterns: AiRequestContext = {
+    ...(context ?? {}),
+    matchedPatternIds: memory.matchedPatternIds.length > 0 ? memory.matchedPatternIds : undefined
+  };
+
   // Short-circuit users granted access to the platform RAG agent. The agent
   // already encodes the n8n-engineer system prompt + curated knowledge base
   // server-side, so we send only the raw message and skip both locally. We
   // still validate the returned workflow with the same security/structure
   // checks and use the same retry-with-promptHint loop for self-correction.
   if (resolveRagAgentConfig()) {
-    return generateWorkflowViaRagAgent(message, context);
+    return generateWorkflowViaRagAgent(message, ctxWithPatterns);
   }
 
   const deadline = Date.now() + env.AI_WORKFLOW_TOTAL_TIMEOUT_MS;
@@ -1569,7 +1678,10 @@ export async function generateWorkflowFromMessage(
     (model) => !unsupportedModelsCache.has(unsupportedKey(env.AI_PROVIDER, model))
   );
   const effectivePlan = modelPlan.length > 0 ? modelPlan : allModels;
-  const workflowSystemPrompt = buildWorkflowGenerationSystemPrompt(message, context?.traceId);
+  const workflowSystemPrompt = buildWorkflowGenerationSystemPrompt(message, context?.traceId, {
+    patternCardsBlock: memory.patternCardsBlock,
+    breadcrumbsBlock: memory.breadcrumbsBlock
+  });
 
   const attemptErrors: Array<{ model: string; details: unknown }> = [];
 
@@ -1601,7 +1713,7 @@ export async function generateWorkflowFromMessage(
             env.AI_PROVIDER === "openai"
               ? { name: "workflow_generation", schema: WORKFLOW_OUTPUT_SCHEMA }
               : undefined,
-          context
+          context: ctxWithPatterns
         });
 
         const candidate = normalizeAiWorkflowCandidate(candidateRaw, context?.traceId);
@@ -1685,11 +1797,23 @@ export async function generateWorkflowFromMessage(
   });
 }
 
-export async function analyzeWorkflowFailure(input: {
-  workflowJson: N8nWorkflow;
-  errorMessage: string | null;
-  recentEvents: Array<Record<string, unknown>>;
-}, context?: AiRequestContext): Promise<FailureAnalysis> {
+export async function analyzeWorkflowFailure(
+  input: {
+    workflowJson: N8nWorkflow;
+    errorMessage: string | null;
+    recentEvents: Array<Record<string, unknown>>;
+    /** Owning workflow id — used for failure-cluster lookup. Optional so
+     *  legacy callers keep working; without it we skip cluster context. */
+    workflowId?: string;
+    /** Owning tenant id — required for breadcrumb + cluster injection.
+     *  When absent, the analyzer falls back to its original behavior
+     *  (no tenant memory). Strict tenant scoping is preserved by routing
+     *  through `recentBreadcrumbs` / `failureClusterFor`, both of which
+     *  refuse calls without an ownerUserId. */
+    ownerUserId?: string;
+  },
+  context?: AiRequestContext
+): Promise<FailureAnalysis> {
   logInfo("ai", "Failure analysis started", undefined, context?.traceId);
   if (env.AI_PROVIDER === "mock") {
     return {
@@ -1699,9 +1823,73 @@ export async function analyzeWorkflowFailure(input: {
     };
   }
 
+  // Memory enrichment for tenants we can identify. The failure-cluster signal
+  // is the highest-value piece — "this exact error has hit this workflow N
+  // times in the last 30 days" reframes the model from "guess a fix" to
+  // "this is a known recurrence". Skip if the lookup fails for any reason.
+  let breadcrumbsBlock = "";
+  let failureClusterBlock = "";
+  if (input.ownerUserId && env.AI_BREADCRUMBS_ENABLED) {
+    try {
+      const rows = await recentBreadcrumbs({
+        ownerUserId: input.ownerUserId,
+        sinceHours: Math.max(env.AI_BREADCRUMBS_HOURS, 72),
+        limit: env.AI_BREADCRUMBS_LIMIT,
+        kindPrefixes: ["event:", "anomaly:"]
+      });
+      if (rows.length > 0) {
+        breadcrumbsBlock = buildBreadcrumbsPromptBlock(rows, {
+          header: "RECENT_WORKFLOW_SIGNALS"
+        });
+      }
+    } catch (error) {
+      logWarn(
+        "ai",
+        "Failure analysis: breadcrumb fetch failed",
+        { error: error instanceof Error ? error.message : String(error) },
+        context?.traceId
+      );
+    }
+
+    if (input.workflowId && input.errorMessage) {
+      try {
+        const cluster = await failureClusterFor({
+          ownerUserId: input.ownerUserId,
+          workflowId: input.workflowId,
+          errorMessage: input.errorMessage
+        });
+        if (cluster) {
+          failureClusterBlock = [
+            "<FAILURE_CLUSTER>",
+            `fingerprint: ${cluster.fingerprint}`,
+            `occurrences_last_30d: ${cluster.count}`,
+            `first_seen: ${cluster.first_seen.toISOString()}`,
+            `last_seen: ${cluster.last_seen.toISOString()}`,
+            "</FAILURE_CLUSTER>"
+          ].join("\n");
+        }
+      } catch (error) {
+        logWarn(
+          "ai",
+          "Failure analysis: cluster lookup failed",
+          { error: error instanceof Error ? error.message : String(error) },
+          context?.traceId
+        );
+      }
+    }
+  }
+
+  const systemPrompt = [
+    ANALYSIS_SYSTEM_PROMPT,
+    failureClusterBlock,
+    breadcrumbsBlock
+  ]
+    .filter((part) => part.length > 0)
+    .join("\n\n");
+
   const candidate = await callAiForJson({
     model: env.AI_ANALYSIS_MODEL || env.AI_MODEL_PRIMARY,
-    systemPrompt: ANALYSIS_SYSTEM_PROMPT,
+    systemPrompt,
     userPrompt: JSON.stringify(
       {
         error_message: input.errorMessage,

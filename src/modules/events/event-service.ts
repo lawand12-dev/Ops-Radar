@@ -3,7 +3,7 @@ import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { analyzeWorkflowFailure } from "../ai/ai-service";
 import { createAuditLog } from "../audit/audit-repository";
-import { updateProjectStatus } from "../projects/project-repository";
+import { getProjectById, updateProjectStatus } from "../projects/project-repository";
 import {
   createWorkflowEvent,
   listRecentEventsByWorkflowId
@@ -120,9 +120,19 @@ async function processFailureSideEffects(input: {
   }
 
   const recentEvents = await listRecentEventsByWorkflowId(input.workflowId, 15);
+
+  // Resolve owning tenant so the analyzer can pull tenant-scoped breadcrumbs
+  // + failure cluster context. Background callers (monitoring) have no
+  // request context, but the workflow → project chain still identifies the
+  // tenant deterministically.
+  const owningProject = await getProjectById(workflow.project_id);
+  const ownerUserId = owningProject?.user_id ?? undefined;
+
   const analysis = await analyzeWorkflowFailure({
     workflowJson: workflow.json,
     errorMessage: input.errorMessage,
+    workflowId: input.workflowId,
+    ownerUserId,
     recentEvents: recentEvents.map((event) => ({
       event_type: event.event_type,
       status: event.status,
