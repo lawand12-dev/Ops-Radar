@@ -39,6 +39,7 @@ docs/
 | [`strategy/ai-market-research-2026.md`](./strategy/ai-market-research-2026.md) | $2.52T AI spend / 8.8% actual production adoption gap / CAIO trend data | Before investor conversations |
 | [`strategy/agency-tools-research-2026.md`](./strategy/agency-tools-research-2026.md) | Deep research on agency tool fragmentation — HubSpot/Pipedrive/ClickUp/Harvest adoption patterns, 59-65% cite fragmentation, 20% can't report margins | Before ICP calls or product prioritization |
 | [`strategy/vs-pages.md`](./strategy/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
+| [`strategy/ai-data-revolution-2026.md`](./strategy/ai-data-revolution-2026.md) | Cloud→AI wave shift applied to agencies: 80/20 unstructured data split, 3 AI agent capabilities mapped to OpsRadar product, strategic-vs-necessary task table ($143–182K/year of agent-absorbable work per agency), outcome bundle pricing model, 3-year window countdown | Before YC application or pricing change |
 
 ---
 
@@ -46,8 +47,21 @@ docs/
 
 | Document | What it gives you | When to open it |
 |----------|-------------------|-----------------|
-| [`yc/research-addendum.md`](./yc/research-addendum.md) | Fresh May 2026 data for the 4 YC categories OpsRadar fits (#2 AI-Native Services, #4 Company Brain, #12 Software for Agents, #15 AI OS) — MCP adoption, agentic ROI, agency profit gaps | Before YC application or any investor conversation |
+| [`yc/research-addendum.md`](./yc/research-addendum.md) | Fresh May 2026 data for the 4 YC categories OpsRadar fits (#2 AI-Native Services, #4 Company Brain, #12 Software for Agents, #15 AI OS) — MCP adoption, agentic ROI, agency profit gaps. **🚨 S26 deadline EXTENDED to May 25 + $2M OpenAI tokens grant.** | Before YC application or any investor conversation |
 | [`yc/build-architecture.md`](./yc/build-architecture.md) | The sophisticated build blueprint across all 4 categories — Vercel AI SDK v6, Inngest, hybrid GraphRAG, OAuth-secured MCP server, event-driven supervisor/worker, Langfuse observability. Includes sprint sequencing | Before any net-new product work |
+
+---
+
+## Theory & Methodology (May 2026 — YC synthesis stack)
+
+These four docs are the canonical engineering + philosophy stack synthesised from May 2026 YC briefings. Read in this order:
+
+| Document | What it is |
+|----------|------------|
+| [`software-3-engineering-2026.md`](./software-3-engineering-2026.md) | **The theory** — Karpathy's Software 1.0/2.0/3.0 framework, the 20/80 inversion, jagged intelligence, Program MD as the soul of the org, Claws, Auto-Research loop. Why engineering itself has changed. |
+| [`build-methodology-2026.md`](./build-methodology-2026.md) | **The day-to-day playbook** — GStack adapted for OpsRadar. 4 phases (CEO plan → ASCII grounding → Conductor velocity → 90% Playwright QA). Tokenmaxxing metrics, founder's daily operating loop, anti-patterns to reject. |
+| [`ai-native-company-2026.md`](./ai-native-company-2026.md) | **The 5 recursive loops** — Autonomous Engineering / Diorization / Disposable Software (Permanent Data) / Token-Maxing Culture / Human at the Edge. The cultural blueprint for the AI-native agency that OpsRadar enables (and IS). |
+| [`architecture-2026.md`](./architecture-2026.md) | **The chatv2 technical plan** — 5 strengthening priorities (multi-pass agent, GraphRAG, envelope encryption, Langfuse, MCP-native), cloud infra patterns (chatv2 as Sovereign-style control plane), Loop modules mapped to migrations, 8-sprint sequence. |
 
 ---
 
@@ -105,6 +119,7 @@ Finalized copy for every marketing page. Update here when copy changes.
 | [`design/design-language-opsradar.md`](./design/design-language-opsradar.md) | Design token system, typography scale, color palette, spacing rules |
 | [`design/design-audit-live-site.md`](./design/design-audit-live-site.md) | May 2026 live-site design audit findings vs 10 SaaS benchmarks |
 | [`design/design-redesign-specs.md`](./design/design-redesign-specs.md) | 10-page redesign specs + site-wide design fixes |
+| [`design/vibe-coded-trap.md`](./design/vibe-coded-trap.md) | Anti-AI-uniform design checklist + audit of opsradar.com (avoided 4/5 vibe-coded tells; at-risk on Google-palette dashboards + Shadcn hover defaults). 5 candidate distinctive design moves with scores; recommended install: cyan-as-liveness rule (`#00D4FF` reserved exclusively for live elements) + live margin ticker + serif-italic founder byline | Before any new page ships |
 
 ---
 
