@@ -9,6 +9,7 @@ import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { COO_TOOLS, TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { executeToolCall, type ExecutorContext } from '<npm>/lib/coo/executor';
 import { getRecentOutcomes, formatOutcomesForPrompt } from '<npm>/lib/coo/outcomes';
+import { buildCooSystemPrompt, PROMPT_VERSION } from '<npm>/lib/coo/prompts/coo-system-v1';
 import type OpenAI from 'openai';
 
 export const dynamic = 'force-dynamic';
@@ -110,22 +111,17 @@ export async function POST(request: NextRequest): Promise<Response> {
   const recentOutcomes = await getRecentOutcomes(userId, 10);
   const outcomesBlock = formatOutcomesForPrompt(recentOutcomes);
 
-  const systemPrompt = `You are the AI COO of ${companyName}. You answer questions about the business using live data from your tools.
+  const systemPrompt = buildCooSystemPrompt({
+    companyName,
+    blendedRate,
+    teamSizeRaw,
+    pendingActionsCount,
+    outcomesBlock,
+  });
 
-Rules you MUST follow:
-1. Before answering any question about metrics, finances, clients, pipeline, or capacity — call the relevant tool first
-2. Base your answer ONLY on tool results — never guess or invent numbers
-3. If a tool returns success: false, tell the user that data is unavailable and what integration to connect
-4. For questions about industry norms, benchmarks, best practices, or "what's typical" — call search_kb FIRST to ground your answer in OpsRadar's research library
-5. When you spot a concrete problem (low-margin client, scope overrun, retainer over its hours), call queue_action AFTER explaining it. The action saves a draft email/note to the user's Actions queue — nothing is sent automatically. Only use queue_action for the 4 supported types: margin_alert, hours_budget_exceeded, scope_approaching, retainer_overage.
-6. Be concise and direct. Dollar amounts over adjectives. No markdown headers.
-7. LEARN FROM PAST DECISIONS — see the "Recent decisions" block below. Do NOT propose actions the owner has dismissed for the same reason recently. If you see a relevant past decision, reference it briefly.
-
-Account context (from settings — do not fetch via tools):
-- Company: ${companyName}
-- Blended hourly rate: $${blendedRate}/hr
-- Team size: ${teamSizeRaw || 'not set in settings'}
-- Pending actions awaiting approval: ${pendingActionsCount}${outcomesBlock ? `\n\n${outcomesBlock}` : ''}`;
+  // Surface prompt version for observability — every chat session is
+  // attributable to a specific prompt revision (Software 3.0 discipline).
+  console.log('[coo-agent] using prompt version:', PROMPT_VERSION);
 
   const encoder = new TextEncoder();
 
