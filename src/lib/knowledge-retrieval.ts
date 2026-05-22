@@ -258,6 +258,69 @@ export function retrieveCooKnowledge(query: string): KnowledgeChunk[] {
   return selected
 }
 
+/**
+ * Hybrid retriever: semantic (pgvector) + keyword (category routing).
+ * Semantic surfaces files the keyword router wouldn't pick because the
+ * filename / category doesn't match; keyword surfaces files semantic
+ * underweights because they're long / dense / multi-topic.
+ *
+ * Strategy:
+ *   1. Run keyword retrieval (existing logic — fast, deterministic)
+ *   2. Run semantic search in parallel (network call to OpenAI, then pgvector)
+ *   3. Merge: dedupe by sourceFile, semantic matches outrank keyword unless
+ *      already present, hybrid result capped at PER_FILE_CHAR_CAP per file
+ *      and CATEGORY_CHAR_BUDGET overall.
+ *
+ * Failure mode: if semantic search returns empty (no OPENAI_API_KEY, no
+ * embeddings yet, network failure), this gracefully degrades to keyword-only.
+ */
+export async function retrieveCooKnowledgeHybrid(query: string): Promise<KnowledgeChunk[]> {
+  if (!query.trim()) return []
+
+  // Lazy import to avoid pulling OpenAI client into modules that only need
+  // the keyword retriever (and to keep client-side bundles small).
+  const { semanticSearchKb } = await import('./coo/semantic-retrieval')
+
+  const [keywordChunks, semanticMatches] = await Promise.all([
+    Promise.resolve(retrieveCooKnowledge(query)),
+    semanticSearchKb(query, 5).catch(() => []),
+  ])
+
+  // If we got useful semantic matches, layer them in: load the full chunk
+  // by sourceFile (via readCategory) so we get the same fields as keyword.
+  const semanticChunks: KnowledgeChunk[] = []
+  for (const m of semanticMatches) {
+    if (!m.category) continue
+    // Skip if this file is already in the keyword set
+    if (keywordChunks.some((k) => k.sourceFile === m.source_file)) continue
+    const catChunks = readCategory(m.category)
+    const match = catChunks.find((c) => c.sourceFile === m.source_file)
+    if (match) {
+      // Encode semantic similarity into the similarity field for ranking
+      match.similarity = scoreCooChunk(match) + m.similarity * 2 // bias toward semantic hits
+      semanticChunks.push(match)
+    }
+  }
+
+  // Merge: semantic-augmented chunks first (they tend to be precision hits),
+  // then keyword chunks. Apply the same 10KB budget.
+  const merged = [...semanticChunks, ...keywordChunks]
+  merged.sort((a, b) => b.similarity - a.similarity)
+
+  let remaining = CATEGORY_CHAR_BUDGET
+  const selected: KnowledgeChunk[] = []
+  const seen = new Set<string>()
+  for (const c of merged) {
+    if (remaining <= 0) break
+    if (seen.has(c.sourceFile)) continue
+    seen.add(c.sourceFile)
+    const trim = c.content.slice(0, Math.min(remaining, PER_FILE_CHAR_CAP))
+    selected.push({ ...c, content: trim })
+    remaining -= trim.length
+  }
+  return selected
+}
+
 export function formatKnowledgeContext(chunks: KnowledgeChunk[]): string {
   if (chunks.length === 0) return ''
 

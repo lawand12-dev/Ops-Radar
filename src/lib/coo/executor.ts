@@ -13,7 +13,7 @@ import { fetchMondayDeliveryData } from '<npm>/lib/integrations/monday/adapter';
 import { fetchApolloMarketingData } from '<npm>/lib/integrations/apollo/adapter';
 import { fetchCalendlyBookingsData } from '<npm>/lib/integrations/calendly/adapter';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { retrieveCooKnowledge } from '<npm>/lib/knowledge-retrieval';
+import { retrieveCooKnowledgeHybrid } from '<npm>/lib/knowledge-retrieval';
 import type { Json } from '<npm>/lib/database.types';
 import type {
   MarginAlertPayload,
@@ -329,7 +329,7 @@ async function runSearchKb(args: Record<string, unknown>, ctx: ExecutorContext):
   if (typeof args.query !== 'string' || !args.query.trim()) {
     return { success: false, reason: 'query must be a non-empty string.' };
   }
-  const chunks = retrieveCooKnowledge(args.query);
+  const chunks = await retrieveCooKnowledgeHybrid(args.query);
 
   // Self-improving loop: log gaps for the admin backlog
   if (chunks.length === 0) {
