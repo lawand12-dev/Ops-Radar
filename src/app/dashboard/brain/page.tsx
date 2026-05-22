@@ -59,7 +59,7 @@ export default async function BrainPage() {
 
   const supabase = await getSessionSupabaseClient();
 
-  const [briefRes, patternsRes, breadcrumbsRes, sourcesRes] = await Promise.all([
+  const [briefRes, patternsRes, breadcrumbsRes, sourcesRes, patternActionsRes] = await Promise.all([
     supabase
       .from('living_briefs')
       .select('id, version, brief_content, generated_at, model_used, prompt_version')
@@ -80,12 +80,34 @@ export default async function BrainPage() {
       .from('ingestion_sources')
       .select('id, source_type, source_label, status, last_synced_at, last_error')
       .order('created_at', { ascending: false }),
+    supabase
+      .from('agent_actions')
+      .select('id, status, payload, created_at')
+      .eq('action_type', 'pattern_alert')
+      .order('created_at', { ascending: false })
+      .limit(100),
   ]);
 
   const brief = (briefRes.data ?? null) as LivingBrief | null;
   const patterns = (patternsRes.data ?? []) as PatternCard[];
   const breadcrumbs = (breadcrumbsRes.data ?? []) as Breadcrumb[];
   const sources = (sourcesRes.data ?? []) as IngestionSource[];
+
+  // Build pattern_card_id → linked actions index for the cards section
+  const patternActionRows = (patternActionsRes.data ?? []) as Array<{
+    id: string;
+    status: string;
+    payload: { pattern_card_id?: string } | null;
+    created_at: string;
+  }>;
+  const actionsByPattern: Record<string, Array<{ id: string; status: string; created_at: string }>> = {};
+  for (const a of patternActionRows) {
+    const pcId = a.payload?.pattern_card_id;
+    if (!pcId) continue;
+    const list = actionsByPattern[pcId] ?? [];
+    list.push({ id: a.id, status: a.status, created_at: a.created_at });
+    actionsByPattern[pcId] = list;
+  }
 
   const isEmpty = !brief && patterns.length === 0 && breadcrumbs.length === 0;
 
@@ -111,7 +133,7 @@ export default async function BrainPage() {
 
       {brief && <LivingBriefSection brief={brief} />}
 
-      {patterns.length > 0 && <PatternCardsSection patterns={patterns} />}
+      {patterns.length > 0 && <PatternCardsSection patterns={patterns} actionsByPattern={actionsByPattern} />}
 
       {breadcrumbs.length > 0 && <BreadcrumbsSection breadcrumbs={breadcrumbs} />}
 
@@ -167,29 +189,61 @@ function LivingBriefSection({ brief }: { brief: LivingBrief }) {
   );
 }
 
-function PatternCardsSection({ patterns }: { patterns: PatternCard[] }) {
+function PatternCardsSection({
+  patterns,
+  actionsByPattern,
+}: {
+  patterns: PatternCard[];
+  actionsByPattern: Record<string, Array<{ id: string; status: string; created_at: string }>>;
+}) {
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">Active patterns ({patterns.length})</h2>
       <div className="grid gap-3 md:grid-cols-2">
-        {patterns.map((p) => (
-          <div key={p.id} className="rounded-lg border border-border bg-card p-4 space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-medium leading-tight">{p.title}</h3>
-              <span className="text-xs font-mono text-muted-foreground shrink-0">
-                {(p.confidence * 100).toFixed(0)}%
-              </span>
+        {patterns.map((p) => {
+          const linkedActions = actionsByPattern[p.id] ?? [];
+          const pending = linkedActions.filter((a) => a.status === 'pending');
+          const approved = linkedActions.filter((a) => a.status === 'executed' || a.status === 'approved');
+          const dismissed = linkedActions.filter((a) => a.status === 'dismissed');
+
+          return (
+            <div key={p.id} className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-medium leading-tight">{p.title}</h3>
+                <span className="text-xs font-mono text-muted-foreground shrink-0">
+                  {(p.confidence * 100).toFixed(0)}%
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">{p.description}</p>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-1">
+                <span className="font-mono text-[10px] uppercase tracking-wide">{p.pattern_type}</span>
+                <span>·</span>
+                <span>{p.source_breadcrumb_ids.length} sources</span>
+                <span>·</span>
+                <span>first seen {formatDate(p.first_observed_at)}</span>
+              </div>
+              {linkedActions.length > 0 && (
+                <div className="pt-2 border-t border-border/50 flex flex-wrap gap-2 text-xs">
+                  {pending.length > 0 && (
+                    <a href="/dashboard/actions" className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 hover:underline">
+                      {pending.length} pending action{pending.length === 1 ? '' : 's'}
+                    </a>
+                  )}
+                  {approved.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500">
+                      {approved.length} acted on
+                    </span>
+                  )}
+                  {dismissed.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground">
+                      {dismissed.length} dismissed
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground">{p.description}</p>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
-              <span className="font-mono text-[10px] uppercase tracking-wide">{p.pattern_type}</span>
-              <span>·</span>
-              <span>{p.source_breadcrumb_ids.length} sources</span>
-              <span>·</span>
-              <span>first seen {formatDate(p.first_observed_at)}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
