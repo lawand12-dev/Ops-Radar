@@ -7,6 +7,8 @@ export type ActionType =
   | 'hubspot_harvest_sync'
   | 'retainer_overage'
   | 'retainer_invoice_draft'
+  | 'cash_flow_alert'
+  | 'capacity_drift'
 
 export type ActionStatus =
   | 'pending'
@@ -26,6 +28,8 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   hubspot_harvest_sync:  'auto',
   retainer_overage:      'approval',
   retainer_invoice_draft: 'approval',
+  cash_flow_alert:       'approval',
+  capacity_drift:        'approval',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -37,6 +41,8 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   hubspot_harvest_sync:  'New client synced to Harvest',
   retainer_overage:      'Retainer overage — billing conversation ready',
   retainer_invoice_draft: 'Retainer invoice — Stripe draft ready',
+  cash_flow_alert:       'Cash flow risk — advisory ready',
+  capacity_drift:        'Capacity drift — staffing advisory ready',
 }
 
 // ─── Payload types ────────────────────────────────────────────────────────────
@@ -125,6 +131,27 @@ export type RetainerInvoiceDraftPayload = {
   stripe_invoice_id?: string // populated after successful execute
 }
 
+export type CashFlowAlertPayload = {
+  paid_mtd_usd: number
+  overdue_usd: number
+  open_invoice_usd: number
+  overdue_ratio_pct: number          // overdue / paid_mtd × 100
+  top_overdue_clients: Array<{ name: string | null; amount_usd: number; days_overdue: number }>
+  draft_subject: string
+  draft_body: string
+}
+
+export type CapacityDriftPayload = {
+  utilization_pct: number             // current month
+  utilization_prior_pct: number | null
+  direction: 'over_capacity' | 'under_capacity'
+  threshold_crossed: string           // e.g. ">=95%" or "<=50%"
+  hours_logged_mtd: number
+  hours_capacity_mtd: number
+  draft_subject: string
+  draft_body: string
+}
+
 export type ActionPayload =
   | InvoiceReminderPayload
   | MarginAlertPayload
@@ -134,6 +161,8 @@ export type ActionPayload =
   | HubSpotHarvestPayload
   | RetainerOveragePayload
   | RetainerInvoiceDraftPayload
+  | CashFlowAlertPayload
+  | CapacityDriftPayload
 
 export type NewAction = {
   action_type: ActionType

@@ -9,6 +9,8 @@ import { evalWorkflowFailures } from './evaluators/workflow-failure';
 import { evalHubSpotHarvest } from './evaluators/hubspot-harvest';
 import { evalRetainerOverage } from './evaluators/retainer-overage';
 import { evalRetainerInvoiceDraft } from './evaluators/retainer-invoice-draft';
+import { evalCashFlow } from './evaluators/cash-flow';
+import { evalCapacityDrift } from './evaluators/capacity-drift';
 import { executeAction } from './executor';
 import { ACTION_RISK } from './types';
 import type { NewAction, AgentAction, UserContext } from './types';
@@ -80,6 +82,8 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
     hubspotKey ? evalHubSpotHarvest(ctx, hubspotKey) : Promise.resolve([]),
     harvestKey ? evalRetainerOverage(ctx, harvestKey) : Promise.resolve([]),
     stripeKey ? evalRetainerInvoiceDraft(ctx, stripeKey) : Promise.resolve([]),
+    stripeKey ? evalCashFlow(ctx, stripeKey) : Promise.resolve([]),
+    harvestKey ? evalCapacityDrift(ctx, harvestKey) : Promise.resolve([]),
   ]);
 
   const proposed: NewAction[] = [];
