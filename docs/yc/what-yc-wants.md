@@ -108,7 +108,7 @@ YC's term for ideas that look shiny and easy but get crushed:
 | Mistake | OpsRadar's risk | Fix |
 |---------|------------------|-----|
 | Vague claims ("strong interest") | Medium — easy to slip into | Use specific numbers in every answer |
-| No traction signal | High if customer count is 0 | Onboard 1-3 pilots this week even at $0; cite them as "engaged design partners" |
+| No traction signal | Resolved — 250 cold outreach + Reddit engagement + inbound partnership offer (see `traction-evidence.md`) | Cite specific numbers + the partnership-offer Reddit quote verbatim in Q5 |
 | Solo founder no demonstrated execution | N/A — 2-cofounder team (Lawand CEO + Atta CTO, both Halabja Iraq, 60/40 split). See `founder-profile.md` for the full team breakdown | N/A |
 | Reapplying with same pitch as last batch | N/A — first-time apply | Skip |
 | Failed to address "Why now? Why you?" | Medium | Frame around the 60pp gap (Signal 1) + Iraq angle + 6-12 month YC window |
@@ -268,7 +268,7 @@ Don't dodge this. Don't say "execution" — every startup says that. Pick the re
 |--------|----------------------|-------|
 | First-principles + discovery | **8/10** | 60pp gap insight + Planable 21.5% number is strong; needs sharper founder story attached |
 | Founder-market fit | **7/10** | Strong if you tell the right personal story; risky if you don't anchor it |
-| Real numbers / traction | **4/10** | This is the weakest leg. Customer count needs to be > 0 before submitting if at all possible |
+| Real numbers / traction | **6/10** | 250 cold emails sent + 3 active Reddit threads with operators + 1 inbound partnership offer (Creative-Letter-4902) + active conversation thread with Gullible-Storm9278 + Lawand's existing audience (Twitter @LawandOps, GitHub, opsradar.co). Documented in `traction-evidence.md`. Lift to 8/10 = convert the partnership offer + one Reddit conversation into design partners this week |
 | Speed (between apply and interview) | **9/10** | High — you've shipped 6 fixes + 30+ docs + 4-doc theory stack in 7 days |
 | AI-native architecture | **9/10** | Multi-tenant agent loop + KB + MCP-planned + Software 3.0 thesis explicit |
 
