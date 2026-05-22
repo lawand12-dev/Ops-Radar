@@ -74,27 +74,33 @@ OpsRadar consumes chatv2 via two proxied API routes using a shared `CHATV2_SERVI
 
 **Customer Dashboard** (`/dashboard/*`)
 
+The sidebar is grouped into 7 sections to give the nav a narrative arc
+(2026-05-23): Overview / TODAY (Actions, Briefings) / CLIENTS / INTELLIGENCE
+(Ask COO, Brain, Performance) / OPERATIONS / PARTNER (FO only) / WORKSPACE.
+
 | Route | Purpose |
 |-------|---------|
-| `/dashboard` | Overview — KPIs, activity feed, briefing, health strip |
+| `/dashboard` | Overview cockpit — KPI strip, alerts ribbon, narrative, activity feed + integration health |
+| `/dashboard/actions` | Agentic action queue (invoice reminders, margin alerts, etc.) |
+| `/dashboard/briefings` | COO Briefings inbox — daily AI-generated readouts |
 | `/dashboard/profitability` | Client profitability by retainer vs actual hours |
 | `/dashboard/scope` | Scope creep detection per client |
 | `/dashboard/retainer` | Retainer configs (monthly rates, hour budgets) |
-| `/dashboard/score` | Agency health score |
-| `/dashboard/benchmarks` | Peer benchmarks by service mix + team size |
-| `/dashboard/coo` | AI COO chat (GPT-4o, context-aware) |
+| `/dashboard/coo` | Ask COO — chat agent with sidebar of saved sessions |
+| `/dashboard/brain` | Company Brain — living brief + pattern cards + breadcrumb upload |
+| `/dashboard/performance` | Merged tabbed page: **Health** (5-dimension score) and **Peers** (cohort benchmarks). Replaces the standalone `/score` and `/benchmarks` pages, which now 301 here. |
 | `/dashboard/automations` | Workflow health from n8n (via chatv2) |
-| `/dashboard/actions` | Agentic action queue (invoice reminders, margin alerts, etc.) |
+| `/dashboard/business` | Live Data — raw per-integration explorer (Stripe rows, HubSpot deals, Pipedrive, Apollo, Calendly, ClickUp/Asana/Monday, Toggl, Harvest). Renamed from "Business"; top-line KPIs were dropped because they duplicate Overview. |
 | `/dashboard/integrations` | Connect/manage API keys for Stripe, HubSpot, ClickUp, Harvest, etc. |
+| `/dashboard/webhooks` | Outgoing webhook configurations |
 | `/dashboard/settings` | Account settings |
 | `/dashboard/settings/team` | Team members + invitations |
-| `/dashboard/business` | Business overview widgets |
+| `/dashboard/settings/mcp` | MCP token + install snippet |
 | `/dashboard/fo` | Fractional Operator (FO) multi-client aggregate dashboard |
 | `/dashboard/fo/clients` | FO managed client list |
 | `/dashboard/fo/clients/[id]` | Per-client dashboard for FO |
 | `/dashboard/fo/branding` | White-label branding settings |
 | `/dashboard/fo/audit` | FO audit tools |
-| `/dashboard/webhooks` | Outgoing webhook configurations |
 
 **Admin**
 
