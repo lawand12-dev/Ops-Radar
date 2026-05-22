@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, CheckCircle, XCircle, Plus } from 'lucide-react';
+import { MarkdownContent } from '<npm>/components/dashboard/markdown-content';
 
 const STORAGE_KEY = 'opsradar:coo-chat:v1';
 // Cap how many messages we persist — avoids unbounded localStorage growth
@@ -261,8 +262,8 @@ export function CooChat() {
           ))}
 
           {m.content && (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-[1.6] text-[var(--color-fg)] whitespace-pre-wrap">
-              {m.content}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+              <MarkdownContent>{m.content}</MarkdownContent>
               {isStreaming && (
                 <span className="coo-cursor" aria-hidden>▍</span>
               )}

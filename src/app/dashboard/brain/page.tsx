@@ -10,6 +10,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { BrainUploadWidget } from './_components/brain-upload-widget';
+import { MarkdownContent } from '<npm>/components/dashboard/markdown-content';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,17 +145,21 @@ export default async function BrainPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-lg border border-dashed border-border p-8 text-center space-y-3">
-      <h2 className="text-lg font-medium">Your brain is empty</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        Upload a Slack export, Gmail mbox JSON, or Zoom transcript below to seed your first breadcrumbs.
-        The diorize cron runs nightly (3am UTC) — pattern cards + living brief generate automatically after
-        enough breadcrumbs accumulate.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Want to see it populated instantly without an upload? Click{' '}
-        <strong>Seed sample data</strong> on the upload widget below.
-      </p>
+    <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-gradient-to-br from-[var(--color-surface)] to-transparent p-10 text-center space-y-4">
+      <div className="mx-auto h-12 w-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+        <span className="text-2xl" aria-hidden>✨</span>
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold">Your brain is waiting</h2>
+        <p className="text-sm text-[var(--color-fg-muted)] max-w-md mx-auto">
+          Feed it the conversations behind your business — Slack threads, client emails, meeting transcripts —
+          and it will surface recurring patterns and write a living brief your AI COO always has loaded.
+        </p>
+      </div>
+      <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)]/10 px-3 py-1.5 text-xs text-[var(--color-primary)]">
+        <span aria-hidden>👉</span>
+        Click <strong>Seed sample data</strong> below to see it populated instantly
+      </div>
     </div>
   );
 }
@@ -164,9 +169,7 @@ function LivingBriefSection({ brief }: { brief: LivingBrief }) {
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">Current brief</h2>
       <div className="rounded-lg border border-border bg-card p-6">
-        <article className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-          {brief.brief_content}
-        </article>
+        <MarkdownContent>{brief.brief_content}</MarkdownContent>
         <footer className="mt-6 pt-4 border-t border-border flex items-center gap-3 text-xs text-muted-foreground">
           <span>v{brief.version}</span>
           <span>·</span>
@@ -206,36 +209,63 @@ function PatternCardsSection({
           const approved = linkedActions.filter((a) => a.status === 'executed' || a.status === 'approved');
           const dismissed = linkedActions.filter((a) => a.status === 'dismissed');
 
+          const confidencePct = Math.round(p.confidence * 100);
+          // Color scale: green ≥80, blue ≥60, amber <60
+          const confColor =
+            confidencePct >= 80
+              ? 'text-emerald-500'
+              : confidencePct >= 60
+                ? 'text-[var(--color-primary)]'
+                : 'text-amber-500';
+          const confBg =
+            confidencePct >= 80
+              ? 'bg-emerald-500'
+              : confidencePct >= 60
+                ? 'bg-[var(--color-primary)]'
+                : 'bg-amber-500';
+
           return (
-            <div key={p.id} className="rounded-lg border border-border bg-card p-4 space-y-2">
+            <div
+              key={p.id}
+              className="group rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3 hover:border-[var(--color-primary)]/40 transition-colors"
+            >
               <div className="flex items-start justify-between gap-3">
-                <h3 className="font-medium leading-tight">{p.title}</h3>
-                <span className="text-xs font-mono text-muted-foreground shrink-0">
-                  {(p.confidence * 100).toFixed(0)}%
-                </span>
+                <h3 className="font-semibold leading-tight text-[var(--color-fg)]">{p.title}</h3>
+                <div className="shrink-0 flex flex-col items-end gap-1">
+                  <span className={`text-xs font-mono ${confColor}`}>{confidencePct}%</span>
+                  <div className="h-1 w-16 rounded-full bg-[var(--color-border)] overflow-hidden">
+                    <div className={`h-full ${confBg}`} style={{ width: `${confidencePct}%` }} />
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">{p.description}</p>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-1">
-                <span className="font-mono text-[10px] uppercase tracking-wide">{p.pattern_type}</span>
-                <span>·</span>
-                <span>{p.source_breadcrumb_ids.length} sources</span>
-                <span>·</span>
-                <span>first seen {formatDate(p.first_observed_at)}</span>
+              <p className="text-sm text-[var(--color-fg-muted)] leading-relaxed">{p.description}</p>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)]">
+                  {p.pattern_type}
+                </span>
+                <span className="text-[var(--color-fg-subtle)]">·</span>
+                <span className="text-[var(--color-fg-muted)]">{p.source_breadcrumb_ids.length} sources</span>
+                <span className="text-[var(--color-fg-subtle)]">·</span>
+                <span className="text-[var(--color-fg-muted)]">since {formatDate(p.first_observed_at)}</span>
               </div>
               {linkedActions.length > 0 && (
-                <div className="pt-2 border-t border-border/50 flex flex-wrap gap-2 text-xs">
+                <div className="pt-2 border-t border-[var(--color-border)]/50 flex flex-wrap gap-2 text-xs">
                   {pending.length > 0 && (
-                    <a href="/dashboard/actions" className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 hover:underline">
-                      {pending.length} pending action{pending.length === 1 ? '' : 's'}
+                    <a
+                      href="/dashboard/actions"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 transition-colors"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      {pending.length} pending
                     </a>
                   )}
                   {approved.length > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500">
-                      {approved.length} acted on
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-500">
+                      ✓ {approved.length} acted on
                     </span>
                   )}
                   {dismissed.length > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)]">
                       {dismissed.length} dismissed
                     </span>
                   )}
