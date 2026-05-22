@@ -29,21 +29,46 @@ OpsRadar is a 2-cofounder, both-technical, both-shipping team. Both founders Ira
 
 ### Lawand's domain expertise (this is the origin of the OpsRadar thesis)
 
-**3 years of real operations work at a high-volume retail business.** Halabja Wholesale & Retail Store, July 2022 – August 2025 (started at age 15): Sales & Inventory Manager at one of the largest wholesale and retail stores in Halabja. Owned day-to-day inventory flow, customer transactions, and supplier wholesale/retail operations.
+**5 years of real operations work at a high-volume retail business — started at age 13.**
+
+Halabja Wholesale & Retail Store (family-owned, one of the largest in Halabja):
+- **Age 13 (~2021):** Started working at his uncle's wholesale + retail store. Informal at first, then a formal role.
+- **July 2022 → August 2025 (age 14/15 → 17):** Formal Sales & Inventory Manager. Owned day-to-day inventory flow, customer transactions, supplier wholesale/retail operations at scale.
+- **Total:** ~5 years of continuous operational work, ages 13 through 17.
 
 In his own application words: *"Learned how operations actually break under volume, how manual systems fail at scale, and why small inefficiencies compound every day. This is the experience that shapes how I think about marketing agency operations today."*
 
-**The motorcycle delivery hack (YC's favorite kind of answer).** Restaurant outside Sulaymaniyah, August – December 2025: Promoted to Operations Supervisor within one month. Saw that customers wanted the food but couldn't always come to the restaurant. Used his own motorcycle to create a delivery channel that didn't exist: coordinated orders, delivered them personally, collected payment.
+**The motorcycle delivery hack (YC's favorite kind of answer).** 3 months as Operations Supervisor at a restaurant outside Sulaymaniyah (August – November 2025). Promoted within one month. Saw that customers wanted the food but couldn't always come to the restaurant. Used his own motorcycle to create a delivery channel that didn't exist: coordinated orders, delivered them personally, collected payment.
 
 In his own words: *"The hack was realizing the bottleneck was not demand or food production. It was access. A simple delivery loop let the restaurant serve customers it was missing before. That shaped how I think about operations: businesses often do not need more tools first; they need the missing workflow between demand and execution."*
 
-**That's the OpsRadar thesis in one paragraph.** Agencies don't need more dashboards. They need the missing workflow between their data and their decisions. The cofounder lived this insight in the physical world before he ever wrote a line of OpsRadar's spec.
+**That's the OpsRadar thesis in one paragraph.** Agencies don't need more dashboards. They need the missing workflow between their data and their decisions. The cofounder lived this insight in the physical world for 5 years before he ever wrote a line of OpsRadar's spec.
 
-### Lawand's self-learning track record
+### Lawand's self-learning arc — the Software 3.0 director progression
 
-In his own words: *"I taught myself English, business, AI tools, website building, and automation from Kurdistan without a tech ecosystem, investors, formal training, or local startup network. My biggest achievement is my rate of self-learning."*
+Late 2025 onward (after leaving the restaurant): Lawand committed full-time to teaching himself the modern agentic stack. The progression matters because it maps perfectly onto Karpathy's Software 1.0 → 2.0 → 3.0 framework documented in [`../software-3-engineering-2026.md`](../software-3-engineering-2026.md):
 
-This is *exactly* the founder profile YC funds. Self-taught, geographically remote, no ecosystem advantage, builds anyway. Paul Graham's "determination" trait scored at maximum.
+1. **Automation** (the Software 1.0 layer) — Vercel, GitHub, deployment pipelines, n8n-style workflow tooling
+2. **LLMs** (Software 2.0) — understanding what models are, what they do, where they fail
+3. **AI agents** (Software 3.0 — the new computer) — agent loops, tool use, orchestration
+4. **Coding** — directing agents to ship production code (vs writing it by hand)
+5. **Vibe-coding + prompt engineering** — the craft of high-leverage intent manifestation, in a year when this craft has become the elite-builder differentiator
+
+In his own application words: *"I taught myself English, business, AI tools, web building, and automation from Kurdistan without a tech ecosystem, investors, formal training, or local startup network. My biggest achievement is my rate of self-learning."*
+
+### Why this is the perfect 2026 founder profile
+
+Exactly the archetype YC RFS #2/#4/#12/#15 are funding:
+
+| What YC is funding in 2026 | Lawand's evidence |
+|----------------------------|-------------------|
+| Software 3.0 directors who manifest intent through agents | His entire build approach to OpsRadar — directs the agentic stack (Claude Code Conductor pattern) to ship the customer-facing application |
+| Non-technical founders shipping AI-native products | Title is CEO, "not a technical founder" on the YC form, but ships production code daily via agents |
+| Founders who learned the stack themselves (no bootcamp, no CS degree) | Self-taught the entire path from automation → LLMs → vibe-coding in ~12 months |
+| Domain experts pivoting to apply their domain via AI | 5 years of operational work + 1 year learning the agentic stack = vertical AI built by someone who lived the problem |
+| Determination evidenced by geographic disadvantage | Kurdistan, no ecosystem, no training, no investors, no local startup network — built anyway |
+
+Paul Graham's "determination" trait: scored at maximum.
 
 ### Lawand's prior builds
 
@@ -148,7 +173,7 @@ YC partners actively look for the "shipped since young" pattern because it's the
 
 | Concern a YC partner might have | Direct response in the application |
 |--------------------------------|-------------------------------------|
-| "Too young / not experienced enough" | "We have 10 combined years of real shipping (Atta 7, Lawand 3 in operations + 1 in software). We've been operating in the real world, not credentialing." |
+| "Too young / not experienced enough" | "We have 13+ combined years of real shipping (Atta 7 in software since age 14, Lawand 5 in operations since age 13 + 1 in software). We've been operating in the real world since middle school, not credentialing." |
 | "Lawand didn't finish high school" | "I left high school's final year because OpsRadar required my full attention. I committed to YC exclusively because this is what I'm building." (Frame as conviction, not as failure.) |
 | "Lawand is non-technical — will he be a bottleneck?" | "I direct agentic tooling to ship OpsRadar's customer surface. Software 3.0 makes the technical/non-technical line obsolete; the binding constraint is taste and product judgment, both of which I've earned through 3 years of running operations." |
 | "Will the cofounders fight at 18 + 20?" | "We've been working together on this for [N months] with a clean 60/40 split and zero ambiguity about ownership (CEO = customer surface; CTO = backend). The two systems are already independently deployed." |
@@ -360,9 +385,9 @@ The wrong answer is a resume. The right answer is *evidence of the trait YC want
 
 ## Lawand's Q4 — "most impressive thing other than this startup"
 
-> I taught myself English, business, AI tools, web building, and automation from Kurdistan with no tech ecosystem, no investors, no formal training, and no local startup network — while spending 3 years (age 15–18) as Sales & Inventory Manager at one of Halabja's largest wholesale and retail stores, where I learned firsthand how operations actually break under volume and how manual systems fail at scale. The same operational mindset is what shaped OpsRadar: the bottleneck for most businesses is not more tools, it is the missing workflow between demand and execution.
+> I taught myself English, business, AI tools, automation, LLMs, AI agents, coding, vibe-coding, and prompt engineering from Kurdistan with no tech ecosystem, no investors, no formal training, and no local startup network — after spending five years (age 13 to 17) working in operations at my uncle's wholesale and retail store in Halabja, where I learned firsthand how operations break under volume and how manual systems fail at scale. The same operational mindset is what shaped OpsRadar: the bottleneck for most businesses is not more tools, it is the missing workflow between demand and execution — a discovery I made at age 13 carrying inventory and only fully understood at 18 building software for marketing agencies.
 
-(2 sentences, ~85 words. Anchored to real verifiable jobs. Connects the cofounder's lived experience directly to the OpsRadar thesis.)
+(3 sentences, ~110 words. Anchored to real verifiable work history. Connects 5 years of physical-world operations to the OpsRadar thesis and the Software 3.0 director path.)
 
 ## Atta's Q4 — "most impressive thing other than this startup"
 
@@ -380,13 +405,15 @@ The trap is to write a market-opportunity answer. The right answer is *origin st
 
 ## Draft Q3 answer — grounded in Lawand's actual operations background
 
-> I spent three years (age 15–18) as Sales & Inventory Manager at one of the largest wholesale and retail stores in Halabja, Iraq. I owned inventory flow, customer transactions, and supplier wholesale/retail operations at volume — and I watched, every single week, how manual systems silently bled money at the seams. A miscounted SKU here, a delayed reorder there, a customer who walked because nobody noticed they were waiting. The losses were small individually and catastrophic in aggregate.
+> I spent five years (age 13 to 17) working operations at my uncle's wholesale and retail store in Halabja, Iraq — one of the largest in the city. I started informally at 13, became formal Sales & Inventory Manager at 14–15, and left at 17. I owned inventory flow, customer transactions, and supplier wholesale/retail operations at volume — and I watched, every single week, how manual systems silently bled money at the seams. A miscounted SKU. A delayed reorder. A customer who walked because nobody noticed they were waiting. Small losses individually, catastrophic in aggregate.
 >
-> Then I supervised operations at a restaurant outside Sulaymaniyah and got promoted in a month because I solved one specific bottleneck: customers wanted the food but couldn't always come to us. The restaurant had demand and supply but no delivery channel. I created one with my own motorcycle — coordinated orders, delivered them, collected payment. The bottleneck wasn't demand; it was the missing workflow between demand and execution.
+> After the store I supervised operations at a restaurant outside Sulaymaniyah for three months. Got promoted in a month because I solved one specific bottleneck: customers wanted the food but couldn't always come to us. The restaurant had demand and supply but no delivery channel. I created one with my own motorcycle — coordinated orders, delivered them, collected payment. The bottleneck wasn't demand; it was the missing workflow between demand and execution.
 >
-> That's exactly the OpsRadar thesis. Marketing agencies have the data (Stripe revenue, HubSpot deals, Harvest hours, ClickUp tasks) and they have the work (margin watching, scope alerts, capacity planning), but the workflow between them is missing. A fractional COO at $10,000/month fills that gap manually. We replace that role with software — the same insight from my retail and restaurant work, productised for a vertical that bleeds 15-30% of profit to operational inefficiency every month. Atta and I both came from the same problem-space (operating real businesses at scale under constraint), and that's why we picked this idea.
+> Then I committed full-time to teaching myself the modern agentic stack — automation, LLMs, AI agents, coding, vibe-coding, prompt engineering — because I could see exactly what software needed to do for an agency to solve the problem I had been solving by hand for five years.
+>
+> That's the OpsRadar thesis. Marketing agencies have the data (Stripe revenue, HubSpot deals, Harvest hours, ClickUp tasks) and they have the work (margin watching, scope alerts, capacity planning), but the workflow between them is missing. A fractional COO at $10,000/month fills that gap manually. We replace that role with software — the same insight from my five years on the retail floor and three months on the restaurant floor, productised for a vertical that bleeds 15-30% of profit to operational inefficiency every month. My cofounder Atta and I both grew up shipping under constraint in Halabja — me on the operational side, him on the technical side (selling software to paying users since age 14). That's why we picked this idea, and why we're qualified to build it.
 
-(283 words. Three paragraphs. Origin story → bridge insight → why-this-specifically. Anchored in real verifiable jobs.)
+(370 words. Four paragraphs. Origin story → bridge insight → Software 3.0 pivot → why-this-specifically. Anchored in verifiable jobs with corrected ages 13/17.)
 
 ---
 
@@ -397,7 +424,7 @@ When a YC partner says "tell me about yourselves" in the 10-minute interview, yo
 ## Drop-in script (rehearse it; don't read it)
 
 **Lawand (CEO, opens):**
-> *"I'm Lawand, I'm 18, from Halabja, Iraq. I spent three years managing inventory and operations at one of the largest retail businesses in Halabja, then ran the floor at a restaurant where I created a motorcycle delivery channel that didn't exist. Both jobs taught me the same thing: businesses don't fail from lack of demand, they fail from missing workflow. That's the OpsRadar insight — agencies have all the data and all the work, the workflow between them is missing. A fractional COO at $10K/month fills that gap manually; we replace the function with software."*
+> *"I'm Lawand, I'm 18, from Halabja, Iraq. I spent five years from age 13 to 17 running operations at my uncle's wholesale and retail store, then three months as supervisor at a restaurant where I created a motorcycle delivery channel that didn't exist. Both jobs taught me the same thing: businesses don't fail from lack of demand, they fail from missing workflow. After that I taught myself the agentic stack — automation, LLMs, AI agents, vibe-coding — because I could see exactly what software needed to do for an agency. That's the OpsRadar insight: agencies have all the data and all the work; the workflow between them is missing. A fractional COO at $10K/month fills that gap manually; we replace the function with software."*
 
 **Atta (CTO, follows):**
 > *"I'm Atta, 20, also from Halabja. I've been independently building, deploying, and monetising software since I was 14 — Telegram bots, browser extensions, backend infrastructure for paying clients. I'm top of my class at Halabja Technical Institute, graduating June 2026 — the month the YC batch starts. I own OpsRadar's chatv2 backend: the multi-tenant agentic compute layer that powers the AI COO. We've deployed it as a separate system from the customer surface; clean service-key contract between them. The cofounder separation is structural, not theoretical."*
