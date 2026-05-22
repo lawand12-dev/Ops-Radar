@@ -50,6 +50,7 @@ docs/
 |----------|-------------------|-----------------|
 | [`yc/research-addendum.md`](./yc/research-addendum.md) | Fresh May 2026 data for the 4 YC categories OpsRadar fits (#2 AI-Native Services, #4 Company Brain, #12 Software for Agents, #15 AI OS) — MCP adoption, agentic ROI, agency profit gaps. **🚨 S26 deadline EXTENDED to May 25 + $2M OpenAI tokens grant.** | Before YC application or any investor conversation |
 | [`yc/build-architecture.md`](./yc/build-architecture.md) | The sophisticated build blueprint across all 4 categories — Vercel AI SDK v6, Inngest, hybrid GraphRAG, OAuth-secured MCP server, event-driven supervisor/worker, Langfuse observability. Includes sprint sequencing | Before any net-new product work |
+| [`yc/what-yc-wants.md`](./yc/what-yc-wants.md) | **THE READ FOR THE NEXT 72 HOURS.** What YC partners actually look for (5 signals + tarpit list) + OpsRadar scored 7.4/10 against the rubric (weakest leg = traction; fix is to onboard 1-3 pilots before May 25) + drop-in drafts for 8 application questions + 6-question interview pattern + 3-day action plan | Before drafting or submitting |
 
 ---
 
