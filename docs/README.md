@@ -40,6 +40,7 @@ docs/
 | [`strategy/agency-tools-research-2026.md`](./strategy/agency-tools-research-2026.md) | Deep research on agency tool fragmentation — HubSpot/Pipedrive/ClickUp/Harvest adoption patterns, 59-65% cite fragmentation, 20% can't report margins | Before ICP calls or product prioritization |
 | [`strategy/vs-pages.md`](./strategy/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
 | [`strategy/ai-data-revolution-2026.md`](./strategy/ai-data-revolution-2026.md) | Cloud→AI wave shift applied to agencies: 80/20 unstructured data split, 3 AI agent capabilities mapped to OpsRadar product, strategic-vs-necessary task table ($143–182K/year of agent-absorbable work per agency), outcome bundle pricing model, 3-year window countdown | Before YC application or pricing change |
+| [`strategy/moats-and-friction-2026.md`](./strategy/moats-and-friction-2026.md) | Razorpay's 6 provocations on moats applied to OpsRadar: regulation-as-filter (SOC 2 / GDPR / PCI-DSS), Monopoly Incentive Gap (who to avoid), trust-as-human-touchpoint (founder takes first 50 support calls), asymmetric MCP bet, **explicit "Day Zero Audit" — if rebuilding OpsRadar today, what changes**, the 10-Year Test. "If it isn't hard, it probably isn't a moat." | Before YC interview, before any "let's add an easy feature" decision |
 
 ---
 
