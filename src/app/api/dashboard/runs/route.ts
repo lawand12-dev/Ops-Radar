@@ -32,12 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const supabase = await getSessionSupabaseClient();
   let q = supabase
     .from('agent_runs')
-    .select(
-      'id, agent_slug, status, started_at, ended_at, summary, ' +
-      'actions_taken, patterns_detected, risks_flagged, notion_writes, ' +
-      'tokens_used, cost_cents, error_message',
-      { count: 'exact' },
-    )
+    .select('id, agent_slug, status, started_at, ended_at, summary, actions_taken, patterns_detected, risks_flagged, notion_writes, tokens_used, cost_cents, error_message', { count: 'exact' })
     .eq('user_id', userId)
     .order('started_at', { ascending: false })
     .range(offset, offset + limit - 1);

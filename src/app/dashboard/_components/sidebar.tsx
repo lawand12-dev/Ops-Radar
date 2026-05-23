@@ -88,11 +88,12 @@ const navSections: NavSection[] = [
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Integrations', href: '/dashboard/integrations',  icon: Plug     },
-      { label: 'MCP',          href: '/dashboard/settings/mcp',  icon: Network  },
-      { label: 'Webhooks',     href: '/dashboard/webhooks',      icon: Webhook  },
-      { label: 'Team',         href: '/dashboard/settings/team', icon: Building2 },
-      { label: 'Settings',     href: '/dashboard/settings',      icon: Settings },
+      { label: 'Integrations', href: '/dashboard/integrations',          icon: Plug      },
+      { label: 'Automation',   href: '/dashboard/settings/automation',   icon: Bot       },
+      { label: 'MCP',          href: '/dashboard/settings/mcp',          icon: Network   },
+      { label: 'Webhooks',     href: '/dashboard/webhooks',              icon: Webhook   },
+      { label: 'Team',         href: '/dashboard/settings/team',         icon: Building2 },
+      { label: 'Settings',     href: '/dashboard/settings',              icon: Settings  },
     ],
   },
 ];

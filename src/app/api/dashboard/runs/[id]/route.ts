@@ -31,11 +31,7 @@ export async function GET(
 
   const { data: run, error: runErr } = await supabase
     .from('agent_runs')
-    .select(
-      'id, agent_slug, status, started_at, ended_at, summary, ' +
-      'actions_taken, patterns_detected, risks_flagged, notion_writes, ' +
-      'tokens_used, cost_cents, error_message',
-    )
+    .select('id, agent_slug, status, started_at, ended_at, summary, actions_taken, patterns_detected, risks_flagged, notion_writes, tokens_used, cost_cents, error_message')
     .eq('id', id)
     .eq('user_id', userId)
     .maybeSingle();

@@ -61,8 +61,9 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       : ({} as Awaited<ReturnType<typeof getComposioToolsForUser>>)
 
     // Approval gate: write actions queue to /dashboard/actions for customer
-    // approval; reads + Notion writes pass through. See approval-gate.ts.
-    const tools = wrapToolsWithApprovalGate(rawTools, {
+    // approval; reads + Notion writes pass through. Per-tool autonomy
+    // policies ('ask'|'auto'|'off') are resolved inside the gate.
+    const tools = await wrapToolsWithApprovalGate(rawTools, {
       userId,
       source: 'cron-agent',
       agentSlug: spec.slug,

@@ -20,7 +20,13 @@
 import { tool, type Tool } from 'ai'
 import { z } from 'zod'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import { getComposio } from '<npm>/lib/composio'
 import type { Json } from '<npm>/lib/database.types'
+import {
+  getToolPolicy,
+  loadToolPolicies,
+  type ToolPolicyMap,
+} from './tool-policies'
 
 /** Source surface that's invoking the agent — informs the customer card. */
 export type ApprovalSource = 'cron-agent' | 'coo-chat'
@@ -30,6 +36,12 @@ export type ApprovalGateOptions = {
   source: ApprovalSource
   /** Slug of the agent issuing the call, if known (e.g. 'revenue', 'collections'). */
   agentSlug?: string
+  /**
+   * Pre-loaded user policy map. When omitted, the gate loads policies once
+   * at wrap time. Pass explicitly when the caller already loaded them to
+   * avoid a duplicate query.
+   */
+  policies?: ToolPolicyMap
 }
 
 // Verbs that mark a Composio action as read-only. Anything not matching
@@ -67,86 +79,186 @@ export function isWriteAction(actionSlug: string): boolean {
  * Returns a new tools object where write actions are intercepted by the
  * approval gate. The model "calling" a gated tool sees a queued response
  * with the action_id, not the real execution result.
+ *
+ * Per-tool policy ('ask' | 'auto' | 'off') is resolved at execute time so
+ * customers can flip toolkit autonomy without re-instantiating the agent.
  */
-export function wrapToolsWithApprovalGate(
+export async function wrapToolsWithApprovalGate(
   tools: Record<string, Tool>,
   opts: ApprovalGateOptions,
-): Record<string, Tool> {
+): Promise<Record<string, Tool>> {
   const wrapped: Record<string, Tool> = {}
+  const policies = opts.policies ?? (await loadToolPolicies(opts.userId))
 
   for (const [actionSlug, originalTool] of Object.entries(tools)) {
     if (!isWriteAction(actionSlug)) {
       wrapped[actionSlug] = originalTool
       continue
     }
-    wrapped[actionSlug] = makeQueueingTool(actionSlug, originalTool, opts)
+    wrapped[actionSlug] = makeGatedTool(actionSlug, originalTool, opts, policies)
   }
 
   return wrapped
 }
 
 /**
- * Replaces a tool's `execute` with one that queues to agent_actions and
- * returns a "queued" envelope to the model. Preserves the original
- * description + input schema so the model still sees the tool as available.
+ * Replaces a tool's `execute` with policy-aware behavior:
+ *   policy='off'  → return an error to the model so it doesn't retry
+ *   policy='auto' → fire Composio immediately, log to agent_actions as executed
+ *   policy='ask'  → queue to agent_actions for human approval (default)
+ *
+ * Preserves the original description + input schema so the model still
+ * sees the tool as available.
  */
-function makeQueueingTool(
+function makeGatedTool(
   actionSlug: string,
   originalTool: Tool,
   opts: ApprovalGateOptions,
+  policies: ToolPolicyMap,
 ): Tool {
   const toolkit = actionSlug.split('_')[0].toLowerCase()
+  const description = originalTool.description ?? `Composio action ${actionSlug}`
 
   return tool({
-    description:
-      `[Requires customer approval before executing] ` +
-      (originalTool.description ?? `Composio action ${actionSlug}`),
-    // The Composio-provided schema is already in Vercel AI SDK shape; pass it
-    // through so the model populates args identically to the un-gated version.
+    description: `[Subject to customer's per-tool autonomy policy] ${description}`,
     inputSchema: (originalTool.inputSchema as z.ZodType) ?? z.object({}),
     execute: async (args: unknown) => {
-      const supabase = getServerSupabaseClient()
+      const policy = getToolPolicy(policies, toolkit)
       const summary = summarize(actionSlug, args)
+      const safeArgs = (args ?? {}) as Record<string, unknown>
 
-      const payload = {
-        toolkit,
-        action_slug: actionSlug,
-        arguments: (args ?? {}) as Record<string, unknown>,
-        source: opts.source,
-        agent_slug: opts.agentSlug,
-        summary,
-      }
-
-      const { data, error } = await supabase
-        .from('agent_actions')
-        .insert({
-          user_id: opts.userId,
-          action_type: 'composio_action',
-          status: 'pending',
-          agent_slug: opts.agentSlug ?? null,
-          payload: payload as unknown as Json,
-        })
-        .select('id')
-        .single()
-
-      if (error || !data) {
+      if (policy === 'off') {
         return {
           queued: false,
-          error: `Could not queue action: ${error?.message ?? 'unknown'}`,
+          executed: false,
+          policy_blocked: true,
+          message:
+            `Tool ${actionSlug} is disabled by the customer's policy. ` +
+            `Tell the customer in your reply that you skipped this action ` +
+            `because they have ${toolkit} set to "Off" in their automation settings.`,
         }
       }
 
-      return {
-        queued: true,
-        action_id: data.id,
-        action_slug: actionSlug,
-        summary,
-        message:
-          `Queued for customer approval. Will execute once approved at /dashboard/actions. ` +
-          `Do NOT retry this action — the customer will see it.`,
+      if (policy === 'auto') {
+        return await executeImmediately({ actionSlug, toolkit, args: safeArgs, summary, opts })
       }
+
+      // policy === 'ask' (default) — queue for approval
+      return await queueForApproval({ actionSlug, toolkit, args: safeArgs, summary, opts })
     },
   })
+}
+
+/** Auto-mode path: fire Composio now, log to agent_actions as executed. */
+async function executeImmediately(input: {
+  actionSlug: string
+  toolkit: string
+  args: Record<string, unknown>
+  summary: string
+  opts: ApprovalGateOptions
+}): Promise<unknown> {
+  const { actionSlug, toolkit, args, summary, opts } = input
+  const supabase = getServerSupabaseClient()
+  const composio = getComposio()
+  const nowIso = new Date().toISOString()
+
+  try {
+    const result = await composio.tools.execute(actionSlug, {
+      userId: opts.userId,
+      arguments: args,
+    })
+
+    const payload = {
+      toolkit,
+      action_slug: actionSlug,
+      arguments: args,
+      source: opts.source,
+      agent_slug: opts.agentSlug,
+      summary,
+      result: result as unknown,
+      auto_approved: true,
+    }
+
+    // Audit trail: log even though no human approved. The runs view shows
+    // these alongside queued actions so the customer can review later.
+    await supabase.from('agent_actions').insert({
+      user_id: opts.userId,
+      action_type: 'composio_action',
+      status: 'executed',
+      agent_slug: opts.agentSlug ?? null,
+      payload: payload as unknown as Json,
+      approved_at: nowIso,
+      executed_at: nowIso,
+    })
+
+    return {
+      queued: false,
+      executed: true,
+      auto_approved: true,
+      action_slug: actionSlug,
+      summary,
+      result,
+      message: `Executed immediately (customer has ${toolkit} set to Auto).`,
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[approval-gate] auto execute failed:', actionSlug, message)
+    return {
+      queued: false,
+      executed: false,
+      error: `Composio execute failed: ${message}`,
+    }
+  }
+}
+
+/** Default path: queue to agent_actions for human approval. */
+async function queueForApproval(input: {
+  actionSlug: string
+  toolkit: string
+  args: Record<string, unknown>
+  summary: string
+  opts: ApprovalGateOptions
+}): Promise<unknown> {
+  const { actionSlug, toolkit, args, summary, opts } = input
+  const supabase = getServerSupabaseClient()
+
+  const payload = {
+    toolkit,
+    action_slug: actionSlug,
+    arguments: args,
+    source: opts.source,
+    agent_slug: opts.agentSlug,
+    summary,
+  }
+
+  const { data, error } = await supabase
+    .from('agent_actions')
+    .insert({
+      user_id: opts.userId,
+      action_type: 'composio_action',
+      status: 'pending',
+      agent_slug: opts.agentSlug ?? null,
+      payload: payload as unknown as Json,
+    })
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    return {
+      queued: false,
+      error: `Could not queue action: ${error?.message ?? 'unknown'}`,
+    }
+  }
+
+  return {
+    queued: true,
+    action_id: data.id,
+    action_slug: actionSlug,
+    summary,
+    message:
+      `Queued for customer approval. Will execute once approved at /dashboard/actions. ` +
+      `Do NOT retry this action — the customer will see it.`,
+  }
 }
 
 /**

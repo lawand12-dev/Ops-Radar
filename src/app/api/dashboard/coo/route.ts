@@ -155,7 +155,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (top.length > 0) {
       const toolkits = top.map((s) => COMPOSIO_TOOLS[s]);
       const rawComposio = await getComposioToolsForUser(userId, toolkits);
-      composioTools = wrapToolsWithApprovalGate(rawComposio, {
+      composioTools = await wrapToolsWithApprovalGate(rawComposio, {
         userId,
         source: 'coo-chat',
       });
