@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { decryptApiKey } from '<npm>/lib/integrations/crypto'
+import { isComposioConnected } from '<npm>/lib/composio-fetch'
 import { generateHealthReport } from '<npm>/lib/health-report'
 import { applyRateLimit } from '<npm>/lib/rate-limit'
 
@@ -25,31 +25,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     : 85
   const companyName = typeof meta.company_name === 'string' ? meta.company_name : ''
 
-  const { data: keyRows, error: keyErr } = await service
-    .from('integrations')
-    .select('tool, encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('status', 'connected')
+  // Composio-era: report needs at least one of Stripe or Harvest connected.
+  const [stripeConnected, harvestConnected] = await Promise.all([
+    isComposioConnected(userId, 'stripe'),
+    isComposioConnected(userId, 'harvest'),
+  ])
 
-  if (keyErr) {
-    console.error('[health-report] integrations read failed:', keyErr)
-    return NextResponse.json({ error: 'integrations_read_failed' }, { status: 500 })
-  }
-
-  const getKey = (tool: string): string | null => {
-    const row = (keyRows ?? []).find((r) => r.tool === tool)
-    try { return row ? decryptApiKey(row) : null } catch { return null }
-  }
-
-  const stripeApiKey = getKey('stripe')
-  const harvestApiKey = getKey('harvest')
-
-  if (!stripeApiKey && !harvestApiKey) {
+  if (!stripeConnected && !harvestConnected) {
     return NextResponse.json({ report: null, reason: 'no_integrations' })
   }
 
   try {
-    const report = await generateHealthReport({ stripeApiKey, harvestApiKey, blendedRate, companyName })
+    const report = await generateHealthReport({
+      userId,
+      stripeConnected,
+      harvestConnected,
+      blendedRate,
+      companyName,
+    })
     return NextResponse.json({ report })
   } catch (err) {
     console.error('[health-report] generation failed:', err)

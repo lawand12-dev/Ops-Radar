@@ -28,79 +28,68 @@ type ToolDef = {
 };
 
 const TOOL_CATALOG: ToolDef[] = [
-  {
-    key: 'stripe',
-    label: 'Stripe',
-    blurb: 'Invoiced, paid, overdue',
-    cardKey: 'Finance',
-    enabled: true,
-  },
-  {
-    key: 'hubspot',
-    label: 'HubSpot',
-    blurb: 'CRM — pipeline value, leads, won deals',
-    cardKey: 'Sales',
-    enabled: true,
-  },
-  {
-    key: 'pipedrive',
-    label: 'Pipedrive',
-    blurb: 'CRM — pipeline, deals, stages',
-    cardKey: 'Sales',
-    enabled: true,
-  },
-  {
-    key: 'apollo',
-    label: 'Apollo',
-    blurb: 'Cold outreach — emails sent, opens, replies',
-    cardKey: 'Marketing',
-    enabled: true,
-  },
-  {
-    key: 'calendly',
-    label: 'Calendly',
-    blurb: 'Meetings booked from outreach',
-    cardKey: 'Marketing',
-    enabled: true,
-  },
-  {
-    key: 'clickup',
-    label: 'ClickUp',
-    blurb: 'Projects, tasks, deadlines',
-    cardKey: 'Delivery',
-    enabled: true,
-  },
-  {
-    key: 'asana',
-    label: 'Asana',
-    blurb: 'Projects, tasks, deadlines',
-    cardKey: 'Delivery',
-    enabled: true,
-  },
-  {
-    key: 'monday',
-    label: 'Monday.com',
-    blurb: 'Boards, items, deadlines',
-    cardKey: 'Delivery',
-    enabled: true,
-  },
-  {
-    key: 'toggl',
-    label: 'Toggl',
-    blurb: 'Hours tracked, utilization',
-    cardKey: 'Time tracking',
-    enabled: true,
-  },
-  {
-    key: 'harvest',
-    label: 'Harvest',
-    blurb: 'Hours tracked, utilization',
-    cardKey: 'Time tracking',
-    enabled: true,
-  },
+  // Finance & Accounting
+  { key: 'stripe',      label: 'Stripe',      blurb: 'Invoiced, paid, overdue',                          cardKey: 'Finance',    enabled: true },
+  { key: 'quickbooks',  label: 'QuickBooks',  blurb: 'Real P&L, payroll, contractor costs',              cardKey: 'Finance',    enabled: true },
+  { key: 'xero',        label: 'Xero',        blurb: 'Real P&L, payroll, contractor costs (alt to QB)',  cardKey: 'Finance',    enabled: true },
+
+  // Sales / CRM
+  { key: 'hubspot',     label: 'HubSpot',     blurb: 'CRM — pipeline value, leads, won deals',           cardKey: 'Sales',      enabled: true },
+  { key: 'pipedrive',   label: 'Pipedrive',   blurb: 'CRM — pipeline, deals, stages',                    cardKey: 'Sales',      enabled: true },
+
+  // Marketing / Outbound
+  { key: 'apollo',      label: 'Apollo',      blurb: 'Cold outreach — emails sent, opens, replies',      cardKey: 'Marketing',  enabled: true },
+  { key: 'calendly',    label: 'Calendly',    blurb: 'Meetings booked from outreach',                    cardKey: 'Marketing',  enabled: true },
+  { key: 'google_analytics', label: 'Google Analytics', blurb: 'Web traffic, conversions, channels',     cardKey: 'Marketing',  enabled: true },
+
+  // Ads
+  { key: 'google_ads',  label: 'Google Ads',  blurb: 'Ad spend, ROAS, conversions',                      cardKey: 'Ads',        enabled: true },
+  { key: 'facebook_ads',label: 'Meta Ads',    blurb: 'Facebook + Instagram ad performance',              cardKey: 'Ads',        enabled: true },
+  { key: 'linkedin',    label: 'LinkedIn',    blurb: 'Organic reach, content performance, ad ROAS',      cardKey: 'Ads',        enabled: true },
+
+  // Delivery / PM
+  { key: 'clickup',     label: 'ClickUp',     blurb: 'Projects, tasks, deadlines',                       cardKey: 'Delivery',   enabled: true },
+  { key: 'asana',       label: 'Asana',       blurb: 'Projects, tasks, deadlines',                       cardKey: 'Delivery',   enabled: true },
+  { key: 'monday',      label: 'Monday.com',  blurb: 'Boards, items, deadlines',                         cardKey: 'Delivery',   enabled: true },
+
+  // Time tracking
+  { key: 'toggl',       label: 'Toggl',       blurb: 'Hours tracked, utilization',                       cardKey: 'Time',       enabled: true },
+  { key: 'harvest',     label: 'Harvest',     blurb: 'Hours tracked, utilization, project billing',      cardKey: 'Time',       enabled: true },
+
+  // Comms & Calendar
+  { key: 'gmail',       label: 'Gmail',       blurb: 'Send drafts, read threads, briefings inbox',       cardKey: 'Comms',      enabled: true },
+  { key: 'slack',       label: 'Slack',       blurb: 'Team comms, after-hours signals, burnout',         cardKey: 'Comms',      enabled: true },
+  { key: 'google_calendar', label: 'Google Calendar', blurb: 'Meeting load, deep-work blocks',           cardKey: 'Comms',      enabled: true },
+
+  // HR & Payroll
+  { key: 'bamboo_hr',   label: 'BambooHR',    blurb: 'Team roster, time off, headcount',                 cardKey: 'HR',         enabled: true },
+  { key: 'gusto',       label: 'Gusto',       blurb: 'Payroll costs, contractor payments',               cardKey: 'HR',         enabled: true },
+
+  // Contracts & Forms
+  { key: 'docusign',    label: 'DocuSign',    blurb: 'Contract renewals, expiry dates, signed deals',    cardKey: 'Contracts',  enabled: true },
+  { key: 'typeform',    label: 'Typeform',    blurb: 'Lead capture forms, NPS surveys',                  cardKey: 'Contracts',  enabled: true },
+
+  // Support
+  { key: 'intercom',    label: 'Intercom',    blurb: 'Customer support tickets, response times',         cardKey: 'Support',    enabled: true },
+  { key: 'zendesk',     label: 'Zendesk',     blurb: 'Customer support tickets, CSAT, SLA',              cardKey: 'Support',    enabled: true },
+
+  // The Brain
+  { key: 'notion',      label: 'Notion',      blurb: 'Your AI Ops Brain — agents write findings here',   cardKey: 'Brain',      enabled: true },
 ];
 
-const CATEGORY_ORDER = ['Finance', 'Sales', 'Marketing', 'Delivery', 'Time tracking'] as const;
+const CATEGORY_ORDER = [
+  'Brain',
+  'Finance',
+  'Sales',
+  'Marketing',
+  'Ads',
+  'Delivery',
+  'Time',
+  'Comms',
+  'HR',
+  'Contracts',
+  'Support',
+] as const;
 
 export default function IntegrationsSettingsPage() {
   const searchParams = useSearchParams();
