@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { AppError } from "../../lib/errors";
 import { requireAuth, getAuth } from "../auth/auth-middleware";
+import { findGroundingForWorkflow } from "./grounding";
 import {
   decodeBreadcrumbCursor,
   decodeInteractionCursor,
@@ -168,6 +169,29 @@ memoryRoutes.get("/ai-interactions", async (c) => {
     outcomes,
     projectId: parsed.data.project_id,
     cursor
+  });
+  return c.json(response, 200);
+});
+
+// ============================================================
+// GET /memory/workflows/:id/grounding
+//
+// "Why did the AI build this workflow?" — returns the pattern cards
+// and breadcrumb snapshot that grounded the generating prompt.
+// 404 on wrong-tenant OR missing workflow (same code; no enumeration).
+// ============================================================
+
+const workflowIdParamSchema = z.string().min(1).max(64);
+
+memoryRoutes.get("/workflows/:id/grounding", async (c) => {
+  const auth = getAuth(c);
+  const parsed = workflowIdParamSchema.safeParse(c.req.param("id"));
+  if (!parsed.success) {
+    throw new AppError(400, "INVALID_WORKFLOW_ID", "Invalid workflow id.");
+  }
+  const response = await findGroundingForWorkflow({
+    ownerUserId: auth.userId,
+    workflowId: parsed.data
   });
   return c.json(response, 200);
 });
