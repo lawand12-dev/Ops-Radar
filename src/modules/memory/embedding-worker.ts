@@ -80,6 +80,21 @@ let pollTimer: ReturnType<typeof setTimeout> | null = null;
 let cycleRunning = false;
 let lastWakeAt = 0;
 
+/**
+ * Last completed cycle's summary — read by the admin /admin/memory/health
+ * endpoint. Updated at the very end of runCycle(); null until the first
+ * cycle finishes.
+ */
+interface CycleSummary {
+  finished_at: Date;
+  claimed: number;
+  succeeded: number;
+  failed: number;
+  dead_lettered: number;
+  duration_ms: number;
+}
+let lastCycleSummary: CycleSummary | null = null;
+
 // Coalesce NOTIFY storms: if we just woke up, drop further wakes for the
 // next 250ms. This avoids spinning when a producer fires many NOTIFYs in
 // a tight loop (e.g. pattern card sync inserting 50 cards).
@@ -284,13 +299,22 @@ async function runCycle(trigger: "startup" | "notify" | "poll"): Promise<void> {
       });
     }
 
+    const durationMs = Date.now() - startedAt;
+    lastCycleSummary = {
+      finished_at: new Date(),
+      claimed: batch.length,
+      succeeded,
+      failed,
+      dead_lettered: deadLettered,
+      duration_ms: durationMs
+    };
     logInfo("embedding-worker", "Cycle complete", {
       trigger,
       claimed: batch.length,
       succeeded,
       failed,
       dead_lettered: deadLettered,
-      duration_ms: Date.now() - startedAt
+      duration_ms: durationMs
     });
   } catch (cycleErr) {
     logError("embedding-worker", "Cycle crashed", {
@@ -454,4 +478,29 @@ export async function queuedJobCount(): Promise<number> {
     `SELECT COUNT(*)::text AS n FROM embedding_jobs WHERE status = 'queued'`
   );
   return Number(rows[0]?.n ?? 0);
+}
+
+/**
+ * In-process snapshot of the worker's state — read by the admin
+ * /admin/memory/health endpoint. No DB I/O; safe to call on every
+ * request.
+ *
+ *  - `enabled` reflects env config (whether the worker is allowed to run).
+ *  - `scheduled` is true when the worker has wired up either the LISTEN
+ *    client or the poll timer (i.e. it actually started).
+ *  - `running` is true while a cycle is mid-flight.
+ *  - `last_cycle` is null until the first cycle finishes.
+ */
+export function getEmbeddingWorkerSnapshot(): {
+  enabled: boolean;
+  scheduled: boolean;
+  running: boolean;
+  last_cycle: CycleSummary | null;
+} {
+  return {
+    enabled: env.EMBEDDING_WORKER_ENABLED,
+    scheduled: listener !== null || pollTimer !== null,
+    running: cycleRunning,
+    last_cycle: lastCycleSummary
+  };
 }

@@ -7,6 +7,7 @@ import { AppError, toAppError } from "./lib/errors";
 import { logWarn } from "./lib/logger";
 import { redactSecrets } from "./lib/redact";
 import adminRoutes from "./modules/admin/admin-routes";
+import adminMemoryRoutes from "./modules/admin/memory-routes";
 import analyticsRoutes from "./modules/analytics/analytics-routes";
 import authRoutes from "./modules/auth/auth-routes";
 import chatRoutes from "./modules/chat/chat-routes";
@@ -192,6 +193,9 @@ app.get("/debug/workflow/:projectId/node-versions", async (c) => {
 
 app.route("/auth", authRoutes);
 app.route("/admin", adminRoutes);
+// Admin memory dashboard endpoints. Mounted at /admin/memory/* so the
+// existing /admin/* tree's requireAdmin middleware applies via composition.
+app.route("/admin/memory", adminMemoryRoutes);
 app.route("/chat", chatRoutes);
 app.route("/memory", memoryRoutes);
 app.route("/projects", projectRoutes);
