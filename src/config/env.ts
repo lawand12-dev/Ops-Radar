@@ -190,6 +190,18 @@ const envSchema = z.object({
   ADMIN_EMAIL: z.string().email("ADMIN_EMAIL must be a valid email"),
   ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters"),
 
+  // Composio.dev integration platform (per-user API keys stored encrypted in DB).
+  // Base URL defaults to the public Composio backend; override only in self-hosted setups.
+  COMPOSIO_BASE_URL: z
+    .string()
+    .url()
+    .default("https://backend.composio.dev/api/v1"),
+  COMPOSIO_REQUEST_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30_000),
+
   // Service-to-service API key for the /service/* endpoints. Optional so the
   // feature can be disabled cluster-wide by leaving the var unset (every
   // /service/* call then returns 401 SERVICE_AUTH_NOT_CONFIGURED). When set,

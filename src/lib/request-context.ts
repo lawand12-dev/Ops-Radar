@@ -19,6 +19,8 @@ export interface RequestContext {
   n8nApiKey: string | null;
   /** User's decrypted Anthropic API key. null = use env fallback. */
   anthropicApiKey: string | null;
+  /** User's decrypted Composio API key. null = Composio features unavailable. */
+  composioApiKey: string | null;
   /** Operator-granted: when true the AI service routes this user's workflow
    *  generation through the platform RAG agent (env.RAG_AGENT_*) and skips
    *  the local system prompt + knowledge-base block. */

@@ -101,7 +101,8 @@ function icon(name, size = 18) {
     coo: svg('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M12 12v4"/><path d="M8 12h8"/>'),
     crumbs: svg('<path d="M12 8v4l2 2"/><circle cx="12" cy="12" r="9"/>'),
     model: svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6"/><path d="M9 12h6"/><path d="M9 15h4"/><path d="M4 8h16"/>'),
-    seed: svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>')
+    seed: svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>'),
+    plug: svg('<path d="M12 22v-5"/><path d="M9 7V2"/><path d="M15 7V2"/><rect x="6" y="7" width="12" height="8" rx="1"/><path d="M9 12h6"/>')
   };
   const wrap = document.createElement("span");
   wrap.className = "icon-wrap";
@@ -458,6 +459,30 @@ const api = {
     semanticQuery: (body) => request("/memory/query", { method: "POST", body }),
     summaries: () => request("/memory/summaries"),
     weeklyStats: () => request("/memory/stats/weekly")
+  },
+
+  composio: {
+    saveKey: (composio_api_key) =>
+      request("/composio/credentials", { method: "PUT", body: { composio_api_key } }),
+    deleteKey: () => request("/composio/credentials", { method: "DELETE" }),
+    apps: () => request("/composio/apps"),
+    connectedAccounts: ({ sync = false } = {}) =>
+      request(`/composio/connected-accounts${sync ? "?sync=1" : ""}`),
+    connect: (body) => request("/composio/connect", { method: "POST", body }),
+    disconnect: (appName) =>
+      request(`/composio/connected-accounts/${encodeURIComponent(appName)}`, {
+        method: "DELETE"
+      }),
+    actions: ({ appNames, useCase, limit = 50 } = {}) => {
+      const q = new URLSearchParams();
+      if (appNames) q.set("appNames", appNames);
+      if (useCase) q.set("useCase", useCase);
+      q.set("limit", String(limit));
+      return request(`/composio/actions?${q.toString()}`);
+    },
+    execute: (body) => request("/composio/execute", { method: "POST", body }),
+    executions: ({ limit = 20 } = {}) =>
+      request(`/composio/executions?limit=${limit}`)
   }
 };
 
@@ -912,6 +937,7 @@ const NAV_ITEMS = [
   { path: "#/brain", label: "Company Brain", icon: "brain" },
   { path: "#/breadcrumbs", label: "Activity Feed", icon: "crumbs" },
   { path: "#/analytics", label: "Analytics", icon: "analytics" },
+  { path: "#/integrations", label: "Integrations", icon: "plug" },
   { path: "#/credentials", label: "Credentials", icon: "settings" },
   { path: "#/diagnostics", label: "Diagnostics", icon: "info" }
 ];
@@ -1175,7 +1201,8 @@ const ROUTE_TABLE = [
   { path: /^#\/breadcrumbs\/?$/, render: pageBreadcrumbs, title: "Activity Feed", sub: "Interaction and workflow breadcrumb timeline" },
   { path: /^#\/admin\/memory\/?$/, render: pageAdminMemory, title: "Admin · Memory", sub: "Embedding jobs and vector store stats" },
   { path: /^#\/admin\/models\/?$/, render: pageAdminModels, title: "Admin · AI Models", sub: "Runtime model-role routing overrides" },
-  { path: /^#\/admin\/seed\/?$/, render: pageAdminSeed, title: "Admin · Seed Data", sub: "Insert sample organisational data" }
+  { path: /^#\/admin\/seed\/?$/, render: pageAdminSeed, title: "Admin · Seed Data", sub: "Insert sample organisational data" },
+  { path: /^#\/integrations\/?$/, render: pageIntegrations, title: "Integrations", sub: "Connect external apps via Composio" }
 ];
 
 async function router() {
@@ -6341,6 +6368,502 @@ async function pageAdminSeed(root) {
   }
 
   render();
+}
+
+/* ============================================================
+   21b) PAGE: Integrations (Composio.dev)
+   ============================================================ */
+
+async function pageIntegrations(root) {
+  let user = getCachedAuthUser();
+  let composioKey = "";
+  let savingKey = false;
+  let apps = null;
+  let accounts = null;
+  let executions = null;
+  let connectingApp = null;
+  let actionsApp = null;
+  let actions = null;
+  let executeActionId = "";
+  let executeParams = "{}";
+  let executing = false;
+  let loadError = null;
+
+  // Refresh user to get has_composio_api_key
+  try {
+    const fresh = await api.auth.me();
+    user = fresh.user;
+    setCachedAuthUser(user);
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+
+  async function loadData() {
+    if (!user.has_composio_api_key) return;
+    try {
+      const [appsRes, acctRes, execRes] = await Promise.all([
+        api.composio.apps(),
+        api.composio.connectedAccounts(),
+        api.composio.executions({ limit: 20 })
+      ]);
+      apps = appsRes.apps || [];
+      accounts = acctRes.connected_accounts || [];
+      executions = execRes.executions || [];
+      loadError = null;
+    } catch (err) {
+      loadError = err;
+    }
+    render();
+  }
+
+  async function saveKey() {
+    const k = composioKey.trim();
+    if (!k) { toast("Enter your Composio API key first", "warn"); return; }
+    savingKey = true; render();
+    try {
+      await api.composio.saveKey(k);
+      const fresh = await api.auth.me();
+      user = fresh.user; setCachedAuthUser(user);
+      composioKey = "";
+      toast("Composio API key saved", "success");
+      await loadData();
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      savingKey = false; render();
+    }
+  }
+
+  async function removeKey() {
+    if (!confirm("Remove your Composio API key? All connected app data will be cleared locally.")) return;
+    try {
+      await api.composio.deleteKey();
+      const fresh = await api.auth.me();
+      user = fresh.user; setCachedAuthUser(user);
+      apps = null; accounts = null; executions = null;
+      toast("Composio API key removed", "info");
+    } catch (err) {
+      toast(err.message, "error");
+    }
+    render();
+  }
+
+  async function connectApp(appName) {
+    connectingApp = appName; render();
+    try {
+      const res = await api.composio.connect({ app_name: appName });
+      if (res.redirectUrl) {
+        window.open(res.redirectUrl, "_blank", "noopener");
+        toast(`OAuth window opened for ${appName}. Come back and sync when done.`, "info");
+        setTimeout(() => syncAccounts(), 3000);
+      } else {
+        toast(`Connection initiated (ID: ${res.connectedAccountId})`, "success");
+        await syncAccounts();
+      }
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      connectingApp = null; render();
+    }
+  }
+
+  async function syncAccounts() {
+    try {
+      const res = await api.composio.connectedAccounts({ sync: true });
+      accounts = res.connected_accounts || [];
+      render();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  async function disconnectAccount(appName) {
+    if (!confirm(`Disconnect ${appName}? This removes the connection from Composio too.`)) return;
+    try {
+      await api.composio.disconnect(appName);
+      accounts = accounts.filter((a) => a.app_name !== appName);
+      toast(`${appName} disconnected`, "info");
+    } catch (err) {
+      toast(err.message, "error");
+    }
+    render();
+  }
+
+  async function loadActions(appName) {
+    actionsApp = appName; actions = null; render();
+    try {
+      const res = await api.composio.actions({ appNames: appName, limit: 50 });
+      actions = res.actions || [];
+    } catch (err) {
+      toast(err.message, "error"); actions = [];
+    }
+    render();
+  }
+
+  async function runExecute() {
+    if (!executeActionId.trim()) { toast("Enter an action ID", "warn"); return; }
+    let params = {};
+    try { params = JSON.parse(executeParams); } catch {
+      toast("Params must be valid JSON", "error"); return;
+    }
+    executing = true; render();
+    try {
+      const res = await api.composio.execute({
+        action_id: executeActionId.trim(),
+        params
+      });
+      toast(res.successful ? "Action executed successfully" : `Action failed: ${res.error || "unknown"}`,
+        res.successful ? "success" : "error");
+      executions = null;
+      const execRes = await api.composio.executions({ limit: 20 });
+      executions = execRes.executions || [];
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      executing = false; render();
+    }
+  }
+
+  function renderKeySetup() {
+    return h(
+      "div",
+      { class: "card" },
+      h("h3", { style: { marginTop: 0 } }, "Composio API Key"),
+      user.has_composio_api_key
+        ? h(
+            "div",
+            { class: "col col--gap-3" },
+            h(
+              "div",
+              { class: "row row--gap-2" },
+              Badge({ tone: "ok", text: "Key configured", dot: true }),
+              h("span", { class: "muted text-xs" }, "Encrypted at rest with AES-256-GCM")
+            ),
+            h(
+              "div",
+              { class: "row row--gap-2" },
+              h(
+                "input",
+                {
+                  class: "input flex-1",
+                  type: "password",
+                  placeholder: "Paste new key to rotate",
+                  oninput: (e) => (composioKey = e.target.value)
+                }
+              ),
+              h(
+                "button",
+                { class: "btn btn--primary", disabled: savingKey, onclick: saveKey },
+                savingKey ? h("span", { class: "spinner" }) : null,
+                "Rotate key"
+              ),
+              h(
+                "button",
+                { class: "btn btn--ghost", style: { color: "var(--danger)" }, onclick: removeKey },
+                "Remove"
+              )
+            )
+          )
+        : h(
+            "div",
+            { class: "col col--gap-3" },
+            h(
+              "p",
+              { class: "muted text-sm" },
+              "Add your Composio API key to connect external apps like GitHub, Slack, Gmail, and hundreds more. Get your key from ",
+              h("a", { href: "https://app.composio.dev", target: "_blank", rel: "noopener" }, "app.composio.dev"),
+              "."
+            ),
+            h(
+              "div",
+              { class: "row row--gap-2" },
+              h(
+                "input",
+                {
+                  class: "input flex-1",
+                  type: "password",
+                  placeholder: "comp_api_...",
+                  oninput: (e) => (composioKey = e.target.value)
+                }
+              ),
+              h(
+                "button",
+                { class: "btn btn--primary", disabled: savingKey, onclick: saveKey },
+                savingKey ? h("span", { class: "spinner" }) : null,
+                "Save key"
+              )
+            )
+          )
+    );
+  }
+
+  function renderConnectedApps() {
+    const connectedNames = new Set((accounts || []).map((a) => a.app_name));
+    return h(
+      "div",
+      { class: "card" },
+      h(
+        "div",
+        { class: "row", style: { marginBottom: "var(--sp-3)" } },
+        h("h3", { style: { margin: 0 } }, "Connected Apps"),
+        h("div", { class: "flex-1" }),
+        h(
+          "button",
+          { class: "btn btn--ghost", style: { fontSize: 12 }, onclick: syncAccounts },
+          icon("refresh", 14),
+          "Sync"
+        )
+      ),
+      accounts === null
+        ? h(Skeleton, { variant: "block" })
+        : accounts.length === 0
+          ? h(Empty, { title: "No apps connected", hint: "Browse apps below and click Connect." })
+          : h(
+              "div",
+              { class: "col col--gap-2" },
+              ...accounts.map((acct) =>
+                h(
+                  "div",
+                  { class: "row row--gap-2", style: { padding: "var(--sp-2) 0", borderBottom: "1px solid var(--border)" } },
+                  h("span", { style: { fontWeight: 600, minWidth: 120 } }, acct.app_name),
+                  Badge({
+                    tone: acct.status === "active" ? "ok" : "warn",
+                    text: acct.status,
+                    dot: true
+                  }),
+                  h("span", { class: "muted text-xs flex-1" }, `ID: ${acct.composio_account_id}`),
+                  h(
+                    "button",
+                    { class: "btn btn--ghost", style: { fontSize: 12 }, onclick: () => loadActions(acct.app_name) },
+                    "Browse actions"
+                  ),
+                  h(
+                    "button",
+                    { class: "btn btn--ghost", style: { fontSize: 12, color: "var(--danger)" }, onclick: () => disconnectAccount(acct.app_name) },
+                    "Disconnect"
+                  )
+                )
+              )
+            )
+    );
+  }
+
+  function renderAppBrowser() {
+    const connectedNames = new Set((accounts || []).map((a) => a.app_name));
+    return h(
+      "div",
+      { class: "card" },
+      h("h3", { style: { marginTop: 0 } }, "Available Apps"),
+      apps === null
+        ? h(Skeleton, { variant: "block" })
+        : apps.length === 0
+          ? h(Empty, { title: "No apps found", hint: "Check your Composio API key." })
+          : h(
+              "div",
+              {
+                style: {
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                  gap: "var(--sp-2)"
+                }
+              },
+              ...apps.slice(0, 60).map((app) => {
+                const isConnected = connectedNames.has(app.name);
+                return h(
+                  "div",
+                  {
+                    class: "card",
+                    style: {
+                      padding: "var(--sp-2)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--sp-1)",
+                      minHeight: 80
+                    }
+                  },
+                  h("div", { style: { fontWeight: 600, fontSize: 13 } }, app.displayName || app.name),
+                  app.description
+                    ? h("div", { class: "muted", style: { fontSize: 11, flex: 1 } }, app.description.slice(0, 60))
+                    : h("div", { style: { flex: 1 } }),
+                  isConnected
+                    ? Badge({ tone: "ok", text: "Connected", dot: true })
+                    : h(
+                        "button",
+                        {
+                          class: "btn btn--primary",
+                          style: { fontSize: 11, padding: "2px 8px" },
+                          disabled: connectingApp === app.name,
+                          onclick: () => connectApp(app.name)
+                        },
+                        connectingApp === app.name ? h("span", { class: "spinner" }) : null,
+                        "Connect"
+                      )
+                );
+              })
+            )
+    );
+  }
+
+  function renderActionsPanel() {
+    if (!actionsApp) return null;
+    return h(
+      "div",
+      { class: "card" },
+      h(
+        "div",
+        { class: "row", style: { marginBottom: "var(--sp-3)" } },
+        h("h3", { style: { margin: 0 } }, `Actions — ${actionsApp}`),
+        h("div", { class: "flex-1" }),
+        h(
+          "button",
+          { class: "btn btn--ghost", style: { fontSize: 12 }, onclick: () => { actionsApp = null; actions = null; render(); } },
+          icon("close", 14),
+          "Close"
+        )
+      ),
+      actions === null
+        ? h(Skeleton, { variant: "block" })
+        : actions.length === 0
+          ? h(Empty, { title: "No actions found" })
+          : h(
+              "div",
+              { class: "col col--gap-2" },
+              ...actions.map((a) =>
+                h(
+                  "div",
+                  { class: "row row--gap-2", style: { padding: "var(--sp-1) 0", borderBottom: "1px solid var(--border)" } },
+                  h("div", { style: { flex: 1 } },
+                    h("div", { style: { fontWeight: 600, fontSize: 13 } }, a.displayName || a.name),
+                    a.description ? h("div", { class: "muted text-xs" }, a.description.slice(0, 100)) : null,
+                    h("code", { style: { fontSize: 11 } }, a.name)
+                  ),
+                  h(
+                    "button",
+                    {
+                      class: "btn btn--ghost",
+                      style: { fontSize: 12 },
+                      onclick: () => { executeActionId = a.name; render(); }
+                    },
+                    "Use"
+                  )
+                )
+              )
+            )
+    );
+  }
+
+  function renderExecutePanel() {
+    return h(
+      "div",
+      { class: "card" },
+      h("h3", { style: { marginTop: 0 } }, "Execute Action"),
+      h(
+        "div",
+        { class: "col col--gap-3" },
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Action ID"),
+          h("input", {
+            class: "input",
+            type: "text",
+            placeholder: "e.g. GITHUB_CREATE_ISSUE",
+            value: executeActionId,
+            oninput: (e) => (executeActionId = e.target.value)
+          })
+        ),
+        h(
+          "div",
+          { class: "field" },
+          h("label", { class: "field__label" }, "Parameters (JSON)"),
+          h("textarea", {
+            class: "input",
+            style: { fontFamily: "var(--font-mono)", minHeight: 80, resize: "vertical" },
+            value: executeParams,
+            oninput: (e) => (executeParams = e.target.value)
+          })
+        ),
+        h(
+          "div",
+          { class: "row" },
+          h(
+            "button",
+            { class: "btn btn--primary", disabled: executing, onclick: runExecute },
+            executing ? h("span", { class: "spinner" }) : null,
+            "Execute"
+          )
+        )
+      )
+    );
+  }
+
+  function renderExecutionHistory() {
+    return h(
+      "div",
+      { class: "card" },
+      h("h3", { style: { marginTop: 0 } }, "Recent Executions"),
+      executions === null
+        ? h(Skeleton, { variant: "block" })
+        : executions.length === 0
+          ? h(Empty, { title: "No executions yet" })
+          : h(
+              "div",
+              { class: "col col--gap-1" },
+              ...executions.map((ex) =>
+                h(
+                  "div",
+                  {
+                    class: "row row--gap-2",
+                    style: { padding: "var(--sp-1) 0", borderBottom: "1px solid var(--border)", fontSize: 13 }
+                  },
+                  Badge({
+                    tone: ex.status === "success" ? "ok" : ex.status === "pending" ? "warn" : "down",
+                    text: ex.status,
+                    dot: true
+                  }),
+                  h("span", { style: { flex: 1 } }, ex.action_name),
+                  ex.app_name ? h("span", { class: "muted text-xs" }, ex.app_name) : null,
+                  ex.latency_ms !== null ? h("span", { class: "muted text-xs" }, `${ex.latency_ms}ms`) : null,
+                  h("span", { class: "muted text-xs" }, fmtDate(ex.created_at))
+                )
+              )
+            )
+    );
+  }
+
+  function render() {
+    const hasKey = user.has_composio_api_key;
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h(
+            "div",
+            null,
+            h("h1", { class: "page-header__title" }, icon("plug", 22), " Integrations"),
+            h("p", { class: "page-header__sub" }, "Connect external apps via Composio.dev — each user has their own isolated connections.")
+          )
+        ),
+        loadError ? ErrorBanner({ error: loadError }) : null,
+        renderKeySetup(),
+        hasKey ? renderConnectedApps() : null,
+        hasKey ? renderAppBrowser() : null,
+        hasKey ? renderActionsPanel() : null,
+        hasKey ? renderExecutePanel() : null,
+        hasKey ? renderExecutionHistory() : null
+      )
+    );
+  }
+
+  render();
+  if (user.has_composio_api_key) {
+    await loadData();
+  }
 }
 
 /* ============================================================

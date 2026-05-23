@@ -11,6 +11,7 @@ export type UserRow = RowDataPacket & {
   n8n_base_url: string | null;
   n8n_api_key_encrypted: string | null;
   anthropic_api_key_encrypted: string | null;
+  composio_api_key_encrypted: string | null;
   can_use_rag_agent: number | boolean;
   is_admin: number | boolean;
   created_at: string | Date;
@@ -25,6 +26,7 @@ export interface UserRecord {
   n8n_base_url: string | null;
   n8n_api_key_encrypted: string | null;
   anthropic_api_key_encrypted: string | null;
+  composio_api_key_encrypted: string | null;
   /**
    * Permission flag granted by the operator (no self-service). When true AND
    * the platform has env.RAG_AGENT_URL + env.RAG_AGENT_API_KEY configured, the
@@ -51,6 +53,7 @@ export interface UserPublic {
   n8n_base_url: string | null;
   has_n8n_api_key: boolean;
   has_anthropic_api_key: boolean;
+  has_composio_api_key: boolean;
   /** Operator-granted permission to route workflow generation through the
    *  shared RAG agent (effective only when the platform has env.RAG_AGENT_*
    *  configured). Surfaced so the frontend can render a "RAG active" badge
@@ -73,6 +76,7 @@ function mapUserRow(row: UserRow): UserRecord {
     n8n_base_url: row.n8n_base_url,
     n8n_api_key_encrypted: row.n8n_api_key_encrypted,
     anthropic_api_key_encrypted: row.anthropic_api_key_encrypted,
+    composio_api_key_encrypted: row.composio_api_key_encrypted ?? null,
     // MySQL TINYINT(1) round-trips as either number (1/0) or boolean depending
     // on the driver build, so coerce defensively.
     can_use_rag_agent: Boolean(row.can_use_rag_agent),
@@ -90,6 +94,7 @@ export function toUserPublic(user: UserRecord): UserPublic {
     n8n_base_url: user.n8n_base_url,
     has_n8n_api_key: Boolean(user.n8n_api_key_encrypted),
     has_anthropic_api_key: Boolean(user.anthropic_api_key_encrypted),
+    has_composio_api_key: Boolean(user.composio_api_key_encrypted),
     can_use_rag_agent: user.can_use_rag_agent,
     is_admin: user.is_admin,
     created_at: user.created_at,
@@ -125,7 +130,7 @@ export async function getUserById(id: string, connection?: PoolConnection): Prom
   const runner = connection ?? getDb();
   const [rows] = await dbQuery<UserRow[]>(
     runner,
-    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
+    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, composio_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
      FROM users
      WHERE id = ?
      LIMIT 1`,
@@ -142,7 +147,7 @@ export async function getUserByEmail(
   const runner = connection ?? getDb();
   const [rows] = await dbQuery<UserRow[]>(
     runner,
-    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
+    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, composio_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
      FROM users
      WHERE email = ?
      LIMIT 1`,
@@ -163,6 +168,7 @@ export async function updateUserCredentials(
     n8nBaseUrl?: string | null;
     n8nApiKeyEncrypted?: string | null;
     anthropicApiKeyEncrypted?: string | null;
+    composioApiKeyEncrypted?: string | null;
   },
   connection?: PoolConnection
 ): Promise<UserRecord> {
@@ -182,6 +188,10 @@ export async function updateUserCredentials(
   if (input.anthropicApiKeyEncrypted !== undefined) {
     sets.push("anthropic_api_key_encrypted = ?");
     values.push(input.anthropicApiKeyEncrypted);
+  }
+  if (input.composioApiKeyEncrypted !== undefined) {
+    sets.push("composio_api_key_encrypted = ?");
+    values.push(input.composioApiKeyEncrypted);
   }
 
   if (sets.length > 0) {
@@ -221,7 +231,7 @@ export async function listUsersForAdmin(input: {
 
   const [rows] = await dbQuery<UserRow[]>(
     db,
-    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
+    `SELECT id, email, name, password_hash, n8n_base_url, n8n_api_key_encrypted, anthropic_api_key_encrypted, composio_api_key_encrypted, can_use_rag_agent, is_admin, created_at, updated_at
      FROM users
      ${wherePart}
      ORDER BY created_at DESC

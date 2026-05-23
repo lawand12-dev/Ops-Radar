@@ -64,6 +64,7 @@ export async function requireAuth(c: Context, next: Next): Promise<void | Respon
     n8nBaseUrl: user.n8n_base_url,
     n8nApiKey: decryptSecret(user.n8n_api_key_encrypted),
     anthropicApiKey: decryptSecret(user.anthropic_api_key_encrypted),
+    composioApiKey: decryptSecret(user.composio_api_key_encrypted),
     canUseRagAgent: user.can_use_rag_agent,
     isAdmin: user.is_admin
   };
