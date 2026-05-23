@@ -1914,21 +1914,21 @@ async function submitChat(message) {
         messages: [
           ...s.chat.messages,
           {
-            role: “ai”,
+            role: "ai",
             content: result.validation?.valid
-              ? `Workflow “${result.project_name}” generated successfully (${result.workflow?.nodes?.length ?? 0} nodes).`
+              ? `Workflow "${result.project_name}" generated successfully (${result.workflow?.nodes?.length ?? 0} nodes).`
               : `Workflow generated but rejected by validation (${result.validation?.errors?.length ?? 0} errors).`,
             ts: new Date().toISOString()
           }
         ],
         generating: result.validation?.valid ? true : false,
-        progressText: result.validation?.valid ? “Agent reviewing workflow…” : “”,
+        progressText: result.validation?.valid ? "Agent reviewing workflow…" : "",
         lastResult: result,
         agentReview: null,
         error: null
       }
     }));
-    toast(result.validation?.valid ? “Workflow generated — running agent review…” : “Workflow rejected by validator”, result.validation?.valid ? “success” : “warning”);
+    toast(result.validation?.valid ? "Workflow generated — running agent review…" : "Workflow rejected by validator", result.validation?.valid ? "success" : "warning");
 
     // Auto-run agent review for valid workflows
     if (result.validation?.valid && result.workflow) {
@@ -1936,11 +1936,11 @@ async function submitChat(message) {
         const review = await api.chat.review(result.project_name, result.description, result.workflow);
         setState((s) => ({
           ...s,
-          chat: { ...s.chat, generating: false, progressText: “”, agentReview: review }
+          chat: { ...s.chat, generating: false, progressText: "", agentReview: review }
         }));
-        toast(“Agent review complete”, “success”);
+        toast("Agent review complete", "success");
       } catch (_reviewErr) {
-        setState((s) => ({ ...s, chat: { ...s.chat, generating: false, progressText: “” } }));
+        setState((s) => ({ ...s, chat: { ...s.chat, generating: false, progressText: "" } }));
       }
     }
   } catch (err) {
