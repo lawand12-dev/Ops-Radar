@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
   const callbackUrl = `${appUrl}/dashboard/integrations?connected=${toolSlug}`
 
   let request
