@@ -991,6 +991,16 @@ function isN8nWorkflowMissingError(error: unknown): boolean {
   return error instanceof AppError && error.code === "N8N_WORKFLOW_NOT_FOUND";
 }
 
+function extractN8nMessage(details: unknown): string | null {
+  if (!details || typeof details !== "object") return null;
+  const payload = (details as Record<string, unknown>).payload;
+  if (payload && typeof payload === "object") {
+    const msg = (payload as Record<string, unknown>).message;
+    if (typeof msg === "string" && msg.trim().length > 0) return msg.trim();
+  }
+  return null;
+}
+
 async function emitDeploymentEvent(input: {
   workflowId: string;
   eventType:
@@ -2078,6 +2088,9 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
     });
   }
 
+  let activationWarning: string | null = null;
+  let effectiveActivate = activate;
+
   if (activate && n8nWorkflowId) {
     try {
       await activateN8nWorkflow(n8nWorkflowId);
@@ -2097,8 +2110,22 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
             }
           );
         }
+        // Non-credentials n8n validation error (e.g. invalid node config, "Could not find
+        // property option"). The workflow already exists in n8n — degrade gracefully to
+        // deployed_inactive so the caller can open it in n8n and fix the configuration.
+        const n8nMsg = extractN8nMessage(error.details);
+        activationWarning =
+          n8nMsg ??
+          "n8n rejected activation — workflow saved as inactive. Open in n8n to fix the node configuration.";
+        effectiveActivate = false;
+        logWarn("projects", "Activation failed — deploying as inactive", {
+          project_id: projectId,
+          n8n_workflow_id: n8nWorkflowId,
+          n8n_message: activationWarning
+        });
+      } else {
+        throw error;
       }
-      throw error;
     }
   }
 
@@ -2123,8 +2150,8 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
   }
 
   await withTransaction(async (connection) => {
-    await markWorkflowDeployed(workflow.id, n8nWorkflowId!, activate, connection);
-    await updateProjectStatus(projectId, activate ? "active" : "draft", connection);
+    await markWorkflowDeployed(workflow.id, n8nWorkflowId!, effectiveActivate, connection);
+    await updateProjectStatus(projectId, effectiveActivate ? "active" : "draft", connection);
   });
 
   // Schedule tracking — register or update the row used by the drift sweep.
@@ -2156,7 +2183,7 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
     }
   });
 
-  if (activate) {
+  if (effectiveActivate) {
     await emitDeploymentEvent({
       workflowId: workflow.id,
       eventType: "workflow_activated",
@@ -2173,7 +2200,8 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
     project_id: projectId,
     workflow_id: workflow.id,
     n8n_workflow_id: n8nWorkflowId,
-    workflow_status: activate ? "deployed_active" : "deployed_inactive",
+    workflow_status: effectiveActivate ? "deployed_active" : "deployed_inactive",
+    activation_warning: activationWarning ?? undefined,
     payload_nodes_count: workflowJsonWithBindings.nodes.length,
     payload_connection_sources_count: Object.keys(workflowJsonWithBindings.connections).length
   });
@@ -2181,9 +2209,10 @@ async function _deployProjectInner(projectId: string, input: DeployInput) {
   return {
     project_id: projectId,
     workflow_id: workflow.id,
-    workflow_status: activate ? "deployed_active" : "deployed_inactive",
+    workflow_status: effectiveActivate ? "deployed_active" : "deployed_inactive",
     n8n_workflow_id: n8nWorkflowId,
-    activated: activate
+    activated: effectiveActivate,
+    activation_warning: activationWarning ?? undefined
   };
 }
 
