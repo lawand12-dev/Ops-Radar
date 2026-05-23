@@ -202,6 +202,10 @@ const envSchema = z.object({
     .positive()
     .default(30_000),
 
+  // DeepSeek model served via the DigitalOcean OpenAI-compatible endpoint.
+  // Used as fallback in the agent loop when no Anthropic key is configured.
+  DEEPSEEK_MODEL: z.string().min(1).default("deepseek-chat"),
+
   // Service-to-service API key for the /service/* endpoints. Optional so the
   // feature can be disabled cluster-wide by leaving the var unset (every
   // /service/* call then returns 401 SERVICE_AUTH_NOT_CONFIGURED). When set,
