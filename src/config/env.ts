@@ -108,6 +108,46 @@ const envSchema = z.object({
   AI_BREADCRUMBS_HOURS: z.coerce.number().int().positive().default(24),
   AI_BREADCRUMBS_MAX_CHARS: z.coerce.number().int().positive().default(4000),
 
+  // --- Phase 2: Postgres intelligence sidecar ---
+  // POSTGRES_URL is intentionally optional: when unset, the sidecar is
+  // disabled and every memory call falls back to keyword-only retrieval.
+  // Format: postgres://user:pass@host:port/db?sslmode=require
+  POSTGRES_URL: z.string().url().optional(),
+  POSTGRES_POOL_MAX: z.coerce.number().int().positive().default(8),
+
+  // Embedding worker: runs the LISTEN+SKIP-LOCKED loop that drains
+  // embedding_jobs. Disabled by default; flip after the sidecar is
+  // provisioned + 001_init.sql has been applied.
+  EMBEDDING_WORKER_ENABLED: boolFromEnv(false),
+  EMBEDDING_WORKER_ID: z.string().min(1).default("worker-1"),
+  EMBEDDING_BATCH_SIZE: z.coerce.number().int().min(1).max(64).default(32),
+  EMBEDDING_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
+  EMBEDDING_MAX_ATTEMPTS: z.coerce.number().int().positive().default(8),
+  EMBEDDING_LOCK_TTL_MS: z.coerce.number().int().positive().default(5 * 60 * 1000),
+
+  // Embedding API. Defaults match DigitalOcean's OpenAI-compatible
+  // /v1/embeddings shape; AI_BASE_URL above is reused as the endpoint.
+  // 1024-dim matches the embeddings table column. Changing dims requires
+  // re-embedding all rows (the unique key by source_version makes this
+  // tractable: bump source_version and re-enqueue).
+  AI_MODEL_EMBED: z.string().min(1).default("openai-text-embedding-3-small"),
+  AI_MODEL_EMBED_DIM: z.coerce.number().int().positive().default(1024),
+  AI_MODEL_EMBED_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+
+  // Hybrid retrieval: vector + keyword + recency + success-rate.
+  // When disabled, the workflow generator continues using the deterministic
+  // keyword pattern-card selector from Phase 1 (no regression).
+  HYBRID_RETRIEVAL_ENABLED: boolFromEnv(false),
+  HYBRID_RETRIEVAL_TOPK: z.coerce.number().int().positive().default(8),
+  HYBRID_RETRIEVAL_VECTOR_POOL: z.coerce.number().int().positive().default(50),
+  // HNSW recall knob. Higher = better recall, more CPU. Defaults to 64 which
+  // is a safe starting point for m=16 ef_construction=64 indexes.
+  HYBRID_RETRIEVAL_EF_SEARCH: z.coerce.number().int().positive().default(64),
+
+  // Pattern card sync: hashes knowledge-base/patterns/*.md and UPSERTs
+  // into the pattern_cards table on boot + nightly. Idempotent.
+  PATTERN_CARD_SYNC_ENABLED: boolFromEnv(false),
+
   // --- Silent-failure detection layer (hardening flags) ---
   // All default to FALSE so the new pipeline is dormant until the operator
   // explicitly opts in. Existing legacy monitoring keeps running regardless.
