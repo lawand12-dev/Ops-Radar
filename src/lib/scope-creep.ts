@@ -1,6 +1,5 @@
 // src/lib/scope-creep.ts
-import type { ClickupScopeData } from './integrations/clickup/scope-adapter';
-import type { HarvestMonthlyProjectData } from './integrations/harvest/adapter';
+import type { ClickupScopeData, HarvestMonthlyProjectData } from './integration-types';
 
 export type ScopeStatus = 'on_track' | 'at_risk' | 'over_budget';
 

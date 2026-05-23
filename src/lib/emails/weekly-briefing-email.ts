@@ -1,4 +1,4 @@
-import type { StoredBriefing, AttentionItem } from '<npm>/lib/briefing';
+import type { StoredBriefing, AttentionItem } from '<npm>/lib/briefing-types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://opsradar.co';
 

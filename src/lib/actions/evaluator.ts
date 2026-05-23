@@ -1,17 +1,9 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import { getClientN8nConfig } from '<npm>/lib/client-n8n';
-import { evalInvoiceReminders } from './evaluators/invoice-reminder';
-import { evalMarginAlerts } from './evaluators/margin-alert';
-import { evalHoursBudget } from './evaluators/hours-budget';
-import { evalScopeApproaching } from './evaluators/scope-approaching';
 import { evalWorkflowFailures } from './evaluators/workflow-failure';
 import { evalHubSpotHarvest } from './evaluators/hubspot-harvest';
-import { evalRetainerOverage } from './evaluators/retainer-overage';
 import { evalRetainerInvoiceDraft } from './evaluators/retainer-invoice-draft';
-import { evalCashFlow } from './evaluators/cash-flow';
-import { evalCapacityDrift } from './evaluators/capacity-drift';
-import { evalPatternAlerts } from './evaluators/pattern-alert';
 import { executeAction } from './executor';
 import { ACTION_RISK } from './types';
 import type { NewAction, AgentAction, UserContext } from './types';
@@ -70,22 +62,18 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
   };
 
   const stripeKey  = getKey('stripe');
-  const harvestKey = getKey('harvest');
   const hubspotKey = getKey('hubspot');
   const n8nConfig  = await getClientN8nConfig(userId);
 
+  // TODO(post-cleanup): the deleted evaluators (cash-flow, capacity-drift,
+  // margin-alert, retainer-overage, scope-approaching, hours-budget,
+  // invoice-reminder, pattern-alert) were absorbed into the per-domain agents
+  // under src/lib/agents/* and now run on their own crons. The orchestrator
+  // below keeps only the evaluators that have not yet been migrated.
   const results = await Promise.allSettled([
-    stripeKey ? evalInvoiceReminders(ctx, stripeKey) : Promise.resolve([]),
-    stripeKey && harvestKey ? evalMarginAlerts(ctx, stripeKey, harvestKey) : Promise.resolve([]),
-    harvestKey ? evalHoursBudget(ctx, harvestKey) : Promise.resolve([]),
-    harvestKey ? evalScopeApproaching(ctx, harvestKey) : Promise.resolve([]),
     n8nConfig ? evalWorkflowFailures(ctx, n8nConfig) : Promise.resolve([]),
     hubspotKey ? evalHubSpotHarvest(ctx, hubspotKey) : Promise.resolve([]),
-    harvestKey ? evalRetainerOverage(ctx, harvestKey) : Promise.resolve([]),
     stripeKey ? evalRetainerInvoiceDraft(ctx, stripeKey) : Promise.resolve([]),
-    stripeKey ? evalCashFlow(ctx, stripeKey) : Promise.resolve([]),
-    harvestKey ? evalCapacityDrift(ctx, harvestKey) : Promise.resolve([]),
-    evalPatternAlerts(ctx), // no API key gate — reads from per-user pattern_cards
   ]);
 
   const proposed: NewAction[] = [];

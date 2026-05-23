@@ -8,7 +8,7 @@ import type {
   StripeFinanceData,
   StripeInvoiceRow,
   StripeRecentCharge,
-} from '<npm>/lib/integrations/stripe/adapter';
+} from '<npm>/lib/integration-types';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';

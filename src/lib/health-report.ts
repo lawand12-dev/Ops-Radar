@@ -1,8 +1,7 @@
 import { openai } from '<npm>/lib/openai'
 import { computeClientProfitability } from '<npm>/lib/profitability'
 import { executeComposioAction, ComposioExecuteError } from '<npm>/lib/composio-fetch'
-import type { StripePerClientData } from '<npm>/lib/integrations/stripe/profitability-adapter'
-import type { HarvestPerClientData } from '<npm>/lib/integrations/harvest/profitability-adapter'
+import type { StripePerClientData, HarvestPerClientData } from '<npm>/lib/integration-types'
 
 type StripePerClientRow = StripePerClientData['clients'][number]
 type HarvestPerClientRow = HarvestPerClientData['clients'][number]

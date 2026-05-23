@@ -18,11 +18,9 @@ import { computeClientProfitability } from '<npm>/lib/profitability'
 import type {
   StripePerClientData,
   StripeClientRevenue,
-} from '<npm>/lib/integrations/stripe/profitability-adapter'
-import type {
   HarvestPerClientData,
   HarvestClientHours,
-} from '<npm>/lib/integrations/harvest/profitability-adapter'
+} from '<npm>/lib/integration-types'
 
 export type AgencyOverview = {
   company_name: string

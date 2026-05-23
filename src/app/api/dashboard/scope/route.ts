@@ -5,8 +5,7 @@ import {
   isComposioConnected,
   safeExecuteComposioAction,
 } from '<npm>/lib/composio-fetch';
-import type { ClickupScopeData } from '<npm>/lib/integrations/clickup/scope-adapter';
-import type { HarvestMonthlyProjectData } from '<npm>/lib/integrations/harvest/adapter';
+import type { ClickupScopeData, HarvestMonthlyProjectData } from '<npm>/lib/integration-types';
 import {
   computeScopeCreep,
   type ScopeCreepResult,

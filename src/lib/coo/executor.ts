@@ -23,11 +23,9 @@ import { computeClientProfitability } from '<npm>/lib/profitability';
 import type {
   StripePerClientData,
   StripeClientRevenue,
-} from '<npm>/lib/integrations/stripe/profitability-adapter';
-import type {
   HarvestPerClientData,
   HarvestClientHours,
-} from '<npm>/lib/integrations/harvest/profitability-adapter';
+} from '<npm>/lib/integration-types';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { retrieveCooKnowledgeHybrid } from '<npm>/lib/knowledge-retrieval';
 import { searchBrain, formatBrainContext } from './brain-search';

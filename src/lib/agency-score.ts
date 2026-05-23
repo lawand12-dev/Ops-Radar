@@ -1,7 +1,7 @@
 import { computeClientProfitability } from '<npm>/lib/profitability'
-import { fetchStripePerClientRevenue } from '<npm>/lib/integrations/stripe/profitability-adapter'
-import { fetchHarvestPerClientHours } from '<npm>/lib/integrations/harvest/profitability-adapter'
+import { executeComposioAction } from '<npm>/lib/composio-fetch'
 import { collectUserMetrics } from '<npm>/lib/benchmarks/collect'
+import type { StripePerClientData, HarvestPerClientData } from '<npm>/lib/integration-types'
 import type { BenchmarkRow, BenchmarkMetric } from '<npm>/lib/benchmarks/types'
 
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F'
@@ -26,6 +26,110 @@ export type AgencyScore = {
   computed_at: string
   company_name: string
 }
+
+type StripePerClientRow = StripePerClientData['clients'][number]
+type HarvestPerClientRow = HarvestPerClientData['clients'][number]
+
+// ---------- Composio-backed data fetchers ----------
+
+type StripeInvoice = {
+  id: string
+  status: string
+  amount_due?: number
+  amount_paid?: number
+  amount_remaining?: number
+  due_date?: number
+  customer?: string | { id?: string; name?: string }
+  created?: number
+}
+
+async function fetchStripePerClientViaComposio(userId: string): Promise<StripePerClientData> {
+  // TODO(composio-slug): verify slug
+  const list = await executeComposioAction<{ data?: StripeInvoice[] } | StripeInvoice[]>(
+    userId,
+    'stripe',
+    'STRIPE_LIST_INVOICES',
+    { limit: 100 },
+  )
+  const invoices: StripeInvoice[] = Array.isArray(list) ? list : list?.data ?? []
+
+  const now = Math.floor(Date.now() / 1000)
+  const monthStart = Math.floor(
+    new Date(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1).getTime() / 1000,
+  )
+
+  const byClient = new Map<string, StripePerClientRow>()
+  for (const inv of invoices) {
+    const custId =
+      typeof inv.customer === 'string'
+        ? inv.customer
+        : inv.customer?.id ?? 'unknown'
+    const custName =
+      typeof inv.customer === 'object' && inv.customer?.name
+        ? inv.customer.name
+        : 'Unknown'
+
+    const isCurrent = (inv.created ?? 0) >= monthStart
+    const paid = (inv.amount_paid ?? 0) / 100
+    const overdue = inv.due_date && inv.due_date < now && inv.status !== 'paid'
+
+    const existing: StripePerClientRow =
+      byClient.get(custId) ??
+      ({
+        id: custId,
+        name: custName,
+        revenue_current: 0,
+        revenue_prior: 0,
+        payment_status: 'on_time',
+      } as StripePerClientRow)
+    if (isCurrent) existing.revenue_current += paid
+    else existing.revenue_prior += paid
+    if (overdue) existing.payment_status = 'overdue'
+    byClient.set(custId, existing)
+  }
+
+  return { clients: Array.from(byClient.values()), currency: 'USD' }
+}
+
+type HarvestTimeEntry = {
+  id: number
+  hours: number
+  client?: { id?: number; name?: string }
+  spent_date?: string
+}
+
+async function fetchHarvestPerClientViaComposio(userId: string): Promise<HarvestPerClientData> {
+  const now = new Date()
+  const monthStart = new Date(now.getUTCFullYear(), now.getUTCMonth(), 1)
+  const priorStart = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)
+  const fmt = (d: Date) => d.toISOString().slice(0, 10)
+
+  // TODO(composio-slug): verify slug
+  const resp = await executeComposioAction<{ time_entries?: HarvestTimeEntry[] } | HarvestTimeEntry[]>(
+    userId,
+    'harvest',
+    'HARVEST_LIST_TIME_ENTRIES',
+    { from: fmt(priorStart), to: fmt(now), per_page: 100 },
+  )
+  const entries: HarvestTimeEntry[] = Array.isArray(resp)
+    ? resp
+    : resp?.time_entries ?? []
+
+  const byClient = new Map<string, HarvestPerClientRow>()
+  for (const e of entries) {
+    const id = String(e.client?.id ?? 'unknown')
+    const name = e.client?.name ?? 'Unknown'
+    const isCurrent = e.spent_date ? new Date(e.spent_date) >= monthStart : false
+    const row = byClient.get(id) ?? { id, name, hours_current: 0, hours_prior: 0 }
+    if (isCurrent) row.hours_current += e.hours ?? 0
+    else row.hours_prior += e.hours ?? 0
+    byClient.set(id, row)
+  }
+
+  return { clients: Array.from(byClient.values()) }
+}
+
+// ---------- Scoring helpers (unchanged) ----------
 
 function toGrade(score: number): Grade {
   if (score >= 85) return 'A'
@@ -153,14 +257,23 @@ function benchmarkDimension(
 }
 
 export async function computeAgencyScore(opts: {
-  stripeApiKey: string | null
-  harvestApiKey: string | null
+  userId: string
+  stripeConnected: boolean
+  harvestConnected: boolean
   blendedRate: number
   teamSizeRaw: string
   companyName: string
   benchmarkRows: BenchmarkRow[]
 }): Promise<AgencyScore> {
-  const { stripeApiKey, harvestApiKey, blendedRate, teamSizeRaw, companyName, benchmarkRows } = opts
+  const {
+    userId,
+    stripeConnected,
+    harvestConnected,
+    blendedRate,
+    teamSizeRaw,
+    companyName,
+    benchmarkRows,
+  } = opts
 
   let medianMarginPct: number | null = null
   let avgDaysOverdue: number | null = null
@@ -168,11 +281,11 @@ export async function computeAgencyScore(opts: {
   let hoursTracked: number | null = null
   const benchmarkPositions: Array<'top_25' | 'above' | 'below' | 'bottom_25' | 'no_data'> = []
 
-  if (stripeApiKey && harvestApiKey) {
+  if (stripeConnected && harvestConnected) {
     try {
       const [sd, hd] = await Promise.all([
-        fetchStripePerClientRevenue(stripeApiKey),
-        fetchHarvestPerClientHours(harvestApiKey),
+        fetchStripePerClientViaComposio(userId),
+        fetchHarvestPerClientViaComposio(userId),
       ])
       const result = computeClientProfitability(sd, hd, blendedRate)
       clientsData = result.clients
@@ -182,9 +295,14 @@ export async function computeAgencyScore(opts: {
     } catch { /* best effort */ }
   }
 
-  if (stripeApiKey) {
+  if (stripeConnected) {
     try {
-      const metrics = await collectUserMetrics({ stripeApiKey, harvestApiKey, blendedRate })
+      const metrics = await collectUserMetrics({
+        userId,
+        stripeConnected,
+        harvestConnected,
+        blendedRate,
+      })
       if (metrics.median_invoice_days_overdue !== undefined) {
         avgDaysOverdue = metrics.median_invoice_days_overdue
       }

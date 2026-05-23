@@ -4,8 +4,7 @@ import {
   safeExecuteComposioAction,
   ComposioExecuteError,
 } from '<npm>/lib/composio-fetch';
-import type { ApolloMarketingData } from '<npm>/lib/integrations/apollo/adapter';
-import type { CalendlyBookingsData } from '<npm>/lib/integrations/calendly/adapter';
+import type { ApolloMarketingData, CalendlyBookingsData } from '<npm>/lib/integration-types';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';

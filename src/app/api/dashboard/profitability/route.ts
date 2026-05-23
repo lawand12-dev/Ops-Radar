@@ -4,8 +4,12 @@ import {
   safeExecuteComposioAction,
   isComposioConnected,
 } from '<npm>/lib/composio-fetch';
-import type { StripePerClientData, StripeClientRevenue } from '<npm>/lib/integrations/stripe/profitability-adapter';
-import type { HarvestPerClientData, HarvestClientHours } from '<npm>/lib/integrations/harvest/profitability-adapter';
+import type {
+  StripePerClientData,
+  StripeClientRevenue,
+  HarvestPerClientData,
+  HarvestClientHours,
+} from '<npm>/lib/integration-types';
 import { computeClientProfitability, type ProfitabilityResult, type ClientProfitability } from '<npm>/lib/profitability';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { readAllClients, tryReadNotion, type ClientUpsert } from '<npm>/lib/notion/helpers';

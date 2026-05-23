@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshCw, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
-import type { StoredBriefing, AttentionItem } from '<npm>/lib/briefing';
+import type { StoredBriefing, AttentionItem } from '<npm>/lib/briefing-types';
 
 type FetchState =
   | { kind: 'loading' }

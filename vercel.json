@@ -5,24 +5,12 @@
       "schedule": "0 10 * * *"
     },
     {
-      "path": "/api/cron/weekly-briefing",
-      "schedule": "0 8 * * 1"
-    },
-    {
       "path": "/api/cron/actions",
       "schedule": "0 9 * * *"
     },
     {
       "path": "/api/cron/benchmarks",
       "schedule": "0 23 * * 0"
-    },
-    {
-      "path": "/api/cron/threshold-alerts",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/kpi-snapshot",
-      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cron/diorize",

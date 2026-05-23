@@ -1,5 +1,4 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { decryptApiKey } from '<npm>/lib/integrations/crypto'
 import { bucketForServiceMix, bucketForTeamSize } from './buckets'
 import { collectUserMetrics, type UserMetrics } from './collect'
 import { p25, p50, p75 } from './percentile'
@@ -31,13 +30,20 @@ const key = (team: TeamSizeBucket, mix: ServiceMixBucket): SampleKey => `${team}
 export async function runBenchmarkAggregation(): Promise<AggregateStats> {
   const supabase = getServerSupabaseClient()
 
-  const { data: integrationRows } = await supabase
-    .from('integrations')
-    .select('client_id')
-    .eq('status', 'connected')
-    .not('encrypted_token', 'is', null)
+  // Find users with any active Composio connection — these are the
+  // candidates whose metrics can be sampled into benchmark cohorts.
+  const { data: connectionRows } = await supabase
+    .from('composio_connections')
+    .select('user_id, tool_slug')
+    .eq('is_active', true)
 
-  const userIds = [...new Set((integrationRows ?? []).map((r) => r.client_id))]
+  const connectionsByUser = new Map<string, Set<string>>()
+  for (const row of connectionRows ?? []) {
+    const set = connectionsByUser.get(row.user_id) ?? new Set<string>()
+    set.add(row.tool_slug)
+    connectionsByUser.set(row.user_id, set)
+  }
+  const userIds = [...connectionsByUser.keys()]
 
   // Sample sets keyed by (team_size, service_mix).
   // We always also accumulate into (team_size, 'all') to keep the pooled cohort.
@@ -64,23 +70,15 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
 
     const mixBucket = bucketForServiceMix(meta.service_mix as string | undefined) ?? null
 
-    const { data: keyRows } = await supabase
-      .from('integrations')
-      .select('tool, encrypted_token, iv, auth_tag, status')
-      .eq('client_id', userId)
-      .eq('status', 'connected')
-
-    const getKey = (tool: string): string | null => {
-      const row = (keyRows ?? []).find((r) => r.tool === tool)
-      try { return row ? decryptApiKey(row) : null } catch { return null }
-    }
+    const userConnections = connectionsByUser.get(userId) ?? new Set<string>()
 
     let metrics: UserMetrics
     try {
       metrics = await collectUserMetrics({
-        stripeApiKey:  getKey('stripe'),
-        harvestApiKey: getKey('harvest'),
-        blendedRate:   typeof meta.blended_hourly_rate_usd === 'number'
+        userId,
+        stripeConnected:  userConnections.has('stripe'),
+        harvestConnected: userConnections.has('harvest'),
+        blendedRate:      typeof meta.blended_hourly_rate_usd === 'number'
           ? meta.blended_hourly_rate_usd
           : null,
       })

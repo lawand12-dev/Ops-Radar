@@ -6,7 +6,7 @@ import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-s
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { collectUserMetrics } from '<npm>/lib/benchmarks/collect';
-import { decryptApiKey } from '<npm>/lib/integrations/crypto';
+import { isComposioConnected } from '<npm>/lib/composio-fetch';
 import { bucketForServiceMix, bucketForTeamSize } from '<npm>/lib/benchmarks/buckets';
 import {
   SERVICE_MIX_BUCKETS,
@@ -55,20 +55,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const userTeam = bucketForTeamSize(meta.team_size as string | undefined);
   const userMix = bucketForServiceMix(meta.service_mix as string | undefined);
 
-  const { data: keyRows } = await service
-    .from('integrations')
-    .select('tool, encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('status', 'connected');
-
-  const getKey = (tool: string): string | null => {
-    const row = (keyRows ?? []).find((r) => r.tool === tool);
-    try { return row ? decryptApiKey(row) : null; } catch { return null; }
-  };
+  const [stripeConnected, harvestConnected] = await Promise.all([
+    isComposioConnected(userId, 'stripe'),
+    isComposioConnected(userId, 'harvest'),
+  ]);
 
   const userMetrics = await collectUserMetrics({
-    stripeApiKey:  getKey('stripe'),
-    harvestApiKey: getKey('harvest'),
+    userId,
+    stripeConnected,
+    harvestConnected,
     blendedRate:   typeof meta.blended_hourly_rate_usd === 'number'
       ? meta.blended_hourly_rate_usd
       : null,

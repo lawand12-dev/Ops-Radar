@@ -1,5 +1,4 @@
-import type { StripePerClientData } from './integrations/stripe/profitability-adapter';
-import type { HarvestPerClientData } from './integrations/harvest/profitability-adapter';
+import type { StripePerClientData, HarvestPerClientData } from './integration-types';
 
 export type ClientProfitability = {
   id: string;

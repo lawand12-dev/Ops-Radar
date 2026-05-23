@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { decryptApiKey } from '<npm>/lib/integrations/crypto'
+import { isComposioConnected } from '<npm>/lib/composio-fetch'
 import { applyRateLimit } from '<npm>/lib/rate-limit'
 import { computeAgencyScore } from '<npm>/lib/agency-score'
 import { bucketForTeamSize } from '<npm>/lib/benchmarks/buckets'
@@ -31,25 +31,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const bucket = bucketForTeamSize(teamSizeRaw)
   const session = await getSessionSupabaseClient()
 
-  const [keyResult, benchmarkResult] = await Promise.all([
-    session
-      .from('integrations')
-      .select('tool, encrypted_token, iv, auth_tag, status')
-      .eq('client_id', userId)
-      .eq('status', 'connected'),
+  const [benchmarkResult, stripeConnected, harvestConnected] = await Promise.all([
     bucket
       ? session.from('benchmarks').select('*').eq('team_size_bucket', bucket)
       : Promise.resolve({ data: [] }),
+    isComposioConnected(userId, 'stripe'),
+    isComposioConnected(userId, 'harvest'),
   ])
 
-  const getKey = (tool: string): string | null => {
-    const row = (keyResult.data ?? []).find((r) => r.tool === tool)
-    try { return row ? decryptApiKey(row) : null } catch { return null }
-  }
-
   const score = await computeAgencyScore({
-    stripeApiKey: getKey('stripe'),
-    harvestApiKey: getKey('harvest'),
+    userId,
+    stripeConnected,
+    harvestConnected,
     blendedRate,
     teamSizeRaw,
     companyName,
@@ -80,25 +73,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const session = await getSessionSupabaseClient()
 
-  const [keyResult, benchmarkResult] = await Promise.all([
-    session
-      .from('integrations')
-      .select('tool, encrypted_token, iv, auth_tag, status')
-      .eq('client_id', userId)
-      .eq('status', 'connected'),
+  const [benchmarkResult, stripeConnected, harvestConnected] = await Promise.all([
     bucket
       ? session.from('benchmarks').select('*').eq('team_size_bucket', bucket)
       : Promise.resolve({ data: [] }),
+    isComposioConnected(userId, 'stripe'),
+    isComposioConnected(userId, 'harvest'),
   ])
 
-  const getKey = (tool: string): string | null => {
-    const row = (keyResult.data ?? []).find((r) => r.tool === tool)
-    try { return row ? decryptApiKey(row) : null } catch { return null }
-  }
-
   const score = await computeAgencyScore({
-    stripeApiKey: getKey('stripe'),
-    harvestApiKey: getKey('harvest'),
+    userId,
+    stripeConnected,
+    harvestConnected,
     blendedRate,
     teamSizeRaw,
     companyName,

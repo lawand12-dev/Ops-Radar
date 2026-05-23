@@ -4,7 +4,7 @@ import {
   safeExecuteComposioAction,
   ComposioExecuteError,
 } from '<npm>/lib/composio-fetch';
-import type { PipedriveSalesData } from '<npm>/lib/integrations/pipedrive/adapter';
+import type { PipedriveSalesData } from '<npm>/lib/integration-types';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';

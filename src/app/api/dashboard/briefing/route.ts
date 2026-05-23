@@ -1,13 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
-import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { generateBriefingForUser } from '<npm>/lib/briefing';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const DEFAULT_BLENDED_RATE = 85;
-const MIN_REGEN_HOURS = 6;
 
 // GET /api/dashboard/briefing?limit=4
 // GET /api/dashboard/briefing?unread_only=true  → returns { count: number }
@@ -40,40 +35,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ briefings: data ?? [] });
 }
 
-// POST /api/dashboard/briefing — generate a new briefing (throttled to 1 per 6h)
+// POST /api/dashboard/briefing — previously generated an on-demand briefing.
+// The legacy generator was removed in favor of the Briefing Agent
+// (src/lib/agents/briefing), which writes the weekly briefing to Notion +
+// Gmail on the agent cron. Manual on-demand generation is not wired yet.
+// TODO(post-cleanup): wire to Briefing Agent / Notion Weekly Briefings DB.
 export async function POST(): Promise<NextResponse> {
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-  const supabase = getServerSupabaseClient();
-  const threshold = new Date(Date.now() - MIN_REGEN_HOURS * 60 * 60 * 1000).toISOString();
-  const { data: recent } = await supabase
-    .from('briefings')
-    .select('id, created_at')
-    .eq('user_id', userId)
-    .gte('created_at', threshold)
-    .limit(1);
-
-  if (recent && recent.length > 0) {
-    return NextResponse.json(
-      { error: 'too_soon', next_allowed_at: recent[0].created_at },
-      { status: 429 },
-    );
-  }
-
-  const sessionSupabase = await getSessionSupabaseClient();
-  const { data: userData } = await sessionSupabase.auth.getUser();
-  const meta = (userData?.user?.user_metadata ?? {}) as Record<string, unknown>;
-  const blendedRate = typeof meta.blended_hourly_rate_usd === 'number'
-    ? meta.blended_hourly_rate_usd
-    : DEFAULT_BLENDED_RATE;
-
-  const briefing = await generateBriefingForUser(userId, blendedRate, 'manual');
-  if (!briefing) {
-    return NextResponse.json({ error: 'generation_failed' }, { status: 503 });
-  }
-
-  return NextResponse.json({ briefing });
+  return NextResponse.json(
+    { error: 'not_implemented', message: 'Manual briefing generation is being migrated to the Briefing Agent.' },
+    { status: 501 },
+  );
 }
 
 // PATCH /api/dashboard/briefing — mark briefing(s) as read

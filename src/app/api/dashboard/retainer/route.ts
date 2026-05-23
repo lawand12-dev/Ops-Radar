@@ -1,11 +1,19 @@
 // Retainer API: list health, upsert config, delete config.
 // Branch: main / Supabase. Gated to Pro+ tier.
+//
+// Harvest data is fetched live via Composio (per-user OAuth connection in
+// composio_connections). The legacy Model C path (`integrations` table +
+// decryptApiKey + adapter) has been removed.
 import { NextResponse, type NextRequest } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { decryptApiKey } from '<npm>/lib/integrations/crypto';
-import { fetchHarvestMonthlyProjectHours } from '<npm>/lib/integrations/harvest/adapter';
+import {
+  isComposioConnected,
+  safeExecuteComposioAction,
+  ComposioExecuteError,
+} from '<npm>/lib/composio-fetch';
+import type { HarvestMonthlyProjectData } from '<npm>/lib/integration-types';
 import {
   computeRetainerHealth,
   normalizeClientName,
@@ -26,6 +34,61 @@ type RetainerResponse =
   | { status: 'harvest_not_connected'; configs: RetainerConfig[] }
   | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
+
+// --- Harvest payload shape (only fields we read) ---
+type HarvestEntry = {
+  hours?: number;
+  project?: { name?: string } | null;
+};
+
+function unwrapList<T>(payload: unknown, key?: string): T[] {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload as T[];
+  const obj = payload as Record<string, unknown>;
+  if (key && Array.isArray(obj[key])) return obj[key] as T[];
+  if (Array.isArray(obj.data)) return obj.data as T[];
+  const nested = obj.data as Record<string, unknown> | undefined;
+  if (nested) {
+    if (key && Array.isArray(nested[key])) return nested[key] as T[];
+    if (Array.isArray(nested.data)) return nested.data as T[];
+  }
+  return [];
+}
+
+function shapeHarvestMonthly(entries: HarvestEntry[]): HarvestMonthlyProjectData {
+  const projectMap = new Map<string, number>();
+  for (const e of entries) {
+    const name = e.project?.name ?? 'No project';
+    projectMap.set(name, (projectMap.get(name) ?? 0) + (Number(e.hours) || 0));
+  }
+  const projects = [...projectMap.entries()]
+    .map(([project_name, hours]) => ({
+      project_name,
+      hours: Math.round(hours * 10) / 10,
+    }))
+    .sort((a, b) => b.hours - a.hours);
+  return { projects };
+}
+
+async function fetchHarvestMonthlyViaComposio(
+  userId: string,
+): Promise<HarvestMonthlyProjectData> {
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  // TODO(composio-slug): verify HARVEST_LIST_TIME_ENTRIES action slug.
+  const entriesPayload = await safeExecuteComposioAction<unknown>(
+    userId,
+    'harvest',
+    'HARVEST_LIST_TIME_ENTRIES',
+    {
+      from: monthStart.toISOString().slice(0, 10),
+      to: now.toISOString().slice(0, 10),
+      per_page: 100,
+    },
+  );
+  const entries = unwrapList<HarvestEntry>(entriesPayload, 'time_entries');
+  return shapeHarvestMonthly(entries);
+}
 
 async function getAuthAndPlan(): Promise<
   { userId: string; allowed: true } | { allowed: false; response: NextResponse }
@@ -97,20 +160,13 @@ export async function GET(): Promise<NextResponse<RetainerResponse>> {
     }
   }
 
-  const { data: harvestRow } = await supabase
-    .from('integrations')
-    .select('tool, encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('tool', 'harvest')
-    .eq('status', 'connected')
-    .maybeSingle();
-
-  if (!harvestRow?.encrypted_token) {
+  const harvestConnected = await isComposioConnected(userId, 'harvest');
+  if (!harvestConnected) {
     return NextResponse.json({ status: 'harvest_not_connected', configs });
   }
 
   try {
-    const harvestData = await fetchHarvestMonthlyProjectHours(decryptApiKey(harvestRow));
+    const harvestData = await fetchHarvestMonthlyViaComposio(userId);
     const summary = computeRetainerHealth(configs, harvestData);
 
     if (redis) {
@@ -120,6 +176,9 @@ export async function GET(): Promise<NextResponse<RetainerResponse>> {
     return NextResponse.json({ status: 'ok', ...summary, from_cache: false });
   } catch (err) {
     console.error('[retainer] harvest fetch failed:', err);
+    if (err instanceof ComposioExecuteError) {
+      return NextResponse.json({ status: 'unavailable', message: err.message });
+    }
     return NextResponse.json({
       status: 'unavailable',
       message: err instanceof Error ? err.message : 'fetch_failed',

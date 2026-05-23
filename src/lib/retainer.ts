@@ -1,7 +1,7 @@
 // Retainer computation lib.
 // Branch: main / Supabase. Pure computation — no DB calls, no I/O.
 
-import type { HarvestMonthlyProjectData } from './integrations/harvest/adapter';
+import type { HarvestMonthlyProjectData } from './integration-types';
 
 export type RetainerConfig = {
   id: string;

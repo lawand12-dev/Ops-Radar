@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { decryptApiKey } from '<npm>/lib/integrations/crypto'
+import { isComposioConnected } from '<npm>/lib/composio-fetch'
 import { bucketForServiceMix, bucketForTeamSize } from '<npm>/lib/benchmarks/buckets'
 import { collectUserMetrics } from '<npm>/lib/benchmarks/collect'
 import {
@@ -88,20 +88,15 @@ export async function GET(): Promise<NextResponse> {
     }
   }
 
-  const { data: keyRows } = await service
-    .from('integrations')
-    .select('tool, encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('status', 'connected')
-
-  const getKey = (tool: string): string | null => {
-    const row = (keyRows ?? []).find((r) => r.tool === tool)
-    try { return row ? decryptApiKey(row) : null } catch { return null }
-  }
+  const [stripeConnected, harvestConnected] = await Promise.all([
+    isComposioConnected(userId, 'stripe'),
+    isComposioConnected(userId, 'harvest'),
+  ])
 
   const metrics = await collectUserMetrics({
-    stripeApiKey:  getKey('stripe'),
-    harvestApiKey: getKey('harvest'),
+    userId,
+    stripeConnected,
+    harvestConnected,
     blendedRate:   typeof meta.blended_hourly_rate_usd === 'number'
       ? meta.blended_hourly_rate_usd
       : null,

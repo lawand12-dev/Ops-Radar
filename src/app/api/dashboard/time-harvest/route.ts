@@ -7,7 +7,7 @@ import {
 import type {
   HarvestTimeData,
   HarvestProjectRow,
-} from '<npm>/lib/integrations/harvest/adapter';
+} from '<npm>/lib/integration-types';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';

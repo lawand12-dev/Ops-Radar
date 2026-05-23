@@ -4,7 +4,7 @@ import {
   safeExecuteComposioAction,
   ComposioExecuteError,
 } from '<npm>/lib/composio-fetch';
-import type { HubspotSalesData } from '<npm>/lib/integrations/hubspot/adapter';
+import type { HubspotSalesData } from '<npm>/lib/integration-types';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
