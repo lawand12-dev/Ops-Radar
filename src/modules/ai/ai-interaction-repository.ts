@@ -1,7 +1,9 @@
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
+import { env } from "../../config/env";
 import { dbQuery, getDb } from "../../lib/db";
 import { logError, logWarn } from "../../lib/logger";
 import { redactSecrets } from "../../lib/redact";
+import { enqueueEmbeddingJob } from "../memory/embedding-jobs";
 
 // Cap per-field text size before storage. LONGTEXT can hold up to 4GB but
 // that's a footgun under bursty traffic — a single oversized prompt would
@@ -145,6 +147,48 @@ export async function saveAIInteraction(
       initialOutcome === "rejected" ? new Date() : null
     ]
   );
+
+  const [idRows] = await dbQuery<Array<RowDataPacket & { id: number }>>(
+    runner,
+    `SELECT LAST_INSERT_ID() AS id`
+  );
+  const insertedId = idRows[0]?.id ?? null;
+
+  // Enqueue embedding only for success rows with a known owner and Postgres configured.
+  // Use the already-redacted safe* locals so no secrets leak into the vector store.
+  if (
+    insertedId !== null &&
+    insertedId !== 0 &&
+    record.userId &&
+    record.status === "success" &&
+    env.POSTGRES_URL
+  ) {
+    const userPromptChunk = safeUserPrompt.slice(0, 1500);
+    const responseChunk = safeResponse.slice(0, 1500);
+    const content = `${userPromptChunk}\n\n${responseChunk}`.trim();
+    if (content.length > 0) {
+      setImmediate(() => {
+        enqueueEmbeddingJob({
+          ownerUserId: record.userId as string,
+          sourceKind: "ai_interaction",
+          sourceId: String(insertedId),
+          sourceVersion: 1,
+          content,
+          metadata: {
+            provider: record.provider,
+            model: record.model,
+            user_id: record.userId
+          }
+        }).catch((err) => {
+          logWarn("ai-db", "Failed to enqueue ai_interaction embedding (non-fatal)", {
+            id: String(insertedId),
+            user_id: record.userId,
+            error: err instanceof Error ? err.message : String(err)
+          });
+        });
+      });
+    }
+  }
 }
 
 /**

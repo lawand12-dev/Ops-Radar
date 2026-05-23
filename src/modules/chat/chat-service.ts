@@ -138,7 +138,8 @@ export async function handleChatMessage(
         errorMessage: "Workflow generated from chat.",
         metadata: {
           project_id: project.id
-        }
+        },
+        ownerUserId: requestCtx.userId
       },
       connection
     );
@@ -158,7 +159,8 @@ export async function handleChatMessage(
           : {
               project_id: project.id,
               validation_errors: validation.errors
-            }
+            },
+        ownerUserId: requestCtx.userId
       },
       connection
     );

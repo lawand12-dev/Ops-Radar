@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
+import { env } from "../../config/env";
 import { dbQuery, getDb } from "../../lib/db";
 import { AppError } from "../../lib/errors";
+import { logWarn } from "../../lib/logger";
+import { enqueueEmbeddingJob } from "../memory/embedding-jobs";
 import type { EventType, WorkflowEventRecord } from "../../types/workflow";
 
 // Two parallel event-type families coexist in `workflow_events`:
@@ -66,6 +69,9 @@ export async function createWorkflowEvent(
     durationMs: number | null;
     errorMessage: string | null;
     metadata?: Record<string, unknown> | null;
+    /** Tenant owner — when provided and POSTGRES_URL is configured, a
+     *  breadcrumb embedding job is enqueued fire-and-forget after the INSERT. */
+    ownerUserId?: string | null;
   },
   connection?: PoolConnection
 ): Promise<WorkflowEventRecord> {
@@ -104,7 +110,36 @@ export async function createWorkflowEvent(
     throw new AppError(500, "WORKFLOW_EVENT_INSERT_FAILED", "Workflow event insert failed.");
   }
 
-  return mapEventRow(row);
+  const event = mapEventRow(row);
+
+  if (input.ownerUserId && env.POSTGRES_URL) {
+    const parts = [`${input.eventType}`, `status: ${input.status}`];
+    if (input.errorMessage) parts.push(input.errorMessage);
+    const content = parts.join(" | ");
+
+    setImmediate(() => {
+      enqueueEmbeddingJob({
+        ownerUserId: input.ownerUserId as string,
+        sourceKind: "breadcrumb",
+        sourceId: event.id,
+        sourceVersion: 1,
+        content,
+        metadata: {
+          event_type: input.eventType,
+          status: input.status,
+          workflow_id: input.workflowId
+        }
+      }).catch((err) => {
+        logWarn("event-db", "Failed to enqueue breadcrumb embedding (non-fatal)", {
+          event_id: event.id,
+          workflow_id: input.workflowId,
+          error: err instanceof Error ? err.message : String(err)
+        });
+      });
+    });
+  }
+
+  return event;
 }
 
 export async function listRecentEventsByWorkflowId(

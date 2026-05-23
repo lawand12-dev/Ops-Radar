@@ -36,6 +36,7 @@ import {
   failureClusterFor,
   recentBreadcrumbs
 } from "../memory/breadcrumbs";
+import { runHybridRetrieval } from "../memory/hybrid-retrieval";
 
 /**
  * Resolves the platform RAG agent endpoint config. The agent is a single
@@ -589,10 +590,21 @@ async function buildMemoryContext(
   let matchedPatternIds: string[] = [];
 
   try {
-    const scored = selectPatternCards({
-      prompt: message,
-      outputKind: "workflow_json"
-    });
+    let scored;
+    if (env.HYBRID_RETRIEVAL_ENABLED && env.POSTGRES_URL && context?.userId) {
+      const result = await runHybridRetrieval({
+        ownerUserId: context.userId,
+        queryText: message,
+        outputKind: "workflow_json"
+      });
+      scored = result.pattern_card_scores;
+      if (result.used_fallback) {
+        logInfo("ai", "Hybrid retrieval fell back to keyword selection", undefined, context?.traceId);
+      }
+    } else {
+      scored = selectPatternCards({ prompt: message, outputKind: "workflow_json" });
+    }
+
     if (scored.length > 0) {
       patternCardsBlock = buildPatternCardsPromptBlock(scored);
       matchedPatternIds = scored.map((s) => patternCardCitation(s.card));
@@ -601,6 +613,7 @@ async function buildMemoryContext(
         "Pattern cards selected",
         {
           ids: matchedPatternIds,
+          hybrid: env.HYBRID_RETRIEVAL_ENABLED && Boolean(context?.userId),
           scores: scored.map((s) => ({ id: s.card.id, score: s.score, matched: s.matched_triggers }))
         },
         context?.traceId
