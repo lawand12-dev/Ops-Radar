@@ -428,14 +428,10 @@ const api = {
       reset: () => request("/admin/models", { method: "DELETE" })
     },
     memory: {
-      stats: () => request("/admin/memory/stats"),
-      users: ({ limit = 50, offset = 0 } = {}) =>
-        request(`/admin/memory/users?limit=${limit}&offset=${offset}`),
-      jobs: ({ limit = 50, status } = {}) => {
-        const sp = new URLSearchParams({ limit: String(limit) });
-        if (status) sp.set("status", status);
-        return request(`/admin/memory/jobs?${sp.toString()}`);
-      }
+      health: () => request("/admin/memory/health"),
+      patternCards: () => request("/admin/memory/pattern-cards"),
+      failureClusters: ({ limit = 50, sinceDays = 30 } = {}) =>
+        request(`/admin/memory/failure-clusters?limit=${limit}&since_days=${sinceDays}`)
     }
   },
 
@@ -6019,14 +6015,16 @@ async function pageBreadcrumbs(root) {
    ============================================================ */
 
 async function pageAdminMemory(root) {
-  let stats = null;
-  let jobs = null;
+  let health = null;
+  let patternCards = null;
+  let failures = null;
 
   async function load() {
     try {
-      [stats, jobs] = await Promise.all([
-        api.admin.memory.stats(),
-        api.admin.memory.jobs({ limit: 50 })
+      [health, patternCards, failures] = await Promise.all([
+        api.admin.memory.health(),
+        api.admin.memory.patternCards().catch(() => null),
+        api.admin.memory.failureClusters({ limit: 20, sinceDays: 30 }).catch(() => null)
       ]);
       render();
     } catch (err) {
@@ -6035,8 +6033,14 @@ async function pageAdminMemory(root) {
   }
 
   function render() {
-    const s = stats || {};
-    const jobList = jobs?.items || jobs || [];
+    const q = health?.queue || {};
+    const worker = health?.worker || {};
+    const byKind = health?.embeddings_by_kind || [];
+    const pgOk = health?.pg_reachable;
+    const cards = patternCards?.items || [];
+    const clusters = failures?.items || [];
+    const totalEmbeddings = byKind.reduce((s, k) => s + (k.count || 0), 0);
+
     mount(
       root,
       h(
@@ -6047,53 +6051,117 @@ async function pageAdminMemory(root) {
           { class: "page-header" },
           h("div", null,
             h("h1", { class: "page-header__title" }, "Admin · Memory"),
-            h("p", { class: "page-header__sub" }, "Embedding pipeline jobs and vector store statistics")
+            h("p", { class: "page-header__sub" }, "Embedding pipeline · vector store · pattern cards · failure clusters")
           ),
           h("div", { class: "page-header__actions" },
+            pgOk != null
+              ? Badge({ tone: pgOk ? "ok" : "bad", text: pgOk ? "Postgres OK" : "Postgres down", dot: true })
+              : null,
             h("button", { class: "btn btn--ghost btn--sm", onclick: load }, icon("refresh", 14), "Refresh")
           )
         ),
+
+        /* ── Queue KPIs ── */
         h(
           "div",
           { class: "kpi-grid", style: { marginBottom: "24px" } },
-          Kpi({ label: "Total embeddings", value: s.total_embeddings ?? "—" }),
-          Kpi({ label: "Pending jobs", value: s.pending_jobs ?? "—", tone: s.pending_jobs > 0 ? "down" : null }),
-          Kpi({ label: "Failed jobs", value: s.failed_jobs ?? "—", tone: s.failed_jobs > 0 ? "down" : null }),
-          Kpi({ label: "Documents ingested", value: s.company_brain_docs ?? "—" })
+          Kpi({ label: "Total embeddings", value: totalEmbeddings }),
+          Kpi({ label: "Queued jobs", value: q.queued ?? "—", tone: q.queued > 0 ? "warn" : null }),
+          Kpi({ label: "Running jobs", value: q.running ?? "—" }),
+          Kpi({ label: "Failed jobs", value: q.failed ?? "—", tone: q.failed > 0 ? "down" : null })
         ),
+
+        /* ── Worker status ── */
         h(
           "div",
-          { class: "card card--flush" },
-          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `${jobList.length} Recent Embedding Jobs`)),
-          jobList.length === 0
-            ? Empty({ icon: "brain", title: "No jobs found" })
+          { class: "split-2", style: { marginBottom: "24px" } },
+          h(
+            "div",
+            { class: "card" },
+            h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Embedding Worker")),
+            h("div", { class: "col col--gap-2" },
+              h("div", { class: "row" }, "Status",
+                Badge({ tone: worker.enabled ? "ok" : "neutral", text: worker.enabled ? "enabled" : "disabled", dot: true })),
+              h("div", { class: "row" }, "Scheduled",
+                Badge({ tone: worker.scheduled ? "ok" : "warn", text: String(worker.scheduled), dot: true })),
+              worker.last_cycle
+                ? h("div", { class: "muted text-xs", style: { marginTop: "4px" } },
+                    `Last cycle: ${worker.last_cycle.succeeded} ok / ${worker.last_cycle.failed} failed · ${worker.last_cycle.duration_ms} ms`)
+                : h("div", { class: "muted text-xs" }, "No cycle yet")
+            )
+          ),
+          h(
+            "div",
+            { class: "card" },
+            h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Embeddings by Kind")),
+            byKind.length === 0
+              ? h("div", { class: "muted text-sm" }, pgOk ? "No embeddings yet" : "Postgres unreachable")
+              : h(
+                  "div",
+                  { class: "table-wrap" },
+                  h("table", { class: "table" },
+                    h("thead", null, h("tr", null,
+                      h("th", null, "Kind"), h("th", null, "Count"), h("th", null, "Latest"))),
+                    h("tbody", null,
+                      byKind.map((k) =>
+                        h("tr", null,
+                          h("td", null, Badge({ tone: "neutral", text: k.source_kind })),
+                          h("td", null, h("strong", null, k.count)),
+                          h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(k.latest_at)))
+                        )
+                      )
+                    )
+                  )
+                )
+          )
+        ),
+
+        /* ── Pattern cards ── */
+        h(
+          "div",
+          { class: "card card--flush", style: { marginBottom: "24px" } },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `Pattern Cards — ${cards.length} tracked`)),
+          cards.length === 0
+            ? Empty({ icon: "brain", title: "No pattern card telemetry" })
             : h(
                 "div",
                 { class: "table-wrap" },
-                h(
-                  "table",
-                  { class: "table" },
-                  h("thead", null,
-                    h("tr", null,
-                      h("th", null, "Source"),
-                      h("th", null, "Kind"),
-                      h("th", null, "Status"),
-                      h("th", null, "User"),
-                      h("th", null, "Created")
-                    )
-                  ),
+                h("table", { class: "table" },
+                  h("thead", null, h("tr", null,
+                    h("th", null, "Card"), h("th", null, "Uses"), h("th", null, "Avg score"))),
                   h("tbody", null,
-                    jobList.map((j) =>
+                    cards.map((c) =>
                       h("tr", null,
-                        h("td", null, h("span", { class: "mono text-xs" }, j.source_id?.slice(0, 12) || "—")),
-                        h("td", null, Badge({ tone: "neutral", text: j.source_kind })),
-                        h("td", null, Badge({
-                          tone: j.status === "done" ? "ok" : j.status === "failed" ? "bad" : "warn",
-                          text: j.status,
-                          dot: true
-                        })),
-                        h("td", null, h("span", { class: "muted text-xs" }, j.owner_user_id?.slice(0, 8) || "—")),
-                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(j.created_at)))
+                        h("td", null, h("span", { class: "mono text-xs" }, c.card_id || c.id || "—")),
+                        h("td", null, c.use_count ?? "—"),
+                        h("td", null, c.avg_score != null ? c.avg_score.toFixed(2) : "—")
+                      )
+                    )
+                  )
+                )
+              )
+        ),
+
+        /* ── Failure clusters ── */
+        h(
+          "div",
+          { class: "card card--flush" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `Failure Clusters — last 30 days`)),
+          clusters.length === 0
+            ? Empty({ icon: "alert", title: "No failure clusters", hint: "Clusters form when similar errors recur." })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h("table", { class: "table" },
+                  h("thead", null, h("tr", null,
+                    h("th", null, "Label"), h("th", null, "Count"), h("th", null, "First seen"), h("th", null, "Last seen"))),
+                  h("tbody", null,
+                    clusters.map((fc) =>
+                      h("tr", null,
+                        h("td", null, h("span", { class: "text-sm" }, fc.label || fc.summary || "—")),
+                        h("td", null, h("strong", null, fc.count ?? "—")),
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(fc.first_seen))),
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(fc.last_seen)))
                       )
                     )
                   )
