@@ -22,6 +22,7 @@ import {
   Users,
   Database,
   Bot,
+  History,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -72,6 +73,7 @@ const navSections: NavSection[] = [
   {
     tag: 'OPERATIONS',
     items: [
+      { label: 'Runs',        href: '/dashboard/runs',        icon: History  },
       { label: 'Automations', href: '/dashboard/automations', icon: Activity },
       { label: 'Live Data',   href: '/dashboard/business',    icon: Database },
     ],
