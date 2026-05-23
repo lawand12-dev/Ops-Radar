@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { IntegrationCard } from '<npm>/components/dashboard/integration-card';
-import { ConnectKeyDialog } from '<npm>/components/dashboard/connect-key-dialog';
 
 type Connection = {
   tool: string;
@@ -26,8 +25,6 @@ type ToolDef = {
   blurb: string;
   cardKey: string;
   enabled: boolean;
-  instructions: string;
-  createKeyDocsUrl: string;
 };
 
 const TOOL_CATALOG: ToolDef[] = [
@@ -37,9 +34,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Invoiced, paid, overdue',
     cardKey: 'Finance',
     enabled: true,
-    instructions:
-      'In Stripe, go to Developers → API keys → Create restricted key. Permissions: Read on Charges, Invoices, Account. Paste the key (rk_… or sk_…) below.',
-    createKeyDocsUrl: 'https://dashboard.stripe.com/apikeys',
   },
   {
     key: 'hubspot',
@@ -47,9 +41,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'CRM — pipeline value, leads, won deals',
     cardKey: 'Sales',
     enabled: true,
-    instructions:
-      'In HubSpot, go to Settings → Integrations → Private Apps → Create a private app. Scopes: crm.objects.deals.read + crm.objects.contacts.read. Paste the Private App Token below.',
-    createKeyDocsUrl: 'https://developers.hubspot.com/docs/api/private-apps#create-a-private-app',
   },
   {
     key: 'pipedrive',
@@ -57,9 +48,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'CRM — pipeline, deals, stages',
     cardKey: 'Sales',
     enabled: true,
-    instructions:
-      'In Pipedrive, click your avatar → Personal preferences → API. Copy your personal API token and paste it below.',
-    createKeyDocsUrl: 'https://app.pipedrive.com/settings/personal/api',
   },
   {
     key: 'apollo',
@@ -67,9 +55,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Cold outreach — emails sent, opens, replies',
     cardKey: 'Marketing',
     enabled: true,
-    instructions:
-      'In Apollo, go to Settings → Integrations → API → Create API Key. Copy the key and paste it below.',
-    createKeyDocsUrl: 'https://developer.apollo.io/keys/',
   },
   {
     key: 'calendly',
@@ -77,9 +62,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Meetings booked from outreach',
     cardKey: 'Marketing',
     enabled: true,
-    instructions:
-      'In Calendly, go to Integrations & apps → API & Webhooks → Personal access tokens → Create new token. Paste the token below.',
-    createKeyDocsUrl: 'https://calendly.com/integrations/api_webhooks',
   },
   {
     key: 'clickup',
@@ -87,9 +69,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Projects, tasks, deadlines',
     cardKey: 'Delivery',
     enabled: true,
-    instructions:
-      'In ClickUp, go to Settings → Apps → API Token. Copy your personal API token and paste it below.',
-    createKeyDocsUrl: 'https://app.clickup.com/settings/apps',
   },
   {
     key: 'asana',
@@ -97,9 +76,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Projects, tasks, deadlines',
     cardKey: 'Delivery',
     enabled: true,
-    instructions:
-      'In Asana, go to My Profile Settings → Apps → Manage developer apps → Personal access token → Create new token. Paste it below.',
-    createKeyDocsUrl: 'https://app.asana.com/0/my-apps',
   },
   {
     key: 'monday',
@@ -107,9 +83,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Boards, items, deadlines',
     cardKey: 'Delivery',
     enabled: true,
-    instructions:
-      'In Monday, click your avatar → Developers → My Access Tokens. Copy your personal API token and paste it below.',
-    createKeyDocsUrl: 'https://monday.com/developers/v2#authentication-section',
   },
   {
     key: 'toggl',
@@ -117,9 +90,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Hours tracked, utilization',
     cardKey: 'Time tracking',
     enabled: true,
-    instructions:
-      'In Toggl Track, click your avatar (bottom-left) → Profile Settings. Scroll to "API Token" at the bottom. Copy it and paste it below.',
-    createKeyDocsUrl: 'https://track.toggl.com/profile',
   },
   {
     key: 'harvest',
@@ -127,9 +97,6 @@ const TOOL_CATALOG: ToolDef[] = [
     blurb: 'Hours tracked, utilization',
     cardKey: 'Time tracking',
     enabled: true,
-    instructions:
-      'At id.getharvest.com/developers, create a Personal Access Token. Copy BOTH your Account ID and Token, then paste as <account_id>:<token> (e.g. 1234567:pat_abc...).',
-    createKeyDocsUrl: 'https://id.getharvest.com/developers',
   },
 ];
 
@@ -143,7 +110,6 @@ export default function IntegrationsSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
-  const [dialogTool, setDialogTool] = useState<ToolDef | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -184,7 +150,7 @@ export default function IntegrationsSettingsPage() {
     if (connected) {
       setBanner({ kind: 'ok', text: `${connected[0].toUpperCase() + connected.slice(1)} connected via OAuth.` });
     } else if (failed) {
-      setBanner({ kind: 'err', text: `${failed} OAuth failed. Please try again or paste an API key instead.` });
+      setBanner({ kind: 'err', text: `${failed} OAuth failed. Please try again.` });
     }
   }, [searchParams]);
 
@@ -197,13 +163,10 @@ export default function IntegrationsSettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.error === 'auth_config_missing') {
-          // Composio not set up for this tool — fall back to paste-key dialog
-          const tool = TOOL_CATALOG.find((t) => t.key === toolSlug);
-          if (tool) setDialogTool(tool);
-          return;
-        }
-        setBanner({ kind: 'err', text: data.message ?? 'Could not start OAuth.' });
+        setBanner({
+          kind: 'err',
+          text: data.message ?? `Could not start ${label} OAuth.`,
+        });
         return;
       }
       if (data.oauth_url) {
@@ -220,20 +183,11 @@ export default function IntegrationsSettingsPage() {
   async function disconnect(tool: string) {
     if (!confirm(`Disconnect ${tool}? Your dashboard will stop reading from ${tool}.`)) return;
 
-    // If connected via Composio, use that endpoint. Otherwise use legacy.
-    const isComposio = composioConnections.some((c) => c.tool_slug === tool && c.is_active);
-    const endpoint = isComposio
-      ? '/api/composio/disconnect'
-      : `/api/integrations/${tool}/disconnect`;
-    const init: RequestInit = isComposio
-      ? {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tool_slug: tool }),
-        }
-      : { method: 'POST' };
-
-    const res = await fetch(endpoint, init);
+    const res = await fetch('/api/composio/disconnect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool_slug: tool }),
+    });
     if (res.ok) {
       setBanner({ kind: 'ok', text: `${tool[0].toUpperCase() + tool.slice(1)} disconnected.` });
       await load();
@@ -255,16 +209,12 @@ export default function IntegrationsSettingsPage() {
         last_synced_at: oauth.last_used_at,
       };
     }
+    // Legacy integrations table connections (pre-Composio customers) — read-only.
     return connections.find((c) => c.tool === tool);
   }
 
   function handleConnect(tool: ToolDef) {
-    // Prefer Composio OAuth when an Auth Config exists for this tool.
-    if (composioAvailable.has(tool.key)) {
-      void startComposioOAuth(tool.key, tool.label);
-    } else {
-      setDialogTool(tool);
-    }
+    void startComposioOAuth(tool.key, tool.label);
   }
 
   return (
@@ -274,7 +224,7 @@ export default function IntegrationsSettingsPage() {
           Connected systems
         </h1>
         <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
-          Connect the tools you use. We never store the data — we read it live from each tool when your dashboard opens.
+          Connect the tools you use with one click. Your data stays in your tools — we read it live when your dashboard opens.
         </p>
       </div>
 
@@ -329,20 +279,6 @@ export default function IntegrationsSettingsPage() {
         })}
       </div>
 
-      <ConnectKeyDialog
-        open={dialogTool !== null}
-        tool={dialogTool?.key ?? ''}
-        displayName={dialogTool?.label ?? ''}
-        instructions={dialogTool?.instructions ?? ''}
-        createKeyDocsUrl={dialogTool?.createKeyDocsUrl ?? ''}
-        onClose={() => setDialogTool(null)}
-        onSuccess={() => {
-          const label = dialogTool?.label;
-          setDialogTool(null);
-          setBanner({ kind: 'ok', text: `${label} connected.` });
-          void load();
-        }}
-      />
     </>
   );
 }
