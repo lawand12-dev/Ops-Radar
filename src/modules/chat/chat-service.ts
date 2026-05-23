@@ -248,3 +248,50 @@ export async function handleChatMessage(
   }
   return publicResult;
 }
+
+export interface WorkflowReviewResult {
+  session_id: string;
+  agent_analysis: string;
+  status: "completed" | "failed";
+}
+
+export async function reviewWorkflowWithAgent(input: {
+  projectId: string;
+  projectName: string;
+  description: string;
+  workflowJson: unknown;
+  userId: string;
+  anthropicApiKey?: string | null;
+}): Promise<WorkflowReviewResult> {
+  const { runAgentLoop } = await import("../agent/agent-loop");
+
+  const workflowStr = JSON.stringify(input.workflowJson, null, 2);
+  const message = `You are a senior n8n automation engineer. Review the following n8n workflow JSON that was generated for a project called "${input.projectName}".
+
+Description: ${input.description}
+
+Workflow JSON:
+\`\`\`json
+${workflowStr.slice(0, 6000)}
+\`\`\`
+
+Please:
+1. Identify any issues, missing error handlers, or inefficiencies
+2. Suggest specific improvements (node types, connections, settings)
+3. Provide an improved version summary (not the full JSON, just describe the key changes)
+4. Rate the workflow quality: Poor / Fair / Good / Excellent
+
+Be concise and actionable.`;
+
+  const result = await runAgentLoop({
+    userMessage: message,
+    userId: input.userId,
+    anthropicApiKey: input.anthropicApiKey
+  });
+
+  return {
+    session_id: result.sessionId,
+    agent_analysis: result.finalAnswer,
+    status: result.status === "completed" ? "completed" : "failed"
+  };
+}

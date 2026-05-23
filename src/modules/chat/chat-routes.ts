@@ -5,7 +5,8 @@ import { env } from "../../config/env";
 import { AppError } from "../../lib/errors";
 import { logInfo, logWarn } from "../../lib/logger";
 import { requireAuth } from "../auth/auth-middleware";
-import { handleChatMessage } from "./chat-service";
+import { getRequestContext } from "../../lib/request-context";
+import { handleChatMessage, reviewWorkflowWithAgent } from "./chat-service";
 
 const chatBodySchema = z.object({
   message: z.string().min(3)
@@ -43,6 +44,37 @@ chatRoutes.post("/", async (c) => {
     }
     throw error;
   }
+});
+
+chatRoutes.post("/review", async (c) => {
+  const traceId = c.req.header("x-trace-id")?.trim() || randomUUID();
+  const ctx = getRequestContext();
+  if (!ctx?.userId) {
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required.");
+  }
+
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({
+    project_name: z.string().min(1),
+    description: z.string().default(""),
+    workflow: z.unknown()
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    throw new AppError(400, "BAD_REQUEST", "Invalid request body.", parsed.error.issues);
+  }
+
+  const result = await reviewWorkflowWithAgent({
+    projectId: randomUUID(),
+    projectName: parsed.data.project_name,
+    description: parsed.data.description,
+    workflowJson: parsed.data.workflow,
+    userId: ctx.userId,
+    anthropicApiKey: ctx.anthropicApiKey
+  });
+
+  c.header("x-trace-id", traceId);
+  return c.json(result, 200);
 });
 
 export default chatRoutes;
