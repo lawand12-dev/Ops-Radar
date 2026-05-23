@@ -21,6 +21,7 @@ import {
   Inbox,
   Users,
   Database,
+  Bot,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -49,6 +50,7 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Actions',    href: '/dashboard/actions',    icon: Zap   },
       { label: 'Briefings',  href: '/dashboard/briefings',  icon: Inbox },
+      { label: 'AI Ops Team', href: '/dashboard/agents',    icon: Bot   },
     ],
   },
   {

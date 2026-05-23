@@ -5,6 +5,7 @@
  */
 
 import type { ToolSlug } from '<npm>/lib/composio'
+import type { Plan } from '<npm>/lib/tier'
 
 export type AgentSlug =
   | 'revenue'
@@ -18,7 +19,12 @@ export type AgentSlug =
   | 'renewal'
   | 'stack'
 
-export type AgentTier = 'starter' | 'growth' | 'pro'
+/**
+ * AgentTier mirrors the canonical Plan from `<npm>/lib/tier` so agents respect
+ * the same gating as the rest of the dashboard. We declare the minimum tier
+ * an agent requires; `fo` is treated as ≥ pro by tierAllows.
+ */
+export type AgentTier = Extract<Plan, 'starter' | 'growth' | 'pro'>
 
 /**
  * Real OpenAI model IDs as of May 2026.
