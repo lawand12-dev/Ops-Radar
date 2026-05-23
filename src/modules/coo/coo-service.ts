@@ -208,16 +208,44 @@ function buildContextBlock(
   return contextBlock.slice(0, MAX_CONTEXT_CHARS);
 }
 
-// Resolve which AI backend to use for COO queries.
-// Prefers Anthropic when ANTHROPIC_API_KEY is set; falls back to the
-// OpenAI-compatible AI_BASE_URL (DigitalOcean, etc.).
-function resolveCooAiBackend(): {
+// Build ordered model fallback chain.
+// Order: AI_MODEL_COMPLEX → AI_MODEL_PRIMARY → AI_WORKFLOW_FALLBACK_MODELS → deepseek-r1
+// DeepSeek is appended as hard last-resort if not already present.
+function buildModelChain(): string[] {
+  const seen = new Set<string>();
+  const chain: string[] = [];
+  const push = (m: string | undefined) => {
+    const s = m?.trim();
+    if (s && !seen.has(s)) { seen.add(s); chain.push(s); }
+  };
+
+  push(env.AI_MODEL_COMPLEX);
+  push(env.AI_MODEL_PRIMARY);
+
+  for (const m of (env.AI_WORKFLOW_FALLBACK_MODELS ?? "").split(",")) {
+    push(m);
+  }
+
+  // Guarantee at least one DeepSeek model as the final safety net.
+  if (!chain.some((m) => m.toLowerCase().includes("deepseek"))) {
+    push("deepseek-r1");
+  }
+
+  return chain;
+}
+
+interface CooAiBackend {
   url: string;
   headers: Record<string, string>;
-  model: string;
+  models: string[];
   maxTokens: number;
   mode: "anthropic" | "openai_compat";
-} {
+}
+
+// Prefers Anthropic when ANTHROPIC_API_KEY is set; falls back to the
+// OpenAI-compatible AI_BASE_URL (DigitalOcean / DeepSeek / etc.).
+function resolveCooAiBackend(): CooAiBackend {
+  const models = buildModelChain();
   if (env.ANTHROPIC_API_KEY) {
     return {
       url: `${env.ANTHROPIC_BASE_URL}/messages`,
@@ -226,7 +254,7 @@ function resolveCooAiBackend(): {
         "x-api-key": env.ANTHROPIC_API_KEY,
         "anthropic-version": env.ANTHROPIC_VERSION
       },
-      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      models,
       maxTokens: env.ANTHROPIC_MAX_TOKENS,
       mode: "anthropic"
     };
@@ -238,7 +266,7 @@ function resolveCooAiBackend(): {
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.AI_API_KEY}`
       },
-      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      models,
       maxTokens: env.ANTHROPIC_MAX_TOKENS,
       mode: "openai_compat"
     };
@@ -332,18 +360,27 @@ ${request.query}`;
     });
   }
 
+  // Try each model in the fallback chain. On HTTP error or timeout log the
+  // reason and advance to the next. This surfaces the real provider error
+  // (wrong model name, expired key, quota exceeded) in the logs rather than
+  // swallowing it, and ensures DeepSeek is reached if all primary models fail.
   let aiText = "";
-  try {
+  let modelUsed = "";
+  const triedModels: string[] = [];
+
+  for (const model of backend.models) {
+    triedModels.push(model);
+
     const requestBody =
       backend.mode === "anthropic"
         ? JSON.stringify({
-            model: backend.model,
+            model,
             max_tokens: backend.maxTokens,
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: userMessage }]
           })
         : JSON.stringify({
-            model: backend.model,
+            model,
             max_tokens: backend.maxTokens,
             messages: [
               { role: "system", content: SYSTEM_PROMPT },
@@ -351,50 +388,47 @@ ${request.query}`;
             ]
           });
 
-    const response = await fetchWithTimeout({
-      url: backend.url,
-      timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
-      requestName: "ai:coo",
-      errorCode: "AI_REQUEST_TIMEOUT",
-      init: { method: "POST", headers: backend.headers, body: requestBody }
-    });
+    let response: Response;
+    try {
+      response = await fetchWithTimeout({
+        url: backend.url,
+        timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+        requestName: `ai:coo:${model}`,
+        errorCode: "AI_REQUEST_TIMEOUT",
+        init: { method: "POST", headers: backend.headers, body: requestBody }
+      });
+    } catch (err) {
+      if (err instanceof AppError && err.code === "AI_REQUEST_TIMEOUT") {
+        logWarn(COO_SCOPE, `Model timed out, trying next`, { model });
+        continue;
+      }
+      throw err;
+    }
 
     if (!response.ok) {
-      const details = await response.text();
-      throw new AppError(502, "AI_REQUEST_FAILED", "COO AI request failed.", {
+      const detail = await response.text().catch(() => "");
+      logWarn(COO_SCOPE, `Model failed, trying next`, {
+        model,
         status: response.status,
-        body: details.slice(0, 500)
+        detail: detail.slice(0, 300)
       });
+      continue;
     }
 
     const payload = (await response.json()) as Record<string, unknown>;
     aiText = extractAiText(payload, backend.mode);
+    modelUsed = model;
+    break;
+  }
 
-    if (env.LOG_AI_RAW_RESPONSE) {
-      logInfo(COO_SCOPE, "raw COO AI response", { text: aiText.slice(0, 500) });
-    }
-  } catch (err) {
-    if (err instanceof AppError) throw err;
-    logWarn(COO_SCOPE, "COO AI call failed", {
-      error: err instanceof Error ? err.message : String(err)
+  if (!modelUsed) {
+    throw new AppError(502, "AI_REQUEST_FAILED", "All AI models failed for COO query.", {
+      tried: triedModels
     });
-    const latency_ms = Date.now() - startedAt;
-    return {
-      query: request.query,
-      answer: "Unable to process query at this time. Please retry.",
-      executive_summary: "Query processing failed.",
-      data_points: [],
-      recommendations: [],
-      risks: [],
-      confidence: "low",
-      context_used: {
-        semantic_hits: hits.length,
-        breadcrumbs_analyzed: breadcrumbList.length,
-        pattern_cards_matched: effectivePatternCards.length,
-        used_hybrid_retrieval: !used_fallback
-      },
-      latency_ms
-    };
+  }
+
+  if (env.LOG_AI_RAW_RESPONSE) {
+    logInfo(COO_SCOPE, "COO AI response", { model: modelUsed, text: aiText.slice(0, 500) });
   }
 
   const parsed = parseAiResponse(aiText);
@@ -424,6 +458,7 @@ ${request.query}`;
 
   logInfo(COO_SCOPE, "COO query completed", {
     userId,
+    model: modelUsed,
     latency_ms: Date.now() - startedAt,
     confidence: parsed.confidence,
     semantic_hits: hits.length,

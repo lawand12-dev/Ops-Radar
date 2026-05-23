@@ -137,12 +137,31 @@ function htmlToPlainText(html: string): string {
 // generateReport
 // ---------------------------------------------------------------------------
 
+function buildReportModelChain(): string[] {
+  const seen = new Set<string>();
+  const chain: string[] = [];
+  const push = (m: string | undefined) => {
+    const s = m?.trim();
+    if (s && !seen.has(s)) { seen.add(s); chain.push(s); }
+  };
+  push(env.AI_MODEL_COMPLEX);
+  push(env.AI_MODEL_PRIMARY);
+  for (const m of (env.AI_WORKFLOW_FALLBACK_MODELS ?? "").split(",")) {
+    push(m);
+  }
+  if (!chain.some((m) => m.toLowerCase().includes("deepseek"))) {
+    push("deepseek-r1");
+  }
+  return chain;
+}
+
 function resolveReportAiBackend(): {
   url: string;
   headers: Record<string, string>;
-  model: string;
+  models: string[];
   mode: "anthropic" | "openai_compat";
 } {
+  const models = buildReportModelChain();
   if (env.ANTHROPIC_API_KEY) {
     return {
       url: `${env.ANTHROPIC_BASE_URL}/messages`,
@@ -151,7 +170,7 @@ function resolveReportAiBackend(): {
         "x-api-key": env.ANTHROPIC_API_KEY,
         "anthropic-version": env.ANTHROPIC_VERSION
       },
-      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      models,
       mode: "anthropic"
     };
   }
@@ -162,7 +181,7 @@ function resolveReportAiBackend(): {
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.AI_API_KEY}`
       },
-      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      models,
       mode: "openai_compat"
     };
   }
@@ -215,54 +234,82 @@ export async function generateReport(input: GenerateReportInput): Promise<Report
   // 3. Call AI provider
   const userMessage = `Generate a ${reportType} report for this period.\n\nCONTEXT:\n${contextBlock || "(no context available)"}`;
 
-  const requestBody =
-    backend.mode === "anthropic"
-      ? JSON.stringify({
-          model: backend.model,
-          max_tokens: env.ANTHROPIC_MAX_TOKENS,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: userMessage }]
-        })
-      : JSON.stringify({
-          model: backend.model,
-          max_tokens: env.ANTHROPIC_MAX_TOKENS,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: userMessage }
-          ]
-        });
+  let reportContent = "";
+  let tokensUsed = 0;
+  let modelUsed = "";
+  const triedModels: string[] = [];
 
-  const response = await fetchWithTimeout({
-    url: backend.url,
-    timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
-    requestName: "ai:reports",
-    errorCode: "AI_REQUEST_TIMEOUT",
-    init: { method: "POST", headers: backend.headers, body: requestBody }
-  });
+  for (const model of backend.models) {
+    triedModels.push(model);
 
-  if (!response.ok) {
-    const details = await response.text();
-    logError("reports", "AI request failed", { status: response.status, body: details.slice(0, 200) });
-    throw new AppError(502, "AI_REQUEST_FAILED", "Report generation failed.", {
-      status: response.status
+    const requestBody =
+      backend.mode === "anthropic"
+        ? JSON.stringify({
+            model,
+            max_tokens: env.ANTHROPIC_MAX_TOKENS,
+            system: SYSTEM_PROMPT,
+            messages: [{ role: "user", content: userMessage }]
+          })
+        : JSON.stringify({
+            model,
+            max_tokens: env.ANTHROPIC_MAX_TOKENS,
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: userMessage }
+            ]
+          });
+
+    let response: Response;
+    try {
+      response = await fetchWithTimeout({
+        url: backend.url,
+        timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+        requestName: `ai:reports:${model}`,
+        errorCode: "AI_REQUEST_TIMEOUT",
+        init: { method: "POST", headers: backend.headers, body: requestBody }
+      });
+    } catch (err) {
+      if (err instanceof AppError && err.code === "AI_REQUEST_TIMEOUT") {
+        logWarn("reports", `Model timed out, trying next`, { model });
+        continue;
+      }
+      throw err;
+    }
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      logWarn("reports", `Model failed, trying next`, {
+        model,
+        status: response.status,
+        detail: detail.slice(0, 300)
+      });
+      continue;
+    }
+
+    const payload = (await response.json()) as Record<string, unknown>;
+    if (backend.mode === "anthropic") {
+      const content = payload["content"] as Array<{ type: string; text?: string }> | undefined;
+      const usage = payload["usage"] as { input_tokens?: number; output_tokens?: number } | undefined;
+      reportContent = content?.find((p) => p.type === "text")?.text ?? "";
+      tokensUsed = (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0);
+    } else {
+      const choices = payload["choices"] as Array<{ message?: { content?: string } }> | undefined;
+      const usage = payload["usage"] as { total_tokens?: number } | undefined;
+      reportContent = choices?.[0]?.message?.content ?? "";
+      tokensUsed = usage?.total_tokens ?? 0;
+    }
+    modelUsed = model;
+    break;
+  }
+
+  if (!modelUsed) {
+    logError("reports", "All AI models failed for report generation", { tried: triedModels });
+    throw new AppError(502, "AI_REQUEST_FAILED", "Report generation failed — all models exhausted.", {
+      tried: triedModels
     });
   }
 
-  const payload = (await response.json()) as Record<string, unknown>;
-
-  let reportContent = "";
-  let tokensUsed = 0;
-  if (backend.mode === "anthropic") {
-    const content = payload["content"] as Array<{ type: string; text?: string }> | undefined;
-    const usage = payload["usage"] as { input_tokens?: number; output_tokens?: number } | undefined;
-    reportContent = content?.find((p) => p.type === "text")?.text ?? "";
-    tokensUsed = (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0);
-  } else {
-    const choices = payload["choices"] as Array<{ message?: { content?: string } }> | undefined;
-    const usage = payload["usage"] as { total_tokens?: number } | undefined;
-    reportContent = choices?.[0]?.message?.content ?? "";
-    tokensUsed = usage?.total_tokens ?? 0;
-  }
+  logInfo("reports", "Report AI call succeeded", { model: modelUsed });
 
   const latencyMs = Date.now() - startedAt;
   const reportId = randomUUID();
