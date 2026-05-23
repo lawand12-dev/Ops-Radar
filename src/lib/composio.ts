@@ -96,6 +96,35 @@ export async function getComposioToolsForUser(
 }
 
 /**
+ * Looks up which toolkits the given user has actively connected via Composio
+ * OAuth. Returns the OpsRadar ToolSlug values (snake_case), most-recently-
+ * connected first. Used by the COO chat to load only relevant Composio tools
+ * (capped at N) instead of every tool in every connected toolkit.
+ */
+export async function getConnectedToolSlugs(userId: string): Promise<ToolSlug[]> {
+  // Defer import to avoid pulling Supabase into pages that only need the
+  // tool-slug constants.
+  const { getServerSupabaseClient } = await import('<npm>/lib/supabase-server')
+  const supabase = getServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('composio_connections')
+    .select('tool_slug, last_used_at, connected_at')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .order('last_used_at', { ascending: false, nullsFirst: false })
+    .order('connected_at', { ascending: false })
+
+  if (error || !data) return []
+
+  const valid = new Set(Object.keys(COMPOSIO_TOOLS) as ToolSlug[])
+  const out: ToolSlug[] = []
+  for (const row of data) {
+    if (valid.has(row.tool_slug as ToolSlug)) out.push(row.tool_slug as ToolSlug)
+  }
+  return out
+}
+
+/**
  * Resolves a tool slug → Composio Auth Config ID via env vars.
  *
  * Per Composio's 2026-04-24 SDK change, `connectedAccounts.initiate()` requires

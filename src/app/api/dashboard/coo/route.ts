@@ -32,6 +32,12 @@ import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { type ExecutorContext } from '<npm>/lib/coo/executor';
 import { buildAiSdkCooTools } from '<npm>/lib/coo/ai-sdk-tools';
+import {
+  COMPOSIO_TOOLS,
+  getComposioToolsForUser,
+  getConnectedToolSlugs,
+} from '<npm>/lib/composio';
+import { wrapToolsWithApprovalGate } from '<npm>/lib/agents/approval-gate';
 import { getRecentOutcomes, formatOutcomesForPrompt } from '<npm>/lib/coo/outcomes';
 import { buildCooSystemPrompt, PROMPT_VERSION } from '<npm>/lib/coo/prompts/coo-system-v1';
 import type { Json } from '<npm>/lib/database.types';
@@ -135,7 +141,34 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   console.log('[coo-agent] using prompt version:', PROMPT_VERSION);
 
-  const tools = buildAiSdkCooTools(ctx);
+  // Composio sub-agent power: load the customer's most-recently-used
+  // toolkits and wrap them with the approval gate. Cap at 3 toolkits in v1
+  // to keep input tokens reasonable (each toolkit exposes ~60-100 tools
+  // and ~200 tokens per tool definition). Phase 2 will replace this with
+  // a sub-agent router pattern (one delegation tool per toolkit instead
+  // of every action exposed flat).
+  const COMPOSIO_TOOLKIT_CAP = 3;
+  let composioTools: Awaited<ReturnType<typeof getComposioToolsForUser>> = {};
+  try {
+    const connectedSlugs = await getConnectedToolSlugs(userId);
+    const top = connectedSlugs.slice(0, COMPOSIO_TOOLKIT_CAP);
+    if (top.length > 0) {
+      const toolkits = top.map((s) => COMPOSIO_TOOLS[s]);
+      const rawComposio = await getComposioToolsForUser(userId, toolkits);
+      composioTools = wrapToolsWithApprovalGate(rawComposio, {
+        userId,
+        source: 'coo-chat',
+      });
+    }
+  } catch (err) {
+    // Don't kill the chat if Composio is down — degrade to read-only COO.
+    console.warn('[coo-agent] composio tool load failed:', err);
+  }
+
+  const tools = {
+    ...buildAiSdkCooTools(ctx),
+    ...composioTools,
+  };
 
   const encoder = new TextEncoder();
 
@@ -283,6 +316,31 @@ export async function POST(request: NextRequest): Promise<Response> {
                     action_id: out.data.action_id,
                     action_type: input.action_type,
                     label: out.data.label,
+                  });
+                }
+              } else {
+                // Composio write tools queued by the approval gate return a
+                // `{ queued: true, action_id, summary }` envelope. Surface
+                // them with the same action_proposed event so the chat UI
+                // renders an approval card identical to queue_action's.
+                const out = chunk.output as {
+                  queued?: boolean;
+                  action_id?: string;
+                  summary?: string;
+                  action_slug?: string;
+                } | undefined;
+                if (out?.queued && out.action_id) {
+                  const label = out.summary ?? out.action_slug ?? name;
+                  finalAssistant.actionCard = {
+                    action_id: out.action_id,
+                    action_type: 'composio_action',
+                    label,
+                  };
+                  emit({
+                    type: 'action_proposed',
+                    action_id: out.action_id,
+                    action_type: 'composio_action',
+                    label,
                   });
                 }
               }
