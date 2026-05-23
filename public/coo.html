@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COO Intelligence Dashboard — OpsRadar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e1117; --surface: #161b27; --border: #1e2a3a;
+      --text: #e2e8f0; --muted: #8892a4; --accent: #4f9cf9;
+      --accent-dim: #1a3a5c; --green: #34d399; --red: #f87171; --yellow: #fbbf24;
+      --radius: 8px; --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { cursor: pointer; font-family: var(--font); }
+    input, textarea, select { font-family: var(--font); }
+
+    /* Layout */
+    .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 16px 0; display: flex; flex-direction: column; }
+    .sidebar-logo { padding: 0 16px 24px; font-weight: 700; font-size: 16px; color: var(--accent); letter-spacing: -0.5px; }
+    .sidebar-logo span { color: var(--muted); font-weight: 400; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: var(--muted); cursor: pointer; border-radius: 0; transition: all 0.15s; font-size: 13px; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item:hover { background: var(--accent-dim); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 500; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-section { padding: 16px 16px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .sidebar-footer { margin-top: auto; padding: 16px; }
+    .back-link { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+
+    /* Main area */
+    .main { overflow: auto; }
+    .page { display: none; padding: 32px; max-width: 960px; }
+    .page.active { display: block; }
+    .page-header { margin-bottom: 28px; }
+    .page-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .page-subtitle { color: var(--muted); font-size: 13px; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+    .card-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.yellow { color: var(--yellow); }
+
+    /* COO Chat */
+    .chat-container { display: flex; flex-direction: column; height: calc(100vh - 180px); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px 0; display: flex; flex-direction: column; gap: 16px; }
+    .msg { display: flex; gap: 12px; }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .msg.user .msg-avatar { background: var(--accent-dim); color: var(--accent); }
+    .msg.ai .msg-avatar { background: #1a2e1a; color: var(--green); }
+    .msg-body { flex: 1; }
+    .msg-role { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .msg.user .msg-role { color: var(--accent); }
+    .msg.ai .msg-role { color: var(--green); }
+    .msg-text { line-height: 1.6; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+    .msg-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+    .msg-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+    .badge-high { background: #1a2e1a; color: var(--green); }
+    .badge-medium { background: #2a2010; color: var(--yellow); }
+    .badge-low { background: #2a1010; color: var(--red); }
+    .badge-info { background: var(--accent-dim); color: var(--accent); }
+    .data-points { margin-top: 12px; }
+    .data-point { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .data-point:last-child { border-bottom: none; }
+    .data-point-label { color: var(--muted); }
+    .data-point-value { font-weight: 600; }
+    .recommendations, .risks { margin-top: 12px; }
+    .recommendations h4, .risks h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+    .rec-item, .risk-item { padding: 6px 0 6px 16px; position: relative; font-size: 13px; line-height: 1.5; }
+    .rec-item::before { content: "→"; position: absolute; left: 0; color: var(--green); }
+    .risk-item::before { content: "⚠"; position: absolute; left: 0; color: var(--yellow); }
+    .chat-input-area { border-top: 1px solid var(--border); padding-top: 16px; }
+    .chat-input-row { display: flex; gap: 10px; }
+    .chat-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-size: 14px; resize: none; outline: none; transition: border-color 0.15s; min-height: 80px; }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--muted); }
+    .send-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 10px 20px; font-size: 14px; font-weight: 600; align-self: flex-end; transition: opacity 0.15s; }
+    .send-btn:hover { opacity: 0.9; }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .context-row { display: flex; gap: 8px; margin-top: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+    .context-select { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 4px 8px; font-size: 12px; }
+    .empty-chat { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-chat svg { width: 48px; height: 48px; margin: 0 auto 16px; display: block; opacity: 0.3; }
+    .suggested-queries { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+    .suggested-query { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--muted); }
+    .suggested-query:hover { border-color: var(--accent); color: var(--accent); }
+    .typing { display: flex; align-items: center; gap: 4px; padding: 8px 0; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typing 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+    /* Reports */
+    .report-list { display: flex; flex-direction: column; gap: 12px; }
+    .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color 0.15s; }
+    .report-card:hover { border-color: var(--accent); }
+    .report-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .report-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .report-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+    .report-type-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; background: var(--accent-dim); color: var(--accent); white-space: nowrap; }
+    .report-content { margin-top: 16px; line-height: 1.7; font-size: 13px; }
+    .report-content h2 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--accent); }
+    .report-content h3 { font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+    .report-content p { margin-bottom: 10px; }
+    .report-content ul { padding-left: 20px; margin-bottom: 10px; }
+    .report-content li { margin-bottom: 4px; }
+    .back-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 8px 16px; font-size: 13px; margin-bottom: 20px; transition: all 0.15s; }
+    .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .generate-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 10px 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; transition: opacity 0.15s; }
+    .generate-btn:hover { opacity: 0.9; }
+    .generate-btn:disabled { opacity: 0.5; }
+
+    /* Ingest */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], select, textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; transition: border-color 0.15s; }
+    input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 120px; }
+    .consent-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    input[type="checkbox"] { width: 16px; height: 16px; }
+    .submit-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 10px 24px; font-size: 14px; font-weight: 600; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; }
+    .doc-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .doc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+    .doc-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+    .doc-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; }
+
+    /* Login */
+    .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 360px; }
+    .login-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .login-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 12px; font-size: 14px; font-weight: 600; transition: opacity 0.15s; }
+    .login-btn:hover { opacity: 0.9; }
+    .error-msg { color: var(--red); font-size: 12px; margin-top: 8px; display: none; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e2a3a; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 20px; font-size: 13px; z-index: 9999; max-width: 320px; animation: toastIn 0.2s ease; }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+    @keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-wrap" style="display:none">
+  <div class="login-box">
+    <div class="login-title">COO Intelligence Dashboard</div>
+    <div class="login-sub">Sign in to access your operational intelligence</div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="text" id="login-email" placeholder="admin@ops.co" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="text" id="login-password" placeholder="••••••••" style="letter-spacing:0.2em" />
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<div id="app-screen" class="layout" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-logo">OpsRadar <span>COO</span></div>
+    <div class="nav-section">Intelligence</div>
+    <button class="nav-item active" data-page="coo" onclick="showPage('coo', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      COO Query
+    </button>
+    <button class="nav-item" data-page="reports" onclick="showPage('reports', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Reports
+    </button>
+    <div class="nav-section">Memory</div>
+    <button class="nav-item" data-page="ingest" onclick="showPage('ingest', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Company Brain
+    </button>
+    <button class="nav-item" data-page="breadcrumbs" onclick="showPage('breadcrumbs', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Breadcrumbs
+    </button>
+    <div class="sidebar-footer">
+      <a href="/" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to App
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- COO Query Page -->
+    <div id="page-coo" class="page active">
+      <div class="page-header">
+        <div class="page-title">COO Intelligence Engine</div>
+        <div class="page-subtitle">Ask business questions — powered by semantic memory, breadcrumbs, and pattern cards</div>
+      </div>
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <div class="empty-chat" id="chat-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <p style="font-size:15px;color:var(--text);margin-bottom:8px">Ask your COO anything</p>
+            <p style="font-size:13px">Queries are grounded in your operational memory — workflows, events, and patterns</p>
+            <div class="suggested-queries">
+              <span class="suggested-query" onclick="fillQuery(this)">What are the top client risks this week?</span>
+              <span class="suggested-query" onclick="fillQuery(this)">How is our operational health trending?</span>
+              <span class="suggested-query" onclick="fillQuery(this)">What workflows are failing most often?</span>
+              <span class="suggested-query" onclick="fillQuery(this)">Where are the biggest bottlenecks?</span>
+              <span class="suggested-query" onclick="fillQuery(this)">What should I prioritize today?</span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="chat-input" placeholder="Ask a business question... (Shift+Enter for newline, Enter to send)" rows="3" onkeydown="handleInputKey(event)"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendQuery()">Ask COO</button>
+          </div>
+          <div class="context-row">
+            <span>Context window:</span>
+            <select class="context-select" id="context-hours">
+              <option value="24">24 hours</option>
+              <option value="72">3 days</option>
+              <option value="168" selected>7 days</option>
+              <option value="336">2 weeks</option>
+              <option value="720">30 days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Page -->
+    <div id="page-reports" class="page">
+      <div class="page-header">
+        <div class="page-title">Executive Reports</div>
+        <div class="page-subtitle">AI-generated reports based on your operational data</div>
+      </div>
+      <div id="report-list-view">
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="generate-btn" id="gen-exec-btn" onclick="generateReport('executive_summary')">Generate Executive Summary</button>
+          <button class="generate-btn" style="background:#1a3a1a;border:1px solid var(--green);color:var(--green)" id="gen-risk-btn" onclick="generateReport('risk_analysis')">Risk Analysis</button>
+          <button class="generate-btn" style="background:#2a2010;border:1px solid var(--yellow);color:var(--yellow)" id="gen-ops-btn" onclick="generateReport('operational_review')">Operational Review</button>
+        </div>
+        <div class="report-list" id="reports-list"><div style="color:var(--muted);text-align:center;padding:40px">Loading reports…</div></div>
+      </div>
+      <div id="report-detail-view" style="display:none">
+        <button class="back-btn" onclick="showReportList()">← Back to Reports</button>
+        <div id="report-detail-content"></div>
+      </div>
+    </div>
+
+    <!-- Company Brain Ingest Page -->
+    <div id="page-ingest" class="page">
+      <div class="page-header">
+        <div class="page-title">Company Brain</div>
+        <div class="page-subtitle">Ingest data from Slack, email, meetings, and documents into the intelligence layer</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add Knowledge</div>
+        <div class="form-group">
+          <label>Title (optional)</label>
+          <input type="text" id="ingest-title" placeholder="e.g., Q4 Revenue Review, Team Meeting Notes" />
+        </div>
+        <div class="form-group">
+          <label>Source Type</label>
+          <select id="ingest-source">
+            <option value="manual">Manual Entry</option>
+            <option value="document">Document</option>
+            <option value="meeting">Meeting Notes</option>
+            <option value="slack">Slack Export</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea id="ingest-content" placeholder="Paste text, notes, data, or any business content here…" style="min-height:160px"></textarea>
+        </div>
+        <div class="form-group">
+          <div class="consent-row">
+            <input type="checkbox" id="ingest-consent" />
+            <label for="ingest-consent" style="text-transform:none;letter-spacing:0;font-weight:400;margin:0">I confirm this data is authorized for ingestion and storage (consent_verified)</label>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="ingestDocument()">Ingest into Company Brain</button>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">Ingested Documents</div>
+        <div class="doc-list" id="doc-list"><div style="color:var(--muted);padding:12px 0">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- Breadcrumbs Page -->
+    <div id="page-breadcrumbs" class="page">
+      <div class="page-header">
+        <div class="page-title">Operational Breadcrumbs</div>
+        <div class="page-subtitle">Real-time timeline of system events powering the COO engine</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center">
+        <select class="context-select" id="crumb-hours" style="padding:8px 12px;font-size:13px" onchange="loadBreadcrumbs()">
+          <option value="24" selected>Last 24 hours</option>
+          <option value="72">Last 3 days</option>
+          <option value="168">Last 7 days</option>
+        </select>
+        <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:8px 16px;font-size:13px" onclick="loadBreadcrumbs()">Refresh</button>
+      </div>
+      <div id="breadcrumbs-list"><div style="color:var(--muted);text-align:center;padding:40px">Loading…</div></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('coo_token');
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-error');
+  if (!email || !pass) { showErr(err, 'Email and password required'); return; }
+  btn.innerHTML = '<span class="spinner"></span>Signing in…'; btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'Login failed');
+    token = data.token;
+    localStorage.setItem('coo_token', token);
+    err.style.display = 'none';
+    initApp();
+  } catch(e) { showErr(err, e.message); }
+  finally { btn.innerHTML = 'Sign In'; btn.disabled = false; }
+}
+
+function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+function authHeaders() { return { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }; }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'grid';
+  loadReports();
+  loadDocuments();
+  loadBreadcrumbs();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (token) { initApp(); }
+  else { document.getElementById('login-screen').style.display = 'flex'; }
+});
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── COO Chat ──────────────────────────────────────────────────────────────────
+const chatMessages = [];
+
+function handleInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+}
+
+function fillQuery(el) {
+  document.getElementById('chat-input').value = el.textContent;
+  document.getElementById('chat-input').focus();
+}
+
+async function sendQuery() {
+  const input = document.getElementById('chat-input');
+  const query = input.value.trim();
+  if (!query) return;
+  const hours = parseInt(document.getElementById('context-hours').value);
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  input.value = '';
+  document.getElementById('chat-empty').style.display = 'none';
+  appendMessage('user', query);
+  const typingId = appendTyping();
+  try {
+    const res = await fetch(`${API}/coo/query`, { method:'POST', headers: authHeaders(), body: JSON.stringify({ query, context_window_hours: hours }) });
+    if (res.status === 401) { localStorage.removeItem('coo_token'); location.reload(); return; }
+    const data = await res.json();
+    removeTyping(typingId);
+    if (!res.ok) throw new Error(data?.error?.message || 'Query failed');
+    appendAiResponse(data);
+  } catch(e) {
+    removeTyping(typingId);
+    appendMessage('ai', '⚠ Error: ' + e.message, null);
+    toast(e.message, 'error');
+  } finally { btn.disabled = false; }
+}
+
+function appendMessage(role, text, meta) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? 'U' : 'AI'}</div>
+    <div class="msg-body">
+      <div class="msg-role">${role === 'user' ? 'You' : 'COO Engine'}</div>
+      <div class="msg-text">${escHtml(text)}</div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendAiResponse(data) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  const confClass = { high:'badge-high', medium:'badge-medium', low:'badge-low' }[data.confidence] || 'badge-info';
+  let html = `
+    <div class="msg-avatar">AI</div>
+    <div class="msg-body">
+      <div class="msg-role">COO Engine</div>
+      <div class="msg-text">${escHtml(data.executive_summary || data.answer || '')}</div>`;
+  if (data.answer && data.answer !== data.executive_summary) {
+    html += `<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:12px">Full analysis</summary><div class="msg-text" style="margin-top:8px;font-size:13px">${escHtml(data.answer)}</div></details>`;
+  }
+  if (data.data_points?.length) {
+    html += '<div class="data-points">';
+    for (const dp of data.data_points) {
+      html += `<div class="data-point"><span class="data-point-label">${escHtml(dp.label)}</span><span class="data-point-value">${escHtml(dp.value)}</span></div>`;
+    }
+    html += '</div>';
+  }
+  if (data.recommendations?.length) {
+    html += `<div class="recommendations"><h4>Recommendations</h4>${data.recommendations.map(r=>`<div class="rec-item">${escHtml(r)}</div>`).join('')}</div>`;
+  }
+  if (data.risks?.length) {
+    html += `<div class="risks"><h4>Risks</h4>${data.risks.map(r=>`<div class="risk-item">${escHtml(r)}</div>`).join('')}</div>`;
+  }
+  html += `<div class="msg-meta">
+    <span class="msg-badge ${confClass}">Confidence: ${data.confidence}</span>
+    <span class="msg-badge badge-info">${data.context_used?.semantic_hits || 0} semantic hits</span>
+    <span class="msg-badge badge-info">${data.context_used?.breadcrumbs_analyzed || 0} breadcrumbs</span>
+    <span class="msg-badge badge-info">${data.latency_ms}ms</span>
+  </div></div>`;
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const id = 'typing-' + Date.now();
+  const div = document.createElement('div');
+  div.id = id; div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-avatar">AI</div><div class="msg-body"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) { document.getElementById(id)?.remove(); }
+
+// ── Reports ───────────────────────────────────────────────────────────────────
+async function loadReports() {
+  try {
+    const res = await fetch(`${API}/reports/?limit=20`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const { items } = await res.json();
+    const container = document.getElementById('reports-list');
+    if (!items?.length) { container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">No reports yet. Generate one above.</div>'; return; }
+    container.innerHTML = items.map(r => `
+      <div class="report-card" onclick="viewReport('${r.id}')">
+        <div class="report-card-header">
+          <div>
+            <div class="report-title">${escHtml(r.title)}</div>
+            <div class="report-meta">
+              <span>${r.content_chars} chars</span>
+              <span>${r.email_delivered ? '✉ Emailed' : 'Not emailed'}</span>
+              <span>${new Date(r.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+          <span class="report-type-badge">${r.report_type.replace(/_/g,' ')}</span>
+        </div>
+      </div>`).join('');
+  } catch(e) { /* silent */ }
+}
+
+async function viewReport(id) {
+  try {
+    const res = await fetch(`${API}/reports/${id}`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const r = await res.json();
+    document.getElementById('report-list-view').style.display = 'none';
+    const detail = document.getElementById('report-detail-view');
+    detail.style.display = 'block';
+    document.getElementById('report-detail-content').innerHTML = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+          <div>
+            <div style="font-size:18px;font-weight:700">${escHtml(r.title)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">${new Date(r.created_at).toLocaleString()} · ${r.content_chars} chars</div>
+          </div>
+          <span class="report-type-badge">${r.report_type.replace(/_/g,' ')}</span>
+        </div>
+        <div class="report-content">${r.content}</div>
+      </div>`;
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function showReportList() {
+  document.getElementById('report-detail-view').style.display = 'none';
+  document.getElementById('report-list-view').style.display = 'block';
+}
+
+async function generateReport(type) {
+  const btns = ['gen-exec-btn','gen-risk-btn','gen-ops-btn'];
+  btns.forEach(id => { const b = document.getElementById(id); if(b) b.disabled = true; });
+  toast('Generating report… this may take a moment', 'info');
+  try {
+    const res = await fetch(`${API}/reports/generate`, { method:'POST', headers: authHeaders(), body: JSON.stringify({ report_type: type, send_email: false }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'Generation failed');
+    toast('Report generated: ' + data.title, 'success');
+    loadReports();
+  } catch(e) { toast(e.message, 'error'); }
+  finally { btns.forEach(id => { const b = document.getElementById(id); if(b) b.disabled = false; }); }
+}
+
+// ── Company Brain Ingest ──────────────────────────────────────────────────────
+async function ingestDocument() {
+  const title   = document.getElementById('ingest-title').value.trim();
+  const kind    = document.getElementById('ingest-source').value;
+  const content = document.getElementById('ingest-content').value.trim();
+  const consent = document.getElementById('ingest-consent').checked;
+  if (!content) { toast('Content is required', 'error'); return; }
+  if (content.length < 10) { toast('Content must be at least 10 characters', 'error'); return; }
+  if (!consent) { toast('You must check consent_verified', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/memory/ingest`, { method:'POST', headers: authHeaders(), body: JSON.stringify({ title: title||undefined, content, source_kind: kind, consent_verified: true }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'Ingest failed');
+    toast(`Document ingested (${data.content_chars} chars, embedding ${data.embedding_queued ? 'queued' : 'skipped'})`, 'success');
+    document.getElementById('ingest-title').value = '';
+    document.getElementById('ingest-content').value = '';
+    document.getElementById('ingest-consent').checked = false;
+    loadDocuments();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function loadDocuments() {
+  try {
+    const res = await fetch(`${API}/memory/documents?limit=20`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const { items } = await res.json();
+    const container = document.getElementById('doc-list');
+    if (!items?.length) { container.innerHTML = '<div style="color:var(--muted)">No documents ingested yet.</div>'; return; }
+    container.innerHTML = items.map(d => `
+      <div class="doc-card">
+        <div class="doc-title">${escHtml(d.title || '(Untitled)')}</div>
+        <div class="doc-meta">
+          <span>${d.source_kind}</span>
+          <span>${d.content_chars} chars</span>
+          <span>${new Date(d.created_at).toLocaleDateString()}</span>
+        </div>
+      </div>`).join('');
+  } catch(e) { /* silent */ }
+}
+
+// ── Breadcrumbs ───────────────────────────────────────────────────────────────
+async function loadBreadcrumbs() {
+  const hours = document.getElementById('crumb-hours').value;
+  const container = document.getElementById('breadcrumbs-list');
+  container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">Loading…</div>';
+  try {
+    const res = await fetch(`${API}/memory/breadcrumbs?since_hours=${hours}&limit=100`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const { items } = await res.json();
+    if (!items?.length) { container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">No breadcrumbs in this window.</div>'; return; }
+    container.innerHTML = items.map(b => {
+      const kindColor = b.kind.startsWith('ai_') ? 'var(--accent)' : b.kind.startsWith('event:') ? 'var(--green)' : 'var(--yellow)';
+      const outcomeBadge = b.outcome ? `<span style="font-size:11px;padding:1px 6px;border-radius:10px;background:${b.outcome.includes('fail') || b.outcome.includes('reject') ? '#2a1010' : '#1a2e1a'};color:${b.outcome.includes('fail') || b.outcome.includes('reject') ? 'var(--red)' : 'var(--green)'}">${b.outcome}</span>` : '';
+      return `<div class="doc-card" style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${kindColor}22;color:${kindColor}">${b.kind}</span>
+            ${outcomeBadge}
+          </div>
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap">${new Date(b.at).toLocaleTimeString()}</span>
+        </div>
+        <div style="font-size:13px;margin-top:6px;color:var(--text)">${escHtml(b.summary || '(no summary)')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { container.innerHTML = '<div style="color:var(--red);padding:20px">Failed to load breadcrumbs</div>'; }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+</script>
+</body>
+</html>

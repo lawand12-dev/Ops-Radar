@@ -6,6 +6,7 @@ import { startMonitoringScheduler } from "./modules/monitoring/workflow-health-s
 import { startOutcomeReconciler } from "./modules/ai/outcome-reconciler";
 import { startEmbeddingWorker } from "./modules/memory/embedding-worker";
 import { runPatternCardSync } from "./modules/memory/pattern-card-sync";
+import { startReportCron } from "./modules/reports/report-cron";
 import { logError, logInfo } from "./lib/logger";
 
 function startServer() {
@@ -34,6 +35,7 @@ function startServer() {
 startServer();
 startMonitoringScheduler();
 startOutcomeReconciler();
+startReportCron();
 // Fire-and-forget: any failure is logged inside bootstrapAdmin and must not
 // block the HTTP listener (which is already accepting traffic by this point).
 void bootstrapAdmin();

@@ -8,11 +8,15 @@ import { logWarn } from "./lib/logger";
 import { redactSecrets } from "./lib/redact";
 import adminRoutes from "./modules/admin/admin-routes";
 import adminMemoryRoutes from "./modules/admin/memory-routes";
+import adminSeedRoutes from "./modules/admin/seed-routes";
+import adminModelConfigRoutes from "./modules/admin/model-config-routes";
 import analyticsRoutes from "./modules/analytics/analytics-routes";
 import authRoutes from "./modules/auth/auth-routes";
 import chatRoutes from "./modules/chat/chat-routes";
 import eventRoutes from "./modules/events/event-routes";
 import memoryRoutes from "./modules/memory/memory-routes";
+import cooRoutes from "./modules/coo/coo-routes";
+import reportRoutes from "./modules/reports/report-routes";
 import n8nRoutes from "./modules/n8n/n8n-routes";
 import projectRoutes from "./modules/projects/project-routes";
 import { getProjectWorkflowDebugSnapshot } from "./modules/projects/project-service";
@@ -113,6 +117,7 @@ app.get("/", (c) =>
 );
 app.get("/app.css", () => servePublicFile("app.css", "text/css; charset=utf-8"));
 app.get("/app.js", () => servePublicFile("app.js", "application/javascript; charset=utf-8"));
+app.get("/coo-dashboard", () => servePublicFile("coo.html", "text/html; charset=utf-8"));
 
 app.get("/debug/knowledge-base", (c) => {
   if (env.NODE_ENV !== "development") {
@@ -196,7 +201,12 @@ app.route("/admin", adminRoutes);
 // Admin memory dashboard endpoints. Mounted at /admin/memory/* so the
 // existing /admin/* tree's requireAdmin middleware applies via composition.
 app.route("/admin/memory", adminMemoryRoutes);
+// Admin seed data + model config management
+app.route("/admin/seed", adminSeedRoutes);
+app.route("/admin/models", adminModelConfigRoutes);
 app.route("/chat", chatRoutes);
+app.route("/coo", cooRoutes);
+app.route("/reports", reportRoutes);
 app.route("/memory", memoryRoutes);
 app.route("/projects", projectRoutes);
 app.route("/workflows", workflowRoutes);

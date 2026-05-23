@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import type { RowDataPacket } from "mysql2/promise";
 import { AppError } from "../../lib/errors";
+import { dbQuery, getDb } from "../../lib/db";
 import { requireAuth, getAuth } from "../auth/auth-middleware";
 import { findGroundingForWorkflow } from "./grounding";
 import {
@@ -10,6 +12,7 @@ import {
   selectBreadcrumbsPage,
   selectInteractionsPage
 } from "./memory-service";
+import { ingestDocument } from "./ingest-service";
 
 /**
  * User-facing memory-layer API.
@@ -194,6 +197,85 @@ memoryRoutes.get("/workflows/:id/grounding", async (c) => {
     workflowId: parsed.data
   });
   return c.json(response, 200);
+});
+
+// ============================================================
+// POST /memory/ingest
+//
+// Company Brain ingestion: stores text documents (from Slack, email,
+// meetings, manual upload) into all three memory layers.
+// consent_verified: true is required in the request body.
+// ============================================================
+
+const ingestBodySchema = z.object({
+  title: z.string().min(1).max(500).optional(),
+  content: z.string().min(10).max(100000),
+  source_kind: z.enum(["manual", "slack", "email", "meeting", "document", "file"]).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  consent_verified: z.literal(true)
+});
+
+memoryRoutes.post("/ingest", async (c) => {
+  const auth = getAuth(c);
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    throw new AppError(400, "INVALID_BODY", "Request body must be valid JSON.");
+  }
+  const parsed = ingestBodySchema.safeParse(body);
+  if (!parsed.success) {
+    throw new AppError(400, "INVALID_BODY", "Invalid request body.", parsed.error.issues);
+  }
+  const result = await ingestDocument({
+    userId: auth.userId,
+    title: parsed.data.title ?? null,
+    content: parsed.data.content,
+    sourceKind: parsed.data.source_kind ?? "manual",
+    metadata: parsed.data.metadata ?? null,
+    consent_verified: parsed.data.consent_verified
+  });
+  return c.json(result, 201);
+});
+
+// ============================================================
+// GET /memory/documents
+//
+// Lists Company Brain documents ingested by this user.
+// ============================================================
+
+const documentsQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  offset: z.coerce.number().int().min(0).optional()
+});
+
+type DocRow = RowDataPacket & {
+  id: string;
+  title: string | null;
+  source_kind: string;
+  content_chars: number;
+  created_at: Date | string;
+};
+
+memoryRoutes.get("/documents", async (c) => {
+  const auth = getAuth(c);
+  const parsed = documentsQuerySchema.safeParse(c.req.query());
+  if (!parsed.success) {
+    throw new AppError(400, "INVALID_QUERY", "Invalid query.", parsed.error.issues);
+  }
+  const limit = Math.min(parsed.data.limit ?? 50, 100);
+  const offset = parsed.data.offset ?? 0;
+
+  const [rows] = await dbQuery<DocRow[]>(
+    getDb(),
+    `SELECT id, title, source_kind, content_chars, created_at
+       FROM company_brain_documents
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?`,
+    [auth.userId, limit, offset]
+  );
+  return c.json({ items: rows, limit, offset }, 200);
 });
 
 export default memoryRoutes;
