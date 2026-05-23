@@ -10,6 +10,7 @@ export type ActionType =
   | 'cash_flow_alert'
   | 'capacity_drift'
   | 'pattern_alert'
+  | 'composio_action'
 
 export type ActionStatus =
   | 'pending'
@@ -32,6 +33,7 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   cash_flow_alert:       'approval',
   capacity_drift:        'approval',
   pattern_alert:         'approval',
+  composio_action:       'approval',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -46,6 +48,7 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   cash_flow_alert:       'Cash flow risk — advisory ready',
   capacity_drift:        'Capacity drift — staffing advisory ready',
   pattern_alert:         'New pattern detected — recommendation ready',
+  composio_action:       'Agent wants to act on a connected tool',
 }
 
 // ─── Payload types ────────────────────────────────────────────────────────────
@@ -167,6 +170,19 @@ export type PatternAlertPayload = {
   draft_body: string
 }
 
+// Generic Composio tool call queued by the approval gate. The agent (cron or
+// COO sub-agent) wanted to fire `action_slug` with `arguments` against the
+// customer's connected tool. The executor runs it on approval.
+export type ComposioActionPayload = {
+  toolkit: string                     // e.g. 'gmail'
+  action_slug: string                 // e.g. 'GMAIL_SEND_EMAIL'
+  arguments: Record<string, unknown>  // shape varies per action
+  source: 'cron-agent' | 'coo-chat'
+  agent_slug?: string                 // for cron source: which agent
+  summary?: string                    // one-line human description
+  result?: unknown                    // populated after execute
+}
+
 export type ActionPayload =
   | InvoiceReminderPayload
   | MarginAlertPayload
@@ -179,6 +195,7 @@ export type ActionPayload =
   | CashFlowAlertPayload
   | CapacityDriftPayload
   | PatternAlertPayload
+  | ComposioActionPayload
 
 export type NewAction = {
   action_type: ActionType

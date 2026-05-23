@@ -23,6 +23,7 @@ import {
 import { readHowWeWork } from '<npm>/lib/notion/read-how-we-work'
 import { readDecisionLog } from '<npm>/lib/notion/read-decision-log'
 import { getApprovalPatterns } from '<npm>/lib/actions/approval-patterns'
+import { wrapToolsWithApprovalGate } from './approval-gate'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
 
@@ -55,9 +56,17 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     const wantedToolkits = spec.composioApps.filter((t): t is ToolSlug =>
       isToolSlug(t) && connected.has(t as ToolSlug),
     )
-    const tools = wantedToolkits.length > 0
+    const rawTools = wantedToolkits.length > 0
       ? await getComposioToolsForUser(userId, wantedToolkits.map((t) => COMPOSIO_TOOLS[t]))
       : ({} as Awaited<ReturnType<typeof getComposioToolsForUser>>)
+
+    // Approval gate: write actions queue to /dashboard/actions for customer
+    // approval; reads + Notion writes pass through. See approval-gate.ts.
+    const tools = wrapToolsWithApprovalGate(rawTools, {
+      userId,
+      source: 'cron-agent',
+      agentSlug: spec.slug,
+    })
 
     // 5. Personalize the system prompt with three best-effort enrichments —
     // any of these returning null leaves the agent on its base behaviour:

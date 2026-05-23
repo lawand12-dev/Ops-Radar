@@ -4,12 +4,14 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import type {
   AgentAction,
+  ComposioActionPayload,
   HubSpotHarvestPayload,
   InvoiceReminderPayload,
   RetainerInvoiceDraftPayload,
   WorkflowFailurePayload,
 } from './types';
 import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
+import { getComposio } from '<npm>/lib/composio';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const HARVEST_BASE = 'https://api.harvestapp.com/v2';
@@ -141,6 +143,20 @@ export async function executeAction(action: AgentAction): Promise<void> {
           console.error('[executor] retainer_invoice_draft stripe error:', err);
           throw err;
         }
+        break;
+      }
+
+      case 'composio_action': {
+        // Generic Composio call queued by the approval gate. The agent
+        // (cron or COO sub-agent) had its tool intercepted; we now fire
+        // the saved call with the customer as the Composio user.
+        const p = action.payload as ComposioActionPayload;
+        const composio = getComposio();
+        const result = await composio.tools.execute(p.action_slug, {
+          userId: action.user_id,
+          arguments: p.arguments,
+        });
+        updatedPayload.result = result as unknown;
         break;
       }
     }

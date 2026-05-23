@@ -13,6 +13,7 @@ const LOOKBACK_MS: Record<ActionType, number> = {
   cash_flow_alert:       30 * 24 * 60 * 60 * 1000, // one per agency per month
   capacity_drift:        7  * 24 * 60 * 60 * 1000, // one per direction per week
   pattern_alert:         60 * 24 * 60 * 60 * 1000, // one per pattern_card per 60 days (re-surface only if pattern strengthens)
+  composio_action:       0, // no dedup — every queued Composio call is the customer's intended action
 };
 
 export async function isDuplicate(
