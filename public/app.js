@@ -155,6 +155,7 @@ const store = createStore({
     generating: false,
     progressText: "",
     lastResult: null, // ChatResult
+    agentReview: null,
     error: null
   },
   detail: {
@@ -355,7 +356,9 @@ const api = {
   },
 
   chat: {
-    send: (message, signal) => request("/chat", { method: "POST", body: { message }, signal })
+    send: (message, signal) => request("/chat", { method: "POST", body: { message }, signal }),
+    review: (projectName, description, workflow) =>
+      request("/chat/review", { method: "POST", body: { project_name: projectName, description: description || "", workflow } })
   },
 
   events: {
@@ -1781,6 +1784,67 @@ async function pageBuilder(root) {
           )
         );
 
+    const agentReview = chat.agentReview;
+    const agentPanel = agentReview
+      ? h(
+          "div",
+          { class: "card", style: { marginTop: "16px" } },
+          h(
+            "div",
+            { class: "card__header" },
+            h("span", { class: "card__title", style: { display: "flex", alignItems: "center", gap: "8px" } },
+              icon("agent", 16),
+              "Agent Review"
+            ),
+            h("span", {
+              class: `badge badge--${agentReview.status === "completed" ? "success" : "danger"}`
+            }, agentReview.status)
+          ),
+          h(
+            "div",
+            { class: "card__body" },
+            h("div", {
+              class: "text-sm",
+              style: { whiteSpace: "pre-wrap", lineHeight: "1.6", maxHeight: "360px", overflowY: "auto" }
+            }, agentReview.agent_analysis || "No analysis returned."),
+            chat.lastResult
+              ? h(
+                  "div",
+                  { class: "row row--gap-2", style: { marginTop: "16px" } },
+                  h(
+                    "a",
+                    {
+                      class: "btn btn--primary btn--sm",
+                      href: `#/projects/${encodeURIComponent(chat.lastResult.project_id)}`
+                    },
+                    icon("deploy", 14),
+                    "Open & Deploy project"
+                  ),
+                  h(
+                    "a",
+                    {
+                      class: "btn btn--ghost btn--sm",
+                      href: `#/projects/${encodeURIComponent(chat.lastResult.project_id)}`
+                    },
+                    "Open project"
+                  )
+                )
+              : null
+          )
+        )
+      : chat.generating && chat.progressText?.includes("Agent")
+      ? h(
+          "div",
+          { class: "card", style: { marginTop: "16px" } },
+          h("div", { class: "card__body" },
+            h("div", { class: "row row--gap-2" },
+              h("span", { class: "spinner" }),
+              h("span", { class: "muted text-sm" }, "Agent is reviewing the workflow…")
+            )
+          )
+        )
+      : null;
+
     const right = h(
       "section",
       { class: "preview-panel" },
@@ -1789,7 +1853,8 @@ async function pageBuilder(root) {
         { class: "preview-panel__head" },
         h("h2", { style: { margin: 0, fontSize: "var(--fs-lg)" } }, "Workflow preview")
       ),
-      h("div", { class: "preview-panel__body" }, previewBody)
+      h("div", { class: "preview-panel__body" }, previewBody),
+      agentPanel
     );
 
     mount(
@@ -1849,20 +1914,35 @@ async function submitChat(message) {
         messages: [
           ...s.chat.messages,
           {
-            role: "ai",
+            role: “ai”,
             content: result.validation?.valid
               ? `Workflow “${result.project_name}” generated successfully (${result.workflow?.nodes?.length ?? 0} nodes).`
               : `Workflow generated but rejected by validation (${result.validation?.errors?.length ?? 0} errors).`,
             ts: new Date().toISOString()
           }
         ],
-        generating: false,
-        progressText: "",
+        generating: result.validation?.valid ? true : false,
+        progressText: result.validation?.valid ? “Agent reviewing workflow…” : “”,
         lastResult: result,
+        agentReview: null,
         error: null
       }
     }));
-    toast(result.validation?.valid ? "Workflow generated" : "Workflow rejected by validator", result.validation?.valid ? "success" : "warning");
+    toast(result.validation?.valid ? “Workflow generated — running agent review…” : “Workflow rejected by validator”, result.validation?.valid ? “success” : “warning”);
+
+    // Auto-run agent review for valid workflows
+    if (result.validation?.valid && result.workflow) {
+      try {
+        const review = await api.chat.review(result.project_name, result.description, result.workflow);
+        setState((s) => ({
+          ...s,
+          chat: { ...s.chat, generating: false, progressText: “”, agentReview: review }
+        }));
+        toast(“Agent review complete”, “success”);
+      } catch (_reviewErr) {
+        setState((s) => ({ ...s, chat: { ...s.chat, generating: false, progressText: “” } }));
+      }
+    }
   } catch (err) {
     phaseTimer.stop();
     if (err?.name === "AbortError") {
