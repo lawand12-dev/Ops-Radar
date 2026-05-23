@@ -5,7 +5,8 @@ import { dbQuery, getDb } from "../../../lib/db";
 interface ReportRow extends RowDataPacket {
   id: string;
   title: string;
-  status: string;
+  report_type: string;
+  email_delivered: number;
   created_at: Date | string;
 }
 
@@ -24,7 +25,7 @@ const getReports: ToolDefinition = {
     try {
       const [rows] = await dbQuery<ReportRow[]>(
         getDb(),
-        `SELECT id, title, status, created_at FROM ai_reports
+        `SELECT id, title, report_type, email_delivered, created_at FROM ai_reports
          WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
         [context.userId, limit]
       );
@@ -33,7 +34,8 @@ const getReports: ToolDefinition = {
         data: rows.map((r) => ({
           id: r.id,
           title: r.title,
-          status: r.status,
+          report_type: r.report_type,
+          email_delivered: r.email_delivered === 1,
           created_at: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at)
         }))
       };
