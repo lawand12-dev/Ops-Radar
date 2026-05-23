@@ -210,7 +210,16 @@ const envSchema = z.object({
   CHATV2_SERVICE_API_KEY: z
     .string()
     .min(32, "CHATV2_SERVICE_API_KEY must be at least 32 characters")
-    .optional()
+    .optional(),
+
+  // --- AI Agent Platform ---
+  // Redis is required for BullMQ job queues + agent working memory.
+  REDIS_URL: z.string().url().default("redis://localhost:6379"),
+  AGENT_MAX_TURNS: z.coerce.number().int().min(1).max(50).default(12),
+  AGENT_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(32).default(4),
+  // Base URL for n8n webhook triggers (used by the run_workflow tool).
+  // Falls back to N8N_BASE_URL when unset.
+  AGENT_N8N_WEBHOOK_BASE_URL: z.string().url().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
