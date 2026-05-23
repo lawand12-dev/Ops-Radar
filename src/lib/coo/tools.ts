@@ -95,6 +95,87 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'get_real_pnl',
+      description:
+        "Get real profit and loss including all expenses (payroll, contractors, overhead) from the customer's accounting system (QuickBooks or Xero). Use this for any question about true net margin, real profit, or financial performance — distinct from get_finance which is Stripe revenue only.",
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_payroll',
+      description:
+        'Fetch payroll costs MTD from Gusto: total payroll, employee count, contractor count. Call this for any question about payroll, labor cost, headcount cost, or staff spend.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_overdue_invoices_detail',
+      description:
+        'Itemized list of overdue Stripe invoices: client name, amount due, days overdue, due date. Use this when the user wants the actual list of overdue invoices (not just the total dollar number from get_finance).',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_burnout',
+      description:
+        'Detect burnout signals from Slack messaging patterns and Google Calendar meeting density: after-hours Slack %, average meetings per day, deep-work hours per day, burnout risk score. Returns partial data if only one source is connected.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_team_capacity',
+      description:
+        'Fetch team headcount + utilization from BambooHR (headcount, PTOs) + Harvest (billable hours). Use for any question about staffing, team size, billable utilization, or upcoming time off. Different from get_capacity which estimates only from configured team size.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_inbox',
+      description:
+        'Fetch Gmail inbox status: unread count (last 7 days), drafts queued by the Collections Agent, threads tied to clients with overdue invoices. Use for any question about email backlog, drafts to review, or client inbox status.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_web_traffic',
+      description:
+        'Fetch web traffic from Google Analytics: sessions, users, conversions, top traffic channels. Use this for any question about marketing traffic, conversions, or channel performance.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_ad_performance',
+      description:
+        'Fetch ad spend + ROAS across Google Ads, Meta (Facebook) Ads, and LinkedIn Ads. Returns whichever are connected (partial OK). Use this for paid marketing performance, return on ad spend, blended ROAS, or channel-level ad questions.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_contracts',
+      description:
+        'Fetch DocuSign contracts expiring soon: client name, signed date, expiry date, days to expiry, contract value. Use this for renewal planning, contract expiry questions, or revenue-at-risk analysis.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'queue_action',
       description: 'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do.',
       parameters: {
@@ -146,5 +227,14 @@ export const TOOL_LABELS: Record<string, string> = {
   get_meetings: 'Fetching meeting bookings...',
   search_kb: 'Searching the knowledge base...',
   search_brain: 'Searching your agency brain...',
+  get_real_pnl: 'Looking at real P&L...',
+  get_payroll: 'Fetching payroll costs...',
+  get_overdue_invoices_detail: 'Listing overdue invoices...',
+  get_burnout: 'Checking burnout signals...',
+  get_team_capacity: 'Checking team capacity...',
+  get_inbox: 'Checking inbox status...',
+  get_web_traffic: 'Fetching web traffic...',
+  get_ad_performance: 'Fetching ad performance...',
+  get_contracts: 'Listing expiring contracts...',
   queue_action: 'Queuing action for your approval...',
 };

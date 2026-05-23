@@ -935,6 +935,791 @@ async function runQueueAction(
   }
 }
 
+// --------------------- per-tool: get_real_pnl ----------------------------
+
+/**
+ * Real P&L from QuickBooks (preferred) or Xero. Returns whatever Composio gives
+ * us as a permissive object — the LLM is in charge of interpreting the report
+ * shape. We just normalize a few common field names if present.
+ */
+async function runGetRealPnl(ctx: ExecutorContext): Promise<ToolResult> {
+  const qbConnected = await isComposioConnected(ctx.userId, 'quickbooks');
+  const xeroConnected = await isComposioConnected(ctx.userId, 'xero');
+  if (!qbConnected && !xeroConnected) {
+    return {
+      success: false,
+      reason: 'No accounting system connected. Connect QuickBooks or Xero in Integrations.',
+    };
+  }
+  try {
+    if (qbConnected) {
+      // TODO(composio-slug): verify QUICKBOOKS_GET_PROFIT_AND_LOSS_REPORT
+      const data = await executeComposioAction<Record<string, unknown>>(
+        ctx.userId,
+        'quickbooks',
+        'QUICKBOOKS_GET_PROFIT_AND_LOSS_REPORT',
+        {},
+      );
+      const revenue = toNumber(
+        (data as { total_revenue?: unknown; revenue_total?: unknown }).total_revenue ??
+          (data as { revenue_total?: unknown }).revenue_total,
+      );
+      const expense = toNumber(
+        (data as { total_expense?: unknown; expense_total?: unknown }).total_expense ??
+          (data as { expense_total?: unknown }).expense_total,
+      );
+      const netIncome = toNumber(
+        (data as { net_income?: unknown }).net_income,
+        revenue - expense,
+      );
+      return {
+        success: true,
+        data: {
+          source: 'quickbooks',
+          revenue_total: Math.round(revenue * 100) / 100,
+          expense_total: Math.round(expense * 100) / 100,
+          net_income: Math.round(netIncome * 100) / 100,
+          gross_margin_pct: revenue > 0 ? Math.round(((revenue - expense) / revenue) * 100) : 0,
+          net_margin_pct: revenue > 0 ? Math.round((netIncome / revenue) * 100) : 0,
+          period: 'MTD',
+          raw: data,
+        },
+      };
+    }
+    // TODO(composio-slug): verify XERO_GET_PROFIT_AND_LOSS
+    const data = await executeComposioAction<Record<string, unknown>>(
+      ctx.userId,
+      'xero',
+      'XERO_GET_PROFIT_AND_LOSS',
+      {},
+    );
+    const revenue = toNumber(
+      (data as { total_revenue?: unknown; revenue_total?: unknown }).total_revenue ??
+        (data as { revenue_total?: unknown }).revenue_total,
+    );
+    const expense = toNumber(
+      (data as { total_expense?: unknown; expense_total?: unknown }).total_expense ??
+        (data as { expense_total?: unknown }).expense_total,
+    );
+    const netIncome = toNumber(
+      (data as { net_income?: unknown }).net_income,
+      revenue - expense,
+    );
+    return {
+      success: true,
+      data: {
+        source: 'xero',
+        revenue_total: Math.round(revenue * 100) / 100,
+        expense_total: Math.round(expense * 100) / 100,
+        net_income: Math.round(netIncome * 100) / 100,
+        gross_margin_pct: revenue > 0 ? Math.round(((revenue - expense) / revenue) * 100) : 0,
+        net_margin_pct: revenue > 0 ? Math.round((netIncome / revenue) * 100) : 0,
+        period: 'MTD',
+        raw: data,
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) {
+      return { success: false, reason: `${err.toolSlug} not connected.` };
+    }
+    return fetchFailed('Accounting P&L');
+  }
+}
+
+// --------------------- per-tool: get_payroll -----------------------------
+
+/**
+ * Gusto payroll MTD: total cost, employee count, contractor count.
+ * Composio's GUSTO_LIST_PAYROLLS likely returns a list of payroll runs — we sum
+ * net or gross pay for the current month.
+ */
+async function runGetPayroll(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!(await isComposioConnected(ctx.userId, 'gusto'))) {
+    return {
+      success: false,
+      reason: 'Gusto is not connected. Connect it in Integrations to see payroll costs.',
+    };
+  }
+  try {
+    const monthStart = new Date(startOfMonthUnix() * 1000).toISOString().slice(0, 10);
+    // TODO(composio-slug): verify GUSTO_LIST_PAYROLLS
+    const payrollResp = await executeComposioAction<unknown>(
+      ctx.userId,
+      'gusto',
+      'GUSTO_LIST_PAYROLLS',
+      { start_date: monthStart },
+    );
+    const payrolls = asArray(payrollResp) as Array<{
+      totals?: { gross_pay?: unknown; net_pay?: unknown; company_taxes?: unknown };
+      employee_compensations?: unknown[];
+    }>;
+    let payrollTotal = 0;
+    for (const p of payrolls) {
+      payrollTotal += toNumber(p.totals?.gross_pay);
+    }
+
+    // TODO(composio-slug): verify GUSTO_LIST_EMPLOYEES
+    const employeesResp = await safeExecuteComposioAction<unknown>(
+      ctx.userId,
+      'gusto',
+      'GUSTO_LIST_EMPLOYEES',
+      {},
+    );
+    const employees = asArray(employeesResp) as Array<{
+      employment_status?: unknown;
+      onboarded?: unknown;
+    }>;
+    const employeeCount = employees.filter(
+      (e) => e.employment_status === 'active' || e.employment_status === undefined,
+    ).length;
+
+    // TODO(composio-slug): verify GUSTO_LIST_CONTRACTORS
+    const contractorsResp = await safeExecuteComposioAction<unknown>(
+      ctx.userId,
+      'gusto',
+      'GUSTO_LIST_CONTRACTORS',
+      {},
+    );
+    const contractorCount = asArray(contractorsResp).length;
+
+    return {
+      success: true,
+      data: {
+        payroll_total_mtd: Math.round(payrollTotal * 100) / 100,
+        employee_count: employeeCount,
+        contractor_count: contractorCount,
+        period: 'MTD',
+        currency: 'USD',
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) return notConnected('Gusto');
+    return fetchFailed('Gusto');
+  }
+}
+
+// --------------------- per-tool: get_overdue_invoices_detail -------------
+
+async function runGetOverdueInvoicesDetail(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!(await isComposioConnected(ctx.userId, 'stripe'))) {
+    return notConnected('Stripe');
+  }
+  try {
+    const now = nowUnix();
+    // TODO(composio-slug): verify STRIPE_LIST_INVOICES
+    const resp = await executeComposioAction<unknown>(
+      ctx.userId,
+      'stripe',
+      'STRIPE_LIST_INVOICES',
+      { status: 'open', limit: 100 },
+    );
+    const invoices = asArray(resp) as Array<{
+      customer?: unknown;
+      customer_name?: unknown;
+      amount_due?: unknown;
+      due_date?: unknown;
+    }>;
+
+    // Best-effort customer name lookup
+    // TODO(composio-slug): verify STRIPE_LIST_CUSTOMERS
+    const customersResp = await safeExecuteComposioAction<unknown>(
+      ctx.userId,
+      'stripe',
+      'STRIPE_LIST_CUSTOMERS',
+      { limit: 100 },
+    );
+    const customersById = new Map<string, string>();
+    for (const c of asArray(customersResp)) {
+      const obj = c as { id?: unknown; name?: unknown; email?: unknown };
+      if (typeof obj.id === 'string') {
+        customersById.set(obj.id, String(obj.name ?? obj.email ?? obj.id));
+      }
+    }
+
+    const overdue = invoices
+      .filter((inv) => {
+        const due = toNumber(inv.due_date);
+        return due > 0 && due < now;
+      })
+      .map((inv) => {
+        const due = toNumber(inv.due_date);
+        const custId =
+          typeof inv.customer === 'string'
+            ? inv.customer
+            : ((inv.customer as { id?: string } | null)?.id ?? '');
+        const clientName =
+          customersById.get(custId) ?? String(inv.customer_name ?? custId ?? 'unknown');
+        return {
+          client_name: clientName,
+          amount_due: Math.round(toNumber(inv.amount_due)) / 100,
+          days_overdue: due > 0 ? Math.max(0, Math.floor((now - due) / 86400)) : 0,
+          due_date: due > 0 ? new Date(due * 1000).toISOString().slice(0, 10) : null,
+        };
+      });
+
+    const totalAmount = overdue.reduce((s, i) => s + i.amount_due, 0);
+    return {
+      success: true,
+      data: {
+        invoices: overdue,
+        total_amount: Math.round(totalAmount * 100) / 100,
+        count: overdue.length,
+        currency: 'USD',
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) return notConnected('Stripe');
+    return fetchFailed('Stripe overdue invoices');
+  }
+}
+
+// --------------------- per-tool: get_burnout -----------------------------
+
+/**
+ * Burnout signals from Slack + Google Calendar. Returns partial data if only
+ * one source is connected — burnout_risk_score is best-effort from what's
+ * available.
+ */
+async function runGetBurnout(ctx: ExecutorContext): Promise<ToolResult> {
+  const slackConnected = await isComposioConnected(ctx.userId, 'slack');
+  const calendarConnected = await isComposioConnected(ctx.userId, 'google_calendar');
+  if (!slackConnected && !calendarConnected) {
+    return {
+      success: false,
+      reason:
+        'No comms tools connected. Connect Slack and Google Calendar in Integrations for burnout signals.',
+    };
+  }
+
+  let afterHoursPct: number | null = null;
+  let avgMeetingsPerDay: number | null = null;
+  let deepWorkHoursPerDay: number | null = null;
+
+  if (slackConnected) {
+    try {
+      // TODO(composio-slug): verify SLACK_LIST_MESSAGES
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'slack',
+        'SLACK_LIST_MESSAGES',
+        { limit: 200 },
+      );
+      const msgs = asArray(resp) as Array<{ ts?: unknown }>;
+      let afterHoursCount = 0;
+      for (const m of msgs) {
+        const ts = toNumber(m.ts);
+        if (ts <= 0) continue;
+        const hour = new Date(ts * 1000).getHours();
+        if (hour < 8 || hour >= 19) afterHoursCount += 1;
+      }
+      afterHoursPct = msgs.length > 0 ? Math.round((afterHoursCount / msgs.length) * 1000) / 10 : 0;
+    } catch {
+      // best-effort
+    }
+  }
+
+  if (calendarConnected) {
+    try {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 86400 * 1000).toISOString();
+      // TODO(composio-slug): verify GOOGLECALENDAR_LIST_EVENTS
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'google_calendar',
+        'GOOGLECALENDAR_LIST_EVENTS',
+        { timeMin: sevenDaysAgo, timeMax: now.toISOString(), maxResults: 250 },
+      );
+      const events = asArray(resp) as Array<{
+        start?: { dateTime?: unknown };
+        end?: { dateTime?: unknown };
+      }>;
+      avgMeetingsPerDay = Math.round((events.length / 7) * 10) / 10;
+      let meetingHours = 0;
+      for (const e of events) {
+        const startMs = Date.parse(String(e.start?.dateTime ?? '')) || 0;
+        const endMs = Date.parse(String(e.end?.dateTime ?? '')) || 0;
+        if (startMs > 0 && endMs > startMs) {
+          meetingHours += (endMs - startMs) / 3600000;
+        }
+      }
+      const workingHoursPerWeek = 8 * 5;
+      deepWorkHoursPerDay =
+        Math.round(Math.max(0, workingHoursPerWeek - meetingHours) / 5 * 10) / 10;
+    } catch {
+      // best-effort
+    }
+  }
+
+  let risk = 0;
+  if (afterHoursPct !== null && afterHoursPct > 15) risk += 35;
+  if (avgMeetingsPerDay !== null && avgMeetingsPerDay > 5) risk += 35;
+  if (deepWorkHoursPerDay !== null && deepWorkHoursPerDay < 2) risk += 30;
+  const burnoutRiskScore = Math.min(100, risk);
+
+  return {
+    success: true,
+    data: {
+      after_hours_message_pct: afterHoursPct,
+      avg_meetings_per_day: avgMeetingsPerDay,
+      deep_work_hours_per_day: deepWorkHoursPerDay,
+      burnout_risk_score: burnoutRiskScore,
+      sources: {
+        slack: slackConnected,
+        google_calendar: calendarConnected,
+      },
+    },
+  };
+}
+
+// --------------------- per-tool: get_team_capacity -----------------------
+
+/**
+ * BambooHR headcount + PTOs combined with Harvest billable hours.
+ */
+async function runGetTeamCapacity(ctx: ExecutorContext): Promise<ToolResult> {
+  const bambooConnected = await isComposioConnected(ctx.userId, 'bamboo_hr');
+  const harvestConnected = await isComposioConnected(ctx.userId, 'harvest');
+  if (!bambooConnected && !harvestConnected) {
+    return {
+      success: false,
+      reason:
+        'Neither BambooHR nor Harvest is connected. Connect them in Integrations for team capacity.',
+    };
+  }
+
+  let headcount: number | null = null;
+  let ptosThisMonth: number | null = null;
+  let billableHoursPct: number | null = null;
+  let utilizationPct: number | null = null;
+
+  if (bambooConnected) {
+    try {
+      // TODO(composio-slug): verify BAMBOOHR_LIST_EMPLOYEES
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'bamboo_hr',
+        'BAMBOOHR_LIST_EMPLOYEES',
+        {},
+      );
+      const employees = asArray(resp) as Array<{ status?: unknown; employmentStatus?: unknown }>;
+      headcount = employees.filter((e) => {
+        const status = String(e.status ?? e.employmentStatus ?? '').toLowerCase();
+        return status === '' || status === 'active';
+      }).length;
+
+      // TODO(composio-slug): verify BAMBOOHR_LIST_TIME_OFF_REQUESTS
+      const ptoResp = await safeExecuteComposioAction<unknown>(
+        ctx.userId,
+        'bamboo_hr',
+        'BAMBOOHR_LIST_TIME_OFF_REQUESTS',
+        { start: new Date(startOfMonthUnix() * 1000).toISOString().slice(0, 10) },
+      );
+      ptosThisMonth = asArray(ptoResp).length;
+    } catch {
+      // best-effort
+    }
+  }
+
+  if (harvestConnected) {
+    try {
+      const monthStart = startOfMonthUnix();
+      // TODO(composio-slug): verify HARVEST_LIST_TIME_ENTRIES
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'harvest',
+        'HARVEST_LIST_TIME_ENTRIES',
+        { from: new Date(monthStart * 1000).toISOString().slice(0, 10) },
+      );
+      const entries = asArray(resp) as Array<{ hours?: unknown; billable?: unknown }>;
+      const totalHours = entries.reduce((s, e) => s + toNumber(e.hours), 0);
+      const billableHours = entries
+        .filter((e) => e.billable === true)
+        .reduce((s, e) => s + toNumber(e.hours), 0);
+      billableHoursPct = totalHours > 0 ? Math.round((billableHours / totalHours) * 1000) / 10 : 0;
+      const capacity = (headcount ?? teamSizeMin(ctx.teamSizeRaw) ?? 0) * 160;
+      utilizationPct = capacity > 0 ? Math.round((totalHours / capacity) * 100) : null;
+    } catch {
+      // best-effort
+    }
+  }
+
+  return {
+    success: true,
+    data: {
+      headcount,
+      billable_hours_pct: billableHoursPct,
+      utilization_pct: utilizationPct,
+      ptos_this_month: ptosThisMonth,
+      sources: {
+        bamboo_hr: bambooConnected,
+        harvest: harvestConnected,
+      },
+    },
+  };
+}
+
+// --------------------- per-tool: get_inbox -------------------------------
+
+async function runGetInbox(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!(await isComposioConnected(ctx.userId, 'gmail'))) {
+    return {
+      success: false,
+      reason: 'Gmail is not connected. Connect it in Integrations to see inbox status.',
+    };
+  }
+  try {
+    // TODO(composio-slug): verify GMAIL_LIST_THREADS
+    const unreadResp = await executeComposioAction<unknown>(
+      ctx.userId,
+      'gmail',
+      'GMAIL_LIST_THREADS',
+      { q: 'is:unread newer_than:7d', maxResults: 100 },
+    );
+    const unreadCount = asArray(unreadResp).length;
+
+    // TODO(composio-slug): verify GMAIL_LIST_DRAFTS
+    const draftsResp = await safeExecuteComposioAction<unknown>(
+      ctx.userId,
+      'gmail',
+      'GMAIL_LIST_DRAFTS',
+      { maxResults: 50 },
+    );
+    const draftsCount = asArray(draftsResp).length;
+
+    // Look up clients with overdue invoices and match thread subjects best-effort
+    let threadsWithOverdueClients = 0;
+    if (await isComposioConnected(ctx.userId, 'stripe')) {
+      try {
+        const now = nowUnix();
+        // TODO(composio-slug): verify STRIPE_LIST_INVOICES
+        const stripeResp = await safeExecuteComposioAction<unknown>(
+          ctx.userId,
+          'stripe',
+          'STRIPE_LIST_INVOICES',
+          { status: 'open', limit: 100 },
+        );
+        const overdueCustomerIds = new Set<string>();
+        for (const inv of asArray(stripeResp)) {
+          const i = inv as { customer?: unknown; due_date?: unknown };
+          const due = toNumber(i.due_date);
+          if (due > 0 && due < now) {
+            const id =
+              typeof i.customer === 'string'
+                ? i.customer
+                : ((i.customer as { id?: string } | null)?.id ?? '');
+            if (id) overdueCustomerIds.add(id);
+          }
+        }
+        threadsWithOverdueClients = overdueCustomerIds.size;
+      } catch {
+        // best-effort
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        unread_count: unreadCount,
+        drafts_count: draftsCount,
+        threads_with_overdue_clients: threadsWithOverdueClients,
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) return notConnected('Gmail');
+    return fetchFailed('Gmail');
+  }
+}
+
+// --------------------- per-tool: get_web_traffic -------------------------
+
+async function runGetWebTraffic(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!(await isComposioConnected(ctx.userId, 'google_analytics'))) {
+    return {
+      success: false,
+      reason:
+        'Google Analytics is not connected. Connect it in Integrations to see traffic data.',
+    };
+  }
+  try {
+    // TODO(composio-slug): verify GOOGLEANALYTICS_RUN_REPORT
+    const resp = await executeComposioAction<Record<string, unknown>>(
+      ctx.userId,
+      'google_analytics',
+      'GOOGLEANALYTICS_RUN_REPORT',
+      {
+        dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+        metrics: [{ name: 'sessions' }, { name: 'activeUsers' }, { name: 'conversions' }],
+        dimensions: [{ name: 'sessionDefaultChannelGrouping' }],
+      },
+    );
+
+    const rows = asArray((resp as { rows?: unknown }).rows ?? resp) as Array<{
+      dimensionValues?: Array<{ value?: unknown }>;
+      metricValues?: Array<{ value?: unknown }>;
+    }>;
+
+    let totalSessions = 0;
+    let totalUsers = 0;
+    let totalConversions = 0;
+    const channels: Array<{ name: string; sessions: number; conversions: number }> = [];
+    for (const r of rows) {
+      const name = String(r.dimensionValues?.[0]?.value ?? 'unknown');
+      const sessions = toNumber(r.metricValues?.[0]?.value);
+      const users = toNumber(r.metricValues?.[1]?.value);
+      const conversions = toNumber(r.metricValues?.[2]?.value);
+      totalSessions += sessions;
+      totalUsers += users;
+      totalConversions += conversions;
+      channels.push({ name, sessions, conversions });
+    }
+    channels.sort((a, b) => b.sessions - a.sessions);
+
+    return {
+      success: true,
+      data: {
+        sessions: totalSessions,
+        users: totalUsers,
+        conversions: totalConversions,
+        top_channels: channels.slice(0, 5),
+        period: 'last 30 days',
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) return notConnected('Google Analytics');
+    return fetchFailed('Google Analytics');
+  }
+}
+
+// --------------------- per-tool: get_ad_performance ----------------------
+
+/**
+ * Aggregates Google Ads, Facebook Ads, and LinkedIn Ads insights. Partial OK —
+ * we return whichever are connected.
+ */
+async function runGetAdPerformance(ctx: ExecutorContext): Promise<ToolResult> {
+  const googleAdsConnected = await isComposioConnected(ctx.userId, 'google_ads');
+  const fbAdsConnected = await isComposioConnected(ctx.userId, 'facebook_ads');
+  const linkedinConnected = await isComposioConnected(ctx.userId, 'linkedin');
+  if (!googleAdsConnected && !fbAdsConnected && !linkedinConnected) {
+    return {
+      success: false,
+      reason:
+        'No ad platforms connected. Connect Google Ads, Facebook Ads, or LinkedIn in Integrations.',
+    };
+  }
+
+  const channels: Array<{
+    name: string;
+    spend_30d: number;
+    conversions: number;
+    roas: number | null;
+  }> = [];
+
+  if (googleAdsConnected) {
+    try {
+      // TODO(composio-slug): verify GOOGLEADS_GET_CAMPAIGN_PERFORMANCE
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'google_ads',
+        'GOOGLEADS_GET_CAMPAIGN_PERFORMANCE',
+        { dateRange: 'LAST_30_DAYS' },
+      );
+      const rows = asArray(resp) as Array<{
+        cost_micros?: unknown;
+        cost?: unknown;
+        conversions?: unknown;
+        conversions_value?: unknown;
+      }>;
+      const spend = rows.reduce(
+        (s, r) => s + (toNumber(r.cost_micros) / 1_000_000 || toNumber(r.cost)),
+        0,
+      );
+      const conversions = rows.reduce((s, r) => s + toNumber(r.conversions), 0);
+      const convValue = rows.reduce((s, r) => s + toNumber(r.conversions_value), 0);
+      channels.push({
+        name: 'google_ads',
+        spend_30d: Math.round(spend * 100) / 100,
+        conversions: Math.round(conversions * 10) / 10,
+        roas: spend > 0 ? Math.round((convValue / spend) * 100) / 100 : null,
+      });
+    } catch {
+      // best-effort
+    }
+  }
+
+  if (fbAdsConnected) {
+    try {
+      // TODO(composio-slug): verify FACEBOOKADS_GET_INSIGHTS
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'facebook_ads',
+        'FACEBOOKADS_GET_INSIGHTS',
+        { date_preset: 'last_30d', fields: ['spend', 'actions', 'action_values'] },
+      );
+      const rows = asArray(resp) as Array<{
+        spend?: unknown;
+        actions?: Array<{ action_type?: unknown; value?: unknown }>;
+        action_values?: Array<{ action_type?: unknown; value?: unknown }>;
+      }>;
+      const spend = rows.reduce((s, r) => s + toNumber(r.spend), 0);
+      const conversions = rows.reduce(
+        (s, r) =>
+          s +
+          (r.actions ?? [])
+            .filter((a) => String(a.action_type ?? '').includes('purchase') || String(a.action_type ?? '').includes('lead'))
+            .reduce((ss, a) => ss + toNumber(a.value), 0),
+        0,
+      );
+      const convValue = rows.reduce(
+        (s, r) =>
+          s +
+          (r.action_values ?? []).reduce((ss, a) => ss + toNumber(a.value), 0),
+        0,
+      );
+      channels.push({
+        name: 'facebook_ads',
+        spend_30d: Math.round(spend * 100) / 100,
+        conversions: Math.round(conversions * 10) / 10,
+        roas: spend > 0 ? Math.round((convValue / spend) * 100) / 100 : null,
+      });
+    } catch {
+      // best-effort
+    }
+  }
+
+  if (linkedinConnected) {
+    try {
+      // TODO(composio-slug): verify LINKEDIN_GET_ADS_INSIGHTS
+      const resp = await executeComposioAction<unknown>(
+        ctx.userId,
+        'linkedin',
+        'LINKEDIN_GET_ADS_INSIGHTS',
+        { dateRange: 'LAST_30_DAYS' },
+      );
+      const rows = asArray(resp) as Array<{
+        costInLocalCurrency?: unknown;
+        cost?: unknown;
+        externalWebsiteConversions?: unknown;
+        conversionValueInLocalCurrency?: unknown;
+      }>;
+      const spend = rows.reduce(
+        (s, r) => s + toNumber(r.costInLocalCurrency ?? r.cost),
+        0,
+      );
+      const conversions = rows.reduce(
+        (s, r) => s + toNumber(r.externalWebsiteConversions),
+        0,
+      );
+      const convValue = rows.reduce(
+        (s, r) => s + toNumber(r.conversionValueInLocalCurrency),
+        0,
+      );
+      channels.push({
+        name: 'linkedin',
+        spend_30d: Math.round(spend * 100) / 100,
+        conversions: Math.round(conversions * 10) / 10,
+        roas: spend > 0 ? Math.round((convValue / spend) * 100) / 100 : null,
+      });
+    } catch {
+      // best-effort
+    }
+  }
+
+  const totalSpend = channels.reduce((s, c) => s + c.spend_30d, 0);
+  const totalConversions = channels.reduce((s, c) => s + c.conversions, 0);
+  const weightedRevenue = channels.reduce(
+    (s, c) => s + (c.roas != null ? c.roas * c.spend_30d : 0),
+    0,
+  );
+  const blendedRoas = totalSpend > 0 ? Math.round((weightedRevenue / totalSpend) * 100) / 100 : null;
+
+  return {
+    success: true,
+    data: {
+      channels,
+      total_spend: Math.round(totalSpend * 100) / 100,
+      total_conversions: Math.round(totalConversions * 10) / 10,
+      blended_roas: blendedRoas,
+      period: 'last 30 days',
+    },
+  };
+}
+
+// --------------------- per-tool: get_contracts ---------------------------
+
+async function runGetContracts(ctx: ExecutorContext): Promise<ToolResult> {
+  if (!(await isComposioConnected(ctx.userId, 'docusign'))) {
+    return {
+      success: false,
+      reason:
+        'DocuSign is not connected. Connect it in Integrations to see contract expirations.',
+    };
+  }
+  try {
+    // TODO(composio-slug): verify DOCUSIGN_LIST_ENVELOPES
+    const resp = await executeComposioAction<unknown>(
+      ctx.userId,
+      'docusign',
+      'DOCUSIGN_LIST_ENVELOPES',
+      { status: 'completed', from_date: '2024-01-01' },
+    );
+    const envelopes = asArray(resp) as Array<{
+      emailSubject?: unknown;
+      recipients?: { signers?: Array<{ name?: unknown; email?: unknown }> } | null;
+      completedDateTime?: unknown;
+      expireDateTime?: unknown;
+      customFields?: { textCustomFields?: Array<{ name?: unknown; value?: unknown }> };
+    }>;
+
+    const now = Date.now();
+    const contracts = envelopes.map((env) => {
+      const signedMs = Date.parse(String(env.completedDateTime ?? '')) || 0;
+      let expiryMs = Date.parse(String(env.expireDateTime ?? '')) || 0;
+      // If no explicit expiry, assume 1-year contract from signed date
+      if (!expiryMs && signedMs) {
+        expiryMs = signedMs + 365 * 86400 * 1000;
+      }
+      const valueField = (env.customFields?.textCustomFields ?? []).find((f) =>
+        String(f.name ?? '').toLowerCase().includes('value'),
+      );
+      return {
+        client_name: String(
+          env.recipients?.signers?.[0]?.name ??
+            env.recipients?.signers?.[0]?.email ??
+            env.emailSubject ??
+            'unknown',
+        ),
+        signed_date: signedMs ? new Date(signedMs).toISOString().slice(0, 10) : null,
+        expiry_date: expiryMs ? new Date(expiryMs).toISOString().slice(0, 10) : null,
+        days_to_expiry: expiryMs ? Math.floor((expiryMs - now) / 86400000) : null,
+        value: toNumber(valueField?.value),
+      };
+    });
+
+    const countUnder60d = contracts.filter(
+      (c) => c.days_to_expiry != null && c.days_to_expiry >= 0 && c.days_to_expiry <= 60,
+    ).length;
+    const countUnder90d = contracts.filter(
+      (c) => c.days_to_expiry != null && c.days_to_expiry >= 0 && c.days_to_expiry <= 90,
+    ).length;
+
+    return {
+      success: true,
+      data: {
+        contracts: contracts
+          .filter((c) => c.days_to_expiry != null && c.days_to_expiry >= 0)
+          .sort((a, b) => (a.days_to_expiry ?? Infinity) - (b.days_to_expiry ?? Infinity))
+          .slice(0, 50),
+        count_under_60d: countUnder60d,
+        count_under_90d: countUnder90d,
+      },
+    };
+  } catch (err) {
+    if (err instanceof ComposioNotConnectedError) return notConnected('DocuSign');
+    return fetchFailed('DocuSign');
+  }
+}
+
 // --------------------- dispatcher ----------------------------------------
 
 export async function executeToolCall(
@@ -961,6 +1746,24 @@ export async function executeToolCall(
       return runSearchKb(args, ctx);
     case 'search_brain':
       return runSearchBrain(args, ctx);
+    case 'get_real_pnl':
+      return runGetRealPnl(ctx);
+    case 'get_payroll':
+      return runGetPayroll(ctx);
+    case 'get_overdue_invoices_detail':
+      return runGetOverdueInvoicesDetail(ctx);
+    case 'get_burnout':
+      return runGetBurnout(ctx);
+    case 'get_team_capacity':
+      return runGetTeamCapacity(ctx);
+    case 'get_inbox':
+      return runGetInbox(ctx);
+    case 'get_web_traffic':
+      return runGetWebTraffic(ctx);
+    case 'get_ad_performance':
+      return runGetAdPerformance(ctx);
+    case 'get_contracts':
+      return runGetContracts(ctx);
     case 'queue_action':
       return runQueueAction(args, ctx);
     default:
