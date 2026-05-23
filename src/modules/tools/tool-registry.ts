@@ -6,6 +6,12 @@ import searchDatabase from "./definitions/search-database";
 import fetchUserData from "./definitions/fetch-user-data";
 import generateInvoice from "./definitions/generate-invoice";
 import createTask from "./definitions/create-task";
+import listProjects from "./definitions/list-projects";
+import getWorkflow from "./definitions/get-workflow";
+import deployWorkflow from "./definitions/deploy-workflow";
+import controlWorkflow from "./definitions/control-workflow";
+import getExecutions from "./definitions/get-executions";
+import updateWorkflowJson from "./definitions/update-workflow-json";
 
 const registry = new Map<string, ToolDefinition>();
 
@@ -16,7 +22,13 @@ for (const tool of [
   searchDatabase,
   fetchUserData,
   generateInvoice,
-  createTask
+  createTask,
+  listProjects,
+  getWorkflow,
+  deployWorkflow,
+  controlWorkflow,
+  getExecutions,
+  updateWorkflowJson
 ]) {
   registry.set(tool.name, tool);
 }
