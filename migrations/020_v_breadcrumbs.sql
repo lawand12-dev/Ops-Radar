@@ -15,36 +15,31 @@
 -- is genuinely unknown surface as user_id IS NULL — those are ignored by
 -- every tenant-scoped query in src/modules/memory/breadcrumbs.ts.
 --
--- Columns
---   user_id      CHAR(36) NULL    owning tenant; NULL means orphaned/unknown
---   at           TIMESTAMP        event time, used for ORDER BY at DESC
---   kind         VARCHAR          high-level event type (see below)
---   ref_id       VARCHAR          source row id (BIGINT or CHAR(36) stringified)
---   project_id   CHAR(36) NULL    project the event belongs to
---   workflow_id  CHAR(36) NULL    workflow the event belongs to (events/anomalies)
---   summary      TEXT             short human-readable line
---   outcome      VARCHAR          row-shape-specific small label
---   data         JSON             extra fields for the consumer to unpack
+-- Collation discipline
+-- --------------------
+-- Every string-typed column in every SELECT branch is forced to
+-- utf8mb4_general_ci. Without this MariaDB rejects the UNION because
+-- columns inherit collation from their source (projects.user_id may be
+-- utf8mb4_unicode_ci, an ENUM column carries its own collation,
+-- CONCAT-of-literal returns the server default). The error surface is
+-- "Illegal mix of collations for operation 'UNION'".
+-- JSON_OBJECT(...) returns json so it doesn't need a collation pin.
 --
--- Why this shape: a future Postgres sidecar will mirror this view 1:1 as a
--- table for embedding — keeping the column set stable lets us add it later
--- without retooling consumers.
---
--- Performance: each branch hits an indexed timestamp column. The view itself
--- doesn't materialize; ORDER BY at DESC pushes into each branch separately.
--- For very large timelines, callers should pre-filter (project_id, sinceHours)
--- before ordering.
+-- Performance: each branch hits an indexed timestamp column. The view
+-- itself doesn't materialize; ORDER BY at DESC pushes into each branch
+-- separately. For very large timelines, callers should pre-filter
+-- (project_id, sinceHours) before ordering.
 
 CREATE OR REPLACE VIEW v_breadcrumbs AS
 SELECT
-  COALESCE(p.user_id, ai.user_id)         AS user_id,
-  ai.created_at                           AS at,
-  'ai_interaction'                        AS kind,
-  CAST(ai.id AS CHAR)                     AS ref_id,
-  ai.project_id                           AS project_id,
-  ai.workflow_id                          AS workflow_id,
-  LEFT(ai.user_prompt, 500)               AS summary,
-  ai.outcome                              AS outcome,
+  COALESCE(p.user_id, ai.user_id) COLLATE utf8mb4_general_ci    AS user_id,
+  ai.created_at                                                  AS at,
+  'ai_interaction' COLLATE utf8mb4_general_ci                    AS kind,
+  CAST(ai.id AS CHAR) COLLATE utf8mb4_general_ci                 AS ref_id,
+  ai.project_id COLLATE utf8mb4_general_ci                       AS project_id,
+  ai.workflow_id COLLATE utf8mb4_general_ci                      AS workflow_id,
+  LEFT(ai.user_prompt, 500) COLLATE utf8mb4_general_ci           AS summary,
+  ai.outcome COLLATE utf8mb4_general_ci                          AS outcome,
   JSON_OBJECT(
     'provider', ai.provider,
     'model', ai.model,
@@ -52,28 +47,29 @@ SELECT
     'tokens_used', ai.tokens_used,
     'latency_ms', ai.latency_ms,
     'matched_pattern_ids', ai.matched_pattern_ids
-  )                                       AS data
+  )                                                              AS data
 FROM ai_interactions ai
 LEFT JOIN projects p ON p.id = ai.project_id
 
 UNION ALL
 
 SELECT
-  p.user_id                               AS user_id,
-  we.created_at                           AS at,
-  CONCAT('event:', we.event_type)         AS kind,
-  we.id                                   AS ref_id,
-  p.id                                    AS project_id,
-  we.workflow_id                          AS workflow_id,
-  COALESCE(we.error_message, we.node_name, we.event_type) AS summary,
-  we.status                               AS outcome,
+  p.user_id COLLATE utf8mb4_general_ci                           AS user_id,
+  we.created_at                                                  AS at,
+  CONCAT('event:', we.event_type) COLLATE utf8mb4_general_ci     AS kind,
+  we.id COLLATE utf8mb4_general_ci                               AS ref_id,
+  p.id COLLATE utf8mb4_general_ci                                AS project_id,
+  we.workflow_id COLLATE utf8mb4_general_ci                      AS workflow_id,
+  COALESCE(we.error_message, we.node_name, we.event_type)
+    COLLATE utf8mb4_general_ci                                   AS summary,
+  CAST(we.status AS CHAR) COLLATE utf8mb4_general_ci             AS outcome,
   JSON_OBJECT(
     'event_type', we.event_type,
     'run_id', we.run_id,
     'node_name', we.node_name,
     'duration_ms', we.duration_ms,
     'metadata', we.metadata
-  )                                       AS data
+  )                                                              AS data
 FROM workflow_events we
 JOIN workflows w ON w.id = we.workflow_id
 JOIN projects  p ON p.id = w.project_id
@@ -95,20 +91,22 @@ WHERE we.event_type IN (
 UNION ALL
 
 SELECT
-  p.user_id                               AS user_id,
-  ea.detected_at                          AS at,
-  CONCAT('anomaly:', ea.anomaly_type)     AS kind,
-  ea.id                                   AS ref_id,
-  p.id                                    AS project_id,
-  ea.workflow_id                          AS workflow_id,
-  COALESCE(ea.node_name, ea.anomaly_type) AS summary,
-  ea.severity                             AS outcome,
+  p.user_id COLLATE utf8mb4_general_ci                           AS user_id,
+  ea.detected_at                                                 AS at,
+  CONCAT('anomaly:', ea.anomaly_type)
+    COLLATE utf8mb4_general_ci                                   AS kind,
+  ea.id COLLATE utf8mb4_general_ci                               AS ref_id,
+  p.id COLLATE utf8mb4_general_ci                                AS project_id,
+  ea.workflow_id COLLATE utf8mb4_general_ci                      AS workflow_id,
+  COALESCE(ea.node_name, ea.anomaly_type)
+    COLLATE utf8mb4_general_ci                                   AS summary,
+  CAST(ea.severity AS CHAR) COLLATE utf8mb4_general_ci           AS outcome,
   JSON_OBJECT(
     'anomaly_type', ea.anomaly_type,
     'anomaly_score', ea.anomaly_score,
     'execution_id', ea.execution_id,
     'metadata', ea.metadata
-  )                                       AS data
+  )                                                              AS data
 FROM execution_anomalies ea
 JOIN workflows w ON w.id = ea.workflow_id
 JOIN projects  p ON p.id = w.project_id;

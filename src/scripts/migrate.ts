@@ -41,7 +41,12 @@ async function runMigrations() {
 
       const migrationPath = resolve(migrationsDir, fileName);
       const sql = await readFile(migrationPath, "utf-8");
-      const statements = sql
+      // Strip SQL comments before splitting on ';' — a ';' inside a comment
+      // would otherwise break the statement into invalid fragments.
+      const stripped = sql
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/(^|\s)--[^\n]*/g, "$1");
+      const statements = stripped
         .split(";")
         .map((statement) => statement.trim())
         .filter((statement) => statement.length > 0);
