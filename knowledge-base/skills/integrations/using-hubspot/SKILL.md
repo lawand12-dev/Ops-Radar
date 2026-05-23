@@ -115,3 +115,11 @@ When proposing an outreach sequence for a deal stuck in "Proposal Sent" > 14 day
 - **Don't surface a renewal alert without checking `__how_we_work` first** — the customer may have a rule like "never auto-renew at the same rate." Read the rule, then propose.
 - **Don't recommend Marketing Hub Pro to a creative studio.** Referral-heavy books don't need attribution reporting; they need retention workflows. [Source: hubspot.md §9 — creative studio]
 - **Don't poll HubSpot for all contacts hourly.** Use updated-at windows. The Search API caps at 5 req/s/token and 200 records/page. [Source: api-hubspot.md — Rate Limits]
+
+## Related skills
+
+- `routing-leads-by-fit` — once a lead lands in HubSpot, the assignment + qualification logic lives here.
+- `monitoring-client-health-score` — the renewal-risk read uses HubSpot deal stage + contact-activity recency as inputs.
+- `spotting-upsell-windows` — uses HubSpot deal closed-won timing + recent engagement signals.
+- `preparing-status-calls` — pulls deal + contact context into the call-prep packet.
+- `using-stripe` — link HubSpot deals to Stripe customers via metadata so renewal and revenue are joined.

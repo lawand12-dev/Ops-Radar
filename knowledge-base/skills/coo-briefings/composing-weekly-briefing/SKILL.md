@@ -140,6 +140,9 @@ The Briefing Agent (cron `0 6 * * 1` — Monday 6am) does:
 - `flagging-margin-erosion` — for the margin-priority case
 - `calculating-hiring-triggers` — for the team-priority case
 - `detecting-scope-creep` — for the scope-priority case
+- `monitoring-client-health-score` — for the churn-risk priority case
+- `composing-slack-digest` — the team-channel sibling (different audience, same data)
+- `identifying-burnout-risks` — a special-case override when team health requires it
 - Source: `briefing` cron agent at `src/lib/agents/briefing/index.ts`
 
 ## What NOT to do

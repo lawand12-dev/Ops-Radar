@@ -78,6 +78,15 @@ When an agent runs successfully, it MUST:
 - User asks about the moat / data ownership / export
 - User considers churning — remind them they keep the brain
 
+## Related skills
+
+- `composing-weekly-briefing` — writes the Brain Home weekly summary widget
+- `flagging-margin-erosion` — writes to the Clients DB margin field + Risks DB
+- `detecting-scope-creep` — writes to the Projects DB + Risks DB
+- `chasing-overdue-invoices` — writes to the Invoices DB + Agent Action Log
+- `tuning-autonomy-policies` — references How We Work rules from the brain
+- `recovering-from-integration-failure` — writes degraded-state callouts to Brain Home
+
 ## Reference
 
 - Database IDs are stored in `notion_workspaces.databases` (Supabase) per user

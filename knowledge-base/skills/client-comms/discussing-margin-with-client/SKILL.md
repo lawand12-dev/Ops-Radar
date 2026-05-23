@@ -132,3 +132,12 @@ If they refuse to commit to anything, that's information. Diagnosis is probably 
 - **Don't email the recap two weeks later.** 24 hours. Half of margin conversations die because nobody wrote down what was agreed.
 - **Don't deliver this by email.** Live channel only — phone or video. Email is for the recap, not the ask.
 - **Don't run this conversation twice with the same client.** If the new structure erodes again inside 90 days, the next conversation isn't margin — it's `firing-a-client`.
+
+## Related skills
+
+- `flagging-margin-erosion` — the trigger that produces this conversation
+- `calculating-effective-hourly-rate` — the number you bring face-down
+- `raising-retainer-prices` — the "just raise the price" path if scope isn't the driver
+- `discussing-scope-with-client` — the parallel conversation if scope is the real issue
+- `diagnosing-difficult-clients` — when you're not sure margin is the right opening
+- `firing-a-client` — when the conversation needs to happen for a second time

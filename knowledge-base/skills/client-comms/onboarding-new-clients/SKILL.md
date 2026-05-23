@@ -163,3 +163,11 @@ Ask them exactly like this, with silence after each. The first answer is rarely 
 - **Don't talk only to the junior contact.** You lose the relationship with the decision-maker — who is the person who can fire you.
 - **Don't absorb the first out-of-scope ask quietly.** Train your team on the line: *"Great idea — let me look at the impact on our current plan and get back to you with the best way to fold it in."* Then send the written change order within 24 hours.
 - **Don't run this skill for an existing client.** Re-onboarding has different dynamics — the relationship is already loaded with history and a welcome-style email reads as condescending. Pivot to a relationship-reset framing.
+
+## Related skills
+
+- `generating-proposals` — the artifact onboarding is operationalizing
+- `discussing-scope-with-client` — when a kickoff goes sideways and scope wasn't actually aligned
+- `detecting-scope-creep` — what to watch for in the first 30 days
+- `monitoring-client-health-score` — kicks in once onboarding is done
+- `preparing-status-calls` — the cadence after onboarding lands

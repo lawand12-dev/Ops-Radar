@@ -80,3 +80,10 @@ Stripe is the cash rail. The agent's job is to make sure money the client agreed
 - Don't put PII or card details in metadata. Stripe policy bans it and metadata is exposed on publishable-key responses [Source: Stripe metadata docs].
 - Don't price international card payments at domestic rates. EUR/GBP on a USD Stripe account stacks to ~5.4% + 30¢ — invoice in your settlement currency or build the haircut into pricing [Source: Checkout Page Stripe international fees].
 - Don't roll one Stripe Customer across a holding company's sub-brands. Revenue attribution collapses; create one Customer per billing entity with a `parent_account_id` in metadata.
+
+## Related skills
+
+- `chasing-overdue-invoices` — the 4-touch collections cadence (Day 3 / 14 / 30 / 45) with full email templates. Stripe pulls the data; that skill writes the chase.
+- `handling-cash-flow-crunch` — when overdue AR threatens payroll, this is the playbook to accelerate Lever 1 (AR).
+- `flagging-margin-erosion` — Stripe revenue feeds the per-client margin calc; if margin is bad, the conversation may be a reprice, not a chase.
+- `using-hubspot` — link Stripe customers to HubSpot deals via the metadata schema so renewal and revenue are joined.

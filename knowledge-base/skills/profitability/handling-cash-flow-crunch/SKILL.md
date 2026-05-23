@@ -149,3 +149,10 @@ If they say no, ask the follow-up: "What's the most flexibility you can give, ev
 - **Don't lead with mass layoffs.** Severance + lost productivity + re-hire cost + brand damage is real money. Hiring freeze and contractor wind-down come before headcount cuts.
 - **Don't hide from the team.** They sense it before you tell them. Closed doors and vague reassurances push top performers to start interviewing. Transparency with a specific plan beats silence — name the problem, name the plan, name the next update date.
 - **Don't ignore A/R out of guilt.** "I don't want to chase Client X — they're a great client." Great clients pay on time. A client 60 days overdue isn't being great to you.
+
+## Related skills
+
+- `projecting-cash-runway` — run this first to know which lever you actually need (sometimes the math says "you're 8 months out, don't panic").
+- `chasing-overdue-invoices` — Lever 1 (accelerate AR) leans on this 4-touch cadence.
+- `firing-a-client` — if a chronically late-paying client also fails the 4 fire criteria, this skill is the cleanest cash-rescue move.
+- `using-stripe` — the data source for AR aging; early-pay link generation lives there.

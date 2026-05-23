@@ -76,4 +76,6 @@ The voice is calm, specific, and short. No jargon. The owner reads this on their
 
 - `flagging-margin-erosion` — if the broken integration was Stripe or Harvest, margin numbers are affected; pause margin alerts until reconnect
 - `detecting-scope-creep` — if ClickUp or Harvest is degraded, scope-creep detection is paused
+- `tuning-autonomy-policies` — after a degraded integration recovers, consider whether the customer's Auto setting for that toolkit needs to drop back to Ask while trust is rebuilt
+- `composing-weekly-briefing` — degraded integrations during the past week always go in the Monday briefing (no exceptions)
 - Source signals: OAuth token expiry, vendor 429 / `{"error":{"code":17}}`, Shopify 19-failure auto-delete, source-vs-destination count delta > 1% over 47-minute window

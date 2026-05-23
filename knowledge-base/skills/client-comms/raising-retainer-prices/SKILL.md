@@ -100,7 +100,10 @@ When the agent queues a `raise_retainer` action, include:
 
 - `calculating-effective-hourly-rate` — the supporting number
 - `flagging-margin-erosion` — the trigger that leads here
+- `discussing-margin-with-client` — sister conversation when you want to lead with the data not the ask
 - `detecting-scope-creep` — the alternative conversation if scope is the issue
+- `discussing-scope-with-client` — the scope-refresh script if that path is right
+- `diagnosing-difficult-clients` — run this if you're not sure whether to raise, reset scope, or fire
 - `firing-a-client` — the fallback if the client refuses
 
 ## What NOT to do

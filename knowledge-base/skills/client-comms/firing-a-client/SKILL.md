@@ -106,10 +106,13 @@ The agent surfaces these as a checklist for the owner to confirm:
 
 ## Cross-references
 
+- `diagnosing-difficult-clients` — **run this first** to confirm firing is the right path, not just the loudest path
 - `projecting-cash-runway` — the survivability check
 - `calculating-effective-hourly-rate` — the trigger metric
 - `raising-retainer-prices` — the conversation to try first
-- `detecting-scope-creep` — the alternative if scope is the driver
+- `discussing-margin-with-client` — when margin is the driver, this conversation may save the relationship
+- `discussing-scope-with-client` — when scope is the driver, this conversation may save it
+- `detecting-scope-creep` — the detection skill that surfaces the trigger
 - `chasing-overdue-invoices` — for the final-invoice phase
 
 ## What NOT to do
