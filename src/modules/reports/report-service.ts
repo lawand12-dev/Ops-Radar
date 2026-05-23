@@ -137,13 +137,43 @@ function htmlToPlainText(html: string): string {
 // generateReport
 // ---------------------------------------------------------------------------
 
+function resolveReportAiBackend(): {
+  url: string;
+  headers: Record<string, string>;
+  model: string;
+  mode: "anthropic" | "openai_compat";
+} {
+  if (env.ANTHROPIC_API_KEY) {
+    return {
+      url: `${env.ANTHROPIC_BASE_URL}/messages`,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": env.ANTHROPIC_VERSION
+      },
+      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      mode: "anthropic"
+    };
+  }
+  if (env.AI_API_KEY) {
+    return {
+      url: `${env.AI_BASE_URL}/chat/completions`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.AI_API_KEY}`
+      },
+      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      mode: "openai_compat"
+    };
+  }
+  throw new AppError(500, "AI_CONFIG_ERROR", "No AI provider configured. Set ANTHROPIC_API_KEY or AI_API_KEY.");
+}
+
 export async function generateReport(input: GenerateReportInput): Promise<ReportResult> {
   const startedAt = Date.now();
   const reportType: ReportType = input.reportType ?? "executive_summary";
 
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new AppError(500, "AI_CONFIG_ERROR", "AI not configured for reports.");
-  }
+  const backend = resolveReportAiBackend();
 
   // 1. Gather breadcrumbs (7 days, up to 40 entries)
   let breadcrumbText = "";
@@ -182,28 +212,32 @@ export async function generateReport(input: GenerateReportInput): Promise<Report
   const contextBlock = buildContextBlock(breadcrumbText ? [breadcrumbText] : [], patternBlock);
   const title = REPORT_TITLE_MAP[reportType];
 
-  // 3. Call Anthropic
+  // 3. Call AI provider
   const userMessage = `Generate a ${reportType} report for this period.\n\nCONTEXT:\n${contextBlock || "(no context available)"}`;
 
+  const requestBody =
+    backend.mode === "anthropic"
+      ? JSON.stringify({
+          model: backend.model,
+          max_tokens: env.ANTHROPIC_MAX_TOKENS,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: "user", content: userMessage }]
+        })
+      : JSON.stringify({
+          model: backend.model,
+          max_tokens: env.ANTHROPIC_MAX_TOKENS,
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userMessage }
+          ]
+        });
+
   const response = await fetchWithTimeout({
-    url: `${env.ANTHROPIC_BASE_URL}/messages`,
+    url: backend.url,
     timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
-    requestName: "anthropic.messages:reports",
+    requestName: "ai:reports",
     errorCode: "AI_REQUEST_TIMEOUT",
-    init: {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": env.ANTHROPIC_VERSION
-      },
-      body: JSON.stringify({
-        model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
-        max_tokens: env.ANTHROPIC_MAX_TOKENS,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userMessage }]
-      })
-    }
+    init: { method: "POST", headers: backend.headers, body: requestBody }
   });
 
   if (!response.ok) {
@@ -214,14 +248,21 @@ export async function generateReport(input: GenerateReportInput): Promise<Report
     });
   }
 
-  const payload = (await response.json()) as {
-    content?: Array<{ type: string; text?: string }>;
-    usage?: { input_tokens?: number; output_tokens?: number };
-  };
+  const payload = (await response.json()) as Record<string, unknown>;
 
-  const reportContent = payload.content?.find((p) => p.type === "text")?.text ?? "";
-  const tokensUsed =
-    (payload.usage?.input_tokens ?? 0) + (payload.usage?.output_tokens ?? 0) || 0;
+  let reportContent = "";
+  let tokensUsed = 0;
+  if (backend.mode === "anthropic") {
+    const content = payload["content"] as Array<{ type: string; text?: string }> | undefined;
+    const usage = payload["usage"] as { input_tokens?: number; output_tokens?: number } | undefined;
+    reportContent = content?.find((p) => p.type === "text")?.text ?? "";
+    tokensUsed = (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0);
+  } else {
+    const choices = payload["choices"] as Array<{ message?: { content?: string } }> | undefined;
+    const usage = payload["usage"] as { total_tokens?: number } | undefined;
+    reportContent = choices?.[0]?.message?.content ?? "";
+    tokensUsed = usage?.total_tokens ?? 0;
+  }
 
   const latencyMs = Date.now() - startedAt;
   const reportId = randomUUID();

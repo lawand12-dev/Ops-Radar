@@ -208,15 +208,65 @@ function buildContextBlock(
   return contextBlock.slice(0, MAX_CONTEXT_CHARS);
 }
 
+// Resolve which AI backend to use for COO queries.
+// Prefers Anthropic when ANTHROPIC_API_KEY is set; falls back to the
+// OpenAI-compatible AI_BASE_URL (DigitalOcean, etc.).
+function resolveCooAiBackend(): {
+  url: string;
+  headers: Record<string, string>;
+  model: string;
+  maxTokens: number;
+  mode: "anthropic" | "openai_compat";
+} {
+  if (env.ANTHROPIC_API_KEY) {
+    return {
+      url: `${env.ANTHROPIC_BASE_URL}/messages`,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": env.ANTHROPIC_VERSION
+      },
+      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      maxTokens: env.ANTHROPIC_MAX_TOKENS,
+      mode: "anthropic"
+    };
+  }
+  if (env.AI_API_KEY) {
+    return {
+      url: `${env.AI_BASE_URL}/chat/completions`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.AI_API_KEY}`
+      },
+      model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
+      maxTokens: env.ANTHROPIC_MAX_TOKENS,
+      mode: "openai_compat"
+    };
+  }
+  throw new AppError(500, "AI_CONFIG_ERROR", "No AI provider configured. Set ANTHROPIC_API_KEY or AI_API_KEY.");
+}
+
+function extractAiText(
+  payload: Record<string, unknown>,
+  mode: "anthropic" | "openai_compat"
+): string {
+  if (mode === "anthropic") {
+    const content = payload["content"] as Array<{ type: string; text?: string }> | undefined;
+    return content?.find((p) => p.type === "text")?.text ?? "";
+  }
+  // OpenAI-compatible: choices[0].message.content
+  const choices = payload["choices"] as Array<{ message?: { content?: string } }> | undefined;
+  return choices?.[0]?.message?.content ?? "";
+}
+
 export async function executeCooQuery(
   userId: string,
   request: CooQueryRequest
 ): Promise<CooQueryResponse> {
   const startedAt = Date.now();
 
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new AppError(500, "AI_CONFIG_ERROR", "ANTHROPIC_API_KEY required for COO queries.");
-  }
+  // Throws AI_CONFIG_ERROR if neither key is set.
+  const backend = resolveCooAiBackend();
 
   const contextWindowHours = Math.min(
     Math.max(1, request.context_window_hours ?? 168),
@@ -284,25 +334,29 @@ ${request.query}`;
 
   let aiText = "";
   try {
+    const requestBody =
+      backend.mode === "anthropic"
+        ? JSON.stringify({
+            model: backend.model,
+            max_tokens: backend.maxTokens,
+            system: SYSTEM_PROMPT,
+            messages: [{ role: "user", content: userMessage }]
+          })
+        : JSON.stringify({
+            model: backend.model,
+            max_tokens: backend.maxTokens,
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: userMessage }
+            ]
+          });
+
     const response = await fetchWithTimeout({
-      url: `${env.ANTHROPIC_BASE_URL}/messages`,
+      url: backend.url,
       timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
-      requestName: "anthropic.messages:coo",
+      requestName: "ai:coo",
       errorCode: "AI_REQUEST_TIMEOUT",
-      init: {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": env.ANTHROPIC_VERSION
-        },
-        body: JSON.stringify({
-          model: env.AI_MODEL_COMPLEX || env.AI_MODEL_PRIMARY,
-          max_tokens: env.ANTHROPIC_MAX_TOKENS,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: userMessage }]
-        })
-      }
+      init: { method: "POST", headers: backend.headers, body: requestBody }
     });
 
     if (!response.ok) {
@@ -313,10 +367,8 @@ ${request.query}`;
       });
     }
 
-    const payload = (await response.json()) as {
-      content?: Array<{ type: string; text?: string }>;
-    };
-    aiText = payload.content?.find((p) => p.type === "text")?.text ?? "";
+    const payload = (await response.json()) as Record<string, unknown>;
+    aiText = extractAiText(payload, backend.mode);
 
     if (env.LOG_AI_RAW_RESPONSE) {
       logInfo(COO_SCOPE, "raw COO AI response", { text: aiText.slice(0, 500) });
