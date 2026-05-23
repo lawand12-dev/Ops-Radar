@@ -1,7 +1,5 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { decryptApiKey } from '<npm>/lib/integrations/crypto';
-import { getClientN8nConfig } from '<npm>/lib/client-n8n';
-import { evalWorkflowFailures } from './evaluators/workflow-failure';
 import { evalHubSpotHarvest } from './evaluators/hubspot-harvest';
 import { evalRetainerInvoiceDraft } from './evaluators/retainer-invoice-draft';
 import { executeAction } from './executor';
@@ -63,15 +61,12 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
 
   const stripeKey  = getKey('stripe');
   const hubspotKey = getKey('hubspot');
-  const n8nConfig  = await getClientN8nConfig(userId);
 
-  // TODO(post-cleanup): the deleted evaluators (cash-flow, capacity-drift,
-  // margin-alert, retainer-overage, scope-approaching, hours-budget,
-  // invoice-reminder, pattern-alert) were absorbed into the per-domain agents
-  // under src/lib/agents/* and now run on their own crons. The orchestrator
-  // below keeps only the evaluators that have not yet been migrated.
+  // Most legacy evaluators were absorbed into the per-domain agents under
+  // src/lib/agents/*, which run on their own crons. Workflow-failure was
+  // removed in CP-15 (n8n / chatv2 sever). What remains are the two
+  // evaluators that still serve a non-agent purpose.
   const results = await Promise.allSettled([
-    n8nConfig ? evalWorkflowFailures(ctx, n8nConfig) : Promise.resolve([]),
     hubspotKey ? evalHubSpotHarvest(ctx, hubspotKey) : Promise.resolve([]),
     stripeKey ? evalRetainerInvoiceDraft(ctx, stripeKey) : Promise.resolve([]),
   ]);

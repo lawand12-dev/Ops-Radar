@@ -34,8 +34,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { executeToolCall } from '<npm>/lib/coo/executor';
 import { buildExecutorContext } from '<npm>/lib/coo/build-executor-context';
-import { chatV2Fetch } from '<npm>/lib/chatv2/client';
-import { ChatV2Error } from '<npm>/lib/chatv2/errors';
 import type { Json } from '<npm>/lib/database.types';
 
 export const dynamic = 'force-dynamic';
@@ -145,29 +143,6 @@ const TOOLS: McpTool[] = [
 
   // ─── Action tools (HITL-gated) ─────────────────────────────────────────
   {
-    name: 'opsradar.generate_workflow',
-    description:
-      "Generate a new automation workflow from a natural-language description. OpsRadar's chat-to-workflow pipeline (multi-pass PLAN→CRITIQUE→GENERATE→VALIDATE→REPAIR) produces validated workflow JSON ready for the agency to deploy. The workflow is queued for OpsRadar operator review — never auto-deployed. Use this when an external agent wants the agency to be able to run a new automation it described.",
-    scope: 'workflows:write',
-    executorName: null,
-    inputSchema: {
-      type: 'object',
-      properties: {
-        description: {
-          type: 'string',
-          description:
-            'Natural-language description of the desired automation. Example: "Every time a Stripe invoice goes overdue more than 14 days, post the client name + amount + last invoice date to our #revenue Slack channel."',
-        },
-        priority: {
-          type: 'string',
-          enum: ['low', 'normal', 'high'],
-          description: 'Hint for the operator review queue (default: normal).',
-        },
-      },
-      required: ['description'],
-    },
-  },
-  {
     name: 'opsradar.propose_action',
     description:
       "Propose a draft action for the agency owner to review in their Actions queue. Never auto-executes — the owner reviews and decides what to do. Use this AFTER calling the relevant read tool so the proposal references real numbers. Only these action types are supported: margin_alert, hours_budget_exceeded, scope_approaching, retainer_overage.",
@@ -264,55 +239,6 @@ async function runTool(
 ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
   const tool = TOOLS.find((t) => t.name === toolName);
   if (!tool) throw new Error(`Unknown tool: ${toolName}`);
-
-  // Special-case: generate_workflow proxies to chatv2's chat-to-workflow
-  // generation pipeline. Result is the validated workflow JSON; nothing
-  // is auto-deployed — OpsRadar operators review + deploy via existing
-  // n8n delivery flow.
-  if (tool.name === 'opsradar.generate_workflow') {
-    const description = typeof args.description === 'string' ? args.description : '';
-    if (!description.trim()) {
-      throw new Error('description must be a non-empty string');
-    }
-    const priority =
-      typeof args.priority === 'string' && ['low', 'normal', 'high'].includes(args.priority)
-        ? args.priority
-        : 'normal';
-
-    try {
-      const chatResult = await chatV2Fetch<{
-        project_id?: string;
-        session_id?: string;
-        workflow?: unknown;
-        validation?: { ok?: boolean; errors?: unknown };
-      }>('/chat', {
-        method: 'POST',
-        body: { message: description, mcp_user_id: userId, mcp_priority: priority },
-        timeoutMs: 25_000,
-      });
-      const summary = {
-        ok: true,
-        priority,
-        project_id: chatResult.project_id ?? null,
-        session_id: chatResult.session_id ?? null,
-        workflow_validated: !!chatResult.validation?.ok,
-        validation_errors: chatResult.validation?.errors ?? null,
-        next_step:
-          'Workflow generated and queued for OpsRadar operator review. The agency owner will be notified when it is approved + deployed.',
-      };
-      return { content: [{ type: 'text', text: JSON.stringify(summary, null, 2) }] };
-    } catch (err) {
-      const msg = err instanceof ChatV2Error ? `${err.code}: ${err.message}` : (err as Error).message;
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Workflow generation failed: ${msg}. The OpsRadar team has been notified — try again, or contact your account manager if this persists.`,
-          },
-        ],
-      };
-    }
-  }
 
   if (!tool.executorName) throw new Error(`Tool ${toolName} has no executor binding`);
 

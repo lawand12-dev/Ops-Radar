@@ -13,27 +13,25 @@ type KpiState =
 type FetchResult = Omit<Extract<KpiState, { kind: 'value' }>, 'kind' | 'label'> | { error: 'not_connected' | 'no_data' | 'failed' };
 
 /**
- * Composes 6 KPI cards from independent Layer-2 fetches.
- * Spec §9.3.
+ * Composes 4 KPI cards from independent Layer-2 fetches.
  *
  * Each card owns its own fetch and state. The strip is just layout.
  * KPI sources (in order):
- *   1. Time saved · 7d            — /api/dashboard/automation-roi
- *   2. MRR · current              — /api/dashboard/finance  (proxy: paid MTD)
- *   3. Active pipeline · current  — /api/dashboard/sales-live
- *   4. New prospects · 7d         — /api/dashboard/marketing (proxy: emails_sent)
- *   5. Booked calls · 7d          — /api/dashboard/marketing
- *   6. Workflow success rate · 7d — /api/dashboard/workflow-health
+ *   1. MRR · current              — /api/dashboard/finance (proxy: paid MTD)
+ *   2. Active pipeline · current  — /api/dashboard/sales-live
+ *   3. New prospects · 7d         — /api/dashboard/marketing (proxy: emails_sent)
+ *   4. Booked calls · 7d          — /api/dashboard/marketing
+ *
+ * The n8n "Time saved" and "Workflow success" tiles were removed in CP-15
+ * (chatv2 sever). Future tiles should pull from agent_runs / agent_actions.
  */
 export function CockpitKpiStrip() {
   return (
-    <div className="grid grid-cols-6 gap-2.5">
-      <KpiCard label="Time saved · 7d"     loader={loadTimeSaved}   tool="Automations" toolSlug="n8n" />
+    <div className="grid grid-cols-4 gap-2.5">
       <KpiCard label="MRR"                 loader={loadMrr}         tool="Stripe"      toolSlug="stripe" />
       <KpiCard label="Active pipeline"     loader={loadPipeline}    tool="HubSpot"     toolSlug="hubspot" />
       <KpiCard label="New prospects · 7d"  loader={loadProspects}   tool="Apollo"      toolSlug="apollo" />
       <KpiCard label="Booked calls · 7d"   loader={loadBookings}    tool="Calendly"    toolSlug="calendly" />
-      <KpiCard label="Workflow success"    loader={loadSuccessRate} tool="Automations" toolSlug="n8n" />
     </div>
   );
 }
@@ -123,34 +121,6 @@ function Sparkline({ values, up }: { values: number[]; up: boolean }) {
 // HTTP 503 / status:'not_connected' / status:'not_enrolled' returns
 // { error: 'not_connected' } so the card switches to the connect-CTA.
 // ============================================================
-
-/**
- * Time saved · 7d
- * Upstream: /api/dashboard/automation-roi
- * Shape: { status: 'ok' | 'error', data: AutomationRoiWidget }
- * AutomationRoiWidget: { hours_saved, dollars_saved, success_rate_pct, ... }
- *
- * NOTE: The upstream computes hours_saved over ALL runs, not strictly 7d
- * (the CTO backend does not expose a 7-day window). We show the cumulative
- * figure with a "total" label — no prior-period delta available.
- */
-async function loadTimeSaved(): Promise<FetchResult> {
-  let r: {
-    status?: string;
-    data?: { hours_saved?: number; success_rate_pct?: number };
-  };
-  try {
-    const res = await fetch('/api/dashboard/automation-roi');
-    r = await res.json();
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'not_enrolled') return { error: 'not_connected' };
-  if (r?.status === 'error' || !r?.data) return { error: 'failed' };
-  const hours = r.data.hours_saved;
-  if (typeof hours !== 'number') return { error: 'no_data' };
-  return { value: `${Math.round(hours)}h`, deltaUp: true };
-}
 
 /**
  * MRR (proxy: paid MTD)
@@ -301,48 +271,6 @@ async function loadBookings(): Promise<FetchResult> {
   const n = r?.data?.meetings_booked;
   if (typeof n !== 'number' || n === null) return { error: 'no_data' };
   return { value: String(n), deltaUp: true };
-}
-
-/**
- * Workflow success rate · 7d
- * Upstream: /api/dashboard/workflow-health
- * Shape: { status: 'not_enrolled' | 'ok' | 'unavailable', workflows: WorkflowHealthEntry[] }
- * WorkflowHealthEntry: { workflow_id, name, status, recent_executions: Execution[] }
- * Execution: { execution_id, status: 'success'|'failure'|'running'|'canceled', ... }
- *
- * NOTE: No `runs_7d` or `success_runs_7d` aggregate fields exist on entries.
- * We compute the success rate by iterating `recent_executions` across all
- * workflows, counting only terminal states ('success' | 'failure').
- */
-async function loadSuccessRate(): Promise<FetchResult> {
-  let r: {
-    status?: string;
-    workflows?: Array<{
-      recent_executions?: Array<{ status: string }>;
-    }>;
-  };
-  try {
-    r = await fetch('/api/dashboard/workflow-health').then((res) => res.json());
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'not_enrolled') return { error: 'not_connected' };
-  if (r?.status === 'unavailable') return { error: 'failed' };
-  const workflows = r?.workflows ?? [];
-  if (!Array.isArray(workflows) || workflows.length === 0) return { error: 'no_data' };
-  let totalRuns = 0;
-  let successRuns = 0;
-  for (const wf of workflows) {
-    for (const exec of wf.recent_executions ?? []) {
-      if (exec.status === 'success' || exec.status === 'failure') {
-        totalRuns += 1;
-        if (exec.status === 'success') successRuns += 1;
-      }
-    }
-  }
-  if (totalRuns === 0) return { error: 'no_data' };
-  const pct = (successRuns / totalRuns) * 100;
-  return { value: `${pct.toFixed(1)}%`, deltaUp: pct >= 95 };
 }
 
 function fmtCurrency(n: number): string {

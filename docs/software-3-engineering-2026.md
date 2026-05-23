@@ -1,3 +1,5 @@
+<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/strategy/composio-vs-n8n-decision-2026.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+
 # Software 3.0 — The Engineering Theory for chatv2 + OpsRadar
 
 *Written 2026-05-22. The canonical Karpathy-grade framework for how engineering itself has changed. Synthesised from two YC May 2026 briefings — "Engineering Transformation Strategy: The Shift to Agentic Software 3.0" and "Engineering the Agentic Era: A Strategic Roadmap for Macro-Action Workflows." This is the theory; [`build-methodology-2026.md`](./build-methodology-2026.md) is the tactical playbook; [`ai-native-company-2026.md`](./ai-native-company-2026.md) is the cultural blueprint.*

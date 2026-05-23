@@ -8,7 +8,6 @@ const MAX_EVENTS = 10;
 type ActivityEventType =
   | 'stripe_charge'
   | 'hubspot_deal'
-  | 'workflow_run'
   | 'calendly_booking'
   | 'integration_incident';
 
@@ -17,7 +16,7 @@ type ActivityEvent = {
   icon: string;          // single-char hint for the UI
   entity_label: string;  // bold-able real name
   message: string;       // single sentence
-  source: 'stripe' | 'hubspot' | 'n8n' | 'calendly' | 'opsradar';
+  source: 'stripe' | 'hubspot' | 'calendly' | 'opsradar';
   timestamp: string;     // ISO8601
 };
 
@@ -82,24 +81,6 @@ function adaptHubspot(data: unknown): ActivityEvent[] {
   });
 }
 
-// Workflow-health response: { status, workflows: Array<{ name, last_run_at, status, ... }> }
-// Field names match the plan assumptions. Works correctly.
-function adaptWorkflows(data: unknown): ActivityEvent[] {
-  const workflows = (data as { workflows?: Array<{ name?: string; last_run_at?: string | null; status?: string }> })
-    ?.workflows ?? [];
-  return workflows.slice(0, 5).flatMap((w) => {
-    if (!w.name || !w.last_run_at) return [];
-    return [{
-      type: 'workflow_run' as const,
-      icon: '▶',
-      entity_label: w.name,
-      message: `Workflow ran · ${w.status ?? 'ok'}`,
-      source: 'n8n' as const,
-      timestamp: w.last_run_at,
-    }];
-  });
-}
-
 // Marketing response: { emails_sent, open_rate_pct, meetings_booked,
 //   apollo_connected, calendly_connected, period_label, ... }
 // No recent_bookings field — aggregate counts only, no per-booking events.
@@ -124,7 +105,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<ActivityRe
   const settled = await Promise.allSettled([
     fetchUpstream(request, 'finance').then(adaptStripe),
     fetchUpstream(request, 'sales-live').then(adaptHubspot),
-    fetchUpstream(request, 'workflow-health').then(adaptWorkflows),
     fetchUpstream(request, 'marketing').then(adaptMarketing),
   ]);
 

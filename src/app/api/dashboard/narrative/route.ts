@@ -28,7 +28,6 @@ Return STRICT JSON with this exact shape:
 {
   "hero": "1-2 sentence headline summarizing the week.",
   "sections": {
-    "automations": "2-3 sentences on automation health, top performer, errors. Mention real workflow names and numbers if present.",
     "business": "2-3 sentences on revenue, pipeline, prospects, bookings. Mention real entity names and numbers if present."
   }
 }
@@ -46,8 +45,6 @@ async function fetchSnapshot(request: NextRequest): Promise<Record<string, unkno
   const headers = { cookie: cookieHeader };
 
   const endpoints = [
-    'automation-roi',
-    'workflow-health',
     'finance',
     'sales-live',
     'marketing',

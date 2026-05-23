@@ -1,3 +1,5 @@
+<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/strategy/composio-vs-n8n-decision-2026.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+
 # Build Methodology — GStack Adapted for OpsRadar + chatv2
 
 *Written 2026-05-22. The personal operating system for how a 1-2 person team ships at the pace of a 50-person engineering org. Synthesised from the GStack methodology (YC May 2026) and adapted to OpsRadar's reality.*

@@ -1,7 +1,7 @@
 // Tier (plan) enforcement for OpsRadar.
 //
 // Branch: main / Supabase. The customer's plan is customer state, lives in
-// supabase auth.users.user_metadata.plan. Never proxy to chatv2 for tier checks.
+// supabase auth.users.user_metadata.plan. Tier is read directly from Supabase user metadata.
 //
 // Usage in API routes:
 //   const userId = await getCurrentUserId();

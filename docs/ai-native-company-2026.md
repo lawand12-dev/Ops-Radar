@@ -1,3 +1,5 @@
+<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/strategy/composio-vs-n8n-decision-2026.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+
 # The AI-Native Company — Blueprint for chatv2 + OpsRadar
 
 *Written 2026-05-22. Synthesised from the YC "How to build an AI-native company" guidance (May 2026) and translated into concrete patterns chatv2 must implement for OpsRadar to be a true AI-native product — and to enable agencies running on top of it to become AI-native themselves.*

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Activity,
   Plug,
   Settings,
   ChevronRight,
@@ -74,7 +73,6 @@ const navSections: NavSection[] = [
     tag: 'OPERATIONS',
     items: [
       { label: 'Runs',        href: '/dashboard/runs',        icon: History  },
-      { label: 'Automations', href: '/dashboard/automations', icon: Activity },
       { label: 'Live Data',   href: '/dashboard/business',    icon: Database },
     ],
   },

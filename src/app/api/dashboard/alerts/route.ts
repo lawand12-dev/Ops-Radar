@@ -5,7 +5,6 @@ import {
   stripeAuthErrorRule,
   elevatedErrorRateRule,
   stuckDealRule,
-  failingWorkflowRule,
   emptyCalendarRule,
   scopeCreepRule,
   sortAlertsBySeverity,
@@ -44,11 +43,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
   const settled = await Promise.allSettled([
     fetchJson(request, 'finance'),
     fetchJson(request, 'sales-live'),
-    fetchJson(request, 'workflow-health'),
     fetchJson(request, 'marketing'),
     fetchJson(request, 'scope'),
   ]);
-  const [finance, sales, workflows, marketing, scope] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
+  const [finance, sales, marketing, scope] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
 
   const candidates: (DashboardAlert | null)[] = [];
 
@@ -80,47 +78,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
     candidates.push(stuckDealRule({ dealName: d.name, daysInStage: d.days_in_stage, valueUsd: d.amount_usd }));
   }
 
-  // ── Failing workflows ─────────────────────────────────────────────────────────
-  // workflow-health entries have no last_failure_at / last_recovery_at fields.
-  // We derive them from recent_executions[]: the most-recent failure's started_at
-  // is failedAt; if a success comes after that failure, the workflow recovered.
-  type RecentExecution = {
-    execution_id: string;
-    status: 'success' | 'failure' | 'running' | 'canceled';
-    started_at: string | null;
-    duration_ms: number | null;
-    error_summary: string | null;
-  };
-  type WorkflowEntry = {
-    name?: string;
-    recent_executions?: RecentExecution[];
-  };
-
-  const workflowsList = (workflows as { workflows?: WorkflowEntry[] } | null)?.workflows ?? [];
-  const now = new Date();
-  for (const w of workflowsList) {
-    if (!w.name) continue;
-    const execs = (w.recent_executions ?? []).filter((e) => e.started_at);
-    // Sort descending so index 0 is the most recent
-    execs.sort((a, b) => new Date(b.started_at!).getTime() - new Date(a.started_at!).getTime());
-
-    // Find the most-recent failure
-    const lastFailure = execs.find((e) => e.status === 'failure');
-    if (!lastFailure?.started_at) continue;
-    const failedAt = new Date(lastFailure.started_at);
-
-    // Check if any success occurred after the failure (recovery)
-    const recoveredAt = execs.find(
-      (e) => e.status === 'success' && e.started_at && new Date(e.started_at) > failedAt,
-    )?.started_at ?? null;
-
-    candidates.push(failingWorkflowRule({
-      workflowName: w.name,
-      failedAt,
-      recoveredAt: recoveredAt ? new Date(recoveredAt) : null,
-      now,
-    }));
-  }
+  // CP-15: removed failing-workflows alert (n8n / chatv2 sever). If a future
+  // durable execution layer surfaces, restore by reading from agent_runs
+  // status='failed' instead of workflow-health.
 
   // ── Empty calendar ────────────────────────────────────────────────────────────
   // marketing.data.meetings_booked is the actual field (no calendly sub-object).
