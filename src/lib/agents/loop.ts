@@ -5,15 +5,26 @@
  *   1. Tier gate (skip with reason='tier' if not allowed)
  *   2. Integration gate (skip with reason='missing-integration:X' if any required tool not connected)
  *   3. Insert a 'running' row in agent_runs
- *   4. Load Composio tools + Notion write tools
- *   5. Multi-step tool-calling loop (≤ spec.maxSteps)
+ *   4. Load Composio tools for this user across the agent's required toolkits
+ *   5. Multi-step `generateText` loop with stepCountIs(spec.maxSteps)
  *   6. Update agent_runs row with status, summary, counters
  *
- * Design spec: docs/dev/specs/2026-05-23-agents-notion-composio-design.md §4.1
+ * Proven pattern: scripts/smoke-revenue-agent.ts demonstrated this end-to-end.
  */
 
-import type { AgentRunResult, AgentSpec } from './types'
+import { generateText, stepCountIs } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import {
+  COMPOSIO_TOOLS,
+  getComposioToolsForUser,
+  type ToolSlug,
+} from '<npm>/lib/composio'
+import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
+
+const VALID_SLUGS = new Set(Object.keys(COMPOSIO_TOOLS) as ToolSlug[])
+const isToolSlug = (v: string): v is ToolSlug => VALID_SLUGS.has(v as ToolSlug)
 
 export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRunResult> {
   // 1. Tier gate
@@ -24,68 +35,143 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
 
   // 2. Integrations gate
   const connected = await getConnectedTools(userId)
-  const missing = spec.requiredIntegrations.filter((t) => !connected.includes(t))
+  const missing = spec.requiredIntegrations.filter((t) => !connected.has(t))
   if (missing.length > 0) {
     return logSkip(userId, spec.slug, `missing-integration:${missing.join(',')}`)
   }
 
   // 3. Start run
   const runId = await startAgentRun(userId, spec.slug)
+  if (!runId) {
+    return { status: 'failed', errorMessage: 'Could not insert agent_runs row' }
+  }
 
   try {
-    // 4. Load tools
-    // const tools = await getComposioToolsForUser(userId, spec.composioApps.map(slug => COMPOSIO_TOOLS[slug]))
-    // const notionTools = await buildNotionWriteTools(userId)
+    // 4. Load Composio tools. Filter to ones the user has actually connected to
+    // avoid noisy "this tool isn't connected" errors from optional toolkits.
+    const wantedToolkits = spec.composioApps.filter((t): t is ToolSlug =>
+      isToolSlug(t) && connected.has(t as ToolSlug),
+    )
+    const tools = wantedToolkits.length > 0
+      ? await getComposioToolsForUser(userId, wantedToolkits.map((t) => COMPOSIO_TOOLS[t]))
+      : ({} as Awaited<ReturnType<typeof getComposioToolsForUser>>)
 
-    // 5. Tool loop
-    // let messages: ChatMessage[] = [
-    //   { role: 'system', content: spec.systemPrompt },
-    //   { role: 'user', content: `Run your analysis. Today: ${new Date().toISOString()}` },
-    // ]
-    // let steps = 0
-    // while (steps < spec.maxSteps) { ... break when no tool_calls returned ... }
+    // 5. Run the multi-step loop
+    const result = await generateText({
+      model: openai(spec.model),
+      system: spec.systemPrompt,
+      prompt: `Run your analysis. Today is ${new Date().toISOString().slice(0, 10)}.`,
+      tools,
+      stopWhen: stepCountIs(spec.maxSteps),
+    })
 
-    // 6. Complete
+    // 6. Mark connections used so we can show "last used" in the integrations UI
+    if (wantedToolkits.length > 0) {
+      await markConnectionsUsed(userId, wantedToolkits)
+    }
+
     return completeAgentRun(runId, {
       status: 'success',
-      summary: 'scaffold — not wired yet',
+      summary: result.text,
+      tokensUsed: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
     })
   } catch (err) {
     return failAgentRun(runId, err)
   }
 }
 
-// ---------- Helpers (all scaffolds) ----------
+// ---------- Helpers ----------
 
-async function getConnectedTools(_userId: string): Promise<string[]> {
-  // TODO(scaffold): SELECT tool_slug FROM composio_connections WHERE user_id = ? AND is_active = true
-  return []
+async function getConnectedTools(userId: string): Promise<Set<ToolSlug>> {
+  const supabase = getServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('composio_connections')
+    .select('tool_slug')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+  if (error) {
+    console.error('[agent-loop] getConnectedTools failed:', error)
+    return new Set()
+  }
+  const out = new Set<ToolSlug>()
+  for (const row of data ?? []) {
+    if (isToolSlug(row.tool_slug)) out.add(row.tool_slug)
+  }
+  return out
 }
 
-async function startAgentRun(_userId: string, _slug: string): Promise<string> {
-  // TODO(scaffold): INSERT INTO agent_runs (user_id, agent_slug, status='running') RETURNING id
-  return 'scaffold-run-id'
+async function markConnectionsUsed(userId: string, toolkits: ToolSlug[]): Promise<void> {
+  const supabase = getServerSupabaseClient()
+  await supabase
+    .from('composio_connections')
+    .update({ last_used_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .in('tool_slug', toolkits)
+}
+
+async function startAgentRun(userId: string, slug: AgentSlug): Promise<string | null> {
+  const supabase = getServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('agent_runs')
+    .insert({ user_id: userId, agent_slug: slug, status: 'running' })
+    .select('id')
+    .single()
+  if (error) {
+    console.error('[agent-loop] startAgentRun failed:', error)
+    return null
+  }
+  return data.id
 }
 
 async function completeAgentRun(
-  _runId: string,
-  partial: Partial<AgentRunResult> & { status: AgentRunResult['status'] },
+  runId: string,
+  partial: Pick<AgentRunResult, 'status' | 'summary' | 'tokensUsed'> &
+    Partial<AgentRunResult>,
 ): Promise<AgentRunResult> {
-  // TODO(scaffold): UPDATE agent_runs SET ended_at=now(), status=?, summary=?, ... WHERE id=?
-  return { ...partial }
+  const supabase = getServerSupabaseClient()
+  await supabase
+    .from('agent_runs')
+    .update({
+      ended_at: new Date().toISOString(),
+      status: partial.status,
+      summary: partial.summary,
+      tokens_used: partial.tokensUsed,
+      actions_taken: partial.actionsTaken ?? 0,
+      patterns_detected: partial.patternsDetected ?? 0,
+      risks_flagged: partial.risksFlagged ?? 0,
+      notion_writes: partial.notionWrites ?? 0,
+    })
+    .eq('id', runId)
+  return partial as AgentRunResult
 }
 
-async function failAgentRun(_runId: string, err: unknown): Promise<AgentRunResult> {
+async function failAgentRun(runId: string, err: unknown): Promise<AgentRunResult> {
   const message = err instanceof Error ? err.message : String(err)
-  // TODO(scaffold): UPDATE agent_runs SET status='failed', error_message=?, ended_at=now() WHERE id=?
+  console.error('[agent-loop] run failed:', message)
+  const supabase = getServerSupabaseClient()
+  await supabase
+    .from('agent_runs')
+    .update({
+      ended_at: new Date().toISOString(),
+      status: 'failed',
+      error_message: message,
+    })
+    .eq('id', runId)
   return { status: 'failed', errorMessage: message }
 }
 
 async function logSkip(
-  _userId: string,
-  _slug: string,
+  userId: string,
+  slug: AgentSlug,
   reason: string,
 ): Promise<AgentRunResult> {
-  // TODO(scaffold): INSERT a skipped agent_run row for visibility on the agents page.
+  const supabase = getServerSupabaseClient()
+  await supabase.from('agent_runs').insert({
+    user_id: userId,
+    agent_slug: slug,
+    status: 'skipped',
+    summary: reason,
+    ended_at: new Date().toISOString(),
+  })
   return { status: 'skipped', reason }
 }

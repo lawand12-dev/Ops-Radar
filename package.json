@@ -15,6 +15,7 @@
     "@composio/core": "^0.10.0",
     "@composio/vercel": "^0.9.2",
     "@hubspot/api-client": "^13.5.0",
+    "@notionhq/client": "^5.22.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.100.1",
     "@upstash/ratelimit": "^2.0.8",

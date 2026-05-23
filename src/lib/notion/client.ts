@@ -1,13 +1,16 @@
 /**
  * Notion SDK client per user.
  *
- * Scaffold — requires `@notionhq/client` installed and a row in `notion_workspaces`
- * containing an encrypted access token. Token is decrypted via the existing crypto helper.
+ * Workspace metadata lives in `notion_workspaces`. The OAuth access token is
+ * AES-256-GCM encrypted with the same helper used for integration API keys —
+ * we serialise the {encrypted_token, iv, auth_tag} object into the single
+ * `access_token_encrypted` text column as JSON.
  */
 
-// import { Client } from '@notionhq/client'
-// import { decrypt } from '<npm>/lib/integrations/crypto'
-// import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import { Client, APIErrorCode, APIResponseError } from '@notionhq/client'
+
+import { decryptApiKey, type EncryptedSecret } from '<npm>/lib/integrations/crypto'
+import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 
 import type { NotionDatabasesMap } from './schema-keys'
 
@@ -27,34 +30,116 @@ export type NotionWorkspace = {
     | 'phase3'
     | 'complete'
     | 'failed'
+  /** Internal — used by getNotionClient() to decrypt before instantiating SDK. */
+  access_token_encrypted: string
 }
 
-export async function getWorkspace(_userId: string): Promise<NotionWorkspace | null> {
-  // TODO(scaffold):
-  //   const supabase = await getServerSupabaseClient()
-  //   const { data } = await supabase
-  //     .from('notion_workspaces')
-  //     .select('*')
-  //     .eq('user_id', userId)
-  //     .maybeSingle()
-  //   return data as NotionWorkspace | null
-  throw new Error('Notion workspace lookup not wired yet — see src/lib/notion/client.ts')
+const BACKFILL_STATUSES = [
+  'pending',
+  'phase1',
+  'phase2',
+  'phase3',
+  'complete',
+  'failed',
+] as const
+
+function normalizeBackfillStatus(value: string): NotionWorkspace['backfill_status'] {
+  return (BACKFILL_STATUSES as readonly string[]).includes(value)
+    ? (value as NotionWorkspace['backfill_status'])
+    : 'pending'
 }
 
-export async function getNotionClient(_userId: string): Promise<unknown> {
-  // TODO(scaffold): after `npm install @notionhq/client`:
-  //   const ws = await getWorkspace(userId)
-  //   if (!ws) throw new Error('User has not connected Notion')
-  //   const accessToken = await decrypt(ws.access_token_encrypted)
-  //   return new Client({ auth: accessToken })
-  throw new Error('Notion client not wired yet — see src/lib/notion/client.ts')
+export async function getWorkspace(userId: string): Promise<NotionWorkspace | null> {
+  const supabase = getServerSupabaseClient()
+  const { data, error } = await supabase
+    .from('notion_workspaces')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error || !data) return null
+
+  return {
+    user_id: data.user_id,
+    workspace_id: data.workspace_id,
+    workspace_name: data.workspace_name,
+    bot_id: data.bot_id,
+    parent_page_id: data.parent_page_id,
+    databases: (data.databases ?? {}) as NotionDatabasesMap,
+    connected_at: data.connected_at,
+    last_synced_at: data.last_synced_at,
+    backfill_status: normalizeBackfillStatus(data.backfill_status),
+    access_token_encrypted: data.access_token_encrypted,
+  }
+}
+
+/**
+ * Returns an authenticated Notion SDK client for the user. Throws if the user
+ * has not connected Notion or the stored token is malformed/cannot be decrypted.
+ */
+export async function getNotionClient(userId: string): Promise<Client> {
+  const ws = await getWorkspace(userId)
+  if (!ws) {
+    throw new Error('User has not connected Notion')
+  }
+
+  let secret: EncryptedSecret
+  try {
+    secret = JSON.parse(ws.access_token_encrypted) as EncryptedSecret
+  } catch {
+    throw new Error('notion_workspaces.access_token_encrypted is not valid JSON')
+  }
+
+  const accessToken = decryptApiKey(secret)
+  return new Client({ auth: accessToken })
 }
 
 /**
  * Notion API rate limit is ~3 req/sec per integration token.
- * Wrap every write in this helper to back off and retry on 429.
+ * Wrap every read/write through this helper. Retries on:
+ *   - `rate_limited` (HTTP 429)
+ *   - transient 5xx (`internal_server_error`, `service_unavailable`, `gateway_timeout`)
+ *
+ * Backoff: 500ms, 1500ms, 4500ms (× exponential).
  */
-export async function withNotionRetry<T>(_op: () => Promise<T>, _maxRetries = 3): Promise<T> {
-  // TODO(scaffold): implement exponential backoff on Notion 429 / 500 responses.
-  throw new Error('withNotionRetry not implemented — see src/lib/notion/client.ts')
+export async function withNotionRetry<T>(
+  op: () => Promise<T>,
+  maxRetries = 3,
+): Promise<T> {
+  const baseDelay = 500
+  let attempt = 0
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await op()
+    } catch (err) {
+      if (attempt >= maxRetries || !isRetryable(err)) {
+        throw err
+      }
+      const delay = baseDelay * Math.pow(3, attempt)
+      await sleep(delay)
+      attempt += 1
+    }
+  }
+}
+
+function isRetryable(err: unknown): boolean {
+  if (APIResponseError.isAPIResponseError(err)) {
+    if (err.code === APIErrorCode.RateLimited) return true
+    if (err.code === APIErrorCode.InternalServerError) return true
+    if (err.code === APIErrorCode.ServiceUnavailable) return true
+    if (err.code === APIErrorCode.GatewayTimeout) return true
+    if (err.status === 429) return true
+  }
+  if (err && typeof err === 'object') {
+    const maybe = err as { status?: number; code?: string }
+    if (maybe.status === 429) return true
+    if (maybe.code === 'rate_limited') return true
+  }
+  return false
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
