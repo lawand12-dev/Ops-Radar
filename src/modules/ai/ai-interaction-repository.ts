@@ -269,3 +269,145 @@ export function persistAIInteraction(record: AIInteractionRecord): void {
     });
   });
 }
+
+// ============================================================
+// PR-A2: User-facing interaction listing
+// ============================================================
+
+export interface InteractionListRow {
+  id: string;                  // stringified BIGINT
+  created_at: Date;
+  project_id: string | null;
+  workflow_id: string | null;
+  provider: string;
+  model: string;
+  outcome: AIInteractionOutcome;
+  outcome_settled_at: Date | null;
+  tokens_used: number | null;
+  latency_ms: number | null;
+  matched_pattern_ids: string[];
+  prompt_excerpt: string;
+}
+
+export interface SelectInteractionsOptions {
+  /** Tenant scope — required; no overload. */
+  userId: string;
+  /** Page size; capped at 200. */
+  limit: number;
+  /** Optional outcome filter; omit for all. */
+  outcomes?: AIInteractionOutcome[];
+  /** Optional project narrowing. */
+  projectId?: string;
+  /**
+   * Opaque cursor from the previous page (the LAST row's created_at + id).
+   * When set, returns rows strictly older than the cursor.
+   */
+  cursor?: { created_at: Date; id: string } | null;
+}
+
+/**
+ * Tenant-scoped recent AI interactions with outcome lineage. Drives the
+ * `GET /memory/ai-interactions` endpoint. Strictly per-user — the WHERE
+ * predicate `user_id = ?` is the first clause and not optional.
+ *
+ * Pagination is keyset (created_at DESC, id DESC) — cheaper and more
+ * stable than OFFSET as the table grows. The cursor opaqueness is
+ * enforced at the route layer (base64 encode/decode).
+ */
+export async function selectInteractionsForUser(
+  options: SelectInteractionsOptions
+): Promise<InteractionListRow[]> {
+  if (!options.userId) {
+    throw new Error("selectInteractionsForUser: userId is required (tenant isolation)");
+  }
+
+  const limit = Math.min(Math.max(1, Math.floor(options.limit)), 200);
+
+  const wheres: string[] = ["user_id = ?"];
+  const params: unknown[] = [options.userId];
+
+  if (options.outcomes && options.outcomes.length > 0) {
+    // Dedup + clamp to the known enum surface to keep the planner happy.
+    const distinct = Array.from(new Set(options.outcomes));
+    wheres.push(`outcome IN (${distinct.map(() => "?").join(",")})`);
+    params.push(...distinct);
+  }
+
+  if (options.projectId) {
+    wheres.push("project_id = ?");
+    params.push(options.projectId);
+  }
+
+  if (options.cursor) {
+    // Keyset pagination: strictly older than cursor (created_at, id) pair.
+    // The composite index (user_id, created_at) covers this efficiently;
+    // id is the tie-breaker for rows sharing the same second.
+    wheres.push("(created_at < ? OR (created_at = ? AND CAST(id AS UNSIGNED) < ?))");
+    params.push(options.cursor.created_at, options.cursor.created_at, options.cursor.id);
+  }
+
+  params.push(limit);
+
+  type Row = RowDataPacket & {
+    id: number | string;
+    created_at: Date | string;
+    project_id: string | null;
+    workflow_id: string | null;
+    provider: string;
+    model: string;
+    outcome: AIInteractionOutcome;
+    outcome_settled_at: Date | string | null;
+    tokens_used: number | null;
+    latency_ms: number | null;
+    matched_pattern_ids: unknown;
+    user_prompt: string;
+  };
+
+  const [rows] = await dbQuery<Row[]>(
+    getDb(),
+    `SELECT id, created_at, project_id, workflow_id, provider, model,
+            outcome, outcome_settled_at, tokens_used, latency_ms,
+            matched_pattern_ids, user_prompt
+       FROM ai_interactions
+      WHERE ${wheres.join(" AND ")}
+      ORDER BY created_at DESC, id DESC
+      LIMIT ?`,
+    params
+  );
+
+  return rows.map((r) => ({
+    id: String(r.id),
+    created_at: r.created_at instanceof Date ? r.created_at : new Date(r.created_at),
+    project_id: r.project_id,
+    workflow_id: r.workflow_id,
+    provider: r.provider,
+    model: r.model,
+    outcome: r.outcome,
+    outcome_settled_at: r.outcome_settled_at
+      ? r.outcome_settled_at instanceof Date
+        ? r.outcome_settled_at
+        : new Date(r.outcome_settled_at)
+      : null,
+    tokens_used: r.tokens_used,
+    latency_ms: r.latency_ms,
+    matched_pattern_ids: parsePatternIds(r.matched_pattern_ids),
+    prompt_excerpt: String(r.user_prompt ?? "").slice(0, 240)
+  }));
+}
+
+function parsePatternIds(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.filter((v): v is string => typeof v === "string");
+  }
+  if (typeof raw === "string" && raw.length > 0) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v): v is string => typeof v === "string");
+      }
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}

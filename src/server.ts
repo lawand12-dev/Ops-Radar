@@ -11,6 +11,7 @@ import analyticsRoutes from "./modules/analytics/analytics-routes";
 import authRoutes from "./modules/auth/auth-routes";
 import chatRoutes from "./modules/chat/chat-routes";
 import eventRoutes from "./modules/events/event-routes";
+import memoryRoutes from "./modules/memory/memory-routes";
 import n8nRoutes from "./modules/n8n/n8n-routes";
 import projectRoutes from "./modules/projects/project-routes";
 import { getProjectWorkflowDebugSnapshot } from "./modules/projects/project-service";
@@ -192,6 +193,7 @@ app.get("/debug/workflow/:projectId/node-versions", async (c) => {
 app.route("/auth", authRoutes);
 app.route("/admin", adminRoutes);
 app.route("/chat", chatRoutes);
+app.route("/memory", memoryRoutes);
 app.route("/projects", projectRoutes);
 app.route("/workflows", workflowRoutes);
 app.route("/event", eventRoutes);
