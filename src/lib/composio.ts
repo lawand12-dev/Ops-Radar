@@ -94,3 +94,22 @@ export async function getComposioToolsForUser(
   const composio = getComposio()
   return composio.tools.get(userId, { toolkits })
 }
+
+/**
+ * Resolves a tool slug → Composio Auth Config ID via env vars.
+ *
+ * Per Composio's 2026-04-24 SDK change, `connectedAccounts.initiate()` requires
+ * an `authConfigId` (e.g. 'ac_xxx'), not a toolkit slug. Auth Configs are created
+ * once per toolkit in the Composio dashboard and hold the OAuth app credentials.
+ *
+ * Convention: COMPOSIO_AUTH_CONFIG_<TOOL> where TOOL is the uppercased ToolSlug.
+ * Examples: COMPOSIO_AUTH_CONFIG_GMAIL, COMPOSIO_AUTH_CONFIG_HUBSPOT.
+ *
+ * Returns null if the env var is missing — callers should surface this as
+ * "this toolkit isn't set up yet" to the customer.
+ */
+export function getAuthConfigId(toolSlug: ToolSlug): string | null {
+  const envName = `COMPOSIO_AUTH_CONFIG_${toolSlug.toUpperCase()}`
+  const value = (process.env[envName] ?? '').trim()
+  return value || null
+}

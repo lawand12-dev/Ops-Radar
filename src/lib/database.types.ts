@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
@@ -83,6 +85,87 @@ export type Database = {
           status?: string
           undo_deadline?: string | null
           undone_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_config: {
+        Row: {
+          agent_slug: string
+          created_at: string
+          custom_config: Json
+          is_enabled: boolean
+          last_run_at: string | null
+          last_run_status: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_slug: string
+          created_at?: string
+          custom_config?: Json
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_run_status?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_slug?: string
+          created_at?: string
+          custom_config?: Json
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_run_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_runs: {
+        Row: {
+          actions_taken: number
+          agent_slug: string
+          cost_cents: number | null
+          ended_at: string | null
+          error_message: string | null
+          id: string
+          notion_writes: number
+          patterns_detected: number
+          risks_flagged: number
+          started_at: string
+          status: string
+          summary: string | null
+          tokens_used: number | null
+          user_id: string
+        }
+        Insert: {
+          actions_taken?: number
+          agent_slug: string
+          cost_cents?: number | null
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          notion_writes?: number
+          patterns_detected?: number
+          risks_flagged?: number
+          started_at?: string
+          status?: string
+          summary?: string | null
+          tokens_used?: number | null
+          user_id: string
+        }
+        Update: {
+          actions_taken?: number
+          agent_slug?: string
+          cost_cents?: number | null
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          notion_writes?: number
+          patterns_detected?: number
+          risks_flagged?: number
+          started_at?: string
+          status?: string
+          summary?: string | null
+          tokens_used?: number | null
           user_id?: string
         }
         Relationships: []
@@ -275,6 +358,59 @@ export type Database = {
         }
         Relationships: []
       }
+      breadcrumbs: {
+        Row: {
+          consent_verified: boolean
+          created_at: string
+          embedding: string | null
+          id: string
+          occurred_at: string
+          participants: string[] | null
+          source_id: string | null
+          source_ref: string | null
+          source_type: string
+          summary: string
+          tags: string[] | null
+          user_id: string
+        }
+        Insert: {
+          consent_verified?: boolean
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          occurred_at: string
+          participants?: string[] | null
+          source_id?: string | null
+          source_ref?: string | null
+          source_type: string
+          summary: string
+          tags?: string[] | null
+          user_id: string
+        }
+        Update: {
+          consent_verified?: boolean
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          occurred_at?: string
+          participants?: string[] | null
+          source_id?: string | null
+          source_ref?: string | null
+          source_type?: string
+          summary?: string
+          tags?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breadcrumbs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       briefings: {
         Row: {
           attention: Json | null
@@ -388,32 +524,35 @@ export type Database = {
         }
         Relationships: []
       }
-      coo_chat_sessions: {
+      composio_connections: {
         Row: {
-          created_at: string
+          composio_connection_id: string
+          connected_at: string
           id: string
-          last_message_at: string
-          message_count: number
-          title: string
-          updated_at: string
+          is_active: boolean
+          last_used_at: string | null
+          metadata: Json
+          tool_slug: string
           user_id: string
         }
         Insert: {
-          created_at?: string
+          composio_connection_id: string
+          connected_at?: string
           id?: string
-          last_message_at?: string
-          message_count?: number
-          title?: string
-          updated_at?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          metadata?: Json
+          tool_slug: string
           user_id: string
         }
         Update: {
-          created_at?: string
+          composio_connection_id?: string
+          connected_at?: string
           id?: string
-          last_message_at?: string
-          message_count?: number
-          title?: string
-          updated_at?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          metadata?: Json
+          tool_slug?: string
           user_id?: string
         }
         Relationships: []
@@ -459,6 +598,36 @@ export type Database = {
           },
         ]
       }
+      coo_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          message_count: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coo_kb_gaps: {
         Row: {
           created_at: string
@@ -483,176 +652,6 @@ export type Database = {
           kb_query?: string | null
           user_id?: string | null
           user_question?: string
-        }
-        Relationships: []
-      }
-      breadcrumbs: {
-        Row: {
-          consent_verified: boolean
-          created_at: string
-          embedding: string | null
-          id: string
-          occurred_at: string
-          participants: string[] | null
-          source_id: string | null
-          source_ref: string | null
-          source_type: string
-          summary: string
-          tags: string[] | null
-          user_id: string
-        }
-        Insert: {
-          consent_verified?: boolean
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          occurred_at: string
-          participants?: string[] | null
-          source_id?: string | null
-          source_ref?: string | null
-          source_type: string
-          summary: string
-          tags?: string[] | null
-          user_id: string
-        }
-        Update: {
-          consent_verified?: boolean
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          occurred_at?: string
-          participants?: string[] | null
-          source_id?: string | null
-          source_ref?: string | null
-          source_type?: string
-          summary?: string
-          tags?: string[] | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "breadcrumbs_source_id_fkey"
-            columns: ["source_id"]
-            isOneToOne: false
-            referencedRelation: "ingestion_sources"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ingestion_sources: {
-        Row: {
-          created_at: string
-          cursor: Json | null
-          id: string
-          last_error: string | null
-          last_synced_at: string | null
-          oauth_state: Json | null
-          source_label: string | null
-          source_type: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          cursor?: Json | null
-          id?: string
-          last_error?: string | null
-          last_synced_at?: string | null
-          oauth_state?: Json | null
-          source_label?: string | null
-          source_type: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          cursor?: Json | null
-          id?: string
-          last_error?: string | null
-          last_synced_at?: string | null
-          oauth_state?: Json | null
-          source_label?: string | null
-          source_type?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      living_briefs: {
-        Row: {
-          brief_content: string
-          generated_at: string
-          id: string
-          is_current: boolean
-          model_used: string | null
-          prompt_version: string | null
-          user_id: string
-          version: number
-        }
-        Insert: {
-          brief_content: string
-          generated_at?: string
-          id?: string
-          is_current?: boolean
-          model_used?: string | null
-          prompt_version?: string | null
-          user_id: string
-          version: number
-        }
-        Update: {
-          brief_content?: string
-          generated_at?: string
-          id?: string
-          is_current?: boolean
-          model_used?: string | null
-          prompt_version?: string | null
-          user_id?: string
-          version?: number
-        }
-        Relationships: []
-      }
-      pattern_cards: {
-        Row: {
-          confidence: number
-          created_at: string
-          description: string
-          first_observed_at: string
-          id: string
-          is_active: boolean
-          last_refreshed_at: string
-          pattern_type: string
-          source_breadcrumb_ids: string[]
-          title: string
-          user_id: string
-        }
-        Insert: {
-          confidence: number
-          created_at?: string
-          description: string
-          first_observed_at: string
-          id?: string
-          is_active?: boolean
-          last_refreshed_at?: string
-          pattern_type: string
-          source_breadcrumb_ids: string[]
-          title: string
-          user_id: string
-        }
-        Update: {
-          confidence?: number
-          created_at?: string
-          description?: string
-          first_observed_at?: string
-          id?: string
-          is_active?: boolean
-          last_refreshed_at?: string
-          pattern_type?: string
-          source_breadcrumb_ids?: string[]
-          title?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -992,6 +991,48 @@ export type Database = {
           },
         ]
       }
+      ingestion_sources: {
+        Row: {
+          created_at: string
+          cursor: Json | null
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          oauth_state: Json | null
+          source_label: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cursor?: Json | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          oauth_state?: Json | null
+          source_label?: string | null
+          source_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cursor?: Json | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          oauth_state?: Json | null
+          source_label?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       integrations: {
         Row: {
           auth_tag: string
@@ -1031,6 +1072,42 @@ export type Database = {
           last_synced_at?: string | null
           status?: string
           tool?: string
+        }
+        Relationships: []
+      }
+      kb_embeddings: {
+        Row: {
+          category: string | null
+          content_hash: string
+          content_preview: string | null
+          embedded_at: string
+          embedding: string
+          id: number
+          source_file: string
+          summary: string | null
+          title: string | null
+        }
+        Insert: {
+          category?: string | null
+          content_hash: string
+          content_preview?: string | null
+          embedded_at?: string
+          embedding: string
+          id?: number
+          source_file: string
+          summary?: string | null
+          title?: string | null
+        }
+        Update: {
+          category?: string | null
+          content_hash?: string
+          content_preview?: string | null
+          embedded_at?: string
+          embedding?: string
+          id?: number
+          source_file?: string
+          summary?: string | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -1076,6 +1153,39 @@ export type Database = {
         }
         Relationships: []
       }
+      living_briefs: {
+        Row: {
+          brief_content: string
+          generated_at: string
+          id: string
+          is_current: boolean
+          model_used: string | null
+          prompt_version: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          brief_content: string
+          generated_at?: string
+          id?: string
+          is_current?: boolean
+          model_used?: string | null
+          prompt_version?: string | null
+          user_id: string
+          version: number
+        }
+        Update: {
+          brief_content?: string
+          generated_at?: string
+          id?: string
+          is_current?: boolean
+          model_used?: string | null
+          prompt_version?: string | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       mcp_invocations: {
         Row: {
           args: Json | null
@@ -1112,6 +1222,48 @@ export type Database = {
           scope?: string | null
           tool_name?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      notion_workspaces: {
+        Row: {
+          access_token_encrypted: string
+          backfill_error: string | null
+          backfill_status: string
+          bot_id: string | null
+          connected_at: string
+          databases: Json
+          last_synced_at: string | null
+          parent_page_id: string
+          user_id: string
+          workspace_id: string
+          workspace_name: string | null
+        }
+        Insert: {
+          access_token_encrypted: string
+          backfill_error?: string | null
+          backfill_status?: string
+          bot_id?: string | null
+          connected_at?: string
+          databases?: Json
+          last_synced_at?: string | null
+          parent_page_id: string
+          user_id: string
+          workspace_id: string
+          workspace_name?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string
+          backfill_error?: string | null
+          backfill_status?: string
+          bot_id?: string | null
+          connected_at?: string
+          databases?: Json
+          last_synced_at?: string | null
+          parent_page_id?: string
+          user_id?: string
+          workspace_id?: string
+          workspace_name?: string | null
         }
         Relationships: []
       }
@@ -1238,6 +1390,48 @@ export type Database = {
           signing_secret?: string
           updated_at?: string
           url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pattern_cards: {
+        Row: {
+          confidence: number
+          created_at: string
+          description: string
+          first_observed_at: string
+          id: string
+          is_active: boolean
+          last_refreshed_at: string
+          pattern_type: string
+          source_breadcrumb_ids: string[]
+          title: string
+          user_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          description: string
+          first_observed_at: string
+          id?: string
+          is_active?: boolean
+          last_refreshed_at?: string
+          pattern_type: string
+          source_breadcrumb_ids: string[]
+          title: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          description?: string
+          first_observed_at?: string
+          id?: string
+          is_active?: boolean
+          last_refreshed_at?: string
+          pattern_type?: string
+          source_breadcrumb_ids?: string[]
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -1464,7 +1658,32 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      match_breadcrumbs_for_user: {
+        Args: {
+          match_count?: number
+          query_embedding: string
+          target_user_id: string
+        }
+        Returns: {
+          id: string
+          occurred_at: string
+          similarity: number
+          source_type: string
+          summary: string
+          tags: string[]
+        }[]
+      }
+      match_kb_embeddings: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          category: string
+          content_preview: string
+          similarity: number
+          source_file: string
+          summary: string
+          title: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

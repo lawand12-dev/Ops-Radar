@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { IntegrationCard } from '<npm>/components/dashboard/integration-card';
 import { ConnectKeyDialog } from '<npm>/components/dashboard/connect-key-dialog';
 
@@ -10,6 +11,13 @@ type Connection = {
   status: 'connected' | 'requires_reconnect' | 'revoked';
   external_account_id: string | null;
   last_synced_at: string | null;
+};
+
+type ComposioConnection = {
+  tool_slug: string;
+  connected_at: string;
+  is_active: boolean;
+  last_used_at: string | null;
 };
 
 type ToolDef = {
@@ -128,7 +136,10 @@ const TOOL_CATALOG: ToolDef[] = [
 const CATEGORY_ORDER = ['Finance', 'Sales', 'Marketing', 'Delivery', 'Time tracking'] as const;
 
 export default function IntegrationsSettingsPage() {
+  const searchParams = useSearchParams();
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [composioConnections, setComposioConnections] = useState<ComposioConnection[]>([]);
+  const [composioAvailable, setComposioAvailable] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -136,13 +147,26 @@ export default function IntegrationsSettingsPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/integrations', { cache: 'no-store' });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Failed to load');
+      const [legacyRes, composioConnsRes, composioAvailRes] = await Promise.all([
+        fetch('/api/integrations', { cache: 'no-store' }),
+        fetch('/api/composio/connections', { cache: 'no-store' }),
+        fetch('/api/composio/available', { cache: 'no-store' }),
+      ]);
+      const legacyData = await legacyRes.json();
+      if (!legacyRes.ok) {
+        setError(legacyData.error ?? 'Failed to load integrations');
         return;
       }
-      setConnections(data.connected ?? []);
+      setConnections(legacyData.connected ?? []);
+
+      if (composioConnsRes.ok) {
+        const d = await composioConnsRes.json();
+        setComposioConnections(d.connections ?? []);
+      }
+      if (composioAvailRes.ok) {
+        const d = await composioAvailRes.json();
+        setComposioAvailable(new Set(d.available ?? []));
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error');
@@ -153,9 +177,63 @@ export default function IntegrationsSettingsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Surface OAuth callback result
+  useEffect(() => {
+    const connected = searchParams.get('connected');
+    const failed = searchParams.get('failed');
+    if (connected) {
+      setBanner({ kind: 'ok', text: `${connected[0].toUpperCase() + connected.slice(1)} connected via OAuth.` });
+    } else if (failed) {
+      setBanner({ kind: 'err', text: `${failed} OAuth failed. Please try again or paste an API key instead.` });
+    }
+  }, [searchParams]);
+
+  async function startComposioOAuth(toolSlug: string, label: string) {
+    try {
+      const res = await fetch('/api/composio/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool_slug: toolSlug }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === 'auth_config_missing') {
+          // Composio not set up for this tool — fall back to paste-key dialog
+          const tool = TOOL_CATALOG.find((t) => t.key === toolSlug);
+          if (tool) setDialogTool(tool);
+          return;
+        }
+        setBanner({ kind: 'err', text: data.message ?? 'Could not start OAuth.' });
+        return;
+      }
+      if (data.oauth_url) {
+        window.location.href = data.oauth_url;
+      }
+    } catch (err) {
+      setBanner({
+        kind: 'err',
+        text: `Failed to start ${label} OAuth: ${err instanceof Error ? err.message : 'network error'}`,
+      });
+    }
+  }
+
   async function disconnect(tool: string) {
     if (!confirm(`Disconnect ${tool}? Your dashboard will stop reading from ${tool}.`)) return;
-    const res = await fetch(`/api/integrations/${tool}/disconnect`, { method: 'POST' });
+
+    // If connected via Composio, use that endpoint. Otherwise use legacy.
+    const isComposio = composioConnections.some((c) => c.tool_slug === tool && c.is_active);
+    const endpoint = isComposio
+      ? '/api/composio/disconnect'
+      : `/api/integrations/${tool}/disconnect`;
+    const init: RequestInit = isComposio
+      ? {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool_slug: tool }),
+        }
+      : { method: 'POST' };
+
+    const res = await fetch(endpoint, init);
     if (res.ok) {
       setBanner({ kind: 'ok', text: `${tool[0].toUpperCase() + tool.slice(1)} disconnected.` });
       await load();
@@ -166,7 +244,27 @@ export default function IntegrationsSettingsPage() {
   }
 
   function connectionFor(tool: string): Connection | undefined {
+    // Surface Composio connections under the same Connection shape so the card stays simple.
+    const oauth = composioConnections.find((c) => c.tool_slug === tool && c.is_active);
+    if (oauth) {
+      return {
+        tool,
+        connected_at: oauth.connected_at,
+        status: 'connected',
+        external_account_id: null,
+        last_synced_at: oauth.last_used_at,
+      };
+    }
     return connections.find((c) => c.tool === tool);
+  }
+
+  function handleConnect(tool: ToolDef) {
+    // Prefer Composio OAuth when an Auth Config exists for this tool.
+    if (composioAvailable.has(tool.key)) {
+      void startComposioOAuth(tool.key, tool.label);
+    } else {
+      setDialogTool(tool);
+    }
   }
 
   return (
@@ -221,7 +319,7 @@ export default function IntegrationsSettingsPage() {
                     cardKey={t.cardKey}
                     enabled={t.enabled}
                     connection={connectionFor(t.key)}
-                    onConnect={() => setDialogTool(t)}
+                    onConnect={() => handleConnect(t)}
                     onDisconnect={() => disconnect(t.key)}
                   />
                 ))}
