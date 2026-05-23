@@ -95,7 +95,13 @@ function icon(name, size = 18) {
     alert: svg('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>'),
     settings: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
     deploy: svg('<path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/><path d="M12 4v12"/><path d="M7 9l5-5 5 5"/>'),
-    list: svg('<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/>')
+    list: svg('<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/>'),
+    brain: svg('<path d="M9.5 2a2.5 2.5 0 0 1 2 1"/><path d="M14.5 2a2.5 2.5 0 0 0-2 1"/><path d="M5 9a7 7 0 0 1 14 0c0 4-3 7-7 7s-7-3-7-7z"/><path d="M9 21h6"/><path d="M12 18v3"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/>'),
+    report: svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>'),
+    coo: svg('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M12 12v4"/><path d="M8 12h8"/>'),
+    crumbs: svg('<path d="M12 8v4l2 2"/><circle cx="12" cy="12" r="9"/>'),
+    model: svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6"/><path d="M9 12h6"/><path d="M9 15h4"/><path d="M4 8h16"/>'),
+    seed: svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>')
   };
   const wrap = document.createElement("span");
   wrap.className = "icon-wrap";
@@ -412,7 +418,50 @@ const api = {
     projects: {
       list: ({ limit = 200, offset = 0 } = {}) =>
         request(`/admin/projects?limit=${limit}&offset=${offset}`)
+    },
+    seed: {
+      run: () => request("/admin/seed", { method: "POST", body: {} })
+    },
+    models: {
+      list: () => request("/admin/models"),
+      set: (body) => request("/admin/models", { method: "PUT", body }),
+      reset: () => request("/admin/models", { method: "DELETE" })
+    },
+    memory: {
+      stats: () => request("/admin/memory/stats"),
+      users: ({ limit = 50, offset = 0 } = {}) =>
+        request(`/admin/memory/users?limit=${limit}&offset=${offset}`),
+      jobs: ({ limit = 50, status } = {}) => {
+        const sp = new URLSearchParams({ limit: String(limit) });
+        if (status) sp.set("status", status);
+        return request(`/admin/memory/jobs?${sp.toString()}`);
+      }
     }
+  },
+
+  coo: {
+    query: (body) => request("/coo/query", { method: "POST", body })
+  },
+
+  reports: {
+    generate: (body) => request("/reports/generate", { method: "POST", body }),
+    list: ({ limit = 20, offset = 0 } = {}) =>
+      request(`/reports?limit=${limit}&offset=${offset}`),
+    get: (id) => request(`/reports/${encodeURIComponent(id)}`)
+  },
+
+  brain: {
+    ingest: (body) => request("/memory/ingest", { method: "POST", body }),
+    list: ({ limit = 20, offset = 0 } = {}) =>
+      request(`/memory/documents?limit=${limit}&offset=${offset}`)
+  },
+
+  memory: {
+    breadcrumbs: ({ sinceHours = 168, limit = 50 } = {}) =>
+      request(`/memory/breadcrumbs?since_hours=${sinceHours}&limit=${limit}`),
+    semanticQuery: (body) => request("/memory/query", { method: "POST", body }),
+    summaries: () => request("/memory/summaries"),
+    weeklyStats: () => request("/memory/stats/weekly")
   }
 };
 
@@ -859,9 +908,13 @@ function ConfirmDialog({ title, message, confirmLabel = "Confirm", danger, onCon
 const NAV_ITEMS = [
   { path: "#/", label: "Dashboard", icon: "home" },
   { path: "#/builder", label: "AI Builder", icon: "builder" },
+  { path: "#/coo", label: "COO Intelligence", icon: "coo" },
   { path: "#/projects", label: "Projects", icon: "projects" },
   { path: "#/workflows", label: "Workflows", icon: "workflows" },
   { path: "#/events", label: "Events", icon: "events" },
+  { path: "#/reports", label: "Reports", icon: "report" },
+  { path: "#/brain", label: "Company Brain", icon: "brain" },
+  { path: "#/breadcrumbs", label: "Activity Feed", icon: "crumbs" },
   { path: "#/analytics", label: "Analytics", icon: "analytics" },
   { path: "#/credentials", label: "Credentials", icon: "settings" },
   { path: "#/diagnostics", label: "Diagnostics", icon: "info" }
@@ -874,7 +927,10 @@ const ADMIN_NAV_ITEMS = [
   { path: "#/admin", label: "Admin · Dashboard", icon: "home" },
   { path: "#/admin/users", label: "Admin · Users", icon: "projects" },
   { path: "#/admin/interactions", label: "Admin · Prompts log", icon: "builder" },
-  { path: "#/admin/projects", label: "Admin · All projects", icon: "workflows" }
+  { path: "#/admin/projects", label: "Admin · All projects", icon: "workflows" },
+  { path: "#/admin/memory", label: "Admin · Memory", icon: "brain" },
+  { path: "#/admin/models", label: "Admin · AI Models", icon: "model" },
+  { path: "#/admin/seed", label: "Admin · Seed Data", icon: "seed" }
 ];
 
 function renderSidebar() {
@@ -1115,7 +1171,15 @@ const ROUTE_TABLE = [
   { path: /^#\/admin\/users\/([^/]+)\/?$/, render: pageAdminUserDetail, title: "Admin · User detail" },
   { path: /^#\/admin\/interactions\/?$/, render: pageAdminInteractions, title: "Admin · Prompts log", sub: "Every AI call across all users" },
   { path: /^#\/admin\/interactions\/(\d+)\/?$/, render: pageAdminInteractionDetail, title: "Admin · Prompt detail" },
-  { path: /^#\/admin\/projects\/?$/, render: pageAdminProjects, title: "Admin · All projects", sub: "Cross-tenant view" }
+  { path: /^#\/admin\/projects\/?$/, render: pageAdminProjects, title: "Admin · All projects", sub: "Cross-tenant view" },
+  { path: /^#\/coo\/?$/, render: pageCoo, title: "COO Intelligence", sub: "Executive AI reasoning over your operational data" },
+  { path: /^#\/reports\/?$/, render: pageReports, title: "Reports", sub: "AI-generated operational reports" },
+  { path: /^#\/reports\/([^/]+)\/?$/, render: pageReportDetail, title: "Report detail" },
+  { path: /^#\/brain\/?$/, render: pageBrain, title: "Company Brain", sub: "Ingest and browse organisational knowledge" },
+  { path: /^#\/breadcrumbs\/?$/, render: pageBreadcrumbs, title: "Activity Feed", sub: "Interaction and workflow breadcrumb timeline" },
+  { path: /^#\/admin\/memory\/?$/, render: pageAdminMemory, title: "Admin · Memory", sub: "Embedding jobs and vector store stats" },
+  { path: /^#\/admin\/models\/?$/, render: pageAdminModels, title: "Admin · AI Models", sub: "Runtime model-role routing overrides" },
+  { path: /^#\/admin\/seed\/?$/, render: pageAdminSeed, title: "Admin · Seed Data", sub: "Insert sample organisational data" }
 ];
 
 async function router() {
@@ -5300,6 +5364,915 @@ function renderToastRoot() {
       )
     );
   }
+}
+
+/* ============================================================
+   22) PAGE: COO Intelligence
+   ============================================================ */
+
+async function pageCoo(root) {
+  const SUGGESTED = [
+    "What are our top operational risks this week?",
+    "Summarise workflow performance for the last 7 days",
+    "Which automations need immediate attention?",
+    "What recommendations do you have for improving reliability?"
+  ];
+
+  let messages = [];
+  let generating = false;
+
+  function renderMessages() {
+    const wrap = root.querySelector(".coo-messages");
+    if (!wrap) return;
+    clear(wrap);
+    if (messages.length === 0) {
+      wrap.appendChild(
+        h(
+          "div",
+          { class: "empty", style: { marginTop: "60px" } },
+          h("div", { class: "empty__icon" }, icon("coo", 28)),
+          h("div", { class: "empty__title" }, "COO Intelligence"),
+          h(
+            "div",
+            { class: "empty__hint" },
+            "Ask anything about your operational data. Powered by hybrid semantic retrieval."
+          ),
+          h(
+            "div",
+            { style: { display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginTop: "20px" } },
+            ...SUGGESTED.map((q) =>
+              h(
+                "button",
+                {
+                  class: "btn btn--ghost btn--sm",
+                  style: { borderRadius: "20px" },
+                  onclick: () => {
+                    const ta = root.querySelector(".coo-input");
+                    if (ta) ta.value = q;
+                    ta?.focus();
+                  }
+                },
+                q
+              )
+            )
+          )
+        )
+      );
+      return;
+    }
+    for (const m of messages) {
+      if (m.role === "user") {
+        wrap.appendChild(
+          h(
+            "div",
+            { class: "msg user", style: { marginBottom: "16px" } },
+            h("div", { class: "msg-avatar" }, "U"),
+            h(
+              "div",
+              { class: "msg-body" },
+              h("div", { class: "msg-role" }, "You"),
+              h("div", { class: "msg-text" }, m.content)
+            )
+          )
+        );
+      } else if (m.role === "typing") {
+        wrap.appendChild(
+          h(
+            "div",
+            { class: "msg ai", style: { marginBottom: "16px" } },
+            h("div", { class: "msg-avatar", style: { background: "#1a2e1a", color: "var(--success)" } }, "AI"),
+            h(
+              "div",
+              { class: "msg-body" },
+              h("div", { class: "msg-role", style: { color: "var(--success)" } }, "COO Analyst"),
+              h(
+                "div",
+                { class: "typing" },
+                h("div", { class: "typing-dot" }),
+                h("div", { class: "typing-dot" }),
+                h("div", { class: "typing-dot" })
+              )
+            )
+          )
+        );
+      } else {
+        const r = m.data;
+        const confTone = r?.confidence === "high" ? "ok" : r?.confidence === "medium" ? "warn" : "bad";
+        wrap.appendChild(
+          h(
+            "div",
+            { class: "msg ai", style: { marginBottom: "20px" } },
+            h("div", { class: "msg-avatar", style: { background: "#1a2e1a", color: "var(--success)" } }, "AI"),
+            h(
+              "div",
+              { class: "msg-body" },
+              h("div", { class: "msg-role", style: { color: "var(--success)" } }, "COO Analyst"),
+              r?.executive_summary
+                ? h(
+                    "div",
+                    { class: "card", style: { marginBottom: "12px" } },
+                    h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Executive Summary")),
+                    h("p", null, r.executive_summary)
+                  )
+                : h("div", { class: "msg-text" }, m.content),
+              r?.data_points?.length
+                ? h(
+                    "div",
+                    { class: "card", style: { marginBottom: "12px" } },
+                    h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Key Data Points")),
+                    ...r.data_points.map((dp) =>
+                      h(
+                        "div",
+                        { style: { display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border)", fontSize: "13px" } },
+                        h("span", { style: { color: "var(--fg-muted)" } }, dp.label),
+                        h("strong", null, dp.value)
+                      )
+                    )
+                  )
+                : null,
+              r?.recommendations?.length
+                ? h(
+                    "div",
+                    { class: "card", style: { marginBottom: "12px" } },
+                    h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Recommendations")),
+                    h("ul", { style: { paddingLeft: "18px", fontSize: "13px", lineHeight: "1.8" } },
+                      ...r.recommendations.map((rec) => h("li", null, rec)))
+                  )
+                : null,
+              r?.risks?.length
+                ? h(
+                    "div",
+                    { class: "card", style: { marginBottom: "12px", borderColor: "var(--danger-border, #5a2020)" } },
+                    h("div", { class: "card__head" }, h("h3", { class: "card__title", style: { color: "var(--danger)" } }, "Risks")),
+                    h("ul", { style: { paddingLeft: "18px", fontSize: "13px", lineHeight: "1.8", color: "var(--fg-muted)" } },
+                      ...r.risks.map((risk) => h("li", null, risk)))
+                  )
+                : null,
+              r
+                ? h(
+                    "div",
+                    { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" } },
+                    Badge({ tone: confTone, text: `${r.confidence} confidence`, dot: true }),
+                    r.context_used?.semantic_hits != null
+                      ? Badge({ tone: "neutral", text: `${r.context_used.semantic_hits} semantic hits` })
+                      : null,
+                    r.context_used?.breadcrumbs_analyzed != null
+                      ? Badge({ tone: "neutral", text: `${r.context_used.breadcrumbs_analyzed} breadcrumbs` })
+                      : null,
+                    r.latency_ms != null
+                      ? Badge({ tone: "neutral", text: `${r.latency_ms} ms` })
+                      : null
+                  )
+                : null
+            )
+          )
+        );
+      }
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  async function sendQuery() {
+    const ta = root.querySelector(".coo-input");
+    const query = ta?.value?.trim();
+    if (!query || generating) return;
+    ta.value = "";
+    generating = true;
+
+    messages = [...messages, { role: "user", content: query }, { role: "typing" }];
+    renderMessages();
+    root.querySelector(".coo-send")?.setAttribute("disabled", "");
+
+    try {
+      const result = await api.coo.query({ query, context_window_hours: 168, include_evidence: true });
+      messages = messages.filter((m) => m.role !== "typing");
+      messages.push({ role: "ai", content: result.answer, data: result });
+    } catch (err) {
+      messages = messages.filter((m) => m.role !== "typing");
+      messages.push({ role: "ai", content: `Error: ${err.message}`, data: null });
+    } finally {
+      generating = false;
+      root.querySelector(".coo-send")?.removeAttribute("disabled");
+      renderMessages();
+    }
+  }
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page", style: { display: "flex", flexDirection: "column", height: "calc(100vh - 64px)", maxWidth: "900px" } },
+      h(
+        "div",
+        { class: "page-header", style: { flexShrink: 0 } },
+        h("div", null,
+          h("h1", { class: "page-header__title" }, "COO Intelligence"),
+          h("p", { class: "page-header__sub" }, "Executive AI reasoning · hybrid semantic retrieval · breadcrumbs + pattern cards")
+        )
+      ),
+      h("div", {
+        class: "coo-messages",
+        style: { flex: "1", overflowY: "auto", padding: "8px 0", minHeight: 0 }
+      }),
+      h(
+        "div",
+        { style: { flexShrink: 0, borderTop: "1px solid var(--border)", paddingTop: "16px" } },
+        h(
+          "div",
+          { style: { display: "flex", gap: "10px" } },
+          h("textarea", {
+            class: "coo-input",
+            placeholder: "Ask your COO anything about your operations…",
+            style: { flex: "1", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px", color: "var(--fg)", fontFamily: "inherit", fontSize: "14px", resize: "none", outline: "none", minHeight: "72px" },
+            onkeydown: (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendQuery(); } }
+          }),
+          h("button", {
+            class: "btn btn--primary coo-send",
+            style: { alignSelf: "flex-end", padding: "10px 20px" },
+            onclick: sendQuery
+          }, "Send")
+        ),
+        h("div", { style: { fontSize: "11px", color: "var(--fg-subtle)", marginTop: "6px" } }, "Enter to send · Shift+Enter for newline")
+      )
+    )
+  );
+
+  renderMessages();
+}
+
+/* ============================================================
+   23) PAGE: Reports
+   ============================================================ */
+
+async function pageReports(root) {
+  let reports = null;
+  let generating = false;
+
+  async function load() {
+    try {
+      const data = await api.reports.list({ limit: 50 });
+      reports = data.items || [];
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  async function generate(type) {
+    if (generating) return;
+    generating = true;
+    root.querySelector(`[data-type="${type}"]`)?.setAttribute("disabled", "");
+    try {
+      await api.reports.generate({ report_type: type, send_email: false });
+      toast("Report generated", "success");
+      await load();
+    } catch (err) {
+      toast(err.message || "Generation failed", "error");
+    } finally {
+      generating = false;
+      root.querySelector(`[data-type="${type}"]`)?.removeAttribute("disabled");
+    }
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Reports"),
+            h("p", { class: "page-header__sub" }, "AI-generated operational intelligence reports")
+          )
+        ),
+        h(
+          "div",
+          { class: "card", style: { marginBottom: "24px" } },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Generate New Report")),
+          h(
+            "div",
+            { style: { display: "flex", gap: "10px", flexWrap: "wrap" } },
+            ...[
+              { type: "executive_summary", label: "Executive Summary" },
+              { type: "risk_analysis", label: "Risk Analysis" },
+              { type: "operational_review", label: "Operational Review" }
+            ].map((t) =>
+              h(
+                "button",
+                {
+                  class: "btn btn--primary",
+                  "data-type": t.type,
+                  onclick: () => generate(t.type)
+                },
+                icon("report", 14),
+                t.label
+              )
+            )
+          )
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `${reports?.length ?? 0} Reports`)),
+          !reports || reports.length === 0
+            ? Empty({ icon: "report", title: "No reports yet", hint: "Generate your first report above." })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table" },
+                  h("thead", null,
+                    h("tr", null,
+                      h("th", null, "Title"),
+                      h("th", null, "Type"),
+                      h("th", null, "Size"),
+                      h("th", null, "Email"),
+                      h("th", null, "Created"),
+                      h("th", null, "")
+                    )
+                  ),
+                  h("tbody", null,
+                    reports.map((r) =>
+                      h("tr", null,
+                        h("td", null, h("strong", null, r.title)),
+                        h("td", null, Badge({ tone: "neutral", text: r.report_type })),
+                        h("td", null, `${(r.content_chars / 1000).toFixed(1)}k chars`),
+                        h("td", null, r.email_delivered
+                          ? Badge({ tone: "ok", text: "Sent", dot: true })
+                          : h("span", { class: "muted text-xs" }, "—")),
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(r.created_at))),
+                        h("td", null, h("a", { class: "btn btn--ghost btn--sm", href: `#/reports/${r.id}` }, "View"))
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+  await load();
+}
+
+async function pageReportDetail(root, id) {
+  let report = null;
+  try {
+    report = await api.reports.get(id);
+  } catch (err) {
+    mount(root, h("div", { class: "page" }, ErrorBanner({ error: err })));
+    return;
+  }
+
+  mount(
+    root,
+    h(
+      "div",
+      { class: "page" },
+      h(
+        "div",
+        { class: "page-header" },
+        h(
+          "div",
+          null,
+          h("div", { class: "row row--gap-3" },
+            h("a", { class: "muted text-sm", href: "#/reports" }, "Reports"),
+            icon("chevronRight", 12),
+            h("span", null, report.title)
+          ),
+          h("h1", { class: "page-header__title", style: { marginTop: "6px" } }, report.title),
+          h("p", { class: "page-header__sub" },
+            `${fmtDate(report.created_at)} · ${report.report_type} · ${(report.content.length / 1000).toFixed(1)}k chars`)
+        ),
+        h("div", { class: "page-header__actions" },
+          report.email_delivered
+            ? Badge({ tone: "ok", text: "Email delivered", dot: true })
+            : null
+        )
+      ),
+      h("div", { class: "card", style: { lineHeight: "1.8" } },
+        h("div", { html: report.content })
+      )
+    )
+  );
+}
+
+/* ============================================================
+   24) PAGE: Company Brain
+   ============================================================ */
+
+async function pageBrain(root) {
+  let docs = null;
+  let ingesting = false;
+
+  async function load() {
+    try {
+      const data = await api.brain.list({ limit: 50 });
+      docs = data.items || [];
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  async function ingest() {
+    if (ingesting) return;
+    const title = root.querySelector(".brain-title")?.value?.trim();
+    const content = root.querySelector(".brain-content")?.value?.trim();
+    const consent = root.querySelector(".brain-consent")?.checked;
+    const kind = root.querySelector(".brain-kind")?.value || "manual";
+
+    if (!title) { toast("Title is required", "warning"); return; }
+    if (!content || content.length < 10) { toast("Content must be at least 10 characters", "warning"); return; }
+    if (!consent) { toast("You must confirm consent to ingest this document", "warning"); return; }
+
+    ingesting = true;
+    root.querySelector(".brain-submit")?.setAttribute("disabled", "");
+    try {
+      await api.brain.ingest({ title, content, source_kind: kind, consent_verified: true });
+      toast("Document ingested and queued for embedding", "success");
+      root.querySelector(".brain-title").value = "";
+      root.querySelector(".brain-content").value = "";
+      root.querySelector(".brain-consent").checked = false;
+      await load();
+    } catch (err) {
+      toast(err.message || "Ingest failed", "error");
+    } finally {
+      ingesting = false;
+      root.querySelector(".brain-submit")?.removeAttribute("disabled");
+    }
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Company Brain"),
+            h("p", { class: "page-header__sub" }, "Ingest organisational knowledge for AI-powered retrieval · consent required")
+          )
+        ),
+        h(
+          "div",
+          { class: "split-2", style: { alignItems: "flex-start" } },
+          h(
+            "div",
+            { class: "card" },
+            h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Ingest Document")),
+            h(
+              "div",
+              { class: "col col--gap-3" },
+              h(
+                "div",
+                null,
+                h("label", { class: "form-label" }, "Title"),
+                h("input", { class: "input brain-title", placeholder: "Document title…", type: "text" })
+              ),
+              h(
+                "div",
+                null,
+                h("label", { class: "form-label" }, "Source Kind"),
+                h(
+                  "select",
+                  { class: "input brain-kind" },
+                  h("option", { value: "manual" }, "Manual entry"),
+                  h("option", { value: "meeting_notes" }, "Meeting notes"),
+                  h("option", { value: "slack_export" }, "Slack export"),
+                  h("option", { value: "email" }, "Email"),
+                  h("option", { value: "document" }, "Document")
+                )
+              ),
+              h(
+                "div",
+                null,
+                h("label", { class: "form-label" }, "Content"),
+                h("textarea", {
+                  class: "brain-content",
+                  placeholder: "Paste the document content here…",
+                  style: { width: "100%", minHeight: "160px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px", color: "var(--fg)", fontFamily: "inherit", fontSize: "13px", resize: "vertical", outline: "none" }
+                })
+              ),
+              h(
+                "label",
+                { style: { display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", cursor: "pointer" } },
+                h("input", { type: "checkbox", class: "brain-consent" }),
+                "I confirm this document is cleared for AI analysis and company-wide use"
+              ),
+              h(
+                "button",
+                { class: "btn btn--primary brain-submit", onclick: ingest },
+                icon("brain", 14),
+                "Ingest Document"
+              )
+            )
+          ),
+          h(
+            "div",
+            { class: "card card--flush" },
+            h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `${docs?.length ?? 0} Documents`)),
+            !docs || docs.length === 0
+              ? Empty({ icon: "brain", title: "No documents yet", hint: "Ingest your first document to power the Company Brain." })
+              : h(
+                  "div",
+                  { class: "table-wrap" },
+                  h(
+                    "table",
+                    { class: "table" },
+                    h("thead", null,
+                      h("tr", null,
+                        h("th", null, "Title"),
+                        h("th", null, "Kind"),
+                        h("th", null, "Size"),
+                        h("th", null, "Added")
+                      )
+                    ),
+                    h("tbody", null,
+                      docs.map((d) =>
+                        h("tr", null,
+                          h("td", null, h("strong", null, d.title)),
+                          h("td", null, Badge({ tone: "neutral", text: d.source_kind })),
+                          h("td", null, `${((d.content_chars || 0) / 1000).toFixed(1)}k`),
+                          h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(d.created_at)))
+                        )
+                      )
+                    )
+                  )
+                )
+          )
+        )
+      )
+    );
+  }
+
+  mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+  await load();
+}
+
+/* ============================================================
+   25) PAGE: Activity Feed (Breadcrumbs)
+   ============================================================ */
+
+async function pageBreadcrumbs(root) {
+  let crumbs = null;
+  let sinceHours = 168;
+
+  const KIND_TONE = {
+    workflow_run: "ok", chat_message: "accent", ai_interaction: "accent",
+    report: "warn", error: "bad", failure: "bad"
+  };
+
+  async function load() {
+    try {
+      const data = await api.memory.breadcrumbs({ sinceHours, limit: 100 });
+      crumbs = data.items || data || [];
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Activity Feed"),
+            h("p", { class: "page-header__sub" }, "Breadcrumb timeline of all interactions and workflow events")
+          ),
+          h(
+            "div",
+            { class: "page-header__actions" },
+            h(
+              "select",
+              {
+                class: "input",
+                style: { width: "auto" },
+                onchange: (e) => { sinceHours = parseInt(e.target.value, 10) || 168; load(); }
+              },
+              h("option", { value: "24", selected: sinceHours === 24 }, "Last 24h"),
+              h("option", { value: "72", selected: sinceHours === 72 }, "Last 3 days"),
+              h("option", { value: "168", selected: sinceHours === 168 }, "Last 7 days"),
+              h("option", { value: "720", selected: sinceHours === 720 }, "Last 30 days")
+            )
+          )
+        ),
+        !crumbs || crumbs.length === 0
+          ? Empty({ icon: "crumbs", title: "No activity yet", hint: "Breadcrumbs appear as you use the system." })
+          : h(
+              "div",
+              { class: "card card--flush" },
+              h(
+                "div",
+                { style: { display: "flex", flexDirection: "column" } },
+                ...crumbs.map((c) => {
+                  const tone = KIND_TONE[c.kind] || "neutral";
+                  return h(
+                    "div",
+                    { style: { display: "flex", gap: "14px", padding: "12px 20px", borderBottom: "1px solid var(--border)", alignItems: "flex-start" } },
+                    h(
+                      "div",
+                      { style: { flexShrink: 0, paddingTop: "2px" } },
+                      Badge({ tone, text: c.kind, dot: true })
+                    ),
+                    h(
+                      "div",
+                      { style: { flex: 1, minWidth: 0 } },
+                      h("div", { style: { fontWeight: 500, marginBottom: "2px" } }, c.summary || "(no summary)"),
+                      c.outcome
+                        ? h("div", { style: { fontSize: "12px", color: "var(--fg-muted)" } }, `Outcome: ${c.outcome}`)
+                        : null
+                    ),
+                    h(
+                      "div",
+                      { style: { flexShrink: 0, fontSize: "11px", color: "var(--fg-subtle)", whiteSpace: "nowrap" } },
+                      fmtRelative(c.at)
+                    )
+                  );
+                })
+              )
+            )
+      )
+    );
+  }
+
+  mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+  await load();
+}
+
+/* ============================================================
+   26) PAGE: Admin · Memory Dashboard
+   ============================================================ */
+
+async function pageAdminMemory(root) {
+  let stats = null;
+  let jobs = null;
+
+  async function load() {
+    try {
+      [stats, jobs] = await Promise.all([
+        api.admin.memory.stats(),
+        api.admin.memory.jobs({ limit: 50 })
+      ]);
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  function render() {
+    const s = stats || {};
+    const jobList = jobs?.items || jobs || [];
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Admin · Memory"),
+            h("p", { class: "page-header__sub" }, "Embedding pipeline jobs and vector store statistics")
+          ),
+          h("div", { class: "page-header__actions" },
+            h("button", { class: "btn btn--ghost btn--sm", onclick: load }, icon("refresh", 14), "Refresh")
+          )
+        ),
+        h(
+          "div",
+          { class: "kpi-grid", style: { marginBottom: "24px" } },
+          Kpi({ label: "Total embeddings", value: s.total_embeddings ?? "—" }),
+          Kpi({ label: "Pending jobs", value: s.pending_jobs ?? "—", tone: s.pending_jobs > 0 ? "down" : null }),
+          Kpi({ label: "Failed jobs", value: s.failed_jobs ?? "—", tone: s.failed_jobs > 0 ? "down" : null }),
+          Kpi({ label: "Documents ingested", value: s.company_brain_docs ?? "—" })
+        ),
+        h(
+          "div",
+          { class: "card card--flush" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, `${jobList.length} Recent Embedding Jobs`)),
+          jobList.length === 0
+            ? Empty({ icon: "brain", title: "No jobs found" })
+            : h(
+                "div",
+                { class: "table-wrap" },
+                h(
+                  "table",
+                  { class: "table" },
+                  h("thead", null,
+                    h("tr", null,
+                      h("th", null, "Source"),
+                      h("th", null, "Kind"),
+                      h("th", null, "Status"),
+                      h("th", null, "User"),
+                      h("th", null, "Created")
+                    )
+                  ),
+                  h("tbody", null,
+                    jobList.map((j) =>
+                      h("tr", null,
+                        h("td", null, h("span", { class: "mono text-xs" }, j.source_id?.slice(0, 12) || "—")),
+                        h("td", null, Badge({ tone: "neutral", text: j.source_kind })),
+                        h("td", null, Badge({
+                          tone: j.status === "done" ? "ok" : j.status === "failed" ? "bad" : "warn",
+                          text: j.status,
+                          dot: true
+                        })),
+                        h("td", null, h("span", { class: "muted text-xs" }, j.owner_user_id?.slice(0, 8) || "—")),
+                        h("td", null, h("span", { class: "muted text-xs" }, fmtRelative(j.created_at)))
+                      )
+                    )
+                  )
+                )
+              )
+        )
+      )
+    );
+  }
+
+  mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+  await load();
+}
+
+/* ============================================================
+   27) PAGE: Admin · AI Models
+   ============================================================ */
+
+async function pageAdminModels(root) {
+  let config = null;
+
+  const ROLES = [
+    { key: "primary", label: "Primary model" },
+    { key: "fast", label: "Fast / cheap model" },
+    { key: "complex", label: "Complex reasoning" },
+    { key: "workflow", label: "Workflow generation" },
+    { key: "analysis", label: "Analysis tasks" }
+  ];
+
+  async function load() {
+    try {
+      config = await api.admin.models.list();
+      render();
+    } catch (err) {
+      mount(root, h("div", { class: "page" }, ErrorBanner({ error: err, onRetry: load })));
+    }
+  }
+
+  async function save() {
+    const body = {};
+    for (const r of ROLES) {
+      const val = root.querySelector(`[data-role="${r.key}"]`)?.value?.trim();
+      if (val) body[r.key] = val;
+    }
+    try {
+      await api.admin.models.set(body);
+      toast("Model config updated (resets on server restart)", "success");
+      await load();
+    } catch (err) {
+      toast(err.message || "Save failed", "error");
+    }
+  }
+
+  async function reset() {
+    try {
+      await api.admin.models.reset();
+      toast("Model config reset to env defaults", "success");
+      await load();
+    } catch (err) {
+      toast(err.message || "Reset failed", "error");
+    }
+  }
+
+  function render() {
+    const overrides = config?.overrides || {};
+    const defaults = config?.defaults || {};
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Admin · AI Models"),
+            h("p", { class: "page-header__sub" }, "Runtime model overrides — reset on server restart · env vars are persistent")
+          ),
+          h("div", { class: "page-header__actions" },
+            h("button", { class: "btn btn--ghost btn--sm", onclick: reset }, icon("refresh", 14), "Reset to defaults"),
+            h("button", { class: "btn btn--primary btn--sm", onclick: save }, icon("check", 14), "Save")
+          )
+        ),
+        h(
+          "div",
+          { class: "card" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "Per-Role Model Override")),
+          h(
+            "div",
+            { class: "col col--gap-4" },
+            ...ROLES.map((r) =>
+              h(
+                "div",
+                null,
+                h("label", { class: "form-label" }, r.label,
+                  h("span", { class: "muted text-xs", style: { marginLeft: "8px" } }, `default: ${defaults[r.key] || "—"}`)
+                ),
+                h("input", {
+                  class: "input",
+                  "data-role": r.key,
+                  type: "text",
+                  placeholder: defaults[r.key] || `Enter model ID for ${r.label}`,
+                  value: overrides[r.key] || ""
+                })
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  mount(root, h("div", { class: "page" }, h(Skeleton, { variant: "title" })));
+  await load();
+}
+
+/* ============================================================
+   28) PAGE: Admin · Seed Data
+   ============================================================ */
+
+async function pageAdminSeed(root) {
+  let result = null;
+  let running = false;
+
+  async function runSeed() {
+    if (running) return;
+    running = true;
+    root.querySelector(".seed-btn")?.setAttribute("disabled", "");
+    try {
+      result = await api.admin.seed.run();
+      toast("Seed data inserted", "success");
+      render();
+    } catch (err) {
+      toast(err.message || "Seed failed", "error");
+    } finally {
+      running = false;
+      root.querySelector(".seed-btn")?.removeAttribute("disabled");
+    }
+  }
+
+  function render() {
+    mount(
+      root,
+      h(
+        "div",
+        { class: "page" },
+        h(
+          "div",
+          { class: "page-header" },
+          h("div", null,
+            h("h1", { class: "page-header__title" }, "Admin · Seed Data"),
+            h("p", { class: "page-header__sub" }, "Insert sample organisational data across all existing users (up to 3)")
+          )
+        ),
+        h(
+          "div",
+          { class: "card" },
+          h("div", { class: "card__head" }, h("h3", { class: "card__title" }, "What gets seeded")),
+          h(
+            "ul",
+            { style: { paddingLeft: "20px", fontSize: "13px", lineHeight: "2" } },
+            h("li", null, "5 sample Company Brain documents (meeting notes, Slack export, strategy doc, technical overview, market analysis)"),
+            h("li", null, "2 sample AI reports (Executive Summary + Risk Analysis) per user"),
+            h("li", null, "Uses INSERT IGNORE — safe to run multiple times")
+          ),
+          h(
+            "div",
+            { style: { marginTop: "20px", display: "flex", gap: "12px", alignItems: "center" } },
+            h("button", { class: "btn btn--primary seed-btn", onclick: runSeed }, icon("seed", 14), "Run Seed"),
+            result
+              ? h("span", { style: { fontSize: "13px", color: "var(--success)" } }, `Seeded ${result.users_seeded ?? "?"} user(s)`)
+              : null
+          )
+        )
+      )
+    );
+  }
+
+  render();
 }
 
 /* ============================================================
