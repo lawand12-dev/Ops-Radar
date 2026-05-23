@@ -21,6 +21,27 @@ import type { Client } from '@notionhq/client'
 import { getNotionClient, getWorkspace, withNotionRetry } from './client'
 import type { NotionDatabaseSlug } from './schema-keys'
 
+/**
+ * Wraps a Notion read so callers can use it as the dashboard's primary source.
+ * Returns null in the "Notion isn't connected yet" case (rather than throwing) so
+ * widgets can transparently fall back to Composio live data.
+ *
+ * NOT a generic try/catch — re-throws genuine errors (e.g. transient Notion 500s,
+ * malformed token) so the caller can surface "requires_reconnect" etc.
+ */
+export async function tryReadNotion<T>(op: () => Promise<T>): Promise<T | null> {
+  try {
+    return await op()
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    // These two are the "no Notion workspace" / "no DB provisioned" cases from
+    // resolveDbId() and getNotionClient(). Anything else bubbles up.
+    if (msg.includes('User has not connected Notion')) return null
+    if (msg.includes('not provisioned for user')) return null
+    throw err
+  }
+}
+
 // ---------- Domain types (rough — refine when implementing) ----------
 
 export type ClientUpsert = {

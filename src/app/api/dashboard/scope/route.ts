@@ -7,7 +7,19 @@ import {
 } from '<npm>/lib/composio-fetch';
 import type { ClickupScopeData } from '<npm>/lib/integrations/clickup/scope-adapter';
 import type { HarvestMonthlyProjectData } from '<npm>/lib/integrations/harvest/adapter';
-import { computeScopeCreep, type ScopeCreepResult } from '<npm>/lib/scope-creep';
+import {
+  computeScopeCreep,
+  type ScopeCreepResult,
+  type ScopeProject,
+  type ScopeStatus,
+} from '<npm>/lib/scope-creep';
+import {
+  readAllClients,
+  readOpenRisks,
+  tryReadNotion,
+  type ClientUpsert,
+  type RiskEntry,
+} from '<npm>/lib/notion/helpers';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { Redis } from '@upstash/redis';
 
@@ -17,8 +29,16 @@ export const runtime = 'nodejs';
 const CACHE_TTL_SECONDS = 60 * 60;
 const CACHE_KEY = (userId: string) => `dash:scope:${userId}`;
 
+type ScopeSource = 'notion' | 'composio';
+
 type ScopeResponse =
-  | { status: 'ok'; data: ScopeCreepResult; last_synced_at: string; from_cache: boolean }
+  | {
+      status: 'ok';
+      data: ScopeCreepResult;
+      last_synced_at: string;
+      from_cache: boolean;
+      source: ScopeSource;
+    }
   | { status: 'not_connected'; missing: ('clickup' | 'harvest')[] }
   | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
@@ -111,6 +131,100 @@ async function fetchClickupScope(userId: string): Promise<ClickupScopeData> {
   return shapeClickupScope(tasks);
 }
 
+// ---------- Notion → ScopeCreepResult reshape ----------
+//
+// The Scope Agent writes scope-creep findings as Risk Register entries with
+// type === 'Delivery'. The risk does NOT carry budgeted/logged hours; that
+// lives on the matching Clients row (Monthly hours budget / Avg hours logged).
+// We best-effort match risk title → client name. When no client matches we
+// fall back to severity-derived burn/status so the widget still renders.
+
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function severityToStatus(severity: RiskEntry['severity']): ScopeStatus {
+  switch (severity) {
+    case 'Critical':
+    case 'High':
+      return 'over_budget';
+    case 'Medium':
+      return 'at_risk';
+    case 'Low':
+    default:
+      return 'on_track';
+  }
+}
+
+function severityToBurnPct(severity: RiskEntry['severity']): number {
+  // Fallback burn% used only when we can't compute logged/estimated from clients.
+  switch (severity) {
+    case 'Critical':
+      return 130;
+    case 'High':
+      return 110;
+    case 'Medium':
+      return 85;
+    case 'Low':
+    default:
+      return 50;
+  }
+}
+
+function matchClient(riskTitle: string, clients: ClientUpsert[]): ClientUpsert | undefined {
+  if (!clients.length) return undefined;
+  const normTitle = normalizeName(riskTitle);
+  if (!normTitle) return undefined;
+  // Prefer exact match; otherwise substring (client name appears inside the risk title).
+  const exact = clients.find((c) => normalizeName(c.name) === normTitle);
+  if (exact) return exact;
+  return clients.find((c) => {
+    const normClient = normalizeName(c.name);
+    return normClient.length > 0 && normTitle.includes(normClient);
+  });
+}
+
+function reshapeRisksToScope(
+  risks: RiskEntry[],
+  clients: ClientUpsert[],
+): ScopeCreepResult {
+  const projects: ScopeProject[] = risks.map((risk) => {
+    const client = matchClient(risk.title, clients);
+    const estimated = client?.monthlyHoursBudget ?? 0;
+    const logged = client?.avgHoursLogged ?? 0;
+
+    let burn_pct = 0;
+    let status: ScopeStatus;
+    if (estimated > 0) {
+      burn_pct = Math.round((logged / estimated) * 1000) / 10;
+      status = burn_pct >= 100 ? 'over_budget' : burn_pct >= 80 ? 'at_risk' : 'on_track';
+    } else {
+      // No hours on the client row — derive from severity so the row still renders.
+      burn_pct = severityToBurnPct(risk.severity);
+      status = severityToStatus(risk.severity);
+    }
+
+    return {
+      project_name: client?.name ?? risk.title,
+      estimated_hours: estimated,
+      logged_hours: Math.round(logged * 10) / 10,
+      burn_pct,
+      status,
+      matched: !!client,
+    };
+  });
+
+  return {
+    projects: projects.sort((a, b) => b.burn_pct - a.burn_pct),
+    unmatched_clickup: [],
+    unmatched_harvest: [],
+  };
+}
+
 async function fetchHarvestMonthly(userId: string): Promise<HarvestMonthlyProjectData> {
   const now = new Date();
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
@@ -142,6 +256,46 @@ export async function GET(): Promise<NextResponse<ScopeResponse>> {
     return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 });
   }
 
+  const redis = (() => {
+    try { return Redis.fromEnv(); } catch { return null; }
+  })();
+  if (redis) {
+    const cached = await redis.get<ScopeResponse>(CACHE_KEY(userId));
+    if (cached?.status === 'ok') {
+      return NextResponse.json({ ...cached, from_cache: true });
+    }
+  }
+
+  // --- 1. Try Notion (Scope Agent's Risk Register) first ---
+  try {
+    const risks = await tryReadNotion(() => readOpenRisks(userId));
+    if (risks && risks.length > 0) {
+      const deliveryRisks = risks.filter((r) => r.type === 'Delivery');
+      if (deliveryRisks.length > 0) {
+        // Best-effort enrich with Clients DB for budget/logged hours.
+        const clients = (await tryReadNotion(() => readAllClients(userId))) ?? [];
+        const data = reshapeRisksToScope(deliveryRisks, clients);
+        const last_synced_at = new Date().toISOString();
+        const payload: ScopeResponse = {
+          status: 'ok',
+          data,
+          last_synced_at,
+          from_cache: false,
+          source: 'notion',
+        };
+        if (redis) {
+          await redis.set(CACHE_KEY(userId), payload, { ex: CACHE_TTL_SECONDS });
+        }
+        return NextResponse.json(payload);
+      }
+    }
+  } catch (err) {
+    // tryReadNotion swallows the "not connected / not provisioned" cases.
+    // Anything thrown here is a genuine Notion failure — fall through to Composio.
+    console.warn('[scope] notion read failed, falling back to composio:', err);
+  }
+
+  // --- 2. Fall back to live Composio (ClickUp + Harvest) ---
   // Determine which tools the user has connected so we can decide between
   // "not_connected" (neither tool) and a partial render.
   const [clickupConnected, harvestConnected] = await Promise.all([
@@ -157,16 +311,6 @@ export async function GET(): Promise<NextResponse<ScopeResponse>> {
     return NextResponse.json({ status: 'not_connected', missing });
   }
 
-  const redis = (() => {
-    try { return Redis.fromEnv(); } catch { return null; }
-  })();
-  if (redis && missing.length === 0) {
-    const cached = await redis.get<ScopeResponse>(CACHE_KEY(userId));
-    if (cached?.status === 'ok') {
-      return NextResponse.json({ ...cached, from_cache: true });
-    }
-  }
-
   try {
     const [clickupData, harvestData] = await Promise.all([
       clickupConnected
@@ -179,7 +323,13 @@ export async function GET(): Promise<NextResponse<ScopeResponse>> {
 
     const data = computeScopeCreep(clickupData, harvestData);
     const last_synced_at = new Date().toISOString();
-    const payload: ScopeResponse = { status: 'ok', data, last_synced_at, from_cache: false };
+    const payload: ScopeResponse = {
+      status: 'ok',
+      data,
+      last_synced_at,
+      from_cache: false,
+      source: 'composio',
+    };
 
     if (redis && missing.length === 0) {
       await redis.set(CACHE_KEY(userId), payload, { ex: CACHE_TTL_SECONDS });

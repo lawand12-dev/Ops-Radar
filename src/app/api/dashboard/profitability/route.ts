@@ -6,8 +6,9 @@ import {
 } from '<npm>/lib/composio-fetch';
 import type { StripePerClientData, StripeClientRevenue } from '<npm>/lib/integrations/stripe/profitability-adapter';
 import type { HarvestPerClientData, HarvestClientHours } from '<npm>/lib/integrations/harvest/profitability-adapter';
-import { computeClientProfitability, type ProfitabilityResult } from '<npm>/lib/profitability';
+import { computeClientProfitability, type ProfitabilityResult, type ClientProfitability } from '<npm>/lib/profitability';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
+import { readAllClients, tryReadNotion, type ClientUpsert } from '<npm>/lib/notion/helpers';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,14 @@ const CACHE_KEY = (userId: string) => `dash:profitability:${userId}`;
 const DEFAULT_BLENDED_RATE = 85;
 
 type ProfitabilityResponse =
-  | { status: 'ok'; data: ProfitabilityResult; blended_rate_usd: number; last_synced_at: string; from_cache: boolean }
+  | {
+      status: 'ok';
+      source: 'notion' | 'composio';
+      data: ProfitabilityResult;
+      blended_rate_usd: number;
+      last_synced_at: string;
+      from_cache: boolean;
+    }
   | { status: 'not_connected'; missing: ('stripe' | 'harvest')[] }
   | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
   | { status: 'unavailable'; message: string };
@@ -191,6 +199,97 @@ function shapeHarvestPerClient(entries: HarvestTimeEntry[]): HarvestPerClientDat
   return { clients };
 }
 
+/**
+ * Slugify a client name into a stable id for the Notion-sourced path.
+ * Notion doesn't expose a Stripe customer id, so we synthesise an id from the
+ * normalised client name. Frontend treats this as opaque.
+ */
+function notionClientId(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug ? `notion:${slug}` : `notion:unknown`;
+}
+
+/** Map Profitability-Agent margin status → trend bucket for the dashboard widget. */
+function trendFromMarginStatus(
+  marginStatus: ClientUpsert['marginStatus'],
+): ClientProfitability['trend'] {
+  if (marginStatus === 'Critical') return 'down';
+  if (marginStatus === 'Healthy') return 'up';
+  return 'flat';
+}
+
+/**
+ * Coarse health-score heuristic for the Notion-sourced path. We don't have
+ * payment-status / overdue-days from Notion, so we score off marginStatus +
+ * margin% only. Mirrors the bands used by computeHealthScore() in
+ * src/lib/profitability.ts well enough for the widget's colour bucket.
+ */
+function notionHealthScore(client: ClientUpsert): number {
+  const marginPct = client.actualMarginPct ?? 0;
+  // Margin component (up to 35)
+  let margin = 0;
+  if (marginPct >= 30) margin = 35;
+  else if (marginPct >= 20) margin = 28;
+  else if (marginPct >= 10) margin = 18;
+  else if (marginPct >= 0) margin = 8;
+
+  // Status-driven component (up to 65 — replaces payment + trend since we
+  // don't have those from Notion).
+  let statusScore = 30; // default — unknown marginStatus
+  if (client.marginStatus === 'Healthy') statusScore = 65;
+  else if (client.marginStatus === 'Warning') statusScore = 40;
+  else if (client.marginStatus === 'Critical') statusScore = 10;
+
+  return margin + statusScore;
+}
+
+/**
+ * Reshape the Profitability-Agent-written Notion Clients DB rows into the
+ * same ProfitabilityResult shape the Composio path produces. Notion is the
+ * source of truth when present (agent runs weekly), so prior-month / payment
+ * fields not stored in Notion are defaulted to 0 / null / 'unknown'.
+ */
+function reshapeNotionToProfitability(
+  notionClients: ClientUpsert[],
+  blendedRateUsd: number,
+): ProfitabilityResult {
+  const clients: ClientProfitability[] = notionClients.map((c) => {
+    const hoursMtd = c.avgHoursLogged ?? 0;
+    const marginPct = c.actualMarginPct ?? 0;
+    const trend = trendFromMarginStatus(c.marginStatus);
+    return {
+      id: notionClientId(c.name),
+      name: c.name,
+      revenue_mtd: c.monthlyRetainer ?? 0,
+      revenue_prior: 0,                  // Notion doesn't store prior-month revenue
+      hours_mtd: hoursMtd,
+      hours_prior: 0,                    // Notion doesn't store prior-month hours
+      blended_rate_usd: blendedRateUsd,
+      cost_mtd: hoursMtd * blendedRateUsd,
+      margin_pct: marginPct,
+      margin_prior_pct: null,            // Notion doesn't store prior-month margin
+      trend,
+      health_score: notionHealthScore(c),
+      payment_status: 'unknown',         // Not tracked in Notion Clients DB
+      days_overdue: null,                // Not tracked in Notion Clients DB
+      stripe_customer_id: null,          // Notion is name-keyed, not Stripe-keyed
+      matched: true,                     // By definition — the agent wrote it
+    };
+  });
+
+  // Same ordering as the Composio path: worst margin first.
+  clients.sort((a, b) => a.margin_pct - b.margin_pct);
+
+  return {
+    clients,
+    unmatched_stripe: [],
+    unmatched_harvest: [],
+  };
+}
+
 export async function GET(): Promise<NextResponse<ProfitabilityResponse>> {
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -210,6 +309,32 @@ export async function GET(): Promise<NextResponse<ProfitabilityResponse>> {
     ? meta.blended_hourly_rate_usd
     : DEFAULT_BLENDED_RATE;
 
+  // ----- 1. Notion-first ----------------------------------------------------
+  // The Profitability Agent writes per-client margin analysis to the customer's
+  // Notion Clients DB on Sundays. If that data is present we serve it directly
+  // — it's authoritative, the source of cross-agent reasoning, and avoids
+  // hitting Composio at all. tryReadNotion() swallows the "not connected" /
+  // "not provisioned" cases and returns null so we transparently fall through.
+  try {
+    const notionClients = await tryReadNotion(() => readAllClients(userId));
+    if (notionClients && notionClients.length > 0) {
+      const data = reshapeNotionToProfitability(notionClients, blendedRate);
+      return NextResponse.json({
+        status: 'ok',
+        source: 'notion',
+        data,
+        blended_rate_usd: blendedRate,
+        last_synced_at: new Date().toISOString(),
+        from_cache: false,
+      });
+    }
+  } catch (err) {
+    // Genuine Notion error (transient 5xx, malformed token, etc.) — log and
+    // fall through to Composio so the widget stays useful.
+    console.warn('[profitability] notion read failed, falling back to composio:', err);
+  }
+
+  // ----- 2. Composio live fallback (unchanged from pre-Notion behaviour) ----
   // Connection presence check: route preserves legacy behaviour where if BOTH
   // are missing we surface `not_connected` with the missing array; if one is
   // connected we still try to compute partial profitability.
@@ -276,6 +401,7 @@ export async function GET(): Promise<NextResponse<ProfitabilityResponse>> {
 
     const payload: ProfitabilityResponse = {
       status: 'ok',
+      source: 'composio',
       data,
       blended_rate_usd: blendedRate,
       last_synced_at: lastSyncedAt,
