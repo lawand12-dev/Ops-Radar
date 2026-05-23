@@ -1,0 +1,86 @@
+{
+  "name": "phase-2-curated-eval-v1",
+  "description": "Twenty hand-labeled prompts mapped to the pattern cards that SHOULD be selected. Used by eval-retrieval.ts when historical MySQL data is sparse. Edit liberally; the eval re-reads on every run.",
+  "samples": [
+    {
+      "prompt": "send a daily slack digest of overdue tasks at 9am",
+      "expected": ["workflow-slack-digest"]
+    },
+    {
+      "prompt": "every weekday morning post a summary of approvals to slack",
+      "expected": ["workflow-slack-digest"]
+    },
+    {
+      "prompt": "weekly recap email to the team with this week's wins",
+      "expected": ["workflow-slack-digest"]
+    },
+    {
+      "prompt": "build a workflow that creates a recurring monthly retainer invoice",
+      "expected": ["workflow-invoicing-retainer"]
+    },
+    {
+      "prompt": "automate the monthly billing cycle for retainer clients via xero",
+      "expected": ["workflow-invoicing-retainer"]
+    },
+    {
+      "prompt": "route inbound leads by source to the right account manager",
+      "expected": ["workflow-lead-routing-source"]
+    },
+    {
+      "prompt": "when a new hubspot lead comes in from paid ads, assign it to sales",
+      "expected": ["workflow-lead-routing-source"]
+    },
+    {
+      "prompt": "after a calendly meeting ends, send a follow-up email with the recording",
+      "expected": ["workflow-meeting-followup"]
+    },
+    {
+      "prompt": "summarize zoom transcripts and email the action items to attendees",
+      "expected": ["workflow-meeting-followup"]
+    },
+    {
+      "prompt": "kick off the seo onboarding workflow when a client signs the contract",
+      "expected": ["workflow-onboarding-seo"]
+    },
+    {
+      "prompt": "send a welcome packet and create the seo audit task when a new client signs",
+      "expected": ["workflow-onboarding-seo"]
+    },
+    {
+      "prompt": "build a weekly seo performance report pulling from ga4 and search console",
+      "expected": ["workflow-reporting-seo"]
+    },
+    {
+      "prompt": "every monday email clients their rankings change over the past week",
+      "expected": ["workflow-reporting-seo"]
+    },
+    {
+      "prompt": "post project status updates from clickup into a weekly slack thread",
+      "expected": ["workflow-project-status"]
+    },
+    {
+      "prompt": "summarize project health across all clickup spaces every friday",
+      "expected": ["workflow-project-status"]
+    },
+    {
+      "prompt": "send a daily digest of new hubspot deals to the sales channel",
+      "expected": ["workflow-slack-digest", "workflow-lead-routing-source"]
+    },
+    {
+      "prompt": "when a meeting is scheduled in calendly, create a clickup task for prep",
+      "expected": ["workflow-meeting-followup", "workflow-project-status"]
+    },
+    {
+      "prompt": "monthly client invoice plus an automated nudge if not paid in 14 days",
+      "expected": ["workflow-invoicing-retainer"]
+    },
+    {
+      "prompt": "alert me on slack when an seo keyword ranking drops more than 5 positions",
+      "expected": ["workflow-reporting-seo", "workflow-slack-digest"]
+    },
+    {
+      "prompt": "build the standard onboarding sequence for a new paid ads client",
+      "expected": ["workflow-onboarding-seo"]
+    }
+  ]
+}

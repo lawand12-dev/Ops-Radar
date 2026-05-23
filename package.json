@@ -12,6 +12,10 @@
     "migrate:bun": "bun src/scripts/migrate.ts",
     "migrate-pg": "node --env-file=.env --import tsx src/scripts/migrate-pg.ts",
     "migrate-pg:bun": "bun src/scripts/migrate-pg.ts",
+    "bench-memory": "node --env-file=.env --import tsx src/scripts/bench-memory.ts",
+    "bench-memory:bun": "bun src/scripts/bench-memory.ts",
+    "eval-retrieval": "node --env-file=.env --import tsx src/scripts/eval-retrieval.ts",
+    "eval-retrieval:bun": "bun src/scripts/eval-retrieval.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
