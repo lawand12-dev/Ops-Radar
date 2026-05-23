@@ -102,7 +102,8 @@ function icon(name, size = 18) {
     crumbs: svg('<path d="M12 8v4l2 2"/><circle cx="12" cy="12" r="9"/>'),
     model: svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6"/><path d="M9 12h6"/><path d="M9 15h4"/><path d="M4 8h16"/>'),
     seed: svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>'),
-    plug: svg('<path d="M12 22v-5"/><path d="M9 7V2"/><path d="M15 7V2"/><rect x="6" y="7" width="12" height="8" rx="1"/><path d="M9 12h6"/>')
+    plug: svg('<path d="M12 22v-5"/><path d="M9 7V2"/><path d="M15 7V2"/><rect x="6" y="7" width="12" height="8" rx="1"/><path d="M9 12h6"/>'),
+    agent: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9.5 15.5l-2 2"/><path d="M14.5 15.5l2 2"/>')
   };
   const wrap = document.createElement("span");
   wrap.className = "icon-wrap";
@@ -484,6 +485,23 @@ const api = {
     executions: ({ limit = 20 } = {}) =>
       request(`/composio/executions?limit=${limit}`)
   }
+};
+
+api.agent = {
+  run: (message, sessionId) =>
+    request("/agent/run", { method: "POST", body: { message, session_id: sessionId } }),
+  sessions: (limit = 20) =>
+    request(`/agent/sessions?limit=${limit}`),
+  session: (id) =>
+    request(`/agent/sessions/${id}`),
+  cancel: (sessionId) =>
+    request(`/agent/sessions/${sessionId}`, { method: "DELETE" }),
+  tools: () =>
+    request("/agent/tools"),
+  enqueue: (message, sessionId) =>
+    request("/queue/enqueue", { method: "POST", body: { message, session_id: sessionId } }),
+  jobStatus: (jobId) =>
+    request(`/queue/jobs/${jobId}`)
 };
 
 /* ============================================================
@@ -952,7 +970,8 @@ const ADMIN_NAV_ITEMS = [
   { path: "#/admin/projects", label: "Admin · All projects", icon: "workflows" },
   { path: "#/admin/memory", label: "Admin · Memory", icon: "brain" },
   { path: "#/admin/models", label: "Admin · AI Models", icon: "model" },
-  { path: "#/admin/seed", label: "Admin · Seed Data", icon: "seed" }
+  { path: "#/admin/seed", label: "Admin · Seed Data", icon: "seed" },
+  { path: "#/agent", label: "Admin · Agent Shell", icon: "agent" }
 ];
 
 function renderSidebar() {
@@ -1202,7 +1221,8 @@ const ROUTE_TABLE = [
   { path: /^#\/admin\/memory\/?$/, render: pageAdminMemory, title: "Admin · Memory", sub: "Embedding jobs and vector store stats" },
   { path: /^#\/admin\/models\/?$/, render: pageAdminModels, title: "Admin · AI Models", sub: "Runtime model-role routing overrides" },
   { path: /^#\/admin\/seed\/?$/, render: pageAdminSeed, title: "Admin · Seed Data", sub: "Insert sample organisational data" },
-  { path: /^#\/integrations\/?$/, render: pageIntegrations, title: "Integrations", sub: "Connect external apps via Composio" }
+  { path: /^#\/integrations\/?$/, render: pageIntegrations, title: "Integrations", sub: "Connect external apps via Composio" },
+  { path: /^#\/agent\/?$/, render: pageAgent, title: "Agent Shell", sub: "Run the production AI agent with tool access" }
 ];
 
 async function router() {
@@ -6897,3 +6917,231 @@ function init() {
 }
 
 init();
+
+/* ============================================================
+   Admin Agent Shell
+   ============================================================ */
+
+async function pageAgent(root) {
+  const tools = [];
+  let sessions = [];
+  let currentSessionId = null;
+  let eventSource = null;
+  let running = false;
+
+  function stopStream() {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    running = false;
+    render();
+  }
+
+  async function loadTools() {
+    try {
+      const res = await api.agent.tools();
+      tools.splice(0, tools.length, ...(res.tools || []));
+    } catch (err) {
+      toast("Failed to load tools: " + (err.message || err), "danger");
+    }
+  }
+
+  async function loadSessions() {
+    try {
+      const res = await api.agent.sessions(10);
+      sessions = res.sessions || [];
+    } catch { /* ignore */ }
+  }
+
+  let logLines = [];
+
+  function addLog(line, tone = "muted") {
+    logLines.push({ line, tone });
+    renderLog();
+  }
+
+  function renderLog() {
+    const logEl = document.getElementById("agent-log");
+    if (!logEl) return;
+    mount(
+      logEl,
+      ...logLines.map((entry) =>
+        h("div", { class: `text-sm ${entry.tone === "success" ? "text-green" : entry.tone === "danger" ? "text-red" : "muted"}` },
+          entry.line
+        )
+      )
+    );
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById("agent-input");
+    const msg = (input?.value || "").trim();
+    if (!msg || running) return;
+    input.value = "";
+    logLines = [];
+    running = true;
+    render();
+
+    addLog(`> ${msg}`);
+
+    try {
+      const res = await api.agent.run(msg, currentSessionId || undefined);
+      currentSessionId = res.sessionId;
+      addLog(`Session: ${res.sessionId}`, "muted");
+      addLog(`Status: ${res.status}`, res.status === "completed" ? "success" : "danger");
+      addLog(res.finalAnswer, "success");
+    } catch (err) {
+      addLog(`Error: ${err.message || String(err)}`, "danger");
+      toast("Agent error: " + (err.message || err), "danger");
+    }
+
+    running = false;
+    await loadSessions();
+    render();
+  }
+
+  async function enqueueMessage() {
+    const input = document.getElementById("agent-input");
+    const msg = (input?.value || "").trim();
+    if (!msg) return;
+    input.value = "";
+
+    try {
+      const res = await api.agent.enqueue(msg, currentSessionId || undefined);
+      toast(`Job queued: ${res.job_id}`, "success");
+      addLog(`Job queued: ${res.job_id}`, "muted");
+    } catch (err) {
+      toast("Enqueue failed: " + (err.message || err), "danger");
+    }
+  }
+
+  function render() {
+    mount(
+      root,
+      h("div", { class: "page" },
+        h("div", { class: "page__header" },
+          h("div", { class: "col col--gap-1" },
+            h("h1", { class: "page__title" }, "Agent Shell"),
+            h("p", { class: "muted text-sm" }, "Run the AI agent with tool access. All routes require admin.")
+          )
+        ),
+        h("div", { class: "row row--gap-4", style: { alignItems: "flex-start", flexWrap: "wrap" } },
+
+          // Left: chat shell
+          h("div", { class: "col col--gap-3 flex-1", style: { minWidth: "340px", maxWidth: "660px" } },
+            h("div", { class: "card" },
+              h("div", { class: "card__header" },
+                h("span", { class: "card__title" }, "Chat"),
+                running ? h("span", { class: "badge badge--warning" }, "Running...") : null
+              ),
+              h("div", { class: "card__body" },
+                h("div", {
+                  id: "agent-log",
+                  class: "col col--gap-1",
+                  style: {
+                    minHeight: "220px",
+                    maxHeight: "420px",
+                    overflowY: "auto",
+                    background: "var(--surface-2, #1a1a2e)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    fontFamily: "monospace",
+                    fontSize: "13px"
+                  }
+                }),
+                h("div", { class: "row row--gap-2", style: { marginTop: "12px" } },
+                  h("input", {
+                    id: "agent-input",
+                    class: "input flex-1",
+                    type: "text",
+                    placeholder: "Type a message for the agent...",
+                    disabled: running,
+                    onkeydown: (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+                  }),
+                  h("button", {
+                    class: `btn btn--primary`,
+                    disabled: running,
+                    onclick: sendMessage
+                  }, running ? "Running..." : "Run"),
+                  h("button", {
+                    class: "btn btn--ghost",
+                    disabled: running,
+                    onclick: enqueueMessage
+                  }, "Queue")
+                )
+              )
+            ),
+
+            // Recent sessions
+            sessions.length > 0
+              ? h("div", { class: "card" },
+                  h("div", { class: "card__header" },
+                    h("span", { class: "card__title" }, "Recent Sessions")
+                  ),
+                  h("div", { class: "card__body" },
+                    h("table", { class: "table table--compact" },
+                      h("thead", null,
+                        h("tr", null,
+                          h("th", null, "ID"),
+                          h("th", null, "Status"),
+                          h("th", null, "Turns"),
+                          h("th", null, "Started")
+                        )
+                      ),
+                      h("tbody", null,
+                        ...sessions.map((s) =>
+                          h("tr", {
+                            class: currentSessionId === s.id ? "row--selected" : "",
+                            style: { cursor: "pointer" },
+                            onclick: () => { currentSessionId = s.id; render(); }
+                          },
+                            h("td", null, h("code", { class: "text-xs" }, s.id.slice(0, 8) + "…")),
+                            h("td", null,
+                              h("span", {
+                                class: `badge badge--${s.status === "completed" ? "success" : s.status === "running" ? "warning" : "danger"}`
+                              }, s.status)
+                            ),
+                            h("td", null, s.turnCount ?? s.turn_count ?? 0),
+                            h("td", null, h("span", { class: "muted text-xs" },
+                              new Date(s.startedAt ?? s.started_at).toLocaleTimeString()
+                            ))
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              : null
+          ),
+
+          // Right: tool catalog
+          h("div", { class: "col col--gap-3", style: { minWidth: "260px", maxWidth: "340px" } },
+            h("div", { class: "card" },
+              h("div", { class: "card__header" },
+                h("span", { class: "card__title" }, "Available Tools")
+              ),
+              h("div", { class: "card__body" },
+                tools.length === 0
+                  ? h("p", { class: "muted text-sm" }, "Loading tools...")
+                  : h("ul", { class: "col col--gap-2", style: { listStyle: "none", padding: 0, margin: 0 } },
+                      ...tools.map((t) =>
+                        h("li", null,
+                          h("div", { class: "col col--gap-1" },
+                            h("strong", { class: "text-sm" }, t.name),
+                            h("p", { class: "muted text-xs" }, t.description || "")
+                          )
+                        )
+                      )
+                    )
+              )
+            )
+          )
+        )
+      )
+    );
+
+    renderLog();
+  }
+
+  await Promise.all([loadTools(), loadSessions()]);
+  render();
+}
