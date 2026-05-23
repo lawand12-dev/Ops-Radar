@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
-import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import {
-  fetchPipedriveSalesData,
-  type PipedriveSalesData,
-} from '<npm>/lib/integrations/pipedrive/adapter';
+  safeExecuteComposioAction,
+  ComposioExecuteError,
+} from '<npm>/lib/composio-fetch';
+import type { PipedriveSalesData } from '<npm>/lib/integrations/pipedrive/adapter';
 import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
@@ -19,22 +18,70 @@ type Resp =
   | { status: 'not_connected' }
   | { status: 'unavailable'; message: string };
 
+type PipedriveDeal = {
+  id: number;
+  title: string;
+  value: number;
+  currency: string;
+  status: string;
+  stage_id?: number;
+  expected_close_date?: string | null;
+  won_time?: string | null;
+};
+
+type PipedriveStage = { id: number; name: string };
+
+type PipedriveListDealsResp = { data?: PipedriveDeal[] | null };
+type PipedriveListStagesResp = { data?: PipedriveStage[] | null };
+
+function shape(
+  openDeals: PipedriveDeal[],
+  wonDeals: PipedriveDeal[],
+  stages: PipedriveStage[],
+): PipedriveSalesData {
+  const stageNameById = new Map<number, string>(stages.map((s) => [s.id, s.name]));
+
+  const pipelineValue = openDeals.reduce((s, d) => s + (Number(d.value) || 0), 0);
+  const openDealsCount = openDeals.length;
+
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+  monthStart.setUTCHours(0, 0, 0, 0);
+  const dealsWonThisMonth = wonDeals.filter(
+    (d) => d.won_time && new Date(d.won_time) >= monthStart,
+  ).length;
+
+  const currency = openDeals[0]?.currency ?? 'USD';
+
+  const rows: PipedriveSalesData['rows'] = openDeals
+    .slice()
+    .sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0))
+    .slice(0, 5)
+    .map((d) => ({
+      id: String(d.id),
+      title: d.title,
+      value: Number(d.value) || 0,
+      currency: d.currency ?? currency,
+      stage:
+        d.stage_id != null
+          ? (stageNameById.get(d.stage_id) ?? `Stage ${d.stage_id}`)
+          : 'unknown',
+      expected_close: d.expected_close_date ?? null,
+    }));
+
+  return {
+    pipeline_value: pipelineValue,
+    open_deals_count: openDealsCount,
+    deals_won_this_month: dealsWonThisMonth,
+    rows,
+    currency,
+  };
+}
+
 export async function GET(_req: NextRequest): Promise<NextResponse<Resp>> {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ status: 'unavailable', message: 'unauthorized' }, { status: 401 });
-  }
-
-  const supabase = getServerSupabaseClient();
-  const { data: row } = await supabase
-    .from('integrations')
-    .select('encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('tool', 'pipedrive')
-    .maybeSingle();
-
-  if (!row?.encrypted_token || row.status !== 'connected') {
-    return NextResponse.json({ status: 'not_connected' });
   }
 
   const redis = (() => {
@@ -47,29 +94,52 @@ export async function GET(_req: NextRequest): Promise<NextResponse<Resp>> {
     }
   }
 
-  let data: PipedriveSalesData;
+  let openResp: PipedriveListDealsResp | null;
+  let wonResp: PipedriveListDealsResp | null;
+  let stagesResp: PipedriveListStagesResp | null;
   try {
-    const apiKey = decryptApiKey({
-      encrypted_token: row.encrypted_token,
-      iv: row.iv,
-      auth_tag: row.auth_tag,
-    });
-    data = await fetchPipedriveSalesData(apiKey);
+    [openResp, wonResp, stagesResp] = await Promise.all([
+      // TODO(composio-slug): verify PIPEDRIVE_LIST_DEALS action + arg names
+      safeExecuteComposioAction<PipedriveListDealsResp>(
+        userId,
+        'pipedrive',
+        'PIPEDRIVE_LIST_DEALS',
+        { status: 'open', limit: 100 },
+      ),
+      // TODO(composio-slug): verify PIPEDRIVE_LIST_DEALS action + arg names
+      safeExecuteComposioAction<PipedriveListDealsResp>(
+        userId,
+        'pipedrive',
+        'PIPEDRIVE_LIST_DEALS',
+        { status: 'won', limit: 100 },
+      ),
+      // TODO(composio-slug): verify PIPEDRIVE_LIST_STAGES action
+      safeExecuteComposioAction<PipedriveListStagesResp>(
+        userId,
+        'pipedrive',
+        'PIPEDRIVE_LIST_STAGES',
+        {},
+      ),
+    ]);
   } catch (err) {
-    console.error('[sales-pipedrive] fetch failed:', err);
-    return NextResponse.json({
-      status: 'unavailable',
-      message: err instanceof Error ? err.message : 'fetch_failed',
-    });
+    const message =
+      err instanceof ComposioExecuteError
+        ? err.message
+        : err instanceof Error
+          ? err.message
+          : 'fetch_failed';
+    console.error('[sales-pipedrive] composio fetch failed:', err);
+    return NextResponse.json({ status: 'unavailable', message });
   }
 
-  const lastSyncedAt = new Date().toISOString();
-  await supabase
-    .from('integrations')
-    .update({ last_synced_at: lastSyncedAt, last_error: null })
-    .eq('client_id', userId)
-    .eq('tool', 'pipedrive');
+  // No Composio connection at all → all three returned null.
+  if (openResp === null && wonResp === null && stagesResp === null) {
+    return NextResponse.json({ status: 'not_connected' });
+  }
 
+  const data = shape(openResp?.data ?? [], wonResp?.data ?? [], stagesResp?.data ?? []);
+
+  const lastSyncedAt = new Date().toISOString();
   const payload: Resp = { status: 'ok', data, last_synced_at: lastSyncedAt, from_cache: false };
   if (redis) await redis.set(CACHE_KEY(userId), payload, { ex: CACHE_TTL_SECONDS });
   return NextResponse.json(payload);

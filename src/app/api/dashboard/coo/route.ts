@@ -2,7 +2,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { decryptApiKey } from '<npm>/lib/integrations/crypto';
 import { applyRateLimit } from '<npm>/lib/rate-limit';
 import { openai } from '<npm>/lib/openai';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
@@ -81,18 +80,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   const companyName = typeof meta.company_name === 'string' ? meta.company_name : 'your agency';
   const teamSizeRaw = typeof meta.team_size === 'string' ? meta.team_size : '';
 
+  // Post-Composio-OAuth: tool credentials live in Composio, not in our DB.
+  // The executor calls `executeComposioAction(userId, …)` per tool.
   const session = await getSessionSupabaseClient();
-  const { data: keyRows } = await session
-    .from('integrations')
-    .select('tool, encrypted_token, iv, auth_tag, status')
-    .eq('client_id', userId)
-    .eq('status', 'connected');
-
-  const getKey = (tool: string): string | null => {
-    const row = (keyRows ?? []).find((r) => r.tool === tool);
-    try { return row ? decryptApiKey(row) : null; } catch { return null; }
-  };
-
   const { data: pendingRows } = await session
     .from('agent_actions')
     .select('id')
@@ -104,19 +94,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   const lastUserQuestion = lastUserMessage?.content ?? '';
 
   const ctx: ExecutorContext = {
-    stripeKey: getKey('stripe'),
-    hubspotKey: getKey('hubspot'),
-    harvestKey: getKey('harvest'),
-    clickupKey: getKey('clickup'),
-    pipedriveKey: getKey('pipedrive'),
-    togglKey: getKey('toggl'),
-    asanaKey: getKey('asana'),
-    mondayKey: getKey('monday'),
-    apolloKey: getKey('apollo'),
-    calendlyKey: getKey('calendly'),
+    userId,
     blendedRate,
     teamSizeRaw,
-    userId,
     lastUserQuestion,
   };
 
