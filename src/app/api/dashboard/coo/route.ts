@@ -32,6 +32,7 @@ import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
 import { TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { type ExecutorContext } from '<npm>/lib/coo/executor';
 import { buildAiSdkCooTools } from '<npm>/lib/coo/ai-sdk-tools';
+import { loadSkillCatalog, buildSkillsSystemBlock } from '<npm>/lib/skills';
 import {
   COMPOSIO_TOOLS,
   getComposioToolsForUser,
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const recentOutcomes = await getRecentOutcomes(userId, 10);
   const outcomesBlock = formatOutcomesForPrompt(recentOutcomes);
 
-  const systemPrompt = buildCooSystemPrompt({
+  const baseSystemPrompt = buildCooSystemPrompt({
     companyName,
     blendedRate,
     teamSizeRaw,
@@ -139,7 +140,15 @@ export async function POST(request: NextRequest): Promise<Response> {
     outcomesBlock,
   });
 
-  console.log('[coo-agent] using prompt version:', PROMPT_VERSION);
+  // Anthropic Agent Skills — boot tier. Inject every skill's name +
+  // description so the model can decide which (if any) to load_skill.
+  const skillCatalog = await loadSkillCatalog();
+  const skillsBlock = buildSkillsSystemBlock(skillCatalog);
+  const systemPrompt = skillsBlock
+    ? `${baseSystemPrompt}\n\n${skillsBlock}`
+    : baseSystemPrompt;
+
+  console.log('[coo-agent] using prompt version:', PROMPT_VERSION, '· skills:', skillCatalog.length);
 
   // Composio sub-agent power: load the customer's most-recently-used
   // toolkits and wrap them with the approval gate. Cap at 3 toolkits in v1

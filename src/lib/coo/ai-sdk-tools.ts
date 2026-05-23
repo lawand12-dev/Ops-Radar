@@ -12,8 +12,10 @@
  */
 
 import { tool, jsonSchema, type Tool } from 'ai'
+import { z } from 'zod'
 import { COO_TOOLS } from './tools'
 import { executeToolCall, type ExecutorContext } from './executor'
+import { loadSkillBody } from '<npm>/lib/skills'
 
 export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
   const out: Record<string, Tool> = {}
@@ -25,8 +27,6 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
 
     out[fn.name] = tool({
       description: fn.description ?? `Run ${fn.name}`,
-      // Existing parameters are already valid JSON Schema (the OpenAI shape
-      // requires it). jsonSchema() adapts to the SDK's Standard Schema.
       inputSchema: jsonSchema(
         (params ?? { type: 'object', properties: {} }) as Parameters<typeof jsonSchema>[0],
       ),
@@ -40,6 +40,28 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
       },
     })
   }
+
+  // Anthropic Agent Skills — progressive disclosure tier 2.
+  // The boot system prompt lists every skill's name+description; the agent
+  // calls load_skill with a name to get the full SKILL.md body.
+  out['load_skill'] = tool({
+    description:
+      'Load the full SKILL.md body for a named skill (Anthropic Agent Skills pattern). The skill catalog (name + description) is in your system prompt. Call this only when a skill clearly applies to the current task — the returned body contains the operational procedure to follow.',
+    inputSchema: z.object({
+      name: z.string().describe('The skill name (kebab-case identifier) from the catalog.'),
+    }),
+    execute: async (args: { name: string }) => {
+      try {
+        const body = await loadSkillBody(args.name)
+        return { success: true, name: args.name, body }
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : 'load failed',
+        }
+      }
+    },
+  })
 
   return out
 }

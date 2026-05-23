@@ -19,8 +19,15 @@ const csp = [
 const nextConfig: NextConfig = {
   outputFileTracingRoot: resolve(rootDir),
   outputFileTracingIncludes: {
-    '/api/chat': ['./knowledge-base/**/*'],
-    '/api/generate-audit': ['./knowledge-base/**/*'],
+    // Anthropic Agent Skills — bundle the skills/ tree (everything else in
+    // knowledge-base/ is legacy / archive and intentionally excluded so the
+    // serverless function stays small).
+    '/api/dashboard/coo': ['./knowledge-base/skills/**/*'],
+    '/api/dashboard/agents': ['./knowledge-base/skills/**/*'],
+    '/api/cron/**': ['./knowledge-base/skills/**/*'],
+  },
+  outputFileTracingExcludes: {
+    '*': ['./knowledge-base/_archive/**/*'],
   },
   images: {
     domains: [],

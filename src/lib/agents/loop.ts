@@ -24,6 +24,9 @@ import { readHowWeWork } from '<npm>/lib/notion/read-how-we-work'
 import { readDecisionLog } from '<npm>/lib/notion/read-decision-log'
 import { getApprovalPatterns } from '<npm>/lib/actions/approval-patterns'
 import { wrapToolsWithApprovalGate } from './approval-gate'
+import { loadSkillCatalog, buildSkillsSystemBlock, loadSkillBody } from '<npm>/lib/skills'
+import { tool as aiTool } from 'ai'
+import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
 
@@ -63,11 +66,33 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     // Approval gate: write actions queue to /dashboard/actions for customer
     // approval; reads + Notion writes pass through. Per-tool autonomy
     // policies ('ask'|'auto'|'off') are resolved inside the gate.
-    const tools = await wrapToolsWithApprovalGate(rawTools, {
+    const gatedTools = await wrapToolsWithApprovalGate(rawTools, {
       userId,
       source: 'cron-agent',
       agentSlug: spec.slug,
     })
+
+    // Anthropic Agent Skills — progressive disclosure tier 2.
+    // Add a single `load_skill` tool that returns the full SKILL.md body for
+    // a skill named in the catalog (the catalog is injected into the system
+    // prompt below at tier 1).
+    const tools = {
+      ...gatedTools,
+      load_skill: aiTool({
+        description:
+          'Load the full SKILL.md body for a named skill (Anthropic Agent Skills pattern). The catalog of available skills is in your system prompt. Call this only when a skill clearly applies to your current task.',
+        inputSchema: z.object({
+          name: z.string().describe('The skill name (kebab-case) from the catalog.'),
+        }),
+        execute: async (args: { name: string }) => {
+          try {
+            return { success: true, name: args.name, body: await loadSkillBody(args.name) }
+          } catch (err) {
+            return { success: false, error: err instanceof Error ? err.message : 'load failed' }
+          }
+        },
+      }),
+    }
 
     // 5. Personalize the system prompt with three best-effort enrichments —
     // any of these returning null leaves the agent on its base behaviour:
@@ -76,10 +101,11 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     //       re-suggest things they've already decided against
     //   (c) Approval patterns — aggregated approve / reject / edit feedback
     //       for this specific agent, so the model adjusts its style
-    const [howWeWork, decisions, patterns] = await Promise.all([
+    const [howWeWork, decisions, patterns, skillCatalog] = await Promise.all([
       readHowWeWork(userId),
       readDecisionLog(userId),
       getApprovalPatterns(userId, spec.slug, 60),
+      loadSkillCatalog(),
     ])
 
     const enrichments: string[] = []
@@ -98,6 +124,10 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
         `# Your approval patterns with this customer (adjust your style accordingly)\n${patterns}`,
       )
     }
+    // Anthropic Agent Skills — boot tier. The catalog is the same for every
+    // agent; the model picks which (if any) to load_skill mid-run.
+    const skillsBlock = buildSkillsSystemBlock(skillCatalog)
+    if (skillsBlock) enrichments.push(skillsBlock)
 
     const systemPrompt =
       enrichments.length > 0
