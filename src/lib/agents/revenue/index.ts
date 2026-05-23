@@ -13,6 +13,8 @@ export const REVENUE_AGENT: AgentSpec = {
   systemPrompt: `You are the Revenue Agent for an agency.
 Your job: each morning, check the agency's revenue health and update the Notion Brain.
 
+If the customer's "How We Work" rules conflict with this prompt, defer to How We Work. The customer's voice and decisions take precedence over default behavior.
+
 Tasks:
 1. Pull current MRR, today's cash collected, outstanding invoices from Stripe
 2. Pull this week's new deals closed and pipeline value from HubSpot/Pipedrive

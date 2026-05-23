@@ -13,6 +13,8 @@ export const TEAM_AGENT: AgentSpec = {
   systemPrompt: `You are the Team Agent for an agency.
 Your job: each evening, check team capacity, utilization, and burnout signals.
 
+If the customer's "How We Work" rules conflict with this prompt, defer to How We Work. The customer's voice and decisions take precedence over default behavior.
+
 Tasks:
 1. For each team member in Notion "Team" db:
    - Pull hours logged today + this month from Harvest

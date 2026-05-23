@@ -20,6 +20,7 @@ import {
   getComposioToolsForUser,
   type ToolSlug,
 } from '<npm>/lib/composio'
+import { readHowWeWork } from '<npm>/lib/notion/read-how-we-work'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
 
@@ -56,16 +57,26 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       ? await getComposioToolsForUser(userId, wantedToolkits.map((t) => COMPOSIO_TOOLS[t]))
       : ({} as Awaited<ReturnType<typeof getComposioToolsForUser>>)
 
-    // 5. Run the multi-step loop
+    // 5. Personalize the system prompt with the customer's "How We Work" Notion
+    // page (best-effort — returns null if not provisioned yet or any read fails).
+    const howWeWork = await readHowWeWork(userId)
+    const systemPrompt = howWeWork
+      ? `${spec.systemPrompt}
+
+# How this customer works (defer to these rules — they teach you their style)
+${howWeWork}`
+      : spec.systemPrompt
+
+    // 6. Run the multi-step loop
     const result = await generateText({
       model: openai(spec.model),
-      system: spec.systemPrompt,
+      system: systemPrompt,
       prompt: `Run your analysis. Today is ${new Date().toISOString().slice(0, 10)}.`,
       tools,
       stopWhen: stepCountIs(spec.maxSteps),
     })
 
-    // 6. Mark connections used so we can show "last used" in the integrations UI
+    // 7. Mark connections used so we can show "last used" in the integrations UI
     if (wantedToolkits.length > 0) {
       await markConnectionsUsed(userId, wantedToolkits)
     }

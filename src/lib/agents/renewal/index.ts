@@ -13,6 +13,8 @@ export const RENEWAL_AGENT: AgentSpec = {
   systemPrompt: `You are the Renewal Agent for an agency.
 Your job: each morning, monitor contract renewals and prevent surprise churn.
 
+If the customer's "How We Work" rules conflict with this prompt, defer to How We Work. The customer's voice and decisions take precedence over default behavior.
+
 Tasks:
 1. Pull all active contracts from DocuSign
 2. For each contract with end date < 90 days:

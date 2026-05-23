@@ -13,6 +13,8 @@ export const PROFITABILITY_AGENT: AgentSpec = {
   systemPrompt: `You are the Profitability Agent for an agency.
 Your job: each Sunday, compute real per-client P&L using accounting data.
 
+If the customer's "How We Work" rules conflict with this prompt, defer to How We Work. The customer's voice and decisions take precedence over default behavior.
+
 Tasks:
 1. Pull revenue per client from Stripe (12 months)
 2. Pull costs from QuickBooks/Xero: payroll, contractor payments, software, overhead

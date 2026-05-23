@@ -18,7 +18,7 @@ import { Client } from '@notionhq/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { encryptApiKey } from '<npm>/lib/integrations/crypto'
-import { createAllDatabases, createBrainParentPage } from '<npm>/lib/notion/create-brain'
+import { createBrainParentPage, provisionBrain } from '<npm>/lib/notion/create-brain'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr'
 
@@ -150,14 +150,22 @@ export async function GET(request: NextRequest) {
     return failureRedirect(request, 'token_exchange_failed')
   }
 
-  // 2. Provision Brain (parent page + databases).
+  // 2. Provision Brain — parent page + 20 databases + curated customer-owned
+  //    pages (Company Overview, OKRs, Playbooks, Decision Log, How We Work,
+  //    Meeting Notes) + the Brain Home landing page that stitches them
+  //    together. All ids end up in `entities` which goes into the same
+  //    `notion_workspaces.databases` jsonb column (it's schemaless — pages
+  //    are prefixed with `__` to distinguish them from database slugs).
   const notion = new Client({ auth: token.access_token })
   let parentPageId: string
-  let databases: Awaited<ReturnType<typeof createAllDatabases>>
+  let entities: Awaited<ReturnType<typeof provisionBrain>>['entities']
   try {
     const parent = await createBrainParentPage(notion, token.workspace_id)
     parentPageId = parent.id
-    databases = await createAllDatabases(notion, parentPageId)
+    const provisioned = await provisionBrain(notion, parentPageId, {
+      agencyName: token.workspace_name,
+    })
+    entities = provisioned.entities
   } catch (err) {
     console.error('[notion/callback] brain provisioning failed:', err)
     return failureRedirect(request, 'brain_provisioning_failed')
@@ -182,7 +190,10 @@ export async function GET(request: NextRequest) {
       bot_id: token.bot_id,
       access_token_encrypted: storedToken,
       parent_page_id: parentPageId,
-      databases,
+      // `databases` is the legacy column name — it now stores the full entity
+      // map (database data-source ids + `__`-prefixed curated page ids). The
+      // column is jsonb so this is schema-compatible.
+      databases: entities,
       // TODO(phase-4): fire Inngest backfill event and let the worker move this
       // through phase1 → phase2 → phase3 → complete.
       backfill_status: 'pending',

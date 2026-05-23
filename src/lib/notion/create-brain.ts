@@ -21,7 +21,22 @@
  */
 
 import { Client } from '@notionhq/client'
-import { type NotionDatabasesMap, type NotionDatabaseSlug } from './schema-keys'
+
+import { createBrainHomePage } from './brain-home'
+import {
+  createCompanyOverviewPage,
+  createDecisionLogPage,
+  createHowWeWorkPage,
+  createMeetingNotesPage,
+  createOkrsPage,
+  createPlaybooksPage,
+} from './page-templates'
+import {
+  type NotionDatabasesMap,
+  type NotionDatabaseSlug,
+  type NotionPagesMap,
+  type NotionWorkspaceEntityMap,
+} from './schema-keys'
 
 /**
  * Slugs of databases that have implemented schemas. The OAuth callback iterates these
@@ -973,4 +988,82 @@ async function createWeeklyBriefingsDatabase(
     },
   })
   return db.id
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full Brain provisioner — databases + curated pages + brain home.
+//
+// `createAllDatabases` ships the raw 20 databases (kept as-is so callers that
+// only want the data layer can still call it directly).  `provisionBrain` is
+// the higher-level entry the OAuth callback uses: it creates the databases
+// FIRST (so the home page can link to them), then seeds the customer-owned
+// strategic pages (Company Overview, OKRs, Playbooks, Decision Log,
+// How We Work, Meeting Notes), then creates the Brain Home landing page that
+// stitches everything together.
+//
+// All entity ids — database data-source ids AND page ids — go into the same
+// `NotionWorkspaceEntityMap` which is persisted in `notion_workspaces.databases`
+// (jsonb). The schema-keys file documents which keys are which.
+//
+// Idempotency: callers that already have a populated `NotionWorkspaceEntityMap`
+// should NOT re-run this — see provisionBrainIfNeeded() below, which guards on
+// the presence of `__brain_home`.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ProvisionBrainResult = {
+  parentPageId: string
+  entities: NotionWorkspaceEntityMap
+}
+
+export async function provisionBrain(
+  notion: Client,
+  parentPageId: string,
+  options: { agencyName?: string | null } = {},
+): Promise<ProvisionBrainResult> {
+  // 1. Create the 20 source databases. Sequential — see createAllDatabases note.
+  const databases = await createAllDatabases(notion, parentPageId)
+
+  // 2. Seed the curated, customer-owned strategic pages. Sequential to keep
+  //    well under Notion's ~3 req/sec ceiling. Order is presentational —
+  //    Notion renders sub-pages in creation order under the parent.
+  const pages: NotionPagesMap = {}
+
+  pages.__company_overview = (await createCompanyOverviewPage(notion, parentPageId)).id
+  pages.__okrs = (await createOkrsPage(notion, parentPageId)).id
+  pages.__playbooks = (await createPlaybooksPage(notion, parentPageId)).id
+  pages.__decision_log = (await createDecisionLogPage(notion, parentPageId)).id
+  pages.__how_we_work = (await createHowWeWorkPage(notion, parentPageId)).id
+  pages.__meeting_notes = (await createMeetingNotesPage(notion, parentPageId)).id
+
+  // 3. Brain Home — created LAST so it can link to every database and the
+  //    customer-owned pages.
+  const combined: NotionWorkspaceEntityMap = { ...databases, ...pages }
+  const brainHome = await createBrainHomePage(notion, parentPageId, combined, {
+    agencyName: options.agencyName ?? undefined,
+  })
+  combined.__brain_home = brainHome.id
+
+  return { parentPageId, entities: combined }
+}
+
+/**
+ * Idempotent wrapper used by the OAuth callback. If the customer already has
+ * a Brain Home page in their stored entity map, we treat the workspace as
+ * already provisioned and short-circuit. This guards against accidentally
+ * re-seeding customer-edited pages on a reconnect.
+ *
+ * Returns `null` when the existing provisioning is already complete (caller
+ * should leave the row untouched). Returns the freshly-provisioned result
+ * when this is a true first connect.
+ */
+export async function provisionBrainIfNeeded(
+  notion: Client,
+  parentPageId: string,
+  existing: NotionWorkspaceEntityMap | null | undefined,
+  options: { agencyName?: string | null } = {},
+): Promise<ProvisionBrainResult | null> {
+  if (existing && existing.__brain_home) {
+    return null
+  }
+  return provisionBrain(notion, parentPageId, options)
 }

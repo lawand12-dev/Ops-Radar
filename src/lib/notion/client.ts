@@ -12,7 +12,7 @@ import { Client, APIErrorCode, APIResponseError } from '@notionhq/client'
 import { decryptApiKey, type EncryptedSecret } from '<npm>/lib/integrations/crypto'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 
-import type { NotionDatabasesMap } from './schema-keys'
+import type { NotionWorkspaceEntityMap } from './schema-keys'
 
 export type NotionWorkspace = {
   user_id: string
@@ -20,7 +20,14 @@ export type NotionWorkspace = {
   workspace_name: string | null
   bot_id: string | null
   parent_page_id: string
-  databases: NotionDatabasesMap
+  /**
+   * Map of all OpsRadar Brain entities in this workspace. Database slugs
+   * (e.g. `clients`, `risk_register`) map to Notion data-source ids; curated
+   * page slugs (prefixed `__`, e.g. `__brain_home`, `__how_we_work`) map to
+   * Notion page ids. Stored as jsonb in `notion_workspaces.databases` — the
+   * column name is legacy from when only databases were tracked.
+   */
+  databases: NotionWorkspaceEntityMap
   connected_at: string
   last_synced_at: string | null
   backfill_status:
@@ -65,7 +72,7 @@ export async function getWorkspace(userId: string): Promise<NotionWorkspace | nu
     workspace_name: data.workspace_name,
     bot_id: data.bot_id,
     parent_page_id: data.parent_page_id,
-    databases: (data.databases ?? {}) as NotionDatabasesMap,
+    databases: (data.databases ?? {}) as NotionWorkspaceEntityMap,
     connected_at: data.connected_at,
     last_synced_at: data.last_synced_at,
     backfill_status: normalizeBackfillStatus(data.backfill_status),
