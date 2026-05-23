@@ -1,5 +1,5 @@
 import { env } from "../../config/env";
-import { dbPgQuery, getPgPool } from "../../lib/db-pg";
+import { getPgPool } from "../../lib/db-pg";
 import { vectorToSqlLiteral } from "./embedding-client";
 import type { EmbeddingSourceKind } from "./embedding-jobs";
 
@@ -67,6 +67,13 @@ const ALL_KINDS: EmbeddingSourceKind[] = [
   "workflow_topology"
 ];
 
+/**
+ * Kinds that are stored with owner_user_id = NULL because they're global
+ * procedural / semantic memory (not tenant-specific). Tenant-scoped
+ * searches include these via the OR-clause below.
+ */
+const GLOBAL_KINDS: EmbeddingSourceKind[] = ["pattern_card", "failure_cluster"];
+
 export async function searchEmbeddings(
   input: SearchEmbeddingsInput
 ): Promise<EmbeddingHit[]> {
@@ -108,6 +115,11 @@ export async function searchEmbeddings(
   // a value in [0,1]; tanh(2x) shape would compress further but at our
   // scale the raw value is fine and faster.
 
+  // Compute the kinds the tenant query should ALSO accept with NULL owner
+  // (global procedural/semantic memory). Only the kinds the caller asked
+  // for, intersected with our global-kinds allowlist.
+  const globalKindsInScope = kinds.filter((k) => GLOBAL_KINDS.includes(k));
+
   const sql = `
     SET LOCAL hnsw.ef_search = ${env.HYBRID_RETRIEVAL_EF_SEARCH};
     WITH semantic AS (
@@ -116,9 +128,12 @@ export async function searchEmbeddings(
              (1 - (embedding <=> $1::vector)) AS vsim
         FROM embeddings
        WHERE active
-         AND owner_user_id = ANY($2::uuid[])
          AND source_kind = ANY($3::text[])
-         ${input.metadataContains ? "AND metadata @> $7::jsonb" : ""}
+         AND (
+              owner_user_id = ANY($2::uuid[])
+           OR (owner_user_id IS NULL AND source_kind = ANY($7::text[]))
+         )
+         ${input.metadataContains ? "AND metadata @> $8::jsonb" : ""}
          ${input.maxAgeDays !== undefined ? `AND created_at >= now() - interval '${Number(input.maxAgeDays)} days'` : ""}
        ORDER BY embedding <=> $1::vector
        LIMIT $4
@@ -144,15 +159,16 @@ export async function searchEmbeddings(
   `;
 
   const params: unknown[] = [
-    queryVec,
-    input.ownerUserIds,
-    kinds,
-    vectorPool,
-    input.queryText,
-    topK
+    queryVec,             // $1
+    input.ownerUserIds,   // $2
+    kinds,                // $3
+    vectorPool,           // $4
+    input.queryText,      // $5
+    topK,                 // $6
+    globalKindsInScope    // $7 — empty array is fine; ANY('{}') matches nothing
   ];
   if (input.metadataContains) {
-    params.push(JSON.stringify(input.metadataContains));
+    params.push(JSON.stringify(input.metadataContains)); // $8
   }
 
   // SET LOCAL only takes effect inside a transaction, so we wrap the

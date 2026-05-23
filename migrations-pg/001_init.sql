@@ -42,7 +42,13 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;   -- gen_random_uuid + digest
 
 CREATE TABLE IF NOT EXISTS embeddings (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_user_id   uuid NOT NULL,
+  -- NULLABLE: global procedural memory kinds (pattern_card) have no
+  -- owner; semantic memory kinds (failure_cluster) are cross-tenant by
+  -- design and stored without an owner too. Tenant-stamped kinds
+  -- (breadcrumb, ai_interaction, weekly_summary, workflow_topology) are
+  -- enforced as NOT NULL at the producer boundary in embedding-jobs.ts
+  -- (`assertTenantInvariant`).
+  owner_user_id   uuid NULL,
   source_kind     text NOT NULL CHECK (source_kind IN (
                     'pattern_card',
                     'breadcrumb',
@@ -63,9 +69,12 @@ CREATE TABLE IF NOT EXISTS embeddings (
 );
 
 -- Idempotent UPSERT key. Re-embedding the same source_id/version/chunk
--- replaces the row.
+-- replaces the row. NULLS NOT DISTINCT (Postgres 15+) treats NULL owner
+-- as a single value so global rows still collide on the same (kind,
+-- source_id, chunk, version) tuple and UPSERT correctly.
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_embeddings_source
-  ON embeddings (owner_user_id, source_kind, source_id, chunk_idx, source_version);
+  ON embeddings (owner_user_id, source_kind, source_id, chunk_idx, source_version)
+  NULLS NOT DISTINCT;
 
 -- Filter index for the hot retrieval predicate:
 --   WHERE owner_user_id = ? AND source_kind = ANY(?) AND active
