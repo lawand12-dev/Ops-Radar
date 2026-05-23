@@ -36,7 +36,7 @@ export function McpTokenView({ token, mcpUrl }: { token: string; mcpUrl: string 
       `curl -X POST ${mcpUrl} \\`,
       `  -H 'Content-Type: application/json' \\`,
       `  -H 'Authorization: Bearer ${token}' \\`,
-      `  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"opsradar.search_kb","arguments":{"query":"paid media margin benchmark"}}}'`,
+      `  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"opsradar.get_finance","arguments":{}}}'`,
     ].join('\n'),
     ChatGPT: `mcp_server:\n  name: opsradar\n  url: ${mcpUrl}\n  auth:\n    type: bearer\n    token: ${token}\n# (requires GPT-5 Apps SDK or a ChatGPT MCP-compatible client)`,
   };

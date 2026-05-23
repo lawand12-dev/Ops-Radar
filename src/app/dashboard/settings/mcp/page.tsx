@@ -20,9 +20,7 @@ const MCP_TOOLS = [
   { name: 'opsradar.get_scope', scope: 'scope:read', description: 'Scope creep signals' },
   { name: 'opsradar.get_outbound', scope: 'outbound:read', description: 'Apollo outbound metrics' },
   { name: 'opsradar.get_meetings', scope: 'meetings:read', description: 'Calendly bookings' },
-  { name: 'opsradar.search_kb', scope: 'kb:read', description: 'Search the OpsRadar agency-ops knowledge base' },
   { name: 'opsradar.propose_action', scope: 'actions:write', description: 'Queue an action for owner review (HITL)' },
-  { name: 'opsradar.generate_workflow', scope: 'workflows:write', description: 'Generate an automation workflow from natural language' },
 ];
 
 type McpInvocation = {

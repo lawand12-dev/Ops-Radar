@@ -27,7 +27,6 @@ import type {
   HarvestClientHours,
 } from '<npm>/lib/integration-types';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { retrieveCooKnowledgeHybrid } from '<npm>/lib/knowledge-retrieval';
 import { searchBrain, formatBrainContext } from './brain-search';
 import type { Json } from '<npm>/lib/database.types';
 import type {
@@ -726,46 +725,6 @@ async function runGetMeetings(ctx: ExecutorContext): Promise<ToolResult> {
   } catch {
     return fetchFailed('Calendly');
   }
-}
-
-// --------------------- per-tool: search_kb -------------------------------
-
-async function runSearchKb(args: Record<string, unknown>, ctx: ExecutorContext): Promise<ToolResult> {
-  if (typeof args.query !== 'string' || !args.query.trim()) {
-    return { success: false, reason: 'query must be a non-empty string.' };
-  }
-  const chunks = await retrieveCooKnowledgeHybrid(args.query);
-
-  // Self-improving loop: log gaps for the admin backlog
-  if (chunks.length === 0) {
-    try {
-      const supabase = getServerSupabaseClient();
-      await supabase.from('coo_kb_gaps').insert({
-        user_id: ctx.userId,
-        user_question: ctx.lastUserQuestion,
-        kb_query: args.query,
-        found_results: false,
-      });
-    } catch {
-      // Don't break the agent if logging fails
-    }
-    return { success: false, reason: 'No relevant knowledge found for that query.' };
-  }
-
-  return {
-    success: true,
-    data: {
-      results: chunks.map((c) => ({
-        source: c.sourceFile,
-        category: c.category,
-        title: c.frontmatter?.title ?? null,
-        summary: c.frontmatter?.summary ?? null,
-        authority: c.frontmatter?.authority ?? null,
-        publication_date: c.frontmatter?.publication_date ?? null,
-        content: c.content,
-      })),
-    },
-  };
 }
 
 // --------------------- per-tool: search_brain ----------------------------
@@ -1893,8 +1852,6 @@ export async function executeToolCall(
       return runGetOutbound(ctx);
     case 'get_meetings':
       return runGetMeetings(ctx);
-    case 'search_kb':
-      return runSearchKb(args, ctx);
     case 'search_brain':
       return runSearchBrain(args, ctx);
     case 'get_real_pnl':

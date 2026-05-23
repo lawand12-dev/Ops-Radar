@@ -58,28 +58,14 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'search_kb',
-      description: "Search the OpsRadar agency research knowledge base for industry benchmarks, operational patterns, and best practices. Use this when the user asks about general agency norms, what's typical, what to charge, why clients churn, or how other agencies handle a problem — anything that requires knowledge beyond the user's own live data.",
-      parameters: {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Short search query, e.g. "paid media agency margin benchmark" or "client churn causes" or "hourly rate for designers".',
-          },
-        },
-        required: ['query'],
-      },
-    },
-  },
+  // CP-16: search_kb removed pending KB reframe. Industry-benchmark
+  // questions are answered from the model's parametric knowledge for now;
+  // the KB will be re-wired once the n8n content has been reframed.
   {
     type: 'function',
     function: {
       name: 'search_brain',
-      description: "Search the agency's OWN brain — past conversations (Slack/email/meeting breadcrumbs) and detected patterns. Use this for any question about the agency's history, recurring issues, what was said about a specific client/employee/project, past decisions, or detected patterns. This is the user's PER-AGENCY memory, distinct from search_kb (which is industry research). Call this first when the user asks 'what patterns have you seen', 'what did we say about X', 'has this happened before', 'what's the history with this client'.",
+      description: "Search the agency's OWN brain — past conversations (Slack/email/meeting breadcrumbs) and detected patterns. Use this for any question about the agency's history, recurring issues, what was said about a specific client/employee/project, past decisions, or detected patterns. This is the user's PER-AGENCY memory. Call this first when the user asks 'what patterns have you seen', 'what did we say about X', 'has this happened before', 'what's the history with this client'.",
       parameters: {
         type: 'object',
         properties: {
@@ -286,7 +272,6 @@ export const TOOL_LABELS: Record<string, string> = {
   get_scope: 'Checking scope creep...',
   get_outbound: 'Fetching outbound metrics...',
   get_meetings: 'Fetching meeting bookings...',
-  search_kb: 'Searching the knowledge base...',
   search_brain: 'Searching your agency brain...',
   get_real_pnl: 'Looking at real P&L...',
   get_payroll: 'Fetching payroll costs...',

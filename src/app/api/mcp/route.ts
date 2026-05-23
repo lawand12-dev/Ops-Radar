@@ -18,7 +18,6 @@
 //   - opsradar.get_scope           (scope: scope:read)
 //   - opsradar.get_outbound        (scope: outbound:read)
 //   - opsradar.get_meetings        (scope: meetings:read)
-//   - opsradar.search_kb           (scope: kb:read)
 //   ACTION TOOLS (HITL-gated — never auto-executes)
 //   - opsradar.propose_action      (scope: actions:write) — queues to agent_actions
 //
@@ -123,23 +122,7 @@ const TOOLS: McpTool[] = [
     executorName: 'get_meetings',
     inputSchema: { type: 'object', properties: {}, required: [] },
   },
-  {
-    name: 'opsradar.search_kb',
-    description:
-      "Search OpsRadar's agency-operations knowledge base for industry benchmarks, operational patterns, and best practices. Use for questions about agency norms, what's typical, what to charge, why clients churn, or how other agencies handle a problem.",
-    scope: 'kb:read',
-    executorName: 'search_kb',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Short search query, e.g. "paid media agency margin benchmark"',
-        },
-      },
-      required: ['query'],
-    },
-  },
+  // CP-16: opsradar.search_kb removed pending KB reframe.
 
   // ─── Action tools (HITL-gated) ─────────────────────────────────────────
   {
@@ -270,7 +253,7 @@ async function handleInitialize(): Promise<unknown> {
     serverInfo: { name: 'opsradar', version: '0.2.0', title: 'OpsRadar' },
     capabilities: { tools: { listChanged: false } },
     instructions:
-      'OpsRadar is the AI COO for marketing agencies. Use the get_* tools for live per-tenant data (finance, profitability, capacity, scope, outbound, meetings). Use search_kb for industry benchmarks and operational patterns. Use propose_action to queue a draft action for owner review — never auto-executes.',
+      'OpsRadar is the AI COO for marketing agencies. Use the get_* tools for live per-tenant data (finance, profitability, capacity, scope, outbound, meetings). Use propose_action to queue a draft action for owner review — never auto-executes.',
   };
 }
 

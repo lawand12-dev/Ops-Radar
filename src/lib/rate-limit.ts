@@ -4,17 +4,10 @@ import { Redis } from '@upstash/redis'
 type RateLimitName =
   | 'admin-auth'
   | 'admin-data'
-  | 'audit-result'
-  | 'audit-step'
   | 'auth-signin'
   | 'auth-forgot-password'
-  | 'build-request'
   | 'dashboard-coo'
-  | 'funnel-event'
-  | 'generate-audit'
   | 'integrations-connect'
-  | 'quick-win-onboarding'
-  | 'research-preview'
   | 'share'
   | 'dashboard-actions'
   | 'dashboard-benchmarks'
@@ -25,17 +18,10 @@ type RateLimitName =
 const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'admin-auth': { limit: 10, window: '1 h' },
   'admin-data': { limit: 30, window: '1 h' },
-  'audit-result': { limit: 120, window: '1 h' },
-  'audit-step': { limit: 120, window: '1 h' },
   'auth-signin': { limit: 20, window: '1 h' },
   'auth-forgot-password': { limit: 5, window: '1 h' },
-  'build-request': { limit: 10, window: '1 h' },
   'dashboard-coo': { limit: 30, window: '1 h' },
-  'funnel-event': { limit: 240, window: '1 h' },
-  'generate-audit': { limit: 3, window: '1 h' },
   'integrations-connect': { limit: 10, window: '1 h' },
-  'quick-win-onboarding': { limit: 10, window: '1 h' },
-  'research-preview': { limit: 20, window: '1 h' },
   share: { limit: 60, window: '1 h' },
   'dashboard-actions': { limit: 120, window: '1 h' },
   'dashboard-benchmarks': { limit: 120, window: '1 h' },
@@ -59,13 +45,9 @@ const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
   'admin-auth',
   'auth-signin',
   'auth-forgot-password',
-  'build-request',
   'dashboard-coo',
-  'generate-audit',
   'integrations-connect',
   'dashboard-health-report',
-  'quick-win-onboarding',
-  'research-preview',
 ])
 
 function createLimiters() {
