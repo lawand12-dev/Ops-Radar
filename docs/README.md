@@ -41,6 +41,7 @@ docs/
 | [`strategy/control-surface-research-2026.md`](./strategy/control-surface-research-2026.md) | Research that informed CP-14: 4-feature MVP control surface every winning agent product shipped in v1 (Lindy, Devin, Claude Code, Cursor, Zapier). The 8 control dimensions, what to skip in v1, NEVER-AUTO 3-tier safety stack. Vercel AI SDK v6 `needsApproval` killer insight. | Before adding any new agent surface; before any "should we ship X control feature?" decision |
 | [`strategy/composio-vs-n8n-decision-2026.md`](./strategy/composio-vs-n8n-decision-2026.md) | The architecture decision that deprecated the workflow-builder layer. Market evidence (agencies use Zapier not n8n; Lindy ships without workflow canvas) + technical evidence (Composio actions ≈ n8n, triggers thinner but adequate for ICP). | Before any "should we add a workflow builder?" question |
 | [`strategy/competitive-landscape-2026-05.md`](./strategy/competitive-landscape-2026-05.md) | Who's winning by category (Lindy SMB, Decagon/Sierra enterprise CS, Cursor coding, Glean enterprise brain). The unclaimed agency-AI-COO lane. 18-month probability spread. Differentiation matrix vs each category leader. | Before fundraising; before YC interview competitor question |
+| [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md) | The decision and research behind migrating the KB from RAG → Anthropic Agent Skills (CP-17). The 46-skill catalog map, post-RAG canonical pattern (Karpathy + Tom Blomfield + Anthropic + Ramp Glass), loader spec, frontmatter rules, composition chains, when NOT to add a skill. | Before writing a new SKILL.md; before any "should we go back to RAG?" question |
 
 ---
 
@@ -149,7 +150,11 @@ Historical plans and specs are in [`dev/archive/`](./dev/archive/).
 
 **Single-system architecture.** OpsRadar is one Next.js 16 app on Vercel + Supabase. There is no second backend, no workflow generator, no n8n integration. The decision to sever the previously separate `chatv2` service is documented in [`strategy/composio-vs-n8n-decision-2026.md`](./strategy/composio-vs-n8n-decision-2026.md).
 
-Read [`CLAUDE.md`](../CLAUDE.md) for the technical map (routes, libs, services). Read [`strategy/control-surface-research-2026.md`](./strategy/control-surface-research-2026.md) for the CP-14 control-surface decisions.
+**Knowledge base = Anthropic Agent Skills (CP-17).** 46 SKILL.md files in `knowledge-base/skills/<domain>/<name>/SKILL.md`, loaded into every agent's system prompt as `name + description` pairs, fetched in full via the `load_skill` tool on demand. No RAG on the hot path. Spec in [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md); authoring rules in [`knowledge-base/skills/INDEX.md`](../knowledge-base/skills/INDEX.md).
+
+**Audit funnel retired (CP-16).** `/audit` is a "Coming soon: live demo" placeholder. `/results` and `/share/[id]` are deleted. Marketing CTAs still resolve.
+
+Read [`CLAUDE.md`](../CLAUDE.md) for the technical map (routes, libs, services). Read [`strategy/control-surface-research-2026.md`](./strategy/control-surface-research-2026.md) for the CP-14 control-surface decisions. Read [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md) for the KB architecture.
 
 ---
 

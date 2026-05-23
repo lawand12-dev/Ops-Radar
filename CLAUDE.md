@@ -67,7 +67,7 @@ Plus 10 cron agents that run on schedule:
 | `/pricing` | Pricing page (4 tiers) |
 | `/about`, `/how-it-works`, `/faq` | Marketing pages |
 | `/for/[vertical]` | Vertical-specific landing pages |
-| `/audit` → `/results` → `/share/[id]` | Free automation audit funnel |
+| `/audit` | "Coming soon: live demo" placeholder. The prospect-facing automation audit funnel was retired in CP-16 along with the chatv2 sever. URL is preserved so the ~10 marketing CTAs across the site still resolve. `/results` and `/share/[id]` are deleted. |
 | `/login`, `/auth`, `/forgot-password` | Customer authentication |
 
 **Customer Dashboard** (`/dashboard/*`)
@@ -145,7 +145,7 @@ Sidebar groups: Overview / TODAY / CLIENTS / INTELLIGENCE / OPERATIONS / PARTNER
 | Route | Purpose |
 |-------|---------|
 | `cron/followups/` | Scheduled follow-up emails |
-| `cron/check-outcomes/` | Hourly outcome detection (CP-13) |
+| `cron/check-outcomes/` | Daily outcome detection at 10:00 UTC (CP-13; throttled from hourly to daily in c8f3a30 — Vercel Hobby plan caps cron frequency at daily) |
 
 ### Other API Routes
 
@@ -171,6 +171,10 @@ Sidebar groups: Overview / TODAY / CLIENTS / INTELLIGENCE / OPERATIONS / PARTNER
 - `agents/tier-gate.ts` — Tier-based agent enablement
 - `agents/registry.ts` — All 10 cron agent specs
 - `agents/<slug>/index.ts` — Individual agent specs (revenue, collections, etc.)
+
+**Agent Skills (CP-17):**
+- `skills.ts` — Anthropic Agent Skills loader. Walks `knowledge-base/skills/<domain>/<name>/SKILL.md`, reads only frontmatter at boot (`name` + `description`), returns full body on demand via `load_skill` tool. Three-tier progressive disclosure pattern.
+- `load_skill` tool is exposed in both `coo/ai-sdk-tools.ts` (COO chat) and `agents/loop.ts` (cron agents). The skill catalog is concatenated into every system prompt as `- name: description` lines.
 
 **COO chat:**
 - `coo/tools.ts`, `coo/ai-sdk-tools.ts` — COO tool definitions (Vercel AI SDK shape)
@@ -246,3 +250,34 @@ Customer business data fetched from integrations (Stripe charges, HubSpot deals,
 ### CP-15 chatv2 sever (May 2026)
 
 Severed all chatv2 / n8n connections — see [`docs/strategy/composio-vs-n8n-decision-2026.md`](./docs/strategy/composio-vs-n8n-decision-2026.md) for the architectural decision. If durable workflow primitives are ever needed (high-volume triggers, multi-day waits), use **Inngest** or **Trigger.dev**, not n8n / chatv2.
+
+### CP-16 audit takedown + KB disconnect (May 2026)
+
+The prospect-facing automation audit funnel (`/audit`, `/results`, `/share/`, `/api/generate-audit`, `/api/audit-step`, `/api/audit-result`, `/api/build-request`, `/api/quick-win-onboarding`, `/api/notify`, `/api/funnel-event`, `/api/research-preview`) was retired in `aca9dbe`. The `/audit` URL was preserved as a "Coming soon: live demo" placeholder so the ~10 marketing CTAs across the site still resolve. The previously-mixed knowledge base was disconnected from all consumers (`search_kb` removed from COO + MCP) and the clearly-dead n8n folders (`n8n-core/`, `n8n-workflows/`, `n8n-troubleshooting/`) were archived. KB stayed dormant pending CP-17.
+
+### CP-17 / CP-17b / CP-17c — Anthropic Agent Skills migration (May 2026)
+
+Migrated the knowledge base from RAG (vector embeddings + retrieval) to Anthropic Agent Skills (`SKILL.md` files in git, progressively disclosed via the `load_skill` tool). Catalog: **46 skills across 9 domains** in `knowledge-base/skills/`:
+
+| Domain | Skill count |
+|---|---|
+| `integrations/` | 10 (per major toolkit) |
+| `revenue/` | 6 |
+| `profitability/` | 5 |
+| `delivery/` | 5 |
+| `client-comms/` | 7 |
+| `coo-briefings/` | 4 |
+| `agency-types/` | 3 |
+| `benchmarks/` | 2 (lookup-style) |
+| `agency-ops/` | 4 |
+
+**Three commits, four moves:**
+
+1. `f3f5118` (CP-17) — Wrote the loader (`src/lib/skills.ts`), wired `load_skill` into COO + cron agents, hand-wrote 10 priority seed skills (`notion-brain-schema`, `projecting-cash-runway`, `firing-a-client`, `raising-retainer-prices`, etc.), archived the n8n build-time content, deduped 30 exact byte-for-byte triplicates.
+2. `5aa124d` (CP-17b) — Bulk-converted 36 legacy files into SKILL.md via parallel subagent dispatch. Each subagent received the conversion prompt validated in a 5-skill batch, plus pre-curated source files (never let the model decide whether to merge across buckets).
+3. `b2ce0b3` (CP-17c) — Polish pass: added `## Related skills` cross-references to the top-10 most-likely-to-be-called skills so the agent composes skills properly mid-turn (e.g. `firing-a-client` → `diagnosing-difficult-clients` → `discussing-margin-with-client`).
+4. `c8f3a30` (post-deploy fix) — `check-outcomes` cron throttled from hourly to daily (Vercel Hobby plan).
+
+**Why this pattern wins:** matches Anthropic's published Agent Skills spec, Ramp Glass / Block / Anthropic's own production usage, and the post-RAG canonical pattern Karpathy + Tom Blomfield (YC RFS #4 author) publicly described. Earns YC #4 "Company Brain" by construction, not by claim. See research basis in [`docs/strategy/agent-skills-architecture-2026.md`](./docs/strategy/agent-skills-architecture-2026.md) (newly added in this commit).
+
+**Authoring guidelines** are in [`knowledge-base/skills/INDEX.md`](./knowledge-base/skills/INDEX.md). Headline rules: only `name` + `description` in frontmatter (no `tags`, `category`, `coo_relevance`, `when_to_use`); body ≤ 250 lines; open with italic anxious-question opener; include conversation scripts; end with "What NOT to do".
