@@ -31,7 +31,7 @@ async function insertAction(userId: string, action: NewAction): Promise<AgentAct
     console.error('[insertAction] failed:', error);
     return null;
   }
-  return data as AgentAction;
+  return data as unknown as AgentAction;
 }
 
 export async function evaluateActionsForUser(userId: string): Promise<void> {

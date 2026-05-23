@@ -37,6 +37,29 @@ import type {
   RetainerOveragePayload,
   ActionPayload,
 } from '<npm>/lib/actions/types';
+import { trackAction, type TrackedEntityType } from '<npm>/lib/actions/outcome-tracker';
+import type { ToolSlug } from '<npm>/lib/composio';
+import { getNotionClient, getWorkspace, withNotionRetry } from '<npm>/lib/notion/client';
+
+const TRACKED_ENTITY_TYPES: readonly TrackedEntityType[] = [
+  'invoice',
+  'deal',
+  'contract',
+  'project',
+  'task',
+];
+
+const TRACKABLE_TOOL_SLUGS: readonly ToolSlug[] = [
+  'stripe',
+  'hubspot',
+  'pipedrive',
+  'docusign',
+  'clickup',
+  'asana',
+  'monday',
+  'harvest',
+  'toggl',
+];
 
 export type ExecutorContext = {
   userId: string;
@@ -927,6 +950,51 @@ async function runQueueAction(
       .single();
 
     if (error || !data) return { success: false, reason: 'Failed to save action.' };
+
+    // Optional outcome tracking — link the queued action to the upstream entity
+    // (Stripe invoice, HubSpot deal, etc.) so the hourly outcome-detection cron
+    // can later notice when the entity's state changed and mark this as a win.
+    // Best-effort: if anything here fails we still return success on the queued
+    // action — tracking is additive.
+    const rawEntityType = args.entity_type;
+    const rawEntityId = args.entity_id;
+    const rawEntityToolSlug = args.entity_tool_slug;
+    const rawExpectedOutcome = args.expected_outcome;
+
+    if (
+      typeof rawEntityType === 'string' &&
+      typeof rawEntityId === 'string' &&
+      typeof rawEntityToolSlug === 'string' &&
+      (TRACKED_ENTITY_TYPES as readonly string[]).includes(rawEntityType) &&
+      (TRACKABLE_TOOL_SLUGS as readonly string[]).includes(rawEntityToolSlug) &&
+      rawEntityId.trim().length > 0
+    ) {
+      try {
+        await trackAction({
+          userId: ctx.userId,
+          agentActionId: data.id,
+          agentSlug: 'coo', // direct from the Ask COO chat agent
+          entityType: rawEntityType as TrackedEntityType,
+          entityId: rawEntityId,
+          entityToolSlug: rawEntityToolSlug as ToolSlug,
+          expectedOutcome:
+            typeof rawExpectedOutcome === 'string' && rawExpectedOutcome.trim().length > 0
+              ? rawExpectedOutcome
+              : undefined,
+          baselineState: {
+            queued_at: new Date().toISOString(),
+            label: args.label,
+          },
+        });
+      } catch (trackErr) {
+        // Don't fail the user-facing queue_action call if tracking insert errors.
+        console.warn(
+          '[queue_action] trackAction failed (action still queued)',
+          trackErr instanceof Error ? trackErr.message : trackErr,
+        );
+      }
+    }
+
     return { success: true, data: { action_id: data.id, label: args.label } };
   } catch {
     return { success: false, reason: 'Failed to build or save action.' };
@@ -1718,6 +1786,91 @@ async function runGetContracts(ctx: ExecutorContext): Promise<ToolResult> {
   }
 }
 
+// --------------------- per-tool: record_decision -------------------------
+
+/**
+ * Append a single decision entry to the customer's `__decision_log` Notion
+ * page. The agent loop reads this page on every run (via readDecisionLog) so
+ * other agents won't re-suggest things the customer has already decided.
+ *
+ * Inline rather than in `src/lib/notion/helpers.ts` to keep that file focused
+ * on database CRUD; this helper only touches a single page's children.
+ *
+ * Block shape:
+ *   - bulleted_list_item with: "YYYY-MM-DD — <category>: <decision> — <context>"
+ */
+async function appendDecisionToNotion(
+  userId: string,
+  decision: {
+    decision: string;
+    context?: string;
+    category?: string;
+  },
+): Promise<void> {
+  const ws = await getWorkspace(userId);
+  if (!ws) throw new Error('Notion not connected');
+
+  const databases = ws.databases as Record<string, string | undefined>;
+  const pageId = databases['__decision_log'];
+  if (!pageId) throw new Error('Decision Log page not provisioned in this Notion workspace');
+
+  const today = new Date().toISOString().slice(0, 10);
+  const category = (decision.category ?? 'operational').trim();
+  const headline = `${today} — ${category}: ${decision.decision}`.trim();
+  const ctx = decision.context?.trim();
+
+  const notion = await getNotionClient(userId);
+  await withNotionRetry(() =>
+    notion.blocks.children.append({
+      block_id: pageId,
+      children: [
+        {
+          type: 'bulleted_list_item',
+          bulleted_list_item: {
+            rich_text: [{ type: 'text', text: { content: headline } }],
+          },
+        },
+        ...(ctx
+          ? [
+              {
+                type: 'paragraph' as const,
+                paragraph: {
+                  rich_text: [
+                    { type: 'text' as const, text: { content: `Context: ${ctx}` } },
+                  ],
+                },
+              },
+            ]
+          : []),
+      ],
+    }),
+  );
+}
+
+async function runRecordDecision(
+  args: Record<string, unknown>,
+  ctx: ExecutorContext,
+): Promise<ToolResult> {
+  const decision = args.decision;
+  if (typeof decision !== 'string' || decision.trim().length === 0) {
+    return { success: false, reason: 'decision must be a non-empty string.' };
+  }
+  const context = typeof args.context === 'string' ? args.context : undefined;
+  const category = typeof args.category === 'string' ? args.category : 'operational';
+
+  try {
+    await appendDecisionToNotion(ctx.userId, {
+      decision: decision.trim(),
+      context,
+      category,
+    });
+    return { success: true, data: { logged: true } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'log_failed';
+    return { success: false, reason: message };
+  }
+}
+
 // --------------------- dispatcher ----------------------------------------
 
 export async function executeToolCall(
@@ -1764,6 +1917,8 @@ export async function executeToolCall(
       return runGetContracts(ctx);
     case 'queue_action':
       return runQueueAction(args, ctx);
+    case 'record_decision':
+      return runRecordDecision(args, ctx);
     default:
       return { success: false, reason: `Unknown tool: ${name}` };
   }

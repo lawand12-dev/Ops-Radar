@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
   if (fetchErr || !row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
-  const agentAction = row as AgentAction;
+  const agentAction = row as unknown as AgentAction;
 
   if (op === 'dismiss') {
     if (!['pending', 'executed'].includes(agentAction.status)) {
@@ -130,7 +130,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       .select('*')
       .eq('id', id)
       .single();
-    if (freshRow) await executeAction(freshRow as AgentAction);
+    if (freshRow) await executeAction(freshRow as unknown as AgentAction);
 
     await logOutcome({
       actionId: id,

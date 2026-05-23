@@ -27,5 +27,7 @@ Tasks:
    - If a new revenue pattern detected, append to "Pattern Cards"
 6. Log every action to "Agent Action Log"
 
+Each run, call get_recent_wins to surface what we recovered last week (paid invoices, renewed contracts, closed deals attributed to other agents' actions), and include the totals in your KPI summary so the customer sees concrete dollar value tied to OpsRadar's work.
+
 Be specific. Use real numbers. Never invent data. If a tool returns nothing, write "no data" and continue.`,
 }

@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_tracking: {
+        Row: {
+          agent_action_id: string | null
+          agent_slug: string
+          baseline_state: Json
+          created_at: string
+          current_state: Json | null
+          entity_id: string
+          entity_tool_slug: string
+          entity_type: string
+          expected_outcome: string | null
+          id: string
+          last_checked_at: string | null
+          outcome_detected: boolean
+          outcome_detected_at: string | null
+          outcome_value_usd: number | null
+          user_id: string
+        }
+        Insert: {
+          agent_action_id?: string | null
+          agent_slug: string
+          baseline_state?: Json
+          created_at?: string
+          current_state?: Json | null
+          entity_id: string
+          entity_tool_slug: string
+          entity_type: string
+          expected_outcome?: string | null
+          id?: string
+          last_checked_at?: string | null
+          outcome_detected?: boolean
+          outcome_detected_at?: string | null
+          outcome_value_usd?: number | null
+          user_id: string
+        }
+        Update: {
+          agent_action_id?: string | null
+          agent_slug?: string
+          baseline_state?: Json
+          created_at?: string
+          current_state?: Json | null
+          entity_id?: string
+          entity_tool_slug?: string
+          entity_type?: string
+          expected_outcome?: string | null
+          id?: string
+          last_checked_at?: string | null
+          outcome_detected?: boolean
+          outcome_detected_at?: string | null
+          outcome_value_usd?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_tracking_agent_action_id_fkey"
+            columns: ["agent_action_id"]
+            isOneToOne: false
+            referencedRelation: "agent_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agency_submissions: {
         Row: {
           active_clients: number | null
@@ -53,11 +115,16 @@ export type Database = {
       agent_actions: {
         Row: {
           action_type: string
+          agent_slug: string | null
           approved_at: string | null
           created_at: string
+          edit_diff: string | null
+          edited_at: string | null
           executed_at: string | null
+          feedback_reason: string | null
           id: string
           payload: Json
+          rejected_at: string | null
           status: string
           undo_deadline: string | null
           undone_at: string | null
@@ -65,11 +132,16 @@ export type Database = {
         }
         Insert: {
           action_type: string
+          agent_slug?: string | null
           approved_at?: string | null
           created_at?: string
+          edit_diff?: string | null
+          edited_at?: string | null
           executed_at?: string | null
+          feedback_reason?: string | null
           id?: string
           payload?: Json
+          rejected_at?: string | null
           status?: string
           undo_deadline?: string | null
           undone_at?: string | null
@@ -77,11 +149,16 @@ export type Database = {
         }
         Update: {
           action_type?: string
+          agent_slug?: string | null
           approved_at?: string | null
           created_at?: string
+          edit_diff?: string | null
+          edited_at?: string | null
           executed_at?: string | null
+          feedback_reason?: string | null
           id?: string
           payload?: Json
+          rejected_at?: string | null
           status?: string
           undo_deadline?: string | null
           undone_at?: string | null

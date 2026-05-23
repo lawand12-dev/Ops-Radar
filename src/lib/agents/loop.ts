@@ -21,6 +21,8 @@ import {
   type ToolSlug,
 } from '<npm>/lib/composio'
 import { readHowWeWork } from '<npm>/lib/notion/read-how-we-work'
+import { readDecisionLog } from '<npm>/lib/notion/read-decision-log'
+import { getApprovalPatterns } from '<npm>/lib/actions/approval-patterns'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
 
@@ -57,15 +59,40 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       ? await getComposioToolsForUser(userId, wantedToolkits.map((t) => COMPOSIO_TOOLS[t]))
       : ({} as Awaited<ReturnType<typeof getComposioToolsForUser>>)
 
-    // 5. Personalize the system prompt with the customer's "How We Work" Notion
-    // page (best-effort — returns null if not provisioned yet or any read fails).
-    const howWeWork = await readHowWeWork(userId)
-    const systemPrompt = howWeWork
-      ? `${spec.systemPrompt}
+    // 5. Personalize the system prompt with three best-effort enrichments —
+    // any of these returning null leaves the agent on its base behaviour:
+    //   (a) "How We Work" — customer-authored rules from Notion
+    //   (b) "Decision Log" — recent strategic decisions, so we don't
+    //       re-suggest things they've already decided against
+    //   (c) Approval patterns — aggregated approve / reject / edit feedback
+    //       for this specific agent, so the model adjusts its style
+    const [howWeWork, decisions, patterns] = await Promise.all([
+      readHowWeWork(userId),
+      readDecisionLog(userId),
+      getApprovalPatterns(userId, spec.slug, 60),
+    ])
 
-# How this customer works (defer to these rules — they teach you their style)
-${howWeWork}`
-      : spec.systemPrompt
+    const enrichments: string[] = []
+    if (howWeWork) {
+      enrichments.push(
+        `# How this customer works (defer to these rules — they teach you their style)\n${howWeWork}`,
+      )
+    }
+    if (decisions) {
+      enrichments.push(
+        `# Recent strategic decisions (don't re-suggest things already decided)\n${decisions}`,
+      )
+    }
+    if (patterns) {
+      enrichments.push(
+        `# Your approval patterns with this customer (adjust your style accordingly)\n${patterns}`,
+      )
+    }
+
+    const systemPrompt =
+      enrichments.length > 0
+        ? `${spec.systemPrompt}\n\n${enrichments.join('\n\n')}`
+        : spec.systemPrompt
 
     // 6. Run the multi-step loop
     const result = await generateText({

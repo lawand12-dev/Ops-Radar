@@ -176,8 +176,37 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'record_decision',
+      description:
+        "Record a strategic decision the customer has just made or articulated in this conversation. Use this when the customer says things like \"I'll fire them,\" \"let's reprice next quarter,\" \"we're going to pause hiring,\" \"drop SEO as a service line,\" etc. The decision gets logged to their Notion Decision Log so other agents see it and don't re-suggest the same thing. Be conservative — only log clear, actionable decisions, not exploratory thinking or hypotheticals.",
+      parameters: {
+        type: 'object',
+        properties: {
+          decision: {
+            type: 'string',
+            description: 'One-sentence summary of the decision (imperative voice, e.g. "Fire Acme Corp at end of Q3").',
+          },
+          context: {
+            type: 'string',
+            description: 'Optional 1-3 sentence context: why, what triggered it, related entities (clients, projects, people).',
+          },
+          category: {
+            type: 'string',
+            enum: ['client', 'team', 'financial', 'strategic', 'operational'],
+            description: 'What domain this decision belongs to.',
+          },
+        },
+        required: ['decision'],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'queue_action',
-      description: 'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do.',
+      description:
+        'Queue a draft action for the user to review in their Actions queue. Only call this AFTER calling the relevant data tool (get_profitability, get_scope, etc.) so you have the real numbers. The draft appears in the queue — nothing is sent automatically. The user reviews and decides what to do. When applicable, include entity tracking fields (entity_type, entity_id, entity_tool_slug, expected_outcome) so we can detect when the action\'s outcome materializes — that\'s how OpsRadar proves your work pays for itself.',
       parameters: {
         type: 'object',
         properties: {
@@ -210,6 +239,38 @@ export const COO_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
             type: 'string',
             description: 'Draft email body — 3-6 sentences, professional, warm tone. Reference the specific numbers. End with a clear ask (call, meeting, etc.).',
           },
+          entity_type: {
+            type: 'string',
+            enum: ['invoice', 'deal', 'contract', 'project', 'task'],
+            description:
+              'Optional. The kind of business entity this action is about. Include this whenever the action is tied to a specific upstream entity (invoice from get_finance, deal from get_sales, project from get_scope, contract from get_contracts). Required if entity_id is provided.',
+          },
+          entity_id: {
+            type: 'string',
+            description:
+              'Optional. The upstream identifier of the tracked entity (e.g. Stripe invoice id "in_abc", HubSpot deal id "1234567", DocuSign envelope id). Pair with entity_type and entity_tool_slug so outcome detection can re-fetch this entity later and see when the state changed.',
+          },
+          entity_tool_slug: {
+            type: 'string',
+            enum: [
+              'stripe',
+              'hubspot',
+              'pipedrive',
+              'docusign',
+              'clickup',
+              'asana',
+              'monday',
+              'harvest',
+              'toggl',
+            ],
+            description:
+              'Optional. The OpsRadar tool slug for the source of the entity. Required if entity_id is provided.',
+          },
+          expected_outcome: {
+            type: 'string',
+            description:
+              'Optional. Short string describing the outcome that would prove the action worked, e.g. "paid" for an invoice, "closed-won" for a deal, "renewed" for a contract, "completed" for a task. Used by the outcome-detection cron to know what state change to watch for.',
+          },
         },
         required: ['action_type', 'label', 'client_name', 'metrics', 'draft_subject', 'draft_body'],
       },
@@ -237,4 +298,5 @@ export const TOOL_LABELS: Record<string, string> = {
   get_ad_performance: 'Fetching ad performance...',
   get_contracts: 'Listing expiring contracts...',
   queue_action: 'Queuing action for your approval...',
+  record_decision: 'Logging this decision to your Brain...',
 };
