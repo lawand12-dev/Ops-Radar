@@ -23,6 +23,9 @@ import projectRoutes from "./modules/projects/project-routes";
 import { getProjectWorkflowDebugSnapshot } from "./modules/projects/project-service";
 import serviceRoutes from "./modules/service/service-routes";
 import workflowRoutes from "./modules/workflows/workflow-routes";
+import agentRoutes from "./modules/agent/agent-routes";
+import queueRoutes from "./modules/queue/queue-routes";
+import outputRoutes from "./modules/outputs/output-routes";
 import {
   buildKnowledgeBaseSelectionLogMeta,
   selectKnowledgeForRequest
@@ -216,5 +219,8 @@ app.route("/event", eventRoutes);
 app.route("/analytics", analyticsRoutes);
 app.route("/n8n", n8nRoutes);
 app.route("/service", serviceRoutes);
+app.route("/agent", agentRoutes);
+app.route("/queue", queueRoutes);
+app.route("/outputs", outputRoutes);
 
 export default app;
