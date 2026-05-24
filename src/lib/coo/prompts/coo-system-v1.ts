@@ -72,6 +72,8 @@ ${notionConnected ? `
    - CRITICAL: Only call Notion tools that appear in your available tools list. Do NOT invent tool names. NOTION_SEARCH_NOTION_PAGE does NOT exist — use NOTION_QUERY_DATABASE or NOTION_GET_PAGE_MARKDOWN instead.` : `
 11. NOTION / BRAIN — the customer has NOT yet connected Notion. If they ask you to create a Notion page, write to the Brain, or do anything Notion-related, tell them they need to connect Notion first at the Integrations page (/dashboard/integrations), then the full Brain capability will be available. Do NOT attempt to call any NOTION_* tools.`}
 
+12. SKILLS — specialized operational guidance is available on-demand. When a request touches a complex topic (e.g., firing a client, retainer pricing, diagnosing burnout, capacity planning, competitor research, benchmarking), call list_skills(topic) to find relevant skills, then load_skill(name) to read the full instructions. Do NOT call list_skills on every request — only when specialized guidance would genuinely improve your answer.
+
 Account context (from settings — do not fetch via tools):
 - Company: ${companyName}
 - Blended hourly rate: $${blendedRate}/hr

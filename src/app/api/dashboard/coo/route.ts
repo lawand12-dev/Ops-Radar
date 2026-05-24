@@ -33,7 +33,8 @@ import { checkQuota, recordUsage } from '<npm>/lib/usage/track';
 import { TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { type ExecutorContext } from '<npm>/lib/coo/executor';
 import { buildAiSdkCooTools } from '<npm>/lib/coo/ai-sdk-tools';
-import { loadSkillCatalog, buildSkillsSystemBlock } from '<npm>/lib/skills';
+// Skills are now lazy — no catalog injection at boot. The list_skills + load_skill
+// tools in buildAiSdkCooTools handle on-demand discovery and loading.
 import {
   COMPOSIO_TOOLS,
   getComposioToolsForUser,
@@ -213,15 +214,11 @@ export async function POST(request: NextRequest): Promise<Response> {
     notionConnected,
   });
 
-  // Anthropic Agent Skills — boot tier. Inject every skill's name +
-  // description so the model can decide which (if any) to load_skill.
-  const skillCatalog = await loadSkillCatalog();
-  const skillsBlock = buildSkillsSystemBlock(skillCatalog);
-  const systemPrompt = skillsBlock
-    ? `${baseSystemPrompt}\n\n${skillsBlock}`
-    : baseSystemPrompt;
+  // Skills are loaded lazily via the list_skills + load_skill tools.
+  // We no longer inject 47 skill descriptions (~1,400 tokens) into every prompt.
+  const systemPrompt = baseSystemPrompt;
 
-  console.log('[coo-agent] using prompt version:', PROMPT_VERSION, '· skills:', skillCatalog.length, '· notion:', notionConnected);
+  console.log('[coo-agent] using prompt version:', PROMPT_VERSION, '· notion:', notionConnected);
 
   const tools = {
     ...buildAiSdkCooTools(ctx),
@@ -229,12 +226,13 @@ export async function POST(request: NextRequest): Promise<Response> {
   };
 
   // Model chain: OpenAI gpt-4o primary, DigitalOcean deepseek-v4-pro fallback.
-  // If DIGITALOCEAN_API_KEY is not set, the chain has only one entry and
-  // rate-limit errors surface to the user as normal errors.
-  const doaiProvider = process.env.DIGITALOCEAN_API_KEY
+  // Supports both DIGITALOCEAN_API_KEY and MODEL_ACCESS_KEY (DO docs use the latter).
+  // If neither is set, the chain has only one entry and rate-limit errors surface normally.
+  const doaiApiKey = process.env.DIGITALOCEAN_API_KEY ?? process.env.MODEL_ACCESS_KEY;
+  const doaiProvider = doaiApiKey
     ? createOpenAI({
         baseURL: process.env.AI_DIGITALOCEAN_URL ?? 'https://inference.do-ai.run/v1',
-        apiKey: process.env.DIGITALOCEAN_API_KEY,
+        apiKey: doaiApiKey,
       })
     : null;
   const modelChain: LanguageModel[] = [

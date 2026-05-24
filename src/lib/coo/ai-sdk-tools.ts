@@ -16,7 +16,7 @@ import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { COO_TOOLS } from './tools'
 import { executeToolCall, type ExecutorContext } from './executor'
-import { loadSkillBody } from '<npm>/lib/skills'
+import { loadSkillBody, loadSkillCatalog } from '<npm>/lib/skills'
 import {
   webSearch,
   researchCompetitor,
@@ -351,9 +351,36 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     },
   })
 
-  // Anthropic Agent Skills — progressive disclosure tier 2.
-  // The boot system prompt lists every skill's name+description; the agent
-  // calls load_skill with a name to get the full SKILL.md body.
+  // Anthropic Agent Skills — lazy catalog discovery (tier 1) + body loader (tier 2).
+  // The system prompt no longer injects all 47 descriptions at boot — this saves
+  // ~1,400 tokens on every request that doesn't need skills (most requests).
+  // Instead the agent calls list_skills() when it suspects a skill applies,
+  // then load_skill(name) to get the full SKILL.md body.
+  out['list_skills'] = tool({
+    description:
+      'List all available skills by name and one-line description. Call this when the user asks something that might benefit from specialized operational guidance (e.g. handling a difficult client, pricing analysis, burnout detection, competitor research). Then call load_skill(name) to read the full instructions for the relevant one.',
+    inputSchema: z.object({
+      topic: z
+        .string()
+        .optional()
+        .describe('Optional topic keyword to filter results, e.g. "retainer", "firing", "burnout". If omitted, returns the full catalog.'),
+    }),
+    execute: async ({ topic }) => {
+      const catalog = await loadSkillCatalog()
+      const filtered = topic
+        ? catalog.filter(
+            (s) =>
+              s.name.includes(topic.toLowerCase()) ||
+              s.description.toLowerCase().includes(topic.toLowerCase()),
+          )
+        : catalog
+      return {
+        skills: filtered.map((s) => ({ name: s.name, description: s.description })),
+        total: filtered.length,
+      }
+    },
+  })
+
   out['load_skill'] = tool({
     description:
       'Load the full SKILL.md body for a named skill (Anthropic Agent Skills pattern). The skill catalog (name + description) is in your system prompt. Call this only when a skill clearly applies to the current task — the returned body contains the operational procedure to follow.',
