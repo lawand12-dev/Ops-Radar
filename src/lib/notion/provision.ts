@@ -27,9 +27,11 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getWorkspace } from './client'
 import { provisionBrainIfNeeded } from './create-brain'
 
-// ConnectionDataSchema is a discriminated union: { authScheme, val: {...} }
-// The actual OAuth fields (access_token, workspace_id, etc.) live inside `val`.
-// We also fall back to the deprecated `params`/`data` fields.
+// Composio's ConnectionDataSchema is a discriminated union: { authScheme, val: {...} }.
+// IMPORTANT: The `access_token` in val is a Composio-internal proxy token — it is NOT
+// the real Notion API token and will be rejected by Notion's API.
+// Composio stores the actual Notion token in val.headers.Authorization as "Bearer {token}".
+// We must extract it from there. Fall back to access_token only as a last resort.
 function extractComposioToken(conn: {
   state?: unknown
   params?: Record<string, unknown>
@@ -43,13 +45,24 @@ function extractComposioToken(conn: {
       ? s
       : {}
   const dep: Record<string, unknown> = conn.params ?? conn.data ?? {}
-  const accessToken = (
+  const meta = { ...dep, ...val }
+
+  // Primary source: headers.Authorization contains the real Notion Bearer token.
+  const headers = val['headers'] as Record<string, string> | undefined
+  const authHeader = headers?.['Authorization'] ?? ''
+  const tokenFromHeader = authHeader.startsWith('Bearer ')
+    ? authHeader.slice('Bearer '.length).trim()
+    : undefined
+
+  // Fallback: access_token (usually a Composio proxy token, often invalid directly)
+  const accessToken = tokenFromHeader ?? (
     val['access_token'] ??
     val['oauth_token'] ??
     dep['access_token'] ??
     dep['oauth_token']
   ) as string | undefined
-  return { accessToken, meta: { ...dep, ...val } }
+
+  return { accessToken, meta }
 }
 
 export async function provisionBrainFromComposio(
@@ -111,17 +124,17 @@ export async function provisionBrainFromComposio(
   const workspaceName = (meta['workspace_name'] as string | undefined) ?? null
   const botId = (meta['bot_id'] as string | undefined) ?? null
 
-  // Composio may route Notion API calls through their own proxy. When present,
-  // base_url and headers in the meta override the default Notion API endpoint.
-  // This happens when Composio manages the OAuth app (vs user's own Notion app).
-  const composioBaseUrl = meta['base_url'] as string | undefined
+  // Pass Notion-Version from Composio headers if available; do NOT pass Authorization
+  // (the Notion client sets that from `auth`). Exclude Composio-internal headers.
   const composioHeaders = meta['headers'] as Record<string, string> | undefined
-  console.log('[brain/provision] base_url:', composioBaseUrl ?? 'none (using api.notion.com)')
+  const notionVersion = composioHeaders?.['Notion-Version']
+  const extraHeaders = notionVersion ? { 'Notion-Version': notionVersion } : {}
+
+  console.log('[brain/provision] using token from headers.Authorization:', !!composioHeaders?.['Authorization'])
 
   const notion = new Client({
     auth: accessToken,
-    ...(composioBaseUrl ? { baseUrl: composioBaseUrl } : {}),
-    ...(composioHeaders ? { headers: composioHeaders } : {}),
+    ...(Object.keys(extraHeaders).length ? { headers: extraHeaders } : {}),
   })
 
   // Create the top-level Brain root page in the user's Notion workspace.
