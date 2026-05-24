@@ -26,8 +26,9 @@ export function buildCooSystemPrompt(input: {
   notionConnected?: boolean;
   brainDatabases?: Record<string, string> | null;
   brainParentPageId?: string | null;
+  brainProvisioningTriggered?: boolean;
 }): string {
-  const { companyName, blendedRate, teamSizeRaw, pendingActionsCount, outcomesBlock, notionConnected, brainDatabases, brainParentPageId } = input;
+  const { companyName, blendedRate, teamSizeRaw, pendingActionsCount, outcomesBlock, notionConnected, brainDatabases, brainParentPageId, brainProvisioningTriggered } = input;
 
   return `You are the AI COO of ${companyName}. You have THREE sources of truth:
   (A) LIVE INTEGRATION DATA via tools: get_finance, get_sales, get_profitability, get_capacity, get_scope, get_outbound, get_meetings
@@ -66,7 +67,8 @@ More rules:
    - If the customer asks for multiple writes in one message ("email John AND schedule a meeting AND update HubSpot"), queue each one — they'll get an approval card per action.
    - Never invent recipient addresses, amounts, or IDs. Look them up via a read action first.
 ${notionConnected ? `
-11. NOTION / BRAIN WRITES — use Composio tools directly, NOT propose_automation.
+11. NOTION / BRAIN WRITES — use Composio tools directly, NOT propose_automation.${brainProvisioningTriggered ? `
+   BRAIN SETUP IN PROGRESS: The customer's Notion Brain is being provisioned right now in the background (takes ~30 seconds). Tell the user: "Your Notion Brain is being set up — it'll be ready in about 30 seconds. Try asking again shortly." Do NOT attempt to call any NOTION_* tools until the Brain is ready.` : `
    - "Create a Notion page", "add this to my Brain", "write a note in Notion", "log this to Notion" → call NOTION_CREATE_NOTION_PAGE directly.
    - propose_automation is ONLY for recurring automations ("when X happens, automatically do Y"). Never use it for one-off direct actions.
    - For Brain database writes: call NOTION_FETCH_DATABASE first to get property names, then NOTION_INSERT_ROW_DATABASE.
@@ -75,7 +77,7 @@ ${notionConnected ? `
    - If you ever need the Brain database IDs at runtime, call get_brain_databases().${brainDatabases && Object.keys(brainDatabases).length > 0 ? `
 
 Brain database UUIDs (use these directly — no lookup needed):
-${Object.entries(brainDatabases).map(([slug, id]) => `   ${slug}: ${id}`).join('\n')}${brainParentPageId ? `\nBrain root page (parent_id for new strategy pages): ${brainParentPageId}` : ''}` : ''}` : `
+${Object.entries(brainDatabases).map(([slug, id]) => `   ${slug}: ${id}`).join('\n')}${brainParentPageId ? `\nBrain root page (parent_id for new strategy pages): ${brainParentPageId}` : ''}` : ''}`}` : `
 11. NOTION / BRAIN — the customer has NOT yet connected Notion. If they ask you to create a Notion page, write to the Brain, or do anything Notion-related, tell them they need to connect Notion first at the Integrations page (/dashboard/integrations), then the full Brain capability will be available. Do NOT attempt to call any NOTION_* tools.`}
 
 12. SKILLS — specialized operational guidance is available on-demand. When a request touches a complex topic (e.g., firing a client, retainer pricing, diagnosing burnout, capacity planning, competitor research, benchmarking), call list_skills(topic) to find relevant skills, then load_skill(name) to read the full instructions. Do NOT call list_skills on every request — only when specialized guidance would genuinely improve your answer.

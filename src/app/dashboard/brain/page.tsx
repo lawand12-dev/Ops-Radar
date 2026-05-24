@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
+import { provisionBrainFromComposio } from '<npm>/lib/notion/provision';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +33,21 @@ export default async function BrainPage() {
   }
 
   const supabase = getServerSupabaseClient();
-  const { data: workspace } = await supabase
-    .from('notion_workspaces')
-    .select('workspace_name, databases, backfill_status')
-    .eq('user_id', userId)
-    .maybeSingle();
+
+  // Check both tables in parallel: Brain workspace data + Composio connection status.
+  const [{ data: workspace }, { data: composioConn }] = await Promise.all([
+    supabase
+      .from('notion_workspaces')
+      .select('workspace_name, databases, backfill_status')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('composio_connections')
+      .select('composio_connection_id, is_active')
+      .eq('user_id', userId)
+      .eq('tool_slug', 'notion')
+      .maybeSingle(),
+  ]);
 
   // Brain Home page id is stored under the `__brain_home` slug in the
   // notion_workspaces.databases jsonb column (page ids share the column
@@ -44,8 +55,10 @@ export default async function BrainPage() {
   const databases = (workspace?.databases ?? {}) as Record<string, string | undefined>;
   const brainHomeId = databases['__brain_home'];
 
-  // ----- Not connected (or page not yet provisioned) -----
-  if (!brainHomeId) {
+  const notionConnected = composioConn?.is_active === true;
+
+  // ----- Not connected at all -----
+  if (!notionConnected && !brainHomeId) {
     return (
       <>
         <div className="mb-7">
@@ -83,8 +96,47 @@ export default async function BrainPage() {
     );
   }
 
+  // ----- Notion connected but Brain not yet provisioned -----
+  if (notionConnected && !brainHomeId && composioConn?.composio_connection_id) {
+    // If no notion_workspaces row exists at all, provisioning hasn't started yet.
+    // Trigger it once. If the row exists but has no __brain_home, provisioning is
+    // already in progress from another request (activate endpoint / webhook) —
+    // don't trigger again to avoid creating duplicate Brain pages in Notion.
+    if (!workspace) {
+      provisionBrainFromComposio(userId, composioConn.composio_connection_id).catch((err) =>
+        console.error('[brain-page] auto-provision failed:', err instanceof Error ? err.message : err),
+      );
+    }
+
+    return (
+      <>
+        <div className="mb-7">
+          <h1 className="mb-1.5 font-serif text-[22px] font-normal leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)]">
+            Your Company Brain
+          </h1>
+          <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
+            Your Brain lives in your own Notion workspace — the agents update it weekly with insights, patterns, and recommendations.
+          </p>
+        </div>
+
+        <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+          <div className="mb-4 text-[28px]">⏳</div>
+          <h2 className="mb-2 text-body font-semibold text-[var(--color-fg)]">
+            Your Brain is being set up
+          </h2>
+          <p className="mb-4 text-body-sm text-[var(--color-fg-muted)]">
+            Notion is connected. We&apos;re creating your 20 databases and Brain Home page now — this takes about 30 seconds.
+          </p>
+          <p className="text-[12px] text-[var(--color-fg-subtle)]">
+            Refresh this page in 30–60 seconds to open your Brain.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   // ----- Connected — invite into Notion -----
-  const url = notionPageUrl(brainHomeId);
+  const url = notionPageUrl(brainHomeId!);
   return (
     <>
       <div className="mb-7">

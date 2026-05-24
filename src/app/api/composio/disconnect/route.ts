@@ -59,5 +59,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'persist_failed' }, { status: 500 })
   }
 
+  // When Notion is disconnected, delete the Brain workspace row too.
+  // If the user reconnects Notion (even to a different workspace), provisioning
+  // will start fresh and write the correct database UUIDs. Without this cleanup,
+  // a reconnect to a different workspace would leave stale UUIDs in the DB,
+  // causing all subsequent NOTION_QUERY_DATABASE calls to fail with 404.
+  if (toolSlug === 'notion') {
+    const { error: wsDeleteErr } = await supabase
+      .from('notion_workspaces')
+      .delete()
+      .eq('user_id', userId)
+    if (wsDeleteErr) {
+      console.warn('[composio/disconnect] notion_workspaces cleanup failed (non-fatal):', wsDeleteErr)
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }

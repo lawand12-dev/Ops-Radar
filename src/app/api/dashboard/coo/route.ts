@@ -208,8 +208,12 @@ export async function POST(request: NextRequest): Promise<Response> {
   // If Notion is connected, read the Brain database UUIDs from notion_workspaces
   // and inject them into the system prompt. Without these IDs the model can't
   // call NOTION_QUERY_DATABASE / NOTION_FETCH_DATABASE (both require a UUID).
+  //
+  // If the row is missing (webhook never fired or failed), auto-trigger
+  // provisioning fire-and-forget so the Brain is ready on the next request.
   let brainDatabases: Record<string, string> | null = null;
   let brainParentPageId: string | null = null;
+  let brainProvisioningTriggered = false;
   if (notionConnected) {
     try {
       const { data: ws } = await service
@@ -217,9 +221,16 @@ export async function POST(request: NextRequest): Promise<Response> {
         .select('databases, parent_page_id')
         .eq('user_id', userId)
         .maybeSingle();
-      if (ws?.databases) {
+      if (ws?.databases && Object.keys(ws.databases as Record<string, string>).length > 0) {
         brainDatabases = ws.databases as Record<string, string>;
         brainParentPageId = ws.parent_page_id ?? null;
+      } else {
+        // Brain not ready yet. If the workspace row doesn't exist at all,
+        // provisioning hasn't started — the activate endpoint or Brain page
+        // will trigger it. If the row exists but has no databases, provisioning
+        // is in progress. Either way, tell the model to ask the user to wait.
+        brainProvisioningTriggered = true;
+        console.log('[coo-agent] brain not ready yet for user:', userId, ws ? '(in progress)' : '(not started)');
       }
     } catch (err) {
       console.warn('[coo-agent] brain workspace read failed:', err);
@@ -235,6 +246,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     notionConnected,
     brainDatabases,
     brainParentPageId,
+    brainProvisioningTriggered,
   });
 
   // Skills are loaded lazily via the list_skills + load_skill tools.

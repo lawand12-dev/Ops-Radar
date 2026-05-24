@@ -361,6 +361,24 @@ async function runComposioAction(
       return { queued: false, skipped: false, summary: `${summary} (auto)`, payload: result }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
+      // Log the failure to agent_actions so there's an audit trail.
+      supabase.from('agent_actions').insert({
+        user_id: ctx.automation.user_id,
+        action_type: 'composio_action',
+        status: 'failed',
+        agent_slug: null,
+        payload: {
+          toolkit: step.toolkit,
+          action_slug: step.action_slug,
+          arguments: safeArgs,
+          source: 'automation',
+          automation_id: ctx.automation.id,
+          summary,
+          error: message,
+        } as unknown as Json,
+      }).then(({ error: logErr }) => {
+        if (logErr) console.warn('[automations/execute] failed-action log failed:', logErr)
+      })
       throw new Error(`auto-execute failed: ${message}`)
     }
   }

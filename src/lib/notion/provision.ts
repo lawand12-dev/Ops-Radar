@@ -32,6 +32,33 @@ export async function provisionBrainFromComposio(
   composioConnectionId: string,
   agencyName?: string | null,
 ): Promise<void> {
+  // Idempotency guard: if a workspace row already exists, only rotate the token.
+  // This prevents concurrent provision calls (e.g. activate endpoint + webhook
+  // firing simultaneously) from creating duplicate Brain setups in Notion.
+  const earlyCheck = await getWorkspace(userId)
+  if (earlyCheck) {
+    const dbKeys = Object.keys(earlyCheck.databases ?? {})
+    if (dbKeys.length > 0) {
+      // Already fully provisioned — rotate the token from the new connection only.
+      const composioForToken = getComposio()
+      const connForToken = await composioForToken.connectedAccounts.get(composioConnectionId)
+      const stateForToken = connForToken.state as Record<string, unknown>
+      const freshToken = (stateForToken['access_token'] ?? stateForToken['oauth_token']) as string | undefined
+      if (freshToken) {
+        const supabaseForToken = getServerSupabaseClient()
+        await supabaseForToken
+          .from('notion_workspaces')
+          .update({ access_token_encrypted: JSON.stringify(encryptApiKey(freshToken)) })
+          .eq('user_id', userId)
+      }
+      console.log('[brain/provision] already provisioned for user:', userId, '— token rotated')
+      return
+    }
+    // Row exists but no databases yet — another provision call is in flight.
+    console.log('[brain/provision] provision already in progress for user:', userId)
+    return
+  }
+
   const composio = getComposio()
 
   // Fetch the live Composio connection. The full Notion OAuth response is stored
@@ -64,7 +91,7 @@ export async function provisionBrainFromComposio(
   })
   const parentPageId = rootPage.id
 
-  // Load any existing workspace data for the idempotency check.
+  // Load any existing workspace data for the idempotency check inside provisionBrainIfNeeded.
   const existing = await getWorkspace(userId)
 
   // Provision databases and strategic pages (skips if Brain Home already exists).

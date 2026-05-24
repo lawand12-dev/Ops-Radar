@@ -12,7 +12,7 @@
  */
 
 import { Redis } from '@upstash/redis'
-import { getComposio } from '<npm>/lib/composio'
+import { COMPOSIO_TOOLS, getComposio } from '<npm>/lib/composio'
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24 // 24 hours
 
@@ -54,9 +54,16 @@ export async function refreshCapabilitiesForUser(
   const composio = getComposio()
   const r = redis()
 
+  // Resolve ToolSlug → ComposioToolkitSlug for each requested toolkit.
+  // e.g. 'google_calendar' → 'googlecalendar', 'bamboo_hr' → 'bamboohr'.
+  // If the slug isn't in our map (shouldn't happen), fall back to the raw value.
+  const composioSlugs = toolkits.map(
+    (t) => (COMPOSIO_TOOLS as Record<string, string>)[t] ?? t,
+  )
+
   try {
-    // Fetch triggers for these toolkits
-    const triggerResult = await composio.triggers.listTypes({ toolkits })
+    // Fetch triggers for these toolkits (Composio API expects its own slug format)
+    const triggerResult = await composio.triggers.listTypes({ toolkits: composioSlugs })
     const newTriggers: CachedTrigger[] = (triggerResult.items ?? []).map((t) => ({
       slug: t.slug,
       name: t.name,
@@ -76,12 +83,14 @@ export async function refreshCapabilitiesForUser(
   }
 
   try {
-    // Fetch action enum for these toolkits (slugs only — enough for compile.ts)
+    // Fetch action enum for these toolkits (slugs only — enough for compile.ts).
+    // Composio action slugs use uppercase toolkit prefix with no underscores:
+    // e.g. GOOGLECALENDAR_LIST_EVENTS, BAMBOOHR_GET_EMPLOYEES — so we uppercase
+    // the ComposioToolkitSlug (not the ToolSlug) to build the correct prefix.
     const rawActions = await composio.tools.getToolsEnum()
     const allSlugs: string[] = Array.isArray(rawActions) ? rawActions as string[] : []
 
-    // Filter to only slugs belonging to the requested toolkits
-    const prefixes = toolkits.map((t) => t.toUpperCase())
+    const prefixes = composioSlugs.map((s) => s.toUpperCase())
     const newActions: CachedAction[] = allSlugs
       .filter((slug) => prefixes.some((p) => slug.startsWith(p)))
       .map((slug) => {

@@ -132,16 +132,47 @@ export default function IntegrationsSettingsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Surface OAuth callback result
+  // Surface OAuth callback result and verify activation with Composio directly.
+  // The webhook-based activation is unreliable, so we call /api/composio/activate
+  // immediately when the user lands back from OAuth. This flips is_active=true in
+  // the DB without waiting for Composio's webhook delivery.
   useEffect(() => {
     const connected = searchParams.get('connected');
     const failed = searchParams.get('failed');
     if (connected) {
-      setBanner({ kind: 'ok', text: `${connected[0].toUpperCase() + connected.slice(1)} connected via OAuth.` });
+      const label = connected ? connected.charAt(0).toUpperCase() + connected.slice(1) : 'Tool';
+      setBanner({ kind: 'ok', text: `${label} connected via OAuth.` });
+
+      // Verify + activate in the background, then reload so the card turns green.
+      fetch('/api/composio/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool_slug: connected }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.activated) {
+            // Reload connections so the card reflects is_active=true.
+            load();
+          } else if (data.status && data.status !== 'already_active') {
+            // Connection not yet active on Composio side — retry once after 3s.
+            setTimeout(() => {
+              fetch('/api/composio/activate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool_slug: connected }),
+              })
+                .then((r) => r.json())
+                .then((d) => { if (d.activated) load(); })
+                .catch(() => null);
+            }, 3000);
+          }
+        })
+        .catch(() => null);
     } else if (failed) {
       setBanner({ kind: 'err', text: `${failed} OAuth failed. Please try again.` });
     }
-  }, [searchParams]);
+  }, [searchParams, load]);
 
   async function startComposioOAuth(toolSlug: string, label: string) {
     try {
