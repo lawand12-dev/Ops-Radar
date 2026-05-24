@@ -205,6 +205,27 @@ export async function POST(request: NextRequest): Promise<Response> {
     console.warn('[coo-agent] composio tool load failed:', err);
   }
 
+  // If Notion is connected, read the Brain database UUIDs from notion_workspaces
+  // and inject them into the system prompt. Without these IDs the model can't
+  // call NOTION_QUERY_DATABASE / NOTION_FETCH_DATABASE (both require a UUID).
+  let brainDatabases: Record<string, string> | null = null;
+  let brainParentPageId: string | null = null;
+  if (notionConnected) {
+    try {
+      const { data: ws } = await service
+        .from('notion_workspaces')
+        .select('databases, parent_page_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (ws?.databases) {
+        brainDatabases = ws.databases as Record<string, string>;
+        brainParentPageId = ws.parent_page_id ?? null;
+      }
+    } catch (err) {
+      console.warn('[coo-agent] brain workspace read failed:', err);
+    }
+  }
+
   const baseSystemPrompt = buildCooSystemPrompt({
     companyName,
     blendedRate,
@@ -212,6 +233,8 @@ export async function POST(request: NextRequest): Promise<Response> {
     pendingActionsCount,
     outcomesBlock,
     notionConnected,
+    brainDatabases,
+    brainParentPageId,
   });
 
   // Skills are loaded lazily via the list_skills + load_skill tools.

@@ -24,8 +24,10 @@ export function buildCooSystemPrompt(input: {
   pendingActionsCount: number;
   outcomesBlock: string;
   notionConnected?: boolean;
+  brainDatabases?: Record<string, string> | null;
+  brainParentPageId?: string | null;
 }): string {
-  const { companyName, blendedRate, teamSizeRaw, pendingActionsCount, outcomesBlock, notionConnected } = input;
+  const { companyName, blendedRate, teamSizeRaw, pendingActionsCount, outcomesBlock, notionConnected, brainDatabases, brainParentPageId } = input;
 
   return `You are the AI COO of ${companyName}. You have THREE sources of truth:
   (A) LIVE INTEGRATION DATA via tools: get_finance, get_sales, get_profitability, get_capacity, get_scope, get_outbound, get_meetings
@@ -69,7 +71,11 @@ ${notionConnected ? `
    - propose_automation is ONLY for recurring automations ("when X happens, automatically do Y"). Never use it for one-off direct actions.
    - For Brain database writes: call NOTION_FETCH_DATABASE first to get property names, then NOTION_INSERT_ROW_DATABASE.
    - Notion reads: NOTION_GET_PAGE_MARKDOWN, NOTION_QUERY_DATABASE, NOTION_QUERY_DATABASE_WITH_FILTER — run immediately without approval.
-   - CRITICAL: Only call Notion tools that appear in your available tools list. Do NOT invent tool names. NOTION_SEARCH_NOTION_PAGE does NOT exist — use NOTION_QUERY_DATABASE or NOTION_GET_PAGE_MARKDOWN instead.` : `
+   - CRITICAL: Only call Notion tools that appear in your available tools list. Do NOT invent tool names. NOTION_SEARCH_NOTION_PAGE does NOT exist — use NOTION_QUERY_DATABASE or NOTION_GET_PAGE_MARKDOWN instead.
+   - If you ever need the Brain database IDs at runtime, call get_brain_databases().${brainDatabases && Object.keys(brainDatabases).length > 0 ? `
+
+Brain database UUIDs (use these directly — no lookup needed):
+${Object.entries(brainDatabases).map(([slug, id]) => `   ${slug}: ${id}`).join('\n')}${brainParentPageId ? `\nBrain root page (parent_id for new strategy pages): ${brainParentPageId}` : ''}` : ''}` : `
 11. NOTION / BRAIN — the customer has NOT yet connected Notion. If they ask you to create a Notion page, write to the Brain, or do anything Notion-related, tell them they need to connect Notion first at the Integrations page (/dashboard/integrations), then the full Brain capability will be available. Do NOT attempt to call any NOTION_* tools.`}
 
 12. SKILLS — specialized operational guidance is available on-demand. When a request touches a complex topic (e.g., firing a client, retainer pricing, diagnosing burnout, capacity planning, competitor research, benchmarking), call list_skills(topic) to find relevant skills, then load_skill(name) to read the full instructions. Do NOT call list_skills on every request — only when specialized guidance would genuinely improve your answer.

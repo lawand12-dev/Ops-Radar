@@ -381,6 +381,38 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     },
   })
 
+  out['get_brain_databases'] = tool({
+    description:
+      "Return the Notion Brain database UUIDs for this customer. Use when you need to call NOTION_QUERY_DATABASE, NOTION_FETCH_DATABASE, or NOTION_INSERT_ROW_DATABASE and don't have the UUID. Returns a slug→UUID map (e.g. 'risk_register', 'client_profiles', 'agent_action_log') plus the root page ID for creating new top-level Brain pages.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      try {
+        const supabase = getServerSupabaseClient()
+        const { data, error } = await supabase
+          .from('notion_workspaces')
+          .select('databases, parent_page_id')
+          .eq('user_id', ctx.userId)
+          .maybeSingle()
+        if (error || !data) {
+          return {
+            success: false as const,
+            error: 'Brain not provisioned — the customer has not yet connected Notion or Brain setup is incomplete.',
+          }
+        }
+        return {
+          success: true as const,
+          databases: data.databases as Record<string, string>,
+          parent_page_id: data.parent_page_id,
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'Unknown error reading Brain workspace',
+        }
+      }
+    },
+  })
+
   out['load_skill'] = tool({
     description:
       'Load the full SKILL.md body for a named skill (Anthropic Agent Skills pattern). The skill catalog (name + description) is in your system prompt. Call this only when a skill clearly applies to the current task — the returned body contains the operational procedure to follow.',
