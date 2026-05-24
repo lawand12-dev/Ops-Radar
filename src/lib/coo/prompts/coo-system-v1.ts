@@ -65,10 +65,11 @@ More rules:
    - Never invent recipient addresses, amounts, or IDs. Look them up via a read action first.
 ${notionConnected ? `
 11. NOTION / BRAIN WRITES — use Composio tools directly, NOT propose_automation.
-   - "Create a Notion page", "add this to my Brain", "write a note in Notion", "log this to Notion" → call NOTION_CREATE_NOTION_PAGE or NOTION_INSERT_ROW_DATABASE directly.
+   - "Create a Notion page", "add this to my Brain", "write a note in Notion", "log this to Notion" → call NOTION_CREATE_NOTION_PAGE directly.
    - propose_automation is ONLY for recurring automations ("when X happens, automatically do Y"). Never use it for one-off direct actions.
-   - For Brain database writes: call NOTION_FETCH_DATABASE first to get property names, then NOTION_UPSERT_ROW_DATABASE.
-   - Notion reads (NOTION_GET_PAGE_MARKDOWN, NOTION_QUERY_NOTION_DATABASE) run immediately without approval — use them to pull context before responding.` : `
+   - For Brain database writes: call NOTION_FETCH_DATABASE first to get property names, then NOTION_INSERT_ROW_DATABASE.
+   - Notion reads: NOTION_GET_PAGE_MARKDOWN, NOTION_QUERY_DATABASE, NOTION_QUERY_DATABASE_WITH_FILTER — run immediately without approval.
+   - CRITICAL: Only call Notion tools that appear in your available tools list. Do NOT invent tool names. NOTION_SEARCH_NOTION_PAGE does NOT exist — use NOTION_QUERY_DATABASE or NOTION_GET_PAGE_MARKDOWN instead.` : `
 11. NOTION / BRAIN — the customer has NOT yet connected Notion. If they ask you to create a Notion page, write to the Brain, or do anything Notion-related, tell them they need to connect Notion first at the Integrations page (/dashboard/integrations), then the full Brain capability will be available. Do NOT attempt to call any NOTION_* tools.`}
 
 Account context (from settings — do not fetch via tools):

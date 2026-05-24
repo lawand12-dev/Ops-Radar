@@ -239,7 +239,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     : null;
   const modelChain: LanguageModel[] = [
     openai('gpt-4o'),
-    ...(doaiProvider ? [doaiProvider('deepseek-v4-pro')] : []),
+    // Use .chat() to force /v1/chat/completions instead of /v1/responses.
+    // DigitalOcean inference only implements the Chat Completions API.
+    // @ai-sdk/openai v3 defaults to /responses for the shorthand call.
+    ...(doaiProvider ? [doaiProvider.chat('deepseek-v4-pro')] : []),
   ];
 
   const encoder = new TextEncoder();

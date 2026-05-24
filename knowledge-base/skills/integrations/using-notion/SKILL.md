@@ -34,12 +34,13 @@ Strategic pages (read-only for agents):
 
 **Query a database with filters:**
 ```
-NOTION_QUERY_NOTION_DATABASE
+NOTION_QUERY_DATABASE
   database_id: <from notion_workspaces.databases[slug]>
   filter: { property: "Status", select: { equals: "Active" } }
   sorts: [{ property: "Created", direction: "descending" }]
   page_size: 20
 ```
+Or with complex filters use `NOTION_QUERY_DATABASE_WITH_FILTER`.
 Use for: finding at-risk clients, querying Risk Register by severity, getting open actions.
 
 **Read a page's full content (markdown):**
@@ -66,23 +67,6 @@ NOTION_INSERT_ROW_DATABASE
 ```
 Use for: logging a new Agent Action, creating a new Pattern Card, adding a KPI snapshot.
 
-**Upsert a row (prefer for idempotency):**
-```
-NOTION_UPSERT_ROW_DATABASE
-  database_id: <id>
-  unique_property: "Client"   ← the dedup key
-  row: { "Client": "Acme Corp", "MRR": 4200, ... }
-```
-Use instead of INSERT whenever there should be at most one row per entity (client profile, toolbox entry, risk per client). Prevents duplicate rows when the agent runs twice.
-
-**Update an existing page's properties:**
-```
-NOTION_UPDATE_NOTION_PAGE
-  page_id: <id from prior query>
-  properties: { "Status": "Resolved", "Resolved At": "2026-05-24" }
-```
-Use for: marking a Risk Register row resolved, updating a client health score after re-check.
-
 **Create a new top-level page:**
 ```
 NOTION_CREATE_NOTION_PAGE
@@ -90,16 +74,15 @@ NOTION_CREATE_NOTION_PAGE
   title: "..."
   content: "..."   ← markdown accepted
 ```
-Use for: provisioning the 7 strategic Brain pages during onboarding. Not for database rows — use INSERT_ROW for that.
+Use for: creating standalone strategy pages, provisioning Brain pages. Not for database rows — use INSERT_ROW for that.
 
-**Add a property to an existing page:**
+**Add content blocks to an existing page:**
 ```
-NOTION_ADD_PAGE_PROPERTY
+NOTION_ADD_MULTIPLE_PAGE_CONTENT
   page_id: <id>
-  property_name: "Risk Score"
-  property_value: 82
+  blocks: [...]
 ```
-Use when a single targeted property needs updating without touching the whole row.
+Use for: appending bullet points, headings, or paragraphs to an existing page.
 
 ## Standard workflow for agent findings
 
@@ -107,9 +90,8 @@ Every cron agent that writes to Notion should follow this sequence:
 
 1. **Load workspace** — `SELECT databases FROM notion_workspaces WHERE user_id = $1`
 2. **FETCH_DATABASE target** — get property schema before first write of the session
-3. **QUERY_NOTION_DATABASE** — check if a row already exists (dedup by client + date)
-4. **UPSERT_ROW_DATABASE** — write findings; Notion dedupes; Brain stays clean
-5. **UPDATE_NOTION_PAGE** — if a Risk Register row was previously "Open" and is now "Resolved", flip its status
+3. **NOTION_QUERY_DATABASE** — check if a row already exists (dedup by client + date)
+4. **NOTION_INSERT_ROW_DATABASE** — write findings; if already exists, insert a new timestamped row (Notion has no built-in upsert)
 
 ## Triggers
 
@@ -139,7 +121,8 @@ Remaining 11 triggers (page deleted, database updated, block changed, etc.) are 
 - Don't hardcode database IDs. They differ per customer Brain; read from `notion_workspaces.databases`.
 - Don't INSERT without checking for duplicates. Use UPSERT with a unique key (client name, client+date, etc.) to avoid duplicate Risk Register rows on re-runs.
 - Don't skip `NOTION_FETCH_DATABASE`. Property name guessing creates silent failures and leaves blank rows with no useful data.
-- Don't call `NOTION_GET_PAGE_MARKDOWN` on a database (it's for pages). Query the DB with `NOTION_QUERY_NOTION_DATABASE` first, then `GET_PAGE_MARKDOWN` on individual result pages if you need their content.
+- Don't call `NOTION_GET_PAGE_MARKDOWN` on a database (it's for pages). Query the DB with `NOTION_QUERY_DATABASE` first, then `GET_PAGE_MARKDOWN` on individual result pages if you need their content.
+- **THESE TOOLS DO NOT EXIST — never call them:** `NOTION_SEARCH_NOTION_PAGE`, `NOTION_QUERY_NOTION_DATABASE`, `NOTION_UPDATE_NOTION_PAGE`, `NOTION_UPSERT_ROW_DATABASE`, `NOTION_ADD_PAGE_PROPERTY`. They are hallucinated names. The correct alternatives: search → `NOTION_QUERY_DATABASE`; update → re-insert with `NOTION_INSERT_ROW_DATABASE`.
 - Don't write the same finding twice in one agent run. Log findings to a local set first, then write once at the end. Notion writes cost tokens and rate-limit budget.
 - Don't assume the Brain is provisioned for every user. Not every user has connected Notion — check the workspace row before attempting any Notion tool call.
 
