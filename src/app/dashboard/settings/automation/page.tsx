@@ -16,10 +16,10 @@ export default function AutomationSettingsPage() {
     <>
       <div className="mb-7">
         <h1 className="mb-1.5 font-serif text-[22px] font-normal leading-[1.2] tracking-[-0.02em] text-[var(--color-fg)]">
-          Automation
+          Tool Autonomy
         </h1>
         <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
-          Control how much autonomy your AI Ops Team has for each connected tool. Reads are always free — these settings only affect write actions (sending email, charging cards, updating records).
+          Control how much freedom your AI Ops Team has when writing to each connected tool. Reads are always free — these settings only affect write actions (sending email, charging cards, updating records). To build custom automations (&ldquo;when X happens, do Y&rdquo;), see <a href="/dashboard/automations" className="underline">Automations</a>.
         </p>
       </div>
       <AutomationSettings />
