@@ -150,24 +150,6 @@ export async function POST(request: NextRequest): Promise<Response> {
   const recentOutcomes = await getRecentOutcomes(userId, 10);
   const outcomesBlock = formatOutcomesForPrompt(recentOutcomes);
 
-  const baseSystemPrompt = buildCooSystemPrompt({
-    companyName,
-    blendedRate,
-    teamSizeRaw,
-    pendingActionsCount,
-    outcomesBlock,
-  });
-
-  // Anthropic Agent Skills — boot tier. Inject every skill's name +
-  // description so the model can decide which (if any) to load_skill.
-  const skillCatalog = await loadSkillCatalog();
-  const skillsBlock = buildSkillsSystemBlock(skillCatalog);
-  const systemPrompt = skillsBlock
-    ? `${baseSystemPrompt}\n\n${skillsBlock}`
-    : baseSystemPrompt;
-
-  console.log('[coo-agent] using prompt version:', PROMPT_VERSION, '· skills:', skillCatalog.length);
-
   // Composio sub-agent power: load the customer's most-recently-used
   // toolkits and wrap them with the approval gate. Cap at 3 toolkits in v1
   // to keep input tokens reasonable (each toolkit exposes ~60-100 tools
@@ -177,11 +159,17 @@ export async function POST(request: NextRequest): Promise<Response> {
   //
   // Notion is always included (reserved slot) — it's the Brain and must be
   // available regardless of usage order.
+  //
+  // NOTE: connectedSlugs is resolved HERE (before the system prompt) so
+  // notionConnected can be injected into the prompt. The model must not be
+  // told to call NOTION_* tools if Notion isn't actually connected.
   const COMPOSIO_TOOLKIT_CAP = 3;
   let composioTools: Awaited<ReturnType<typeof getComposioToolsForUser>> = {};
+  let notionConnected = false;
   try {
     const connectedSlugs = await getConnectedToolSlugs(userId);
     const hasNotion = connectedSlugs.includes('notion' as typeof connectedSlugs[number]);
+    notionConnected = hasNotion;
     const others = connectedSlugs.filter((s) => s !== 'notion');
     const otherTop = others.slice(0, hasNotion ? COMPOSIO_TOOLKIT_CAP - 1 : COMPOSIO_TOOLKIT_CAP);
     const top = hasNotion ? [...otherTop, 'notion' as typeof connectedSlugs[number]] : otherTop;
@@ -197,6 +185,25 @@ export async function POST(request: NextRequest): Promise<Response> {
     // Don't kill the chat if Composio is down — degrade to read-only COO.
     console.warn('[coo-agent] composio tool load failed:', err);
   }
+
+  const baseSystemPrompt = buildCooSystemPrompt({
+    companyName,
+    blendedRate,
+    teamSizeRaw,
+    pendingActionsCount,
+    outcomesBlock,
+    notionConnected,
+  });
+
+  // Anthropic Agent Skills — boot tier. Inject every skill's name +
+  // description so the model can decide which (if any) to load_skill.
+  const skillCatalog = await loadSkillCatalog();
+  const skillsBlock = buildSkillsSystemBlock(skillCatalog);
+  const systemPrompt = skillsBlock
+    ? `${baseSystemPrompt}\n\n${skillsBlock}`
+    : baseSystemPrompt;
+
+  console.log('[coo-agent] using prompt version:', PROMPT_VERSION, '· skills:', skillCatalog.length, '· notion:', notionConnected);
 
   const tools = {
     ...buildAiSdkCooTools(ctx),
