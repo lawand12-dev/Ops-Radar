@@ -17,6 +17,11 @@ import { z } from 'zod'
 import { COO_TOOLS } from './tools'
 import { executeToolCall, type ExecutorContext } from './executor'
 import { loadSkillBody } from '<npm>/lib/skills'
+import {
+  webSearch,
+  researchCompetitor,
+  analyzeDocument,
+} from './research'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import {
   listAutomations,
@@ -260,6 +265,72 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
         await deactivateComposioTrigger(id)
       }
       return { success: true as const, automation: data }
+    },
+  })
+
+  // ─── CP-22 research + web access: 3 tools so the COO is the customer's
+  //     only AI surface — they don't need ChatGPT/Perplexity for business
+  //     research, competitor intel, or document review. ────────────────────
+
+  out['web_search'] = tool({
+    description:
+      "Search the public web for current information — news, pricing pages, blog posts, public data. Use this for ANY question that requires information beyond the customer's connected tools and Notion brain. Examples: 'latest Stripe API change', 'what does [vendor] cost', 'industry benchmarks for agency margin', 'recent news about [competitor]'. Returns top 5 results plus a one-paragraph synthesis. Do NOT use for questions answerable from the customer's own data — use the existing tools for that.",
+    inputSchema: z.object({
+      query: z
+        .string()
+        .min(3)
+        .describe('The natural-language search query. Be specific. Add the current year (2026) when freshness matters.'),
+      include_answer: z
+        .boolean()
+        .optional()
+        .describe('Set to true (default) for a one-paragraph synthesis along with the results.'),
+    }),
+    execute: async ({ query, include_answer }) => {
+      return await webSearch(query, { includeAnswer: include_answer ?? true })
+    },
+  })
+
+  out['research_competitor'] = tool({
+    description:
+      "Deep multi-step research on a competitor or vendor. Runs 4-6 targeted searches (pricing, product, funding, news), reads the top results, and returns a structured brief: positioning, what they sell, pricing, target customer, strengths, weaknesses, funding signals, recent news, and threat level relative to OpsRadar's positioning. Use this when the customer asks for competitor intel, vendor evaluation, or 'should I be worried about X' analysis. Takes 10-20 seconds — set expectations.",
+    inputSchema: z.object({
+      competitor_name: z
+        .string()
+        .min(2)
+        .describe('The competitor or vendor name. Be specific (full name + domain if ambiguous).'),
+      focus_areas: z
+        .array(z.string())
+        .optional()
+        .describe('Optional focus areas, e.g. ["enterprise pricing", "API rate limits"]. Limited to 2.'),
+      our_positioning: z
+        .string()
+        .optional()
+        .describe('Optional one-paragraph reminder of our positioning so threat-level scoring is grounded. Defaults to a general AI-COO-for-services-businesses framing.'),
+    }),
+    execute: async ({ competitor_name, focus_areas, our_positioning }) => {
+      return await researchCompetitor({
+        competitorName: competitor_name,
+        focusAreas: focus_areas,
+        ourPositioning: our_positioning,
+      })
+    },
+  })
+
+  out['analyze_document'] = tool({
+    description:
+      "Analyze a piece of document text (contract, RFP, proposal, vendor agreement, NDA, MSA). The customer pastes or uploads the text; this tool extracts: document type, summary, key terms, obligations on each side, financial terms, risk flags (auto-renewal, unlimited liability, etc.), recommended action (sign/negotiate/reject/route-to-lawyer), and questions to ask the counterparty. Use this whenever the customer drops document text and asks for review.",
+    inputSchema: z.object({
+      text: z
+        .string()
+        .min(100)
+        .describe('The full document text to analyze. Minimum 100 chars.'),
+      question: z
+        .string()
+        .optional()
+        .describe("Optional: the customer's specific question about the document, e.g. 'is this MSA fair' or 'what's the termination clause'."),
+    }),
+    execute: async ({ text, question }) => {
+      return await analyzeDocument({ text, question })
     },
   })
 
