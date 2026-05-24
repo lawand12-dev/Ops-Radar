@@ -23,8 +23,8 @@
 //   - We iterate result.fullStream to drive our existing SSE events
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { streamText, stepCountIs } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { streamText, stepCountIs, type LanguageModel } from 'ai';
+import { openai, createOpenAI } from '@ai-sdk/openai';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { applyRateLimit } from '<npm>/lib/rate-limit';
@@ -47,6 +47,19 @@ import type { Json } from '<npm>/lib/database.types';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+function isRateLimitError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as Record<string, unknown>;
+  // Direct properties (AI SDK error object)
+  if (e.code === 'rate_limit_exceeded') return true;
+  if (e.status === 429 || e.statusCode === 429) return true;
+  // Nested .error field (stream error chunk shape from AI SDK)
+  const inner = e.error as Record<string, unknown> | undefined;
+  if (inner?.code === 'rate_limit_exceeded') return true;
+  if (inner?.type === 'tokens' && inner?.code === 'rate_limit_exceeded') return true;
+  return false;
+}
 
 type UserMessage = { role: 'user'; content: string };
 type AssistantMessage = { role: 'assistant'; content: string };
@@ -215,6 +228,20 @@ export async function POST(request: NextRequest): Promise<Response> {
     ...composioTools,
   };
 
+  // Model chain: OpenAI gpt-4o primary, DigitalOcean deepseek-v4-pro fallback.
+  // If DIGITALOCEAN_API_KEY is not set, the chain has only one entry and
+  // rate-limit errors surface to the user as normal errors.
+  const doaiProvider = process.env.DIGITALOCEAN_API_KEY
+    ? createOpenAI({
+        baseURL: process.env.AI_DIGITALOCEAN_URL ?? 'https://inference.do-ai.run/v1',
+        apiKey: process.env.DIGITALOCEAN_API_KEY,
+      })
+    : null;
+  const modelChain: LanguageModel[] = [
+    openai('gpt-4o'),
+    ...(doaiProvider ? [doaiProvider('deepseek-v4-pro')] : []),
+  ];
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -308,160 +335,199 @@ export async function POST(request: NextRequest): Promise<Response> {
       };
 
       try {
-        const result = streamText({
-          model: openai('gpt-4o'),
-          system: systemPrompt,
-          messages: messages.map((m) => ({ role: m.role, content: m.content })),
-          tools,
-          stopWhen: stepCountIs(5),
-          temperature: 0.2,
-        });
+        // Model fallback loop: try each model in order.
+        // On rate-limit (TPM exceeded), switch to the next model silently.
+        // Only the last model in the chain can emit a terminal error.
+        for (let modelIdx = 0; modelIdx < modelChain.length; modelIdx++) {
+          const activeModel = modelChain[modelIdx]!;
+          const isLastModel = modelIdx === modelChain.length - 1;
+          const modelLabel = modelIdx === 0 ? 'gpt-4o' : 'deepseek-v4-pro';
 
-        // Drive our SSE events off the typed full-stream. Each chunk
-        // carries a known type; we map to the existing AgentEvent shape so
-        // the frontend doesn't need to change.
-        for await (const chunk of result.fullStream) {
-          switch (chunk.type) {
-            case 'text-delta': {
-              const delta = chunk.text;
-              if (delta && delta.length > 0) {
-                finalAssistant.content += delta;
-                emit({ type: 'text_delta', delta });
+          if (modelIdx > 0) {
+            // Reset accumulated state so the fallback response starts clean.
+            finalAssistant.content = '';
+            finalAssistant.toolSteps = [];
+            finalAssistant.actionCard = null;
+            console.log(`[coo-agent] falling back to model[${modelIdx}]: ${modelLabel}`);
+          }
+
+          const result = streamText({
+            model: activeModel,
+            system: systemPrompt,
+            messages: messages.map((m) => ({ role: m.role, content: m.content })),
+            tools,
+            stopWhen: stepCountIs(5),
+            temperature: 0.2,
+          });
+
+          // Drive our SSE events off the typed full-stream. Each chunk
+          // carries a known type; we map to the existing AgentEvent shape so
+          // the frontend doesn't need to change.
+          let shouldFallback = false;
+          for await (const chunk of result.fullStream) {
+            switch (chunk.type) {
+              case 'text-delta': {
+                const delta = chunk.text;
+                if (delta && delta.length > 0) {
+                  finalAssistant.content += delta;
+                  emit({ type: 'text_delta', delta });
+                }
+                break;
               }
-              break;
-            }
 
-            case 'tool-call': {
-              const name = chunk.toolName;
-              const label = TOOL_LABELS[name] ?? `Running ${name}...`;
-              finalAssistant.toolSteps.push({ name, label, done: false });
-              emit({ type: 'tool_call', name, label });
-              break;
-            }
+              case 'tool-call': {
+                const name = chunk.toolName;
+                const label = TOOL_LABELS[name] ?? `Running ${name}...`;
+                finalAssistant.toolSteps.push({ name, label, done: false });
+                emit({ type: 'tool_call', name, label });
+                break;
+              }
 
-            case 'tool-result': {
-              const name = chunk.toolName;
-              const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
-              if (step) step.done = true;
-              emit({ type: 'tool_done', name });
-              if (name.startsWith('NOTION_') || name.startsWith('notion')) {
-                console.log('[coo-agent] notion-tool-result', {
+              case 'tool-result': {
+                const name = chunk.toolName;
+                const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
+                if (step) step.done = true;
+                emit({ type: 'tool_done', name });
+                if (name.startsWith('NOTION_') || name.startsWith('notion')) {
+                  console.log('[coo-agent] notion-tool-result', {
+                    tool: name,
+                    output: JSON.stringify(chunk.output, null, 2).slice(0, 500),
+                  });
+                }
+
+                // queue_action surfaces an action_proposed card to the chat UI.
+                // Preserve the original event shape for the frontend.
+                if (name === 'queue_action') {
+                  const out = chunk.output as { success?: boolean; data?: { action_id?: string; label?: string } } | undefined;
+                  const input = chunk.input as { action_type?: string } | undefined;
+                  if (out?.success && out.data?.action_id && out.data.label && input?.action_type) {
+                    finalAssistant.actionCard = {
+                      action_id: out.data.action_id,
+                      action_type: input.action_type,
+                      label: out.data.label,
+                    };
+                    emit({
+                      type: 'action_proposed',
+                      action_id: out.data.action_id,
+                      action_type: input.action_type,
+                      label: out.data.label,
+                    });
+                  }
+                } else {
+                  // Composio write tools queued by the approval gate return a
+                  // `{ queued: true, action_id, summary }` envelope. Surface
+                  // them with the same action_proposed event so the chat UI
+                  // renders an approval card identical to queue_action's.
+                  const out = chunk.output as {
+                    queued?: boolean;
+                    action_id?: string;
+                    summary?: string;
+                    action_slug?: string;
+                  } | undefined;
+                  if (out?.queued && out.action_id) {
+                    const label = out.summary ?? out.action_slug ?? name;
+                    finalAssistant.actionCard = {
+                      action_id: out.action_id,
+                      action_type: 'composio_action',
+                      label,
+                    };
+                    emit({
+                      type: 'action_proposed',
+                      action_id: out.action_id,
+                      action_type: 'composio_action',
+                      label,
+                    });
+                  }
+                }
+                break;
+              }
+
+              case 'tool-error': {
+                // Tool's execute threw. Mark the step done so the UI doesn't
+                // hang on a spinner; the model will see the error in its next
+                // step and can recover or summarize the failure to the user.
+                const name = chunk.toolName;
+                const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
+                if (step) step.done = true;
+                emit({ type: 'tool_done', name });
+                const toolErr = chunk.error;
+                console.error('[coo-agent] tool-error ⚠', {
+                  model: modelLabel,
                   tool: name,
-                  output: JSON.stringify(chunk.output, null, 2).slice(0, 500),
+                  errorType: toolErr instanceof Error ? toolErr.constructor.name : typeof toolErr,
+                  message: toolErr instanceof Error ? toolErr.message : String(toolErr),
+                  stack: toolErr instanceof Error ? toolErr.stack?.split('\n').slice(0, 5).join(' | ') : undefined,
+                  raw: JSON.stringify(toolErr, null, 2),
                 });
+                break;
               }
 
-              // queue_action surfaces an action_proposed card to the chat UI.
-              // Preserve the original event shape for the frontend.
-              if (name === 'queue_action') {
-                const out = chunk.output as { success?: boolean; data?: { action_id?: string; label?: string } } | undefined;
-                const input = chunk.input as { action_type?: string } | undefined;
-                if (out?.success && out.data?.action_id && out.data.label && input?.action_type) {
-                  finalAssistant.actionCard = {
-                    action_id: out.data.action_id,
-                    action_type: input.action_type,
-                    label: out.data.label,
-                  };
-                  emit({
-                    type: 'action_proposed',
-                    action_id: out.data.action_id,
-                    action_type: input.action_type,
-                    label: out.data.label,
+              case 'error': {
+                const err = chunk.error;
+                const rateLimited = isRateLimitError(err);
+                console.error('[coo-agent] stream-error ⚠', {
+                  model: modelLabel,
+                  rateLimited,
+                  errorType: err instanceof Error ? err.constructor.name : typeof err,
+                  message: err instanceof Error ? err.message : String(err),
+                  raw: JSON.stringify(err, null, 2),
+                });
+                if (rateLimited && !isLastModel) {
+                  shouldFallback = true;
+                  break;
+                }
+                await persistAssistant();
+                emit({
+                  type: 'error',
+                  message: rateLimited
+                    ? 'AI provider is currently rate-limited. Please try again in a moment.'
+                    : 'Something went wrong. Please try again.',
+                });
+                close();
+                return;
+              }
+
+              case 'finish': {
+                // Record token usage. Attribute to 'openai' for both models
+                // since the COO quota tracks overall AI spend, not per-provider.
+                const totalUsage = (chunk as { totalUsage?: { inputTokens?: number; outputTokens?: number } }).totalUsage;
+                const tokens = (totalUsage?.inputTokens ?? 0) + (totalUsage?.outputTokens ?? 0);
+                if (tokens > 0) {
+                  await recordUsage({
+                    userId,
+                    provider: 'openai',
+                    operation: 'coo_chat',
+                    tokens,
+                    metadata: { model: modelLabel, session_id: sessionId ?? null },
                   });
                 }
-              } else {
-                // Composio write tools queued by the approval gate return a
-                // `{ queued: true, action_id, summary }` envelope. Surface
-                // them with the same action_proposed event so the chat UI
-                // renders an approval card identical to queue_action's.
-                const out = chunk.output as {
-                  queued?: boolean;
-                  action_id?: string;
-                  summary?: string;
-                  action_slug?: string;
-                } | undefined;
-                if (out?.queued && out.action_id) {
-                  const label = out.summary ?? out.action_slug ?? name;
-                  finalAssistant.actionCard = {
-                    action_id: out.action_id,
-                    action_type: 'composio_action',
-                    label,
-                  };
-                  emit({
-                    type: 'action_proposed',
-                    action_id: out.action_id,
-                    action_type: 'composio_action',
-                    label,
-                  });
-                }
+                await persistAssistant();
+                emit({ type: 'done' });
+                close();
+                return;
               }
-              break;
-            }
 
-            case 'tool-error': {
-              // Tool's execute threw. Mark the step done so the UI doesn't
-              // hang on a spinner; the model will see the error in its next
-              // step and can recover or summarize the failure to the user.
-              const name = chunk.toolName;
-              const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
-              if (step) step.done = true;
-              emit({ type: 'tool_done', name });
-              const toolErr = chunk.error;
-              console.error('[coo-agent] tool-error ⚠', {
-                tool: name,
-                errorType: toolErr instanceof Error ? toolErr.constructor.name : typeof toolErr,
-                message: toolErr instanceof Error ? toolErr.message : String(toolErr),
-                stack: toolErr instanceof Error ? toolErr.stack?.split('\n').slice(0, 5).join(' | ') : undefined,
-                raw: JSON.stringify(toolErr, null, 2),
-              });
-              break;
+              // Other chunk types (reasoning, source, raw, start, step-start,
+              // step-finish, finish-step, tool-input-start, tool-input-delta,
+              // tool-input-end, tool-approval-request, etc.) are silent in v1.
+              default:
+                break;
             }
+            if (shouldFallback) break;
+          }
 
-            case 'error': {
-              const err = chunk.error;
-              console.error('[coo-agent] stream-error ⚠', {
-                errorType: err instanceof Error ? err.constructor.name : typeof err,
-                message: err instanceof Error ? err.message : String(err),
-                stack: err instanceof Error ? err.stack?.split('\n').slice(0, 8).join(' | ') : undefined,
-                raw: JSON.stringify(err, null, 2),
-              });
-              await persistAssistant();
-              emit({ type: 'error', message: 'Something went wrong. Please try again.' });
-              close();
-              return;
-            }
-
-            case 'finish': {
-              // Record OpenAI token usage for cost attribution + quota.
-              // The `totalUsage` field is on the finish chunk in AI SDK v6.
-              const totalUsage = (chunk as { totalUsage?: { inputTokens?: number; outputTokens?: number } }).totalUsage;
-              const tokens = (totalUsage?.inputTokens ?? 0) + (totalUsage?.outputTokens ?? 0);
-              if (tokens > 0) {
-                await recordUsage({
-                  userId,
-                  provider: 'openai',
-                  operation: 'coo_chat',
-                  tokens,
-                  metadata: { model: 'gpt-4o', session_id: sessionId ?? null },
-                });
-              }
-              await persistAssistant();
-              emit({ type: 'done' });
-              close();
-              return;
-            }
-
-            // Other chunk types (reasoning, source, raw, start, step-start,
-            // step-finish, finish-step, tool-input-start, tool-input-delta,
-            // tool-input-end, tool-approval-request, etc.) are silent in v1.
-            default:
-              break;
+          if (!shouldFallback) {
+            // Stream ended without an explicit finish chunk — finalize defensively.
+            await persistAssistant();
+            emit({ type: 'done' });
+            close();
+            return;
           }
         }
 
-        // Stream ended without an explicit finish chunk — finalize defensively.
+        // All models in the chain were rate-limited.
         await persistAssistant();
-        emit({ type: 'done' });
+        emit({ type: 'error', message: 'AI providers are temporarily busy. Please try again in a moment.' });
         close();
       } catch (err) {
         console.error('[coo-agent] fatal-catch ⚠', {
