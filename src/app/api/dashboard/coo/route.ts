@@ -174,11 +174,17 @@ export async function POST(request: NextRequest): Promise<Response> {
   // and ~200 tokens per tool definition). Phase 2 will replace this with
   // a sub-agent router pattern (one delegation tool per toolkit instead
   // of every action exposed flat).
+  //
+  // Notion is always included (reserved slot) — it's the Brain and must be
+  // available regardless of usage order.
   const COMPOSIO_TOOLKIT_CAP = 3;
   let composioTools: Awaited<ReturnType<typeof getComposioToolsForUser>> = {};
   try {
     const connectedSlugs = await getConnectedToolSlugs(userId);
-    const top = connectedSlugs.slice(0, COMPOSIO_TOOLKIT_CAP);
+    const hasNotion = connectedSlugs.includes('notion' as typeof connectedSlugs[number]);
+    const others = connectedSlugs.filter((s) => s !== 'notion');
+    const otherTop = others.slice(0, hasNotion ? COMPOSIO_TOOLKIT_CAP - 1 : COMPOSIO_TOOLKIT_CAP);
+    const top = hasNotion ? [...otherTop, 'notion' as typeof connectedSlugs[number]] : otherTop;
     if (top.length > 0) {
       const toolkits = top.map((s) => COMPOSIO_TOOLS[s]);
       const rawComposio = await getComposioToolsForUser(userId, toolkits);
