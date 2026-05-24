@@ -27,6 +27,31 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getWorkspace } from './client'
 import { provisionBrainIfNeeded } from './create-brain'
 
+// ConnectionDataSchema is a discriminated union: { authScheme, val: {...} }
+// The actual OAuth fields (access_token, workspace_id, etc.) live inside `val`.
+// We also fall back to the deprecated `params`/`data` fields.
+function extractComposioToken(conn: {
+  state?: unknown
+  params?: Record<string, unknown>
+  data?: Record<string, unknown>
+}): { accessToken: string | undefined; meta: Record<string, unknown> } {
+  const s = conn.state as Record<string, unknown> | null | undefined
+  const val: Record<string, unknown> =
+    s && typeof s === 'object' && s['val'] && typeof s['val'] === 'object'
+      ? (s['val'] as Record<string, unknown>)
+      : s && typeof s === 'object'
+      ? s
+      : {}
+  const dep: Record<string, unknown> = conn.params ?? conn.data ?? {}
+  const accessToken = (
+    val['access_token'] ??
+    val['oauth_token'] ??
+    dep['access_token'] ??
+    dep['oauth_token']
+  ) as string | undefined
+  return { accessToken, meta: { ...dep, ...val } }
+}
+
 export async function provisionBrainFromComposio(
   userId: string,
   composioConnectionId: string,
@@ -42,8 +67,7 @@ export async function provisionBrainFromComposio(
       // Already fully provisioned — rotate the token from the new connection only.
       const composioForToken = getComposio()
       const connForToken = await composioForToken.connectedAccounts.get(composioConnectionId)
-      const stateForToken = connForToken.state as Record<string, unknown>
-      const freshToken = (stateForToken['access_token'] ?? stateForToken['oauth_token']) as string | undefined
+      const { accessToken: freshToken } = extractComposioToken(connForToken)
       if (freshToken) {
         const supabaseForToken = getServerSupabaseClient()
         await supabaseForToken
@@ -61,21 +85,25 @@ export async function provisionBrainFromComposio(
 
   const composio = getComposio()
 
-  // Fetch the live Composio connection. The full Notion OAuth response is stored
-  // in `state` (access_token, workspace_id, workspace_name, bot_id, etc.).
+  // Fetch the live Composio connection. ConnectionDataSchema is a discriminated
+  // union on `authScheme` with the actual OAuth payload in the nested `val` field:
+  //   { authScheme: "OAUTH2", val: { status: "ACTIVE", access_token: "...", ... } }
+  // We also fall back to the deprecated `params`/`data` fields for older SDK versions.
   const conn = await composio.connectedAccounts.get(composioConnectionId)
-  const state = conn.state as Record<string, unknown>
+  const { accessToken, meta } = extractComposioToken(conn)
 
-  const accessToken = (state['access_token'] ?? state['oauth_token']) as string | undefined
   if (!accessToken) {
-    throw new Error('[brain/provision] No access_token in Composio connection state for connection ' + composioConnectionId)
+    throw new Error(
+      '[brain/provision] No access_token in Composio connection state for connection ' +
+      composioConnectionId +
+      ' — available keys: ' + JSON.stringify(Object.keys(meta))
+    )
   }
 
   // Notion workspace metadata from the OAuth response stored in Composio.
-  // Falls back to the connection ID if workspace_id is missing (shouldn't happen for Notion).
-  const workspaceId = (state['workspace_id'] as string | undefined) ?? conn.id
-  const workspaceName = (state['workspace_name'] as string | undefined) ?? null
-  const botId = (state['bot_id'] as string | undefined) ?? null
+  const workspaceId = (meta['workspace_id'] as string | undefined) ?? conn.id
+  const workspaceName = (meta['workspace_name'] as string | undefined) ?? null
+  const botId = (meta['bot_id'] as string | undefined) ?? null
 
   const notion = new Client({ auth: accessToken })
 
