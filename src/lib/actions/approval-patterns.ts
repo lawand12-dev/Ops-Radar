@@ -43,6 +43,17 @@ const AGENT_DISPLAY_NAME: Record<AgentSlug, string> = {
   'tool-toggl': 'Toggl Agent',
   'tool-notion': 'Notion Agent',
   'tool-slack': 'Slack Agent',
+  'tool-stripe': 'Stripe Agent',
+  'tool-quickbooks': 'QuickBooks Agent',
+  'tool-google-calendar': 'Google Calendar Agent',
+  'tool-google-analytics': 'Google Analytics Agent',
+  'tool-google-ads': 'Google Ads Agent',
+  'tool-linkedin': 'LinkedIn Agent',
+  'tool-bamboo-hr': 'BambooHR Agent',
+  'tool-gusto': 'Gusto Agent',
+  'tool-typeform': 'Typeform Agent',
+  'tool-intercom': 'Intercom Agent',
+  'tool-zendesk': 'Zendesk Agent',
   evaluator: 'Evaluator Agent',
 }
 

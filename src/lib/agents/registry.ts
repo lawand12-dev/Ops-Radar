@@ -29,6 +29,17 @@ import { HARVEST_AGENT } from './tools/harvest'
 import { TOGGL_AGENT } from './tools/toggl'
 import { NOTION_AGENT } from './tools/notion'
 import { SLACK_AGENT } from './tools/slack'
+import { STRIPE_AGENT } from './tools/stripe'
+import { QUICKBOOKS_AGENT } from './tools/quickbooks'
+import { GOOGLE_CALENDAR_AGENT } from './tools/google-calendar'
+import { GOOGLE_ANALYTICS_AGENT } from './tools/google-analytics'
+import { GOOGLE_ADS_AGENT } from './tools/google-ads'
+import { LINKEDIN_AGENT } from './tools/linkedin'
+import { BAMBOO_HR_AGENT } from './tools/bamboo-hr'
+import { GUSTO_AGENT } from './tools/gusto'
+import { TYPEFORM_AGENT } from './tools/typeform'
+import { INTERCOM_AGENT } from './tools/intercom'
+import { ZENDESK_AGENT } from './tools/zendesk'
 
 // Meta agents
 import { EVALUATOR_AGENT } from './evaluator'
@@ -60,6 +71,17 @@ export const AGENTS: Record<AgentSlug, AgentSpec> = {
   'tool-toggl': TOGGL_AGENT,
   'tool-notion': NOTION_AGENT,
   'tool-slack': SLACK_AGENT,
+  'tool-stripe': STRIPE_AGENT,
+  'tool-quickbooks': QUICKBOOKS_AGENT,
+  'tool-google-calendar': GOOGLE_CALENDAR_AGENT,
+  'tool-google-analytics': GOOGLE_ANALYTICS_AGENT,
+  'tool-google-ads': GOOGLE_ADS_AGENT,
+  'tool-linkedin': LINKEDIN_AGENT,
+  'tool-bamboo-hr': BAMBOO_HR_AGENT,
+  'tool-gusto': GUSTO_AGENT,
+  'tool-typeform': TYPEFORM_AGENT,
+  'tool-intercom': INTERCOM_AGENT,
+  'tool-zendesk': ZENDESK_AGENT,
   // Meta agents
   evaluator: EVALUATOR_AGENT,
 }

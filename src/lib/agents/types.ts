@@ -32,6 +32,17 @@ export type AgentSlug =
   | 'tool-toggl'
   | 'tool-notion'
   | 'tool-slack'
+  | 'tool-stripe'
+  | 'tool-quickbooks'
+  | 'tool-google-calendar'
+  | 'tool-google-analytics'
+  | 'tool-google-ads'
+  | 'tool-linkedin'
+  | 'tool-bamboo-hr'
+  | 'tool-gusto'
+  | 'tool-typeform'
+  | 'tool-intercom'
+  | 'tool-zendesk'
   // Meta agents
   | 'evaluator'
 
