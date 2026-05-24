@@ -339,6 +339,12 @@ export async function POST(request: NextRequest): Promise<Response> {
               const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
               if (step) step.done = true;
               emit({ type: 'tool_done', name });
+              if (name.startsWith('NOTION_') || name.startsWith('notion')) {
+                console.log('[coo-agent] notion-tool-result', {
+                  tool: name,
+                  output: JSON.stringify(chunk.output, null, 2).slice(0, 500),
+                });
+              }
 
               // queue_action surfaces an action_proposed card to the chat UI.
               // Preserve the original event shape for the frontend.
@@ -395,13 +401,25 @@ export async function POST(request: NextRequest): Promise<Response> {
               const step = finalAssistant.toolSteps.find((s) => s.name === name && !s.done);
               if (step) step.done = true;
               emit({ type: 'tool_done', name });
-              console.warn('[coo-agent] tool-error:', name, chunk.error);
+              const toolErr = chunk.error;
+              console.error('[coo-agent] tool-error ⚠', {
+                tool: name,
+                errorType: toolErr instanceof Error ? toolErr.constructor.name : typeof toolErr,
+                message: toolErr instanceof Error ? toolErr.message : String(toolErr),
+                stack: toolErr instanceof Error ? toolErr.stack?.split('\n').slice(0, 5).join(' | ') : undefined,
+                raw: JSON.stringify(toolErr, null, 2),
+              });
               break;
             }
 
             case 'error': {
               const err = chunk.error;
-              console.error('[coo-agent] stream error:', err);
+              console.error('[coo-agent] stream-error ⚠', {
+                errorType: err instanceof Error ? err.constructor.name : typeof err,
+                message: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? err.stack?.split('\n').slice(0, 8).join(' | ') : undefined,
+                raw: JSON.stringify(err, null, 2),
+              });
               await persistAssistant();
               emit({ type: 'error', message: 'Something went wrong. Please try again.' });
               close();
@@ -441,7 +459,12 @@ export async function POST(request: NextRequest): Promise<Response> {
         emit({ type: 'done' });
         close();
       } catch (err) {
-        console.error('[coo-agent] error:', err);
+        console.error('[coo-agent] fatal-catch ⚠', {
+          errorType: err instanceof Error ? err.constructor.name : typeof err,
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack?.split('\n').slice(0, 10).join(' | ') : undefined,
+          raw: JSON.stringify(err, Object.getOwnPropertyNames(err instanceof Error ? err : {}), 2),
+        });
         await persistAssistant();
         emit({ type: 'error', message: 'Something went wrong. Please try again.' });
         close();
