@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import { refreshCapabilitiesForUser } from '<npm>/lib/composio/capability-cache'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -74,13 +75,21 @@ export async function POST(req: NextRequest) {
   const supabase = getServerSupabaseClient()
 
   if (eventName.includes('created') || payload.data?.status === 'ACTIVE') {
-    const { error } = await supabase
+    const { data: conn, error } = await supabase
       .from('composio_connections')
       .update({ is_active: true, connected_at: new Date().toISOString() })
       .eq('composio_connection_id', connectionId)
+      .select('user_id, tool_slug')
+      .maybeSingle()
     if (error) {
       console.error('[composio/webhook] activate failed:', error)
       return NextResponse.json({ error: 'persist_failed' }, { status: 500 })
+    }
+    // Populate capability cache so propose_automation has fresh triggers/actions
+    if (conn?.user_id && conn?.tool_slug) {
+      refreshCapabilitiesForUser(conn.user_id, [conn.tool_slug]).catch((err) =>
+        console.warn('[composio/webhook] capability refresh failed:', err),
+      )
     }
   } else if (eventName.includes('failed') || eventName.includes('deleted')) {
     const { error } = await supabase

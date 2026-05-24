@@ -27,13 +27,15 @@ export const COMPOSIO_TRIGGER_CATALOG = [
 ] as const
 
 export const COMPOSIO_ACTION_CATALOG = [
-  { toolkit: 'slack', action_slug: 'SLACK_SEND_MESSAGE', description: 'Send a Slack message to a channel or user' },
-  { toolkit: 'gmail', action_slug: 'GMAIL_SEND_EMAIL', description: 'Send a Gmail email' },
-  { toolkit: 'gmail', action_slug: 'GMAIL_CREATE_DRAFT', description: 'Create a Gmail draft (for owner to review)' },
-  { toolkit: 'notion', action_slug: 'NOTION_INSERT_ROW_DATABASE', description: 'Insert a row into a Notion database' },
-  { toolkit: 'notion', action_slug: 'NOTION_CREATE_PAGE', description: 'Create a new Notion page' },
-  { toolkit: 'hubspot', action_slug: 'HUBSPOT_CREATE_NOTE', description: 'Create a note in HubSpot' },
-  { toolkit: 'hubspot', action_slug: 'HUBSPOT_UPDATE_DEAL', description: 'Update a HubSpot deal' },
+  { toolkit: 'slack',    action_slug: 'SLACK_CHAT_POST_MESSAGE',         description: 'Send a Slack message to a channel or user' },
+  { toolkit: 'gmail',    action_slug: 'GMAIL_SEND_EMAIL',                description: 'Send a Gmail email' },
+  { toolkit: 'gmail',    action_slug: 'GMAIL_CREATE_EMAIL_DRAFT',        description: 'Create a Gmail draft (for owner to review)' },
+  { toolkit: 'notion',   action_slug: 'NOTION_INSERT_ROW_DATABASE',      description: 'Insert a row into a Notion database' },
+  { toolkit: 'notion',   action_slug: 'NOTION_CREATE_NOTION_PAGE',       description: 'Create a new Notion page' },
+  { toolkit: 'hubspot',  action_slug: 'HUBSPOT_CREATE_CRM_OBJECT_FROM_NL', description: 'Create a HubSpot CRM object (contact, note, task) from natural language' },
+  { toolkit: 'hubspot',  action_slug: 'HUBSPOT_CREATE_DEAL_FROM_NL',     description: 'Create or update a HubSpot deal from natural language' },
+  { toolkit: 'pipedrive', action_slug: 'PIPEDRIVE_ADD_A_NOTE',           description: 'Add a note to a Pipedrive deal or contact' },
+  { toolkit: 'pipedrive', action_slug: 'PIPEDRIVE_DEALS_UPDATE_DEAL',    description: 'Update a Pipedrive deal' },
 ] as const
 
 export type ComposioTriggerCatalogEntry = (typeof COMPOSIO_TRIGGER_CATALOG)[number]

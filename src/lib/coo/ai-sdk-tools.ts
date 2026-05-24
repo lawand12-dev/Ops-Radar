@@ -36,6 +36,7 @@ import {
   COMPOSIO_TRIGGER_CATALOG,
   COMPOSIO_ACTION_CATALOG,
 } from '<npm>/lib/automations/composio-catalog'
+import { getCachedTriggers } from '<npm>/lib/composio/capability-cache'
 import {
   registerComposioTrigger,
   deactivateComposioTrigger,
@@ -83,13 +84,15 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     execute: async ({ user_request }) => {
       try {
         const existing = await listAutomations(ctx.userId)
+        // Prefer live cached triggers (populated on tool connect via webhook).
+        // Fall back to static catalog if the cache is empty (new user or cache miss).
+        const cachedTriggers = await getCachedTriggers(ctx.userId)
+        const triggers = cachedTriggers.length > 0
+          ? cachedTriggers.map((t) => ({ toolkit: t.toolkit, slug: t.slug, description: t.description }))
+          : COMPOSIO_TRIGGER_CATALOG.map((t) => ({ toolkit: t.toolkit, slug: t.slug, description: t.description }))
         const prompt = buildCompilationPrompt({
           userRequest: user_request,
-          availableTriggers: COMPOSIO_TRIGGER_CATALOG.map((t) => ({
-            toolkit: t.toolkit,
-            slug: t.slug,
-            description: t.description,
-          })),
+          availableTriggers: triggers,
           availableActions: COMPOSIO_ACTION_CATALOG.map((a) => ({
             toolkit: a.toolkit,
             action_slug: a.action_slug,

@@ -10,7 +10,7 @@ const CACHE_TTL_SECONDS = 60 * 60; // 1h per spec
 type NarrativeResponse = {
   status: 'ok' | 'unavailable';
   hero?: string;
-  sections?: { automations: string; business: string };
+  sections?: { business: string };
   generated_at?: string;
   message?: string;
 };
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<NarrativeR
     return NextResponse.json({ status: 'unavailable', message: 'snapshot_failed' });
   }
 
-  let parsed: { hero: string; sections: { automations: string; business: string } };
+  let parsed: { hero: string; sections: { business: string } };
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<NarrativeR
     });
     const raw = completion.choices[0]?.message?.content ?? '{}';
     parsed = JSON.parse(raw);
-    if (!parsed?.hero || !parsed.sections?.automations || !parsed.sections?.business) {
+    if (!parsed?.hero || !parsed.sections?.business) {
       throw new Error('malformed narrative shape');
     }
   } catch (err) {

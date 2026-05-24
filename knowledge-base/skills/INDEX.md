@@ -20,6 +20,7 @@ This folder follows the [Anthropic Agent Skills](https://www.anthropic.com/engin
 | Domain | Skill | Purpose |
 |---|---|---|
 | `agency-ops` | `notion-brain-schema` | The 20-database brain spec — the moat |
+| `integrations` | `using-notion` | Which of the 48 Notion tools to call, in what order, for Brain reads/writes |
 | `revenue` | `projecting-cash-runway` | The #1 founder anxiety |
 | `revenue` | `chasing-overdue-invoices` | 4-touch collections cadence |
 | `profitability` | `calculating-effective-hourly-rate` | The single most-actionable profit number |

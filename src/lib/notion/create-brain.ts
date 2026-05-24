@@ -2,7 +2,7 @@
  * One-time provisioner: creates the "OpsRadar Brain" parent page and all 20 child databases
  * inside the customer's Notion workspace.
  *
- * Called from /api/notion/callback after OAuth completes.
+ * Called during Brain provisioning after Notion connects via Composio.
  * Returns the slug → database_id map for persistence in notion_workspaces.databases.
  *
  * Implementation note: each database schema must match docs/dev/notion-brain-schema-2026.md EXACTLY.
