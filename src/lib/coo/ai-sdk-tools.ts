@@ -72,7 +72,7 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
 
   out['propose_automation'] = tool({
     description:
-      "Compile the customer's described automation into a typed draft. Returns the draft for the customer to confirm — does NOT save. Use this whenever the customer asks to set up, build, or wire up a recurring/triggered workflow. Pass the customer's natural-language request as user_request.",
+      "Compile the customer's described RECURRING automation into a typed draft (when X happens → do Y automatically). Returns the draft for the customer to confirm — does NOT save or execute anything immediately. Use ONLY for recurring/triggered workflows, NOT for one-off direct actions. For one-off actions like 'create a Notion page', 'send an email', 'update a deal' — call the relevant Composio tool directly instead.",
     inputSchema: z.object({
       user_request: z
         .string()
