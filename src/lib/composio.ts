@@ -127,9 +127,9 @@ export async function getConnectedToolSlugs(userId: string): Promise<ToolSlug[]>
 /**
  * Resolves a tool slug → Composio Auth Config ID via env vars.
  *
- * Per Composio's 2026-04-24 SDK change, `connectedAccounts.initiate()` requires
- * an `authConfigId` (e.g. 'ac_xxx'), not a toolkit slug. Auth Configs are created
- * once per toolkit in the Composio dashboard and hold the OAuth app credentials.
+ * Composio requires an `authConfigId` (e.g. 'ac_xxx'), not a toolkit slug.
+ * Auth Configs are created once per toolkit in the Composio dashboard and hold
+ * the OAuth app credentials. Used by `connectedAccounts.link()`.
  *
  * Convention: COMPOSIO_AUTH_CONFIG_<TOOL> where TOOL is the uppercased ToolSlug.
  * Examples: COMPOSIO_AUTH_CONFIG_GMAIL, COMPOSIO_AUTH_CONFIG_HUBSPOT.

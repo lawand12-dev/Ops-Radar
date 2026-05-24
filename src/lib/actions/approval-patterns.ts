@@ -31,6 +31,19 @@ const AGENT_DISPLAY_NAME: Record<AgentSlug, string> = {
   growth: 'Growth Agent',
   renewal: 'Renewal Agent',
   stack: 'Stack Agent',
+  'tool-gmail': 'Gmail Agent',
+  'tool-hubspot': 'HubSpot Agent',
+  'tool-pipedrive': 'Pipedrive Agent',
+  'tool-apollo': 'Apollo Agent',
+  'tool-calendly': 'Calendly Agent',
+  'tool-clickup': 'ClickUp Agent',
+  'tool-asana': 'Asana Agent',
+  'tool-monday': 'Monday Agent',
+  'tool-harvest': 'Harvest Agent',
+  'tool-toggl': 'Toggl Agent',
+  'tool-notion': 'Notion Agent',
+  'tool-slack': 'Slack Agent',
+  evaluator: 'Evaluator Agent',
 }
 
 /**

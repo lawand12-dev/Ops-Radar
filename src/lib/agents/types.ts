@@ -8,6 +8,7 @@ import type { ToolSlug } from '<npm>/lib/composio'
 import type { Plan } from '<npm>/lib/tier'
 
 export type AgentSlug =
+  // Domain agents (synthesize across tools)
   | 'revenue'
   | 'collections'
   | 'scope'
@@ -18,6 +19,21 @@ export type AgentSlug =
   | 'growth'
   | 'renewal'
   | 'stack'
+  // Tool agents (one per connected integration)
+  | 'tool-gmail'
+  | 'tool-hubspot'
+  | 'tool-pipedrive'
+  | 'tool-apollo'
+  | 'tool-calendly'
+  | 'tool-clickup'
+  | 'tool-asana'
+  | 'tool-monday'
+  | 'tool-harvest'
+  | 'tool-toggl'
+  | 'tool-notion'
+  | 'tool-slack'
+  // Meta agents
+  | 'evaluator'
 
 /**
  * AgentTier mirrors the canonical Plan from `<npm>/lib/tier` so agents respect

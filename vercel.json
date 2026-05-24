@@ -1,64 +1,34 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/followups",
-      "schedule": "0 10 * * *"
-    },
-    {
-      "path": "/api/cron/actions",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/benchmarks",
-      "schedule": "0 23 * * 0"
-    },
-    {
-      "path": "/api/cron/diorize",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/agents/revenue",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/cron/agents/collections",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/agents/scope",
-      "schedule": "0 9 * * 0"
-    },
-    {
-      "path": "/api/cron/agents/delivery",
-      "schedule": "0 7 * * 1"
-    },
-    {
-      "path": "/api/cron/agents/briefing",
-      "schedule": "0 6 * * 1"
-    },
-    {
-      "path": "/api/cron/agents/profitability",
-      "schedule": "0 9 * * 0"
-    },
-    {
-      "path": "/api/cron/agents/team",
-      "schedule": "0 18 * * *"
-    },
-    {
-      "path": "/api/cron/agents/growth",
-      "schedule": "0 9 * * 5"
-    },
-    {
-      "path": "/api/cron/agents/renewal",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/agents/stack",
-      "schedule": "0 9 1 * *"
-    },
-    {
-      "path": "/api/cron/check-outcomes",
-      "schedule": "0 10 * * *"
-    }
+    { "path": "/api/cron/followups",              "schedule": "0 10 * * *"  },
+    { "path": "/api/cron/actions",                "schedule": "0 9 * * *"   },
+    { "path": "/api/cron/benchmarks",             "schedule": "0 23 * * 0"  },
+    { "path": "/api/cron/diorize",                "schedule": "0 3 * * *"   },
+    { "path": "/api/cron/check-outcomes",         "schedule": "0 10 * * *"  },
+
+    { "path": "/api/cron/agents/revenue",         "schedule": "0 7 * * *"   },
+    { "path": "/api/cron/agents/collections",     "schedule": "0 8 * * *"   },
+    { "path": "/api/cron/agents/briefing",        "schedule": "0 6 * * *"   },
+    { "path": "/api/cron/agents/delivery",        "schedule": "0 7 * * 1"   },
+    { "path": "/api/cron/agents/scope",           "schedule": "0 9 * * 0"   },
+    { "path": "/api/cron/agents/profitability",   "schedule": "0 9 * * 0"   },
+    { "path": "/api/cron/agents/team",            "schedule": "0 18 * * *"  },
+    { "path": "/api/cron/agents/growth",          "schedule": "0 9 * * 5"   },
+    { "path": "/api/cron/agents/renewal",         "schedule": "0 9 * * *"   },
+    { "path": "/api/cron/agents/stack",           "schedule": "0 9 1 * *"   },
+
+    { "path": "/api/cron/agents/tool-gmail",      "schedule": "0 8 * * *"   },
+    { "path": "/api/cron/agents/tool-hubspot",    "schedule": "0 8 * * *"   },
+    { "path": "/api/cron/agents/tool-pipedrive",  "schedule": "0 8 * * *"   },
+    { "path": "/api/cron/agents/tool-calendly",   "schedule": "0 8 * * *"   },
+    { "path": "/api/cron/agents/tool-slack",      "schedule": "0 11 * * *"  },
+    { "path": "/api/cron/agents/tool-harvest",    "schedule": "0 9 * * *"   },
+    { "path": "/api/cron/agents/tool-toggl",      "schedule": "0 9 * * *"   },
+    { "path": "/api/cron/agents/tool-clickup",    "schedule": "0 10 * * *"  },
+    { "path": "/api/cron/agents/tool-asana",      "schedule": "0 10 * * *"  },
+    { "path": "/api/cron/agents/tool-monday",     "schedule": "0 10 * * *"  },
+    { "path": "/api/cron/agents/tool-apollo",     "schedule": "0 9 * * 1"   },
+    { "path": "/api/cron/agents/tool-notion",     "schedule": "0 9 1 * *"   },
+    { "path": "/api/cron/agents/evaluator",       "schedule": "0 14 * * *"  }
   ]
 }

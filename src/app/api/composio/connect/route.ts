@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ComposioMultipleConnectedAccountsError } from '@composio/core'
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { COMPOSIO_TOOLS, type ToolSlug, getAuthConfigId } from '<npm>/lib/composio'
+import { COMPOSIO_TOOLS, type ToolSlug, getComposio, getAuthConfigId } from '<npm>/lib/composio'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -39,44 +40,26 @@ export async function POST(req: NextRequest) {
   }
 
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
-  const redirectUri = `${appUrl}/dashboard/integrations?connected=${toolSlug}`
+  const callbackUrl = `${appUrl}/dashboard/integrations?connected=${toolSlug}`
 
-  const apiKey = (process.env.COMPOSIO_API_KEY ?? '').trim()
-  if (!apiKey) {
-    return NextResponse.json({ error: 'composio_not_configured' }, { status: 503 })
-  }
-
-  let connectionId: string
-  let oauthUrl: string
+  let connectionRequest
   try {
-    const res = await fetch('https://backend.composio.tech/api/v3/connected_accounts/link', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      },
-      body: JSON.stringify({
-        auth_config_id: authConfigId,
-        entity_id: userId,
-        redirect_uri: redirectUri,
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok) {
-      console.error('[composio/connect] link failed:', data)
+    const composio = getComposio()
+    connectionRequest = await composio.connectedAccounts.link(userId, authConfigId, { callbackUrl })
+  } catch (err) {
+    if (err instanceof ComposioMultipleConnectedAccountsError) {
+      // User already has an active connection — treat as already connected
       return NextResponse.json(
-        { error: 'initiate_failed', message: data?.error?.message ?? 'Failed to start OAuth.' },
-        { status: 502 },
+        { error: 'already_connected', message: `${toolSlug} is already connected. Disconnect it first before reconnecting.` },
+        { status: 409 },
       )
     }
-
-    connectionId = data.id ?? data.connected_account_id ?? data.connectionId
-    oauthUrl = data.redirect_url ?? data.redirectUrl ?? data.oauth_url
-  } catch (err) {
-    console.error('[composio/connect] link request failed:', err)
+    console.error('[composio/connect] link failed:', err)
     return NextResponse.json(
-      { error: 'initiate_failed', message: err instanceof Error ? err.message : 'Failed to start OAuth.' },
+      {
+        error: 'initiate_failed',
+        message: err instanceof Error ? err.message : 'Failed to start OAuth.',
+      },
       { status: 502 },
     )
   }
@@ -86,7 +69,7 @@ export async function POST(req: NextRequest) {
     {
       user_id: userId,
       tool_slug: toolSlug,
-      composio_connection_id: connectionId,
+      composio_connection_id: connectionRequest.id,
       is_active: false,
     },
     { onConflict: 'user_id,tool_slug' },
@@ -101,7 +84,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    oauth_url: oauthUrl,
-    connection_id: connectionId,
+    oauth_url: connectionRequest.redirectUrl,
+    connection_id: connectionRequest.id,
   })
 }

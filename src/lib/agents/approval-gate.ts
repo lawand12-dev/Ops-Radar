@@ -222,6 +222,10 @@ async function queueForApproval(input: {
   const { actionSlug, toolkit, args, summary, opts } = input
   const supabase = getServerSupabaseClient()
 
+  // Heuristic confidence score (0–100). The evaluator agent refines these
+  // daily with LLM reasoning over the full context.
+  const confidenceScore = deriveConfidence(actionSlug)
+
   const payload = {
     toolkit,
     action_slug: actionSlug,
@@ -229,6 +233,7 @@ async function queueForApproval(input: {
     source: opts.source,
     agent_slug: opts.agentSlug,
     summary,
+    confidence_score: confidenceScore,
   }
 
   const { data, error } = await supabase
@@ -259,6 +264,26 @@ async function queueForApproval(input: {
       `Queued for customer approval. Will execute once approved at /dashboard/actions. ` +
       `Do NOT retry this action — the customer will see it.`,
   }
+}
+
+/**
+ * Heuristic confidence score for a queued action (0–100).
+ * The evaluator agent refines these with full context daily.
+ *
+ * Rules (fail-safe — lower score = more human review):
+ *  - Destructive verbs (DELETE, REMOVE, CANCEL, CLOSE): 40
+ *  - Financial verbs (SEND_INVOICE, CREATE_PAYMENT, REFUND): 55
+ *  - Comms verbs (SEND, REPLY, CREATE_MESSAGE, POST): 65
+ *  - Create/update verbs (CREATE, UPDATE, ADD): 70
+ *  - Everything else: 75
+ */
+function deriveConfidence(actionSlug: string): number {
+  const upper = actionSlug.toUpperCase()
+  if (/_(DELETE|REMOVE|CANCEL|CLOSE|ARCHIVE)/.test(upper)) return 40
+  if (/_(SEND_INVOICE|CREATE_INVOICE|CREATE_PAYMENT|REFUND|CHARGE)/.test(upper)) return 55
+  if (/_(SEND|REPLY|CREATE_MESSAGE|POST|PUBLISH)/.test(upper)) return 65
+  if (/_(CREATE|UPDATE|ADD|SET|ASSIGN)/.test(upper)) return 70
+  return 75
 }
 
 /**
