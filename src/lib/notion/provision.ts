@@ -92,10 +92,11 @@ export async function provisionBrainFromComposio(
   const conn = await composio.connectedAccounts.get(composioConnectionId)
   const { accessToken, meta } = extractComposioToken(conn)
 
-  // Log token prefix (first 12 chars, never the full token) to diagnose
-  // whether Composio is returning a real Notion token (ntn_*/secret_*) or
-  // an internal reference. Safe to log — not enough to authenticate.
-  console.log('[brain/provision] token prefix:', accessToken ? accessToken.slice(0, 12) + '...' : 'none', '| meta keys:', Object.keys(meta))
+  // Diagnostic: log token prefix + proxy config fields to understand
+  // whether Composio routes calls through a proxy base_url.
+  console.log('[brain/provision] token prefix:', accessToken ? accessToken.slice(0, 12) + '...' : 'none')
+  console.log('[brain/provision] base_url:', meta['base_url'] ?? 'none')
+  console.log('[brain/provision] headers keys:', meta['headers'] ? Object.keys(meta['headers'] as object) : 'none')
 
   if (!accessToken) {
     throw new Error(
@@ -110,7 +111,18 @@ export async function provisionBrainFromComposio(
   const workspaceName = (meta['workspace_name'] as string | undefined) ?? null
   const botId = (meta['bot_id'] as string | undefined) ?? null
 
-  const notion = new Client({ auth: accessToken })
+  // Composio may route Notion API calls through their own proxy. When present,
+  // base_url and headers in the meta override the default Notion API endpoint.
+  // This happens when Composio manages the OAuth app (vs user's own Notion app).
+  const composioBaseUrl = meta['base_url'] as string | undefined
+  const composioHeaders = meta['headers'] as Record<string, string> | undefined
+  console.log('[brain/provision] base_url:', composioBaseUrl ?? 'none (using api.notion.com)')
+
+  const notion = new Client({
+    auth: accessToken,
+    ...(composioBaseUrl ? { baseUrl: composioBaseUrl } : {}),
+    ...(composioHeaders ? { headers: composioHeaders } : {}),
+  })
 
   // Create the top-level Brain root page in the user's Notion workspace.
   // parent: { type: 'workspace', workspace: true } places it at the root,
