@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { refreshCapabilitiesForUser } from '<npm>/lib/composio/capability-cache'
+import { provisionBrainFromComposio } from '<npm>/lib/notion/provision'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -111,11 +112,23 @@ export async function POST(req: NextRequest) {
       console.error('[composio/webhook] activate failed:', error)
       return NextResponse.json({ error: 'persist_failed' }, { status: 500 })
     }
-    // Populate capability cache so propose_automation has fresh triggers/actions
     if (conn?.user_id && conn?.tool_slug) {
+      // Populate capability cache so propose_automation has fresh triggers/actions.
       refreshCapabilitiesForUser(conn.user_id, [conn.tool_slug]).catch((err) =>
         console.warn('[composio/webhook] capability refresh failed:', err),
       )
+
+      // When Notion connects: provision the Brain in the background.
+      // Brain creation takes ~30s (20 sequential Notion API calls); fire-and-forget
+      // so the webhook response returns immediately and Composio doesn't retry.
+      if (conn.tool_slug === 'notion') {
+        provisionBrainFromComposio(conn.user_id, connectionId).catch((err) =>
+          console.error(
+            '[composio/webhook] Brain provision failed:',
+            err instanceof Error ? err.message : err,
+          ),
+        )
+      }
     }
   } else if (eventName.includes('failed') || eventName.includes('deleted')) {
     const { error } = await supabase
