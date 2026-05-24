@@ -11,11 +11,32 @@
  * streaming to Vercel AI SDK streamText.
  */
 
-import { tool, jsonSchema, type Tool } from 'ai'
+import { tool, jsonSchema, generateObject, type Tool } from 'ai'
+import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { COO_TOOLS } from './tools'
 import { executeToolCall, type ExecutorContext } from './executor'
 import { loadSkillBody } from '<npm>/lib/skills'
+import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import {
+  listAutomations,
+  inspectAutomation,
+} from '<npm>/lib/automations/registry'
+import {
+  AutomationDraftSchema,
+  type AutomationDraft,
+} from '<npm>/lib/automations/draft-schema'
+import { buildCompilationPrompt } from '<npm>/lib/automations/compile'
+import {
+  COMPOSIO_TRIGGER_CATALOG,
+  COMPOSIO_ACTION_CATALOG,
+} from '<npm>/lib/automations/composio-catalog'
+import {
+  registerComposioTrigger,
+  deactivateComposioTrigger,
+} from '<npm>/lib/automations/composio-triggers'
+import type { ToolSlug } from '<npm>/lib/composio'
+import type { Json } from '<npm>/lib/database.types'
 
 export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
   const out: Record<string, Tool> = {}
@@ -40,6 +61,207 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
       },
     })
   }
+
+  // ─── CP-20 automations: 5 tools for the propose → confirm → install flow ──
+
+  out['propose_automation'] = tool({
+    description:
+      "Compile the customer's described automation into a typed draft. Returns the draft for the customer to confirm — does NOT save. Use this whenever the customer asks to set up, build, or wire up a recurring/triggered workflow. Pass the customer's natural-language request as user_request.",
+    inputSchema: z.object({
+      user_request: z
+        .string()
+        .min(5)
+        .describe(
+          'The customer\'s natural-language description of the automation, e.g. "When a HubSpot deal moves to closed-won, post in #ops Slack and create a Notion kickoff page".',
+        ),
+    }),
+    execute: async ({ user_request }) => {
+      try {
+        const existing = await listAutomations(ctx.userId)
+        const prompt = buildCompilationPrompt({
+          userRequest: user_request,
+          availableTriggers: COMPOSIO_TRIGGER_CATALOG.map((t) => ({
+            toolkit: t.toolkit,
+            slug: t.slug,
+            description: t.description,
+          })),
+          availableActions: COMPOSIO_ACTION_CATALOG.map((a) => ({
+            toolkit: a.toolkit,
+            action_slug: a.action_slug,
+            description: a.description,
+          })),
+          existingAutomations: existing.map((a) => ({
+            slug: a.slug,
+            description: a.description,
+          })),
+        })
+        const { object } = await generateObject({
+          model: openai('gpt-5.4'),
+          schema: AutomationDraftSchema,
+          prompt,
+        })
+        return { kind: 'automation_draft' as const, draft: object as AutomationDraft }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        return { success: false as const, error: message }
+      }
+    },
+  })
+
+  out['install_automation'] = tool({
+    description:
+      'Install a confirmed automation draft. Inserts the row, registers the Composio trigger (if composio_event), and returns the new id + URL. Only call this after the customer has explicitly confirmed the draft from propose_automation.',
+    inputSchema: z.object({
+      draft: AutomationDraftSchema,
+      user_confirmed: z
+        .literal(true)
+        .describe('Must be true — explicit confirmation that the customer approved the draft.'),
+    }),
+    execute: async ({ draft }) => {
+      if (draft.name === 'unsupported' || draft.spec.steps.length === 0) {
+        return {
+          success: false as const,
+          error: 'Draft is marked unsupported — nothing to install.',
+        }
+      }
+      const supabase = getServerSupabaseClient()
+
+      const { data: row, error: insErr } = await supabase
+        .from('customer_automations')
+        .insert({
+          user_id: ctx.userId,
+          slug: draft.slug,
+          name: draft.name,
+          description: draft.description,
+          status: 'active',
+          trigger_kind: draft.trigger.kind,
+          trigger_toolkit: draft.trigger.toolkit,
+          trigger_slug: draft.trigger.slug,
+          trigger_filter: (draft.trigger.filter ?? {}) as unknown as Json,
+          spec: { version: 1, steps: draft.spec.steps } as unknown as Json,
+          spec_version: 1,
+          autonomy: draft.autonomy,
+          source: 'coo-chat',
+        })
+        .select('id')
+        .single()
+
+      if (insErr || !row) {
+        return {
+          success: false as const,
+          error: `insert failed: ${insErr?.message ?? 'unknown'}`,
+        }
+      }
+      const automationId = row.id as string
+
+      if (
+        draft.trigger.kind === 'composio_event' &&
+        draft.trigger.toolkit &&
+        draft.trigger.slug
+      ) {
+        const reg = await registerComposioTrigger({
+          userId: ctx.userId,
+          automationId,
+          toolkit: draft.trigger.toolkit as ToolSlug,
+          triggerSlug: draft.trigger.slug,
+        })
+        if (!reg.ok) {
+          await supabase.from('customer_automations').delete().eq('id', automationId)
+          return { success: false as const, error: reg.error }
+        }
+      }
+
+      return {
+        success: true as const,
+        automation_id: automationId,
+        name: draft.name,
+        view_url: `/dashboard/automations/${automationId}`,
+      }
+    },
+  })
+
+  out['list_automations'] = tool({
+    description:
+      "List the customer's automations. Optionally filter by status. Use this when the customer asks what's running, what's installed, or to compare against an existing automation before proposing a new one.",
+    inputSchema: z.object({
+      status: z.enum(['active', 'paused', 'archived']).optional(),
+    }),
+    execute: async ({ status }) => {
+      try {
+        const all = await listAutomations(ctx.userId)
+        const filtered = status ? all.filter((a) => a.status === status) : all
+        return {
+          success: true as const,
+          automations: filtered.map((a) => ({
+            id: a.id,
+            slug: a.slug,
+            name: a.name,
+            description: a.description,
+            status: a.status,
+            autonomy: a.autonomy,
+            trigger_kind: a.trigger_kind,
+            trigger_toolkit: a.trigger_toolkit,
+            trigger_slug: a.trigger_slug,
+            last_run_at: a.last_run_at,
+            last_run_status: a.last_run_status,
+            run_count: a.run_count,
+          })),
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        return { success: false as const, error: message }
+      }
+    },
+  })
+
+  out['inspect_automation'] = tool({
+    description:
+      'Read the full row for a single automation including its spec. Call this after list_automations when the customer wants details on a specific one.',
+    inputSchema: z.object({
+      id: z.string().describe('The automation UUID from list_automations.'),
+    }),
+    execute: async ({ id }) => {
+      const row = await inspectAutomation(ctx.userId, id)
+      if (!row) {
+        return { success: false as const, error: 'automation not found' }
+      }
+      return { success: true as const, automation: row }
+    },
+  })
+
+  out['pause_automation'] = tool({
+    description:
+      "Pause or resume an automation. Set resume=true to flip a paused automation back to active. When pausing a composio_event automation, the underlying Composio trigger is deactivated; when resuming, the customer must re-install (we don't auto-recreate Composio triggers).",
+    inputSchema: z.object({
+      id: z.string(),
+      resume: z.boolean().optional().default(false),
+    }),
+    execute: async ({ id, resume }) => {
+      const supabase = getServerSupabaseClient()
+      const existing = await inspectAutomation(ctx.userId, id)
+      if (!existing) {
+        return { success: false as const, error: 'automation not found' }
+      }
+      const newStatus = resume ? 'active' : 'paused'
+      const { data, error } = await supabase
+        .from('customer_automations')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', ctx.userId)
+        .select('*')
+        .single()
+      if (error || !data) {
+        return {
+          success: false as const,
+          error: `update failed: ${error?.message ?? 'unknown'}`,
+        }
+      }
+      if (!resume) {
+        await deactivateComposioTrigger(id)
+      }
+      return { success: true as const, automation: data }
+    },
+  })
 
   // Anthropic Agent Skills — progressive disclosure tier 2.
   // The boot system prompt lists every skill's name+description; the agent

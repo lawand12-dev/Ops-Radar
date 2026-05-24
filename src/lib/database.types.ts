@@ -196,6 +196,174 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-added for CP-20 automations layer. Regenerate via
+      // `npm run types:supabase` after the migration applies to overwrite
+      // these with the auto-generated shape.
+      customer_automations: {
+        Row: {
+          id: string
+          user_id: string
+          slug: string
+          name: string
+          description: string
+          status: string
+          trigger_kind: string
+          trigger_toolkit: string | null
+          trigger_slug: string | null
+          trigger_filter: Json
+          spec: Json
+          spec_version: number
+          autonomy: string
+          source: string
+          source_session: string | null
+          created_by: string
+          last_run_at: string | null
+          last_run_status: string | null
+          run_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          slug: string
+          name: string
+          description: string
+          status?: string
+          trigger_kind: string
+          trigger_toolkit?: string | null
+          trigger_slug?: string | null
+          trigger_filter?: Json
+          spec: Json
+          spec_version?: number
+          autonomy?: string
+          source?: string
+          source_session?: string | null
+          created_by?: string
+          last_run_at?: string | null
+          last_run_status?: string | null
+          run_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          slug?: string
+          name?: string
+          description?: string
+          status?: string
+          trigger_kind?: string
+          trigger_toolkit?: string | null
+          trigger_slug?: string | null
+          trigger_filter?: Json
+          spec?: Json
+          spec_version?: number
+          autonomy?: string
+          source?: string
+          source_session?: string | null
+          created_by?: string
+          last_run_at?: string | null
+          last_run_status?: string | null
+          run_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      automation_trigger_instances: {
+        Row: {
+          id: string
+          automation_id: string
+          user_id: string
+          composio_trigger_id: string
+          trigger_slug: string
+          connected_account_id: string
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          automation_id: string
+          user_id: string
+          composio_trigger_id: string
+          trigger_slug: string
+          connected_account_id: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          automation_id?: string
+          user_id?: string
+          composio_trigger_id?: string
+          trigger_slug?: string
+          connected_account_id?: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      automation_runs: {
+        Row: {
+          id: string
+          automation_id: string
+          user_id: string
+          trigger_event: Json
+          status: string
+          result: Json | null
+          error: string | null
+          steps: Json
+          queued_action_ids: string[]
+          started_at: string
+          finished_at: string | null
+        }
+        Insert: {
+          id?: string
+          automation_id: string
+          user_id: string
+          trigger_event: Json
+          status?: string
+          result?: Json | null
+          error?: string | null
+          steps?: Json
+          queued_action_ids?: string[]
+          started_at?: string
+          finished_at?: string | null
+        }
+        Update: {
+          id?: string
+          automation_id?: string
+          user_id?: string
+          trigger_event?: Json
+          status?: string
+          result?: Json | null
+          error?: string | null
+          steps?: Json
+          queued_action_ids?: string[]
+          started_at?: string
+          finished_at?: string | null
+        }
+        Relationships: []
+      }
+      automation_event_idempotency: {
+        Row: {
+          webhook_id: string
+          received_at: string
+          automation_ids: string[]
+        }
+        Insert: {
+          webhook_id: string
+          received_at?: string
+          automation_ids: string[]
+        }
+        Update: {
+          webhook_id?: string
+          received_at?: string
+          automation_ids?: string[]
+        }
+        Relationships: []
+      }
       agent_runs: {
         Row: {
           actions_taken: number

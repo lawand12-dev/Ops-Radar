@@ -25,6 +25,10 @@ import { readDecisionLog } from '<npm>/lib/notion/read-decision-log'
 import { getApprovalPatterns } from '<npm>/lib/actions/approval-patterns'
 import { wrapToolsWithApprovalGate } from './approval-gate'
 import { loadSkillCatalog, buildSkillsSystemBlock, loadSkillBody } from '<npm>/lib/skills'
+import {
+  loadAutomationCatalog,
+  buildAutomationsSystemBlock,
+} from '<npm>/lib/automations/registry'
 import { tool as aiTool } from 'ai'
 import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
@@ -101,12 +105,14 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     //       re-suggest things they've already decided against
     //   (c) Approval patterns — aggregated approve / reject / edit feedback
     //       for this specific agent, so the model adjusts its style
-    const [howWeWork, decisions, patterns, skillCatalog] = await Promise.all([
-      readHowWeWork(userId),
-      readDecisionLog(userId),
-      getApprovalPatterns(userId, spec.slug, 60),
-      loadSkillCatalog(),
-    ])
+    const [howWeWork, decisions, patterns, skillCatalog, automationCatalog] =
+      await Promise.all([
+        readHowWeWork(userId),
+        readDecisionLog(userId),
+        getApprovalPatterns(userId, spec.slug, 60),
+        loadSkillCatalog(),
+        loadAutomationCatalog(userId),
+      ])
 
     const enrichments: string[] = []
     if (howWeWork) {
@@ -128,6 +134,12 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     // agent; the model picks which (if any) to load_skill mid-run.
     const skillsBlock = buildSkillsSystemBlock(skillCatalog)
     if (skillsBlock) enrichments.push(skillsBlock)
+
+    // Customer-built automations — boot tier. Same shape as skills, but
+    // sourced from customer_automations rows so the agent knows what's
+    // already running and doesn't propose duplicates (CP-20).
+    const automationsBlock = buildAutomationsSystemBlock(automationCatalog)
+    if (automationsBlock) enrichments.push(automationsBlock)
 
     const systemPrompt =
       enrichments.length > 0
