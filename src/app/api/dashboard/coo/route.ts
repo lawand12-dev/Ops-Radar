@@ -151,19 +151,24 @@ export async function POST(request: NextRequest): Promise<Response> {
   const outcomesBlock = formatOutcomesForPrompt(recentOutcomes);
 
   // Composio sub-agent power: load the customer's most-recently-used
-  // toolkits and wrap them with the approval gate. Cap at 3 toolkits in v1
-  // to keep input tokens reasonable (each toolkit exposes ~60-100 tools
-  // and ~200 tokens per tool definition). Phase 2 will replace this with
-  // a sub-agent router pattern (one delegation tool per toolkit instead
-  // of every action exposed flat).
+  // toolkits and wrap them with the approval gate. Cap at 2 toolkits to
+  // stay inside the 30k TPM limit on OpenAI Tier 1.
+  //
+  // Why 2: each Composio toolkit exposes 60-100 actions × ~200 tokens each
+  // = ~12k-20k tokens. System prompt + skills catalog already uses ~8k.
+  // At cap=3 total context easily hits 24k+, triggering rate_limit_exceeded
+  // before the model can even respond. At cap=2 we stay around 15k tokens.
   //
   // Notion is always included (reserved slot) — it's the Brain and must be
-  // available regardless of usage order.
+  // available regardless of usage order. So effectively: Notion + 1 other.
+  //
+  // Phase 2 will replace this with a sub-agent router pattern (one delegation
+  // tool per toolkit instead of every action exposed flat).
   //
   // NOTE: connectedSlugs is resolved HERE (before the system prompt) so
   // notionConnected can be injected into the prompt. The model must not be
   // told to call NOTION_* tools if Notion isn't actually connected.
-  const COMPOSIO_TOOLKIT_CAP = 3;
+  const COMPOSIO_TOOLKIT_CAP = 2;
   let composioTools: Awaited<ReturnType<typeof getComposioToolsForUser>> = {};
   let notionConnected = false;
   try {
