@@ -29,6 +29,7 @@ import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-s
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import { applyRateLimit } from '<npm>/lib/rate-limit';
 import { canAccess, getUserPlan, upgradeRequiredBody } from '<npm>/lib/tier';
+import { checkQuota, recordUsage } from '<npm>/lib/usage/track';
 import { TOOL_LABELS } from '<npm>/lib/coo/tools';
 import { type ExecutorContext } from '<npm>/lib/coo/executor';
 import { buildAiSdkCooTools } from '<npm>/lib/coo/ai-sdk-tools';
@@ -105,6 +106,23 @@ export async function POST(request: NextRequest): Promise<Response> {
   const plan = getUserPlan(meta);
   if (!canAccess(plan, 'coo_chat')) {
     return NextResponse.json(upgradeRequiredBody('growth'), { status: 402 });
+  }
+
+  // Monthly OpenAI quota gate. If exhausted, return 429 so the UI can show
+  // an upgrade nudge instead of starting an expensive stream.
+  const openaiQuota = await checkQuota({ userId, provider: 'openai' });
+  if (!openaiQuota.allowed) {
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        provider: 'openai',
+        used: openaiQuota.used,
+        cap: openaiQuota.cap,
+        resets_at: openaiQuota.resetsAt.toISOString(),
+        message: `Monthly AI compute cap reached (${openaiQuota.used.toLocaleString()} / ${openaiQuota.cap.toLocaleString()} tokens). Resets ${openaiQuota.resetsAt.toISOString().slice(0, 10)}.`,
+      },
+      { status: 429 },
+    );
   }
 
   const blendedRate = typeof meta.blended_hourly_rate_usd === 'number' ? meta.blended_hourly_rate_usd : 85;
@@ -378,6 +396,19 @@ export async function POST(request: NextRequest): Promise<Response> {
             }
 
             case 'finish': {
+              // Record OpenAI token usage for cost attribution + quota.
+              // The `totalUsage` field is on the finish chunk in AI SDK v6.
+              const totalUsage = (chunk as { totalUsage?: { inputTokens?: number; outputTokens?: number } }).totalUsage;
+              const tokens = (totalUsage?.inputTokens ?? 0) + (totalUsage?.outputTokens ?? 0);
+              if (tokens > 0) {
+                await recordUsage({
+                  userId,
+                  provider: 'openai',
+                  operation: 'coo_chat',
+                  tokens,
+                  metadata: { model: 'gpt-4o', session_id: sessionId ?? null },
+                });
+              }
               await persistAssistant();
               emit({ type: 'done' });
               close();

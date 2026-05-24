@@ -12,6 +12,7 @@ import type {
 } from './types';
 import { dispatchEvent } from '<npm>/lib/webhooks/dispatch';
 import { getComposio } from '<npm>/lib/composio';
+import { recordUsage } from '<npm>/lib/usage/track';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const HARVEST_BASE = 'https://api.harvestapp.com/v2';
@@ -157,6 +158,13 @@ export async function executeAction(action: AgentAction): Promise<void> {
           arguments: p.arguments,
         });
         updatedPayload.result = result as unknown;
+        await recordUsage({
+          userId: action.user_id,
+          provider: 'composio',
+          operation: 'tool_execute',
+          credits: 1,
+          metadata: { action_slug: p.action_slug, toolkit: p.toolkit ?? null, auto: false },
+        });
         break;
       }
     }

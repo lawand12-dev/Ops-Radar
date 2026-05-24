@@ -286,7 +286,10 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
         .describe('Set to true (default) for a one-paragraph synthesis along with the results.'),
     }),
     execute: async ({ query, include_answer }) => {
-      return await webSearch(query, { includeAnswer: include_answer ?? true })
+      return await webSearch(query, {
+        userId: ctx.userId,
+        includeAnswer: include_answer ?? true,
+      })
     },
   })
 
@@ -309,6 +312,7 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     }),
     execute: async ({ competitor_name, focus_areas, our_positioning }) => {
       return await researchCompetitor({
+        userId: ctx.userId,
         competitorName: competitor_name,
         focusAreas: focus_areas,
         ourPositioning: our_positioning,
@@ -330,7 +334,7 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
         .describe("Optional: the customer's specific question about the document, e.g. 'is this MSA fair' or 'what's the termination clause'."),
     }),
     execute: async ({ text, question }) => {
-      return await analyzeDocument({ text, question })
+      return await analyzeDocument({ userId: ctx.userId, text, question })
     },
   })
 

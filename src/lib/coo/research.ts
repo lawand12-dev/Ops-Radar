@@ -23,6 +23,7 @@
 import { generateObject } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
+import { withQuota, recordUsage } from '<npm>/lib/usage/track'
 
 // ─── 1. Web search via Tavily ──────────────────────────────────────────────
 
@@ -49,12 +50,13 @@ export type WebSearchResponse = {
 export async function webSearch(
   query: string,
   opts: {
+    userId: string
     maxResults?: number
     depth?: 'basic' | 'advanced'
     includeAnswer?: boolean
     includeDomains?: string[]
     excludeDomains?: string[]
-  } = {},
+  },
 ): Promise<WebSearchResponse> {
   const apiKey = (process.env.TAVILY_API_KEY ?? '').trim()
   if (!apiKey) {
@@ -65,54 +67,73 @@ export async function webSearch(
     }
   }
 
-  try {
-    const response = await fetch(TAVILY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: apiKey,
-        query,
-        search_depth: opts.depth ?? 'basic',
-        max_results: opts.maxResults ?? 5,
-        include_answer: opts.includeAnswer ?? true,
-        include_domains: opts.includeDomains ?? [],
-        exclude_domains: opts.excludeDomains ?? [],
-      }),
-    })
+  const depth = opts.depth ?? 'basic'
+  // Tavily charges 1 credit for basic, 2 for advanced (per their pricing page).
+  const estimatedCredits = depth === 'advanced' ? 2 : 1
 
-    if (!response.ok) {
-      const text = await response.text().catch(() => '')
-      return {
-        success: false,
-        error: `Tavily ${response.status}: ${text.slice(0, 200)}`,
+  const gated = await withQuota(
+    {
+      userId: opts.userId,
+      provider: 'tavily',
+      operation: depth === 'advanced' ? 'web_search_advanced' : 'web_search',
+      estimatedCredits,
+    },
+    async () => {
+      const response = await fetch(TAVILY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          query,
+          search_depth: depth,
+          max_results: opts.maxResults ?? 5,
+          include_answer: opts.includeAnswer ?? true,
+          include_domains: opts.includeDomains ?? [],
+          exclude_domains: opts.excludeDomains ?? [],
+        }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Tavily ${response.status}: ${text.slice(0, 200)}`)
       }
-    }
 
-    const payload = (await response.json()) as {
-      answer?: string
-      results?: Array<{
-        title?: string
-        url?: string
-        content?: string
-        published_date?: string | null
-      }>
-    }
+      const payload = (await response.json()) as {
+        answer?: string
+        results?: Array<{
+          title?: string
+          url?: string
+          content?: string
+          published_date?: string | null
+        }>
+      }
 
-    return {
-      success: true,
-      query,
-      answer: payload.answer,
-      results: (payload.results ?? []).map((r) => ({
+      const results: WebSearchResult[] = (payload.results ?? []).map((r) => ({
         title: r.title ?? '(no title)',
         url: r.url ?? '',
         snippet: (r.content ?? '').slice(0, 800),
         published_at: r.published_date ?? null,
-      })),
-    }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `web_search threw: ${message}` }
+      }))
+
+      return {
+        result: {
+          success: true as const,
+          query,
+          answer: payload.answer,
+          results,
+        },
+        usage: {
+          credits: estimatedCredits,
+          metadata: { depth, query_length: query.length, result_count: results.length },
+        },
+      }
+    },
+  )
+
+  if (!gated.ok) {
+    return { success: false, error: gated.error }
   }
+  return gated.result
 }
 
 // ─── 2. Competitor research (multi-step) ───────────────────────────────────
@@ -140,11 +161,12 @@ export type CompetitorResearchResponse =
   | { success: false; error: string }
 
 export async function researchCompetitor(input: {
+  userId: string
   competitorName: string
   ourPositioning?: string // optional — included so threat_level_to_us is grounded
   focusAreas?: string[]
 }): Promise<CompetitorResearchResponse> {
-  const { competitorName, ourPositioning, focusAreas } = input
+  const { userId, competitorName, ourPositioning, focusAreas } = input
 
   const queries = [
     `${competitorName} pricing`,
@@ -160,7 +182,7 @@ export async function researchCompetitor(input: {
 
   const searchResults = await Promise.all(
     queries.map((q) =>
-      webSearch(q, { depth: 'advanced', maxResults: 4, includeAnswer: false }),
+      webSearch(q, { userId, depth: 'advanced', maxResults: 4, includeAnswer: false }),
     ),
   )
 
@@ -188,7 +210,7 @@ export async function researchCompetitor(input: {
     .join('\n\n')
 
   try {
-    const { object } = await generateObject({
+    const result = await generateObject({
       model: openai('gpt-4o'),
       schema: CompetitorBriefSchema,
       prompt: `You are a market analyst writing a competitor brief for a services-business AI COO product (OpsRadar). The customer asked you to research **${competitorName}**.
@@ -201,7 +223,15 @@ ${evidenceBlock}
 
 Return the structured brief. threat_level_to_us must be grounded in concrete overlap with ${ourPositioning ? 'the positioning above' : 'an AI COO for services businesses'} — not hand-waved.`,
     })
-    return { success: true, brief: object }
+    // Log the OpenAI extraction call (Tavily searches already logged inside webSearch).
+    await recordUsage({
+      userId,
+      provider: 'openai',
+      operation: 'competitor_research_extract',
+      tokens: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
+      metadata: { model: 'gpt-4o', competitor: competitorName },
+    })
+    return { success: true, brief: result.object }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     return { success: false, error: `extraction failed: ${message}` }
@@ -229,10 +259,11 @@ export type DocumentAnalysisResponse =
   | { success: false; error: string }
 
 export async function analyzeDocument(input: {
+  userId: string
   text: string
   question?: string
 }): Promise<DocumentAnalysisResponse> {
-  const { text, question } = input
+  const { userId, text, question } = input
   const trimmed = text.trim()
   if (trimmed.length < 100) {
     return { success: false, error: 'Document text too short (<100 chars).' }
@@ -242,11 +273,17 @@ export async function analyzeDocument(input: {
   // for the structured-output schema.
   const bounded = trimmed.length > 30000 ? `${trimmed.slice(0, 30000)}\n\n[TRUNCATED — ${trimmed.length - 30000} more chars]` : trimmed
 
-  try {
-    const { object } = await generateObject({
-      model: openai('gpt-4o'),
-      schema: DocumentAnalysisSchema,
-      prompt: `You are reviewing a document for an agency / services-business owner. Read it carefully and produce the structured analysis below.
+  const gated = await withQuota(
+    {
+      userId,
+      provider: 'openai',
+      operation: 'document_analysis',
+    },
+    async () => {
+      const result = await generateObject({
+        model: openai('gpt-4o'),
+        schema: DocumentAnalysisSchema,
+        prompt: `You are reviewing a document for an agency / services-business owner. Read it carefully and produce the structured analysis below.
 
 ${question ? `The customer's specific question: ${question}\n\n` : ''}Cite specific clauses when flagging risks. Be a senior COO, not a lawyer — actionable risk flags, not exhaustive legal review.
 
@@ -254,10 +291,17 @@ Document:
 """
 ${bounded}
 """`,
-    })
-    return { success: true, analysis: object }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return { success: false, error: `analysis failed: ${message}` }
-  }
+      })
+      return {
+        result: { success: true as const, analysis: result.object },
+        usage: {
+          tokens: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
+          metadata: { model: 'gpt-4o', doc_length: bounded.length },
+        },
+      }
+    },
+  )
+
+  if (!gated.ok) return { success: false, error: gated.error }
+  return gated.result
 }

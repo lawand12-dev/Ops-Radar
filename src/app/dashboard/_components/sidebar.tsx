@@ -23,6 +23,7 @@ import {
   Bot,
   History,
   Workflow,
+  Gauge,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -90,6 +91,7 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Integrations', href: '/dashboard/integrations',          icon: Plug      },
       { label: 'Tool Autonomy', href: '/dashboard/settings/automation',  icon: Bot       },
+      { label: 'Usage',         href: '/dashboard/settings/usage',       icon: Gauge     },
       { label: 'MCP',          href: '/dashboard/settings/mcp',          icon: Network   },
       { label: 'Webhooks',     href: '/dashboard/webhooks',              icon: Webhook   },
       { label: 'Team',         href: '/dashboard/settings/team',         icon: Building2 },

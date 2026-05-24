@@ -29,6 +29,7 @@ import {
   loadAutomationCatalog,
   buildAutomationsSystemBlock,
 } from '<npm>/lib/automations/registry'
+import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
 import { tool as aiTool } from 'ai'
 import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
@@ -49,6 +50,17 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
   const missing = spec.requiredIntegrations.filter((t) => !connected.has(t))
   if (missing.length > 0) {
     return logSkip(userId, spec.slug, `missing-integration:${missing.join(',')}`)
+  }
+
+  // 2b. Quota gate — OpenAI is the dominant cost. Block if this customer
+  // has already hit their monthly token cap for their tier.
+  const quota = await checkQuota({ userId, provider: 'openai' })
+  if (!quota.allowed) {
+    return logSkip(
+      userId,
+      spec.slug,
+      `quota-exceeded:openai (${quota.used}/${quota.cap})`,
+    )
   }
 
   // 3. Start run
@@ -160,10 +172,20 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       await markConnectionsUsed(userId, wantedToolkits)
     }
 
+    const tokensUsed = (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0)
+    // Record OpenAI usage for cost attribution + quota enforcement.
+    await recordUsage({
+      userId,
+      provider: 'openai',
+      operation: 'agent_cron_run',
+      tokens: tokensUsed,
+      metadata: { agent_slug: spec.slug, model: spec.model, max_steps: spec.maxSteps },
+    })
+
     return completeAgentRun(runId, {
       status: 'success',
       summary: result.text,
-      tokensUsed: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
+      tokensUsed,
     })
   } catch (err) {
     return failAgentRun(runId, err)

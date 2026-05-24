@@ -1103,6 +1103,44 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-added for CP-23 multi-tenant API usage tracking.
+      // Regenerate via `npm run types:supabase` after migration applies.
+      external_api_usage: {
+        Row: {
+          id: string
+          user_id: string
+          provider: string
+          operation: string
+          credits_used: number
+          tokens_used: number | null
+          cost_estimate_cents: number | null
+          metadata: Json
+          occurred_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          provider: string
+          operation: string
+          credits_used?: number
+          tokens_used?: number | null
+          cost_estimate_cents?: number | null
+          metadata?: Json
+          occurred_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          provider?: string
+          operation?: string
+          credits_used?: number
+          tokens_used?: number | null
+          cost_estimate_cents?: number | null
+          metadata?: Json
+          occurred_at?: string
+        }
+        Relationships: []
+      }
       fo_audit_log: {
         Row: {
           action_kind: string

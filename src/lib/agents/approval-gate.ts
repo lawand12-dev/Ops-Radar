@@ -21,6 +21,7 @@ import { tool, type Tool } from 'ai'
 import { z } from 'zod'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getComposio } from '<npm>/lib/composio'
+import { recordUsage } from '<npm>/lib/usage/track'
 import type { Json } from '<npm>/lib/database.types'
 import {
   getToolPolicy,
@@ -166,6 +167,16 @@ async function executeImmediately(input: {
     const result = await composio.tools.execute(actionSlug, {
       userId: opts.userId,
       arguments: args,
+    })
+    // Auto-mode execution — log to usage so per-customer Composio
+    // consumption is attributable (the customer agreed to Auto, but cost
+    // attribution still matters).
+    await recordUsage({
+      userId: opts.userId,
+      provider: 'composio',
+      operation: 'tool_execute',
+      credits: 1,
+      metadata: { action_slug: actionSlug, toolkit, source: opts.source, agent_slug: opts.agentSlug ?? null, auto: true },
     })
 
     const payload = {

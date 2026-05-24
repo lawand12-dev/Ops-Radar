@@ -21,6 +21,7 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getComposio } from '<npm>/lib/composio'
 import { getToolPolicy, loadToolPolicies } from '<npm>/lib/agents/tool-policies'
+import { recordUsage } from '<npm>/lib/usage/track'
 import type { Json } from '<npm>/lib/database.types'
 import type {
   AutomationSpec,
@@ -331,6 +332,13 @@ async function runComposioAction(
       const result = await composio.tools.execute(step.action_slug, {
         userId: ctx.automation.user_id,
         arguments: safeArgs as unknown as Record<string, unknown>,
+      })
+      await recordUsage({
+        userId: ctx.automation.user_id,
+        provider: 'composio',
+        operation: 'tool_execute',
+        credits: 1,
+        metadata: { action_slug: step.action_slug, toolkit: step.toolkit, automation_id: ctx.automation.id, auto: true },
       })
       await supabase.from('agent_actions').insert({
         user_id: ctx.automation.user_id,
