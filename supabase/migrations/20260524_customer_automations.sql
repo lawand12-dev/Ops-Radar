@@ -138,3 +138,7 @@ create table if not exists automation_event_idempotency (
 
 create index if not exists automation_event_idempotency_received_idx
   on automation_event_idempotency (received_at);
+
+-- System-internal dedupe table — written only by the webhook handler via
+-- the service role. Block anon + authenticated; service role bypasses RLS.
+alter table automation_event_idempotency enable row level security;
