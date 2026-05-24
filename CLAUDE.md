@@ -86,11 +86,14 @@ Sidebar groups: Overview / TODAY / CLIENTS / INTELLIGENCE / OPERATIONS / PARTNER
 | `/dashboard/brain` | Customer-owned Notion Brain (20 DBs + 7 strategic pages) |
 | `/dashboard/performance` | 5-dimension agency health + peer benchmarks |
 | `/dashboard/runs` | Every agent run with status + drawer detail (CP-14) |
+| `/dashboard/automations` | Customer-built automations registry — Lindy-style "when X, do Y" (CP-20) |
+| `/dashboard/automations/[id]` | Automation detail — trigger config, read-only spec graph, run history, pause/resume, autonomy toggle (CP-20) |
 | `/dashboard/business` | Live Data — raw per-integration explorer |
 | `/dashboard/integrations` | Connect tools via Composio OAuth |
 | `/dashboard/webhooks` | Outgoing webhook configurations |
 | `/dashboard/settings` | Account settings |
-| `/dashboard/settings/automation` | Per-tool autonomy (Ask / Auto / Off) — CP-14 |
+| `/dashboard/settings/automation` | Per-tool autonomy (Ask / Auto / Off) — sidebar label is "Tool Autonomy" (CP-14, renamed in CP-20) |
+| `/dashboard/settings/usage` | Per-customer API usage + monthly caps across OpenAI/Composio/Tavily/Anthropic (CP-23) |
 | `/dashboard/settings/team` | Team members + invitations |
 | `/dashboard/settings/mcp` | MCP token + install snippet |
 | `/dashboard/fo` | Fractional Operator multi-client aggregate |
@@ -281,3 +284,106 @@ Migrated the knowledge base from RAG (vector embeddings + retrieval) to Anthropi
 **Why this pattern wins:** matches Anthropic's published Agent Skills spec, Ramp Glass / Block / Anthropic's own production usage, and the post-RAG canonical pattern Karpathy + Tom Blomfield (YC RFS #4 author) publicly described. Earns YC #4 "Company Brain" by construction, not by claim. See research basis in [`docs/strategy/agent-skills-architecture-2026.md`](./docs/strategy/agent-skills-architecture-2026.md) (newly added in this commit).
 
 **Authoring guidelines** are in [`knowledge-base/skills/INDEX.md`](./knowledge-base/skills/INDEX.md). Headline rules: only `name` + `description` in frontmatter (no `tags`, `category`, `coo_relevance`, `when_to_use`); body ≤ 250 lines; open with italic anxious-question opener; include conversation scripts; end with "What NOT to do".
+
+### CP-18 — 28-agent architecture (May 2026)
+
+Expanded from the original 10 domain agents to a full **28-agent stack** (`502d942` / `0ad1f46`):
+
+- **10 domain agents** (existing): `revenue`, `collections`, `scope`, `delivery`, `briefing`, `profitability`, `team`, `growth`, `renewal`, `stack`
+- **17 tool agents** (new): one per Composio integration — `tool-gmail`, `tool-hubspot`, `tool-pipedrive`, `tool-clickup`, `tool-asana`, `tool-monday`, `tool-harvest`, `tool-toggl`, `tool-slack`, `tool-calendly`, `tool-notion`, `tool-apollo`, `tool-stripe`, `tool-quickbooks`, `tool-google-calendar`, `tool-google-analytics`, `tool-google-ads`, `tool-linkedin`, `tool-bamboo-hr`, `tool-gusto`, `tool-typeform`, `tool-intercom`, `tool-zendesk`
+- **1 evaluator agent**: daily 2pm quality audit over every other agent's proposed actions
+
+Each tool agent specializes deeply in one toolkit. Each writes findings to Notion (`Agent Action Log` rows). Domain agents (CP-19) read those findings to synthesize cross-tool insights. See [`src/lib/agents/registry.ts`](./src/lib/agents/registry.ts), [`src/lib/agents/tools/*`](./src/lib/agents/tools/), and [`src/lib/agents/evaluator/`](./src/lib/agents/evaluator/).
+
+Three integrations excluded from agent coverage by architectural decision: `docusign`, `xero`, `facebook_ads` (toolkits remain connectable but no dedicated agent).
+
+Approval-gate adds **confidence scoring** (heuristic 0–100 per queued action) and per-tool autonomy resolution stays unchanged.
+
+### CP-19 — Domain agents become orchestrators (May 2026)
+
+Rewrote all 10 domain agents from "standalone synthesizers" to **orchestrator-worker pattern** (Anthropic published spec). Each domain agent now:
+
+1. Reads from Notion FIRST (its tool agents' findings + Risk Register + Pattern Cards + KPI Snapshots)
+2. Only calls live Composio tools to fill gaps
+3. Writes higher-level cross-tool synthesis back to the Brain
+4. Queues a max of 3 strategic actions per cycle, each citing the threshold that triggered it
+
+Adopts Anthropic's 4-field subagent contract: Objective / Source priority / Output format / Boundaries. Adds outcome tracking (`entity_type`/`entity_id`/`entity_tool_slug`/`expected_outcome`) to all 10. Crons staggered so domain agents run AFTER their tool-agent inputs finish (revenue 7→9am, briefing Mon 6am→Mon 12pm, etc.).
+
+Two critical bugs fixed in the same pass: every domain agent now has `notion` in its `composioApps` (silently missing before, so every Notion-write instruction was dead code), and cron schedules don't race with their upstream tool agents.
+
+Research basis: [`docs/strategy/domain-agent-orchestration-2026.md`](./docs/strategy/domain-agent-orchestration-2026.md) (Anthropic Multi-Agent Research, Cognition "Don't Build Multi-Agents" Flappy Bird failure, arXiv 2510.01285 blackboard pattern, Karpathy LLM Wiki, Claude Code /goals + Bloom).
+
+### CP-20 — Customer-built automations, Lindy-style (May 2026)
+
+Customer talks to the AI COO → describes an automation in plain English → COO compiles it to a typed spec → customer confirms → row inserted in `customer_automations` → fires real-time on Composio webhooks → queues each action through the existing approval gate. **Every agent in the system is aware of active automations** (catalog injected into every prompt, mirroring the skills pattern).
+
+Components:
+
+| Piece | Where |
+|---|---|
+| Schema (4 tables) | `supabase/migrations/20260524_customer_automations.sql` — `customer_automations`, `automation_trigger_instances`, `automation_runs`, `automation_event_idempotency` |
+| Spec IR | [`src/lib/automations/types.ts`](./src/lib/automations/types.ts) — `composio_action`, `notion_write`, `agent_step`, `condition`, `loop`, `wait`, `set`, `queue_action` |
+| Registry + catalog injection | [`src/lib/automations/registry.ts`](./src/lib/automations/registry.ts) — `loadAutomationCatalog`, `listAutomations`, `inspectAutomation`, `findAutomationsForEvent`, `buildAutomationsSystemBlock` |
+| Synchronous executor | [`src/lib/automations/execute.ts`](./src/lib/automations/execute.ts) — walks the spec, fires through approval gate. Rejects specs with `wait`/`loop`/`agent_step` (Phase 7 = durable, deferred) |
+| Composio webhook ingress | [`src/app/api/automations/webhook/composio/route.ts`](./src/app/api/automations/webhook/composio/route.ts) — HMAC-SHA256 verified, replay-protected, deduped |
+| Trigger registration | [`src/lib/automations/composio-triggers.ts`](./src/lib/automations/composio-triggers.ts) — `registerComposioTrigger` / `deactivateComposioTrigger` |
+| Natural-language compilation | [`src/lib/automations/compile.ts`](./src/lib/automations/compile.ts) + [`src/lib/automations/draft-schema.ts`](./src/lib/automations/draft-schema.ts) — Zod schema, model picks from enumerable catalog |
+| 5 COO tools | `propose_automation`, `install_automation`, `list_automations`, `inspect_automation`, `pause_automation` in [`src/lib/coo/ai-sdk-tools.ts`](./src/lib/coo/ai-sdk-tools.ts) |
+| Inline draft card | [`src/components/dashboard/automation-draft-card.tsx`](./src/components/dashboard/automation-draft-card.tsx) — Lindy-style trigger → then → then preview |
+| List + detail UI | [`/dashboard/automations`](./src/app/dashboard/automations/) — registry view with status / autonomy / runs history, pause/resume/delete, autonomy toggle (Ask/Auto/Off per-automation) |
+
+Approval-gate `ApprovalSource` union extended with `'automation'`. Resolution: per-automation autonomy ('off' blocks, 'auto' fires immediately, 'ask' falls through to per-tool policy).
+
+**Naming disambiguation**: the existing CP-14 page at `/dashboard/settings/automation` was renamed in the sidebar to **"Tool Autonomy"** so it doesn't collide with the new **"Automations"** entry under OPERATIONS.
+
+Research basis: [`docs/strategy/automations-architecture-2026.md`](./docs/strategy/automations-architecture-2026.md) (Lindy 2.0 architecture lessons, Anthropic Agent Skills standard, Vercel Workflows for Phase 7, Anti-patterns from n8n/Zapier 2026 critiques).
+
+### CP-21 — Senior-COO playbook embedded in 10 domain agents (May 2026)
+
+Rewrote all 10 domain agent prompts (`6849101`) with **senior fractional COO operator judgment** distilled from agency-operator publications (Sakas, Petitpas, Swenk, McLellan, AgencyAnalytics, Promethean, SparkToro, Focus Digital 2026 churn report, HubSpot State of Service, Yuktis).
+
+Each domain agent now contains:
+
+- **Signals + thresholds table** (healthy / caution / emergency zones) with cited industry benchmarks
+- **Constrained decision tree** — agents may ONLY recommend actions from the published playbook, no novel inventions
+- **Conversation scripts** (verbatim, fillable brackets) for the most common owner-facing moments
+- **Anti-patterns** section as guardrails
+- Cross-cutting principles in every prompt: lead with the most fragile number, name $/day/client at stake, trends over snapshots, cite the threshold, triage tier every output, max 3 strategic actions per cycle
+
+Generic framing: agencies + services businesses broadly (design, marketing, dev shops, recruiting, consulting, accounting, PR, content studios). Vertical-specific judgment lives in `knowledge-base/skills/agency-types/*`.
+
+Competitive context: **BOND (YC X25)** is the closest horizontal competitor — "AI Chief of Staff for CEOs/busy execs." OpsRadar's wedge is vertical depth + operator judgment embedded in agents (BOND has none of this published).
+
+Research basis: [`docs/strategy/senior-coo-playbook-2026.md`](./docs/strategy/senior-coo-playbook-2026.md).
+
+### CP-22 — AI COO replaces ChatGPT/Perplexity for business research (May 2026)
+
+Added three tools (`757b419`) so the customer doesn't need another AI surface for business questions, competitor intel, or contract review:
+
+- **`web_search`** — single-query Tavily search (purpose-built for LLM agents, free tier). Returns top 5 results + one-paragraph synthesis.
+- **`research_competitor`** — multi-step deep research: 4-6 targeted searches, fetch top hits, structured extraction via `generateObject`. Returns positioning / pricing / strengths / weaknesses / threat-level brief in 10–20s.
+- **`analyze_document`** — paste a contract / RFP / proposal / NDA / MSA → structured COO review: document type, summary, key terms, obligations per side, financial terms, risk flags, recommended action, questions to ask the counterparty.
+
+Implementation: [`src/lib/coo/research.ts`](./src/lib/coo/research.ts). Wired in [`src/lib/coo/ai-sdk-tools.ts`](./src/lib/coo/ai-sdk-tools.ts). System prompt updated to claim THREE sources of truth (integrations, brain, public web) and explicitly told not to punt customers to ChatGPT/Perplexity.
+
+Requires `TAVILY_API_KEY` env var. Without it, the three tools return a graceful "search disabled" error; the rest of chat keeps working.
+
+### CP-23 — Multi-tenant API quota + usage tracking (May 2026)
+
+One shared third-party API key per provider, many customers, no cost blowups. Every external API call across all four providers (OpenAI, Composio, Tavily, Anthropic) is quota-checked, logged, and visible to the customer (`23fb18a`).
+
+Components:
+
+| Piece | Where |
+|---|---|
+| Schema | `supabase/migrations/20260524_external_api_usage.sql` — `external_api_usage` (one row per external call, RLS, service-role write only) |
+| Tracking lib | [`src/lib/usage/`](./src/lib/usage/) — `types` (Provider, Operation, TierCaps per plan), `track` (`recordUsage`, `checkQuota`, `withQuota` wrapper) |
+| Per-tier caps | starter: 100 Tavily / 5M OpenAI tokens / 2k Composio · growth: 500 / 25M / 10k · pro: 2.5k / 100M / 50k · fo: 5k / 200M / 100k |
+| Wired call sites | Tavily — `webSearch` / `researchCompetitor` / `analyzeDocument`. OpenAI — cron agent loop (skip with reason if blocked), COO chat (429 with reset date), `generateObject` extraction calls. Composio — every `tools.execute()` in `approval-gate.ts` (auto), `actions/executor.ts` (customer-approved), `automations/execute.ts` (auto). |
+| Customer UI | `/dashboard/settings/usage` — per-provider progress bars, % used, reset date. Sidebar: **WORKSPACE → Usage**. |
+| API | `GET /api/dashboard/usage` returns tier + caps + current usage. |
+
+Fail-open: quota-check failures log and allow the call (better to over-allow than block a paying customer because of a logging bug).
+
+Foundation for usage-based pricing later if needed.
