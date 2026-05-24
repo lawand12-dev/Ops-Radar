@@ -92,6 +92,11 @@ export async function provisionBrainFromComposio(
   const conn = await composio.connectedAccounts.get(composioConnectionId)
   const { accessToken, meta } = extractComposioToken(conn)
 
+  // Log token prefix (first 12 chars, never the full token) to diagnose
+  // whether Composio is returning a real Notion token (ntn_*/secret_*) or
+  // an internal reference. Safe to log — not enough to authenticate.
+  console.log('[brain/provision] token prefix:', accessToken ? accessToken.slice(0, 12) + '...' : 'none', '| meta keys:', Object.keys(meta))
+
   if (!accessToken) {
     throw new Error(
       '[brain/provision] No access_token in Composio connection state for connection ' +
