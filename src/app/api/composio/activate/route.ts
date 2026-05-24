@@ -35,9 +35,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_tool_slug' }, { status: 400 })
   }
 
+  // Composio appends connected_account_id (ca_xxx) to the OAuth callback URL.
+  // This is the FINAL connected account ID and may differ from the connectionRequest.id
+  // stored at connect-time. When provided, use it directly and correct the DB row.
+  const callbackAccountId = typeof body?.connected_account_id === 'string'
+    ? body.connected_account_id
+    : undefined
+
   const supabase = getServerSupabaseClient()
 
-  // Get the pending composio_connection_id for this user + tool.
+  // If the callback gave us the definitive ID, upsert it into the DB first so
+  // all subsequent lookups (provision, capability cache) use the correct ID.
+  if (callbackAccountId) {
+    await supabase
+      .from('composio_connections')
+      .upsert(
+        { user_id: userId, tool_slug: toolSlug, composio_connection_id: callbackAccountId, is_active: false },
+        { onConflict: 'user_id,tool_slug' },
+      )
+  }
+
+  // Get the connection ID to verify — prefer the callback-supplied ID.
   const { data: row, error: selectErr } = await supabase
     .from('composio_connections')
     .select('composio_connection_id, is_active')
@@ -50,12 +68,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'db_error' }, { status: 500 })
   }
 
-  if (!row?.composio_connection_id) {
+  const connectionId = callbackAccountId ?? row?.composio_connection_id
+  if (!connectionId) {
     return NextResponse.json({ activated: false, status: 'no_pending_connection' })
   }
 
   // Already active — nothing to do.
-  if (row.is_active) {
+  if (row?.is_active && !callbackAccountId) {
     return NextResponse.json({ activated: true, status: 'already_active' })
   }
 
@@ -63,28 +82,23 @@ export async function POST(req: NextRequest) {
   let composioStatus: string
   try {
     const composio = getComposio()
-    const conn = await composio.connectedAccounts.get(row.composio_connection_id)
+    const conn = await composio.connectedAccounts.get(connectionId)
     composioStatus = (conn.status as string | undefined) ?? ''
   } catch (err) {
     console.error('[composio/activate] Composio get failed:', err)
-    // If Composio is unreachable, don't block the user — return not activated.
     return NextResponse.json({ activated: false, status: 'composio_unreachable' })
   }
 
   const isActive = composioStatus.toUpperCase() === 'ACTIVE'
   if (!isActive) {
-    console.log('[composio/activate] connection not yet active:', {
-      userId,
-      toolSlug,
-      composioStatus,
-    })
+    console.log('[composio/activate] connection not yet active:', { userId, toolSlug, composioStatus })
     return NextResponse.json({ activated: false, status: composioStatus })
   }
 
-  // Flip is_active in the DB.
+  // Flip is_active and lock in the correct connection ID.
   const { error: updateErr } = await supabase
     .from('composio_connections')
-    .update({ is_active: true, connected_at: new Date().toISOString() })
+    .update({ is_active: true, connected_at: new Date().toISOString(), composio_connection_id: connectionId })
     .eq('user_id', userId)
     .eq('tool_slug', toolSlug)
 
@@ -101,7 +115,7 @@ export async function POST(req: NextRequest) {
   )
 
   if (toolSlug === 'notion') {
-    provisionBrainFromComposio(userId, row.composio_connection_id).catch((err) =>
+    provisionBrainFromComposio(userId, connectionId).catch((err) =>
       console.error('[composio/activate] brain provision failed:', err instanceof Error ? err.message : err),
     )
   }

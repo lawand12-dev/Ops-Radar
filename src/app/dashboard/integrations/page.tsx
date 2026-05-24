@@ -139,20 +139,28 @@ export default function IntegrationsSettingsPage() {
   useEffect(() => {
     const connected = searchParams.get('connected');
     const failed = searchParams.get('failed');
+    // Composio appends the final connected_account_id (ca_xxx) to the callback URL.
+    // This may differ from the connectionRequest.id stored at connect-time, so we
+    // pass it explicitly to activate so the DB row is corrected to the real ID.
+    const connectedAccountId = searchParams.get('connected_account_id') ?? undefined;
+
     if (connected) {
-      const label = connected ? connected.charAt(0).toUpperCase() + connected.slice(1) : 'Tool';
+      const label = connected.charAt(0).toUpperCase() + connected.slice(1);
       setBanner({ kind: 'ok', text: `${label} connected via OAuth.` });
+
+      const activateBody = connectedAccountId
+        ? { tool_slug: connected, connected_account_id: connectedAccountId }
+        : { tool_slug: connected };
 
       // Verify + activate in the background, then reload so the card turns green.
       fetch('/api/composio/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tool_slug: connected }),
+        body: JSON.stringify(activateBody),
       })
         .then((r) => r.json())
         .then((data) => {
           if (data.activated) {
-            // Reload connections so the card reflects is_active=true.
             load();
           } else if (data.status && data.status !== 'already_active') {
             // Connection not yet active on Composio side — retry once after 3s.
@@ -160,7 +168,7 @@ export default function IntegrationsSettingsPage() {
               fetch('/api/composio/activate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tool_slug: connected }),
+                body: JSON.stringify(activateBody),
               })
                 .then((r) => r.json())
                 .then((d) => { if (d.activated) load(); })
