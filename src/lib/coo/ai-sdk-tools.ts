@@ -36,7 +36,7 @@ import {
   COMPOSIO_TRIGGER_CATALOG,
   COMPOSIO_ACTION_CATALOG,
 } from '<npm>/lib/automations/composio-catalog'
-import { getCachedTriggers } from '<npm>/lib/composio/capability-cache'
+import { getCachedTriggers, getCachedActions } from '<npm>/lib/composio/capability-cache'
 import {
   registerComposioTrigger,
   deactivateComposioTrigger,
@@ -90,14 +90,24 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
         const triggers = cachedTriggers.length > 0
           ? cachedTriggers.map((t) => ({ toolkit: t.toolkit, slug: t.slug, description: t.description }))
           : COMPOSIO_TRIGGER_CATALOG.map((t) => ({ toolkit: t.toolkit, slug: t.slug, description: t.description }))
+        // Build the action list: start with static catalog (has descriptions), then
+        // append any additional slugs from the cache not already in the static list.
+        const staticActions = COMPOSIO_ACTION_CATALOG.map((a) => ({
+          toolkit: a.toolkit,
+          action_slug: a.action_slug,
+          description: a.description,
+        }))
+        const cachedActions = await getCachedActions(ctx.userId)
+        const staticSlugs: Set<string> = new Set(staticActions.map((a) => a.action_slug))
+        const extraActions = cachedActions
+          .filter((a) => !staticSlugs.has(a.slug))
+          .map((a) => ({ toolkit: a.toolkit, action_slug: a.slug, description: a.slug }))
+        const actions = [...staticActions, ...extraActions]
+
         const prompt = buildCompilationPrompt({
           userRequest: user_request,
           availableTriggers: triggers,
-          availableActions: COMPOSIO_ACTION_CATALOG.map((a) => ({
-            toolkit: a.toolkit,
-            action_slug: a.action_slug,
-            description: a.description,
-          })),
+          availableActions: actions,
           existingAutomations: existing.map((a) => ({
             slug: a.slug,
             description: a.description,

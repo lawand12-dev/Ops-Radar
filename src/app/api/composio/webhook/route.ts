@@ -6,16 +6,19 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 /**
- * Composio webhook endpoint.
+ * Composio connection webhook endpoint.
  *
  * Composio fires events on `connection.created`, `connection.failed`,
  * `connection.deleted`. We use these to flip `is_active` and timestamps
  * on the composio_connections row that POST /api/composio/connect inserted.
  *
- * Signature verification is enforced when COMPOSIO_WEBHOOK_SECRET is set
- * (Composio sends an HMAC-SHA256 of the raw body in `X-Composio-Signature`).
- * If the secret is unset, we log a warning and accept the payload — this
- * lets local dev work without webhook auth, but production must set it.
+ * Signature verification follows the Composio v3 spec (same as the trigger
+ * webhook at /api/automations/webhook/composio):
+ *   Headers: webhook-id, webhook-timestamp, webhook-signature
+ *   Signed payload: `{webhook-id}.{webhook-timestamp}.{raw-body}`
+ *   Digest: HMAC-SHA256 → base64
+ *   Replay window: 300 seconds
+ * If COMPOSIO_WEBHOOK_SECRET is unset, we warn and accept (dev only).
  */
 
 type ComposioWebhookEvent = {
@@ -34,26 +37,49 @@ type ComposioWebhookEvent = {
   appName?: string
 }
 
-async function verifySignature(req: NextRequest, raw: string): Promise<boolean> {
+const REPLAY_WINDOW_SECONDS = 300
+
+async function verifySignature(
+  webhookId: string,
+  timestamp: string,
+  signature: string,
+  rawBody: string,
+): Promise<boolean> {
   const secret = (process.env.COMPOSIO_WEBHOOK_SECRET ?? '').trim()
   if (!secret) {
     console.warn('[composio/webhook] COMPOSIO_WEBHOOK_SECRET not set — accepting unauthenticated webhook')
     return true
   }
-  const sig =
-    req.headers.get('x-composio-signature') ??
-    req.headers.get('X-Composio-Signature') ??
-    ''
-  if (!sig) return false
+  if (!webhookId || !timestamp || !signature) return false
+
+  const ts = Number(timestamp)
+  if (!Number.isFinite(ts)) return false
+  const ageSec = Math.abs(Date.now() / 1000 - ts)
+  if (ageSec > REPLAY_WINDOW_SECONDS) {
+    console.warn('[composio/webhook] timestamp outside replay window', { ageSec })
+    return false
+  }
 
   const crypto = await import('node:crypto')
-  const expected = crypto.createHmac('sha256', secret).update(raw, 'utf8').digest('hex')
-  return crypto.timingSafeEqual(Buffer.from(expected, 'utf8'), Buffer.from(sig, 'utf8'))
+  const signedPayload = `${webhookId}.${timestamp}.${rawBody}`
+  const expected = crypto.createHmac('sha256', secret).update(signedPayload, 'utf8').digest('base64')
+
+  // Composio sends `v1,<sig>` style; tolerate either form.
+  const candidate = signature.includes(',') ? signature.split(',').pop()! : signature
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected, 'utf8'), Buffer.from(candidate, 'utf8'))
+  } catch {
+    return false
+  }
 }
 
 export async function POST(req: NextRequest) {
   const raw = await req.text()
-  const ok = await verifySignature(req, raw)
+  const webhookId = req.headers.get('webhook-id') ?? ''
+  const timestamp = req.headers.get('webhook-timestamp') ?? ''
+  const signature = req.headers.get('webhook-signature') ?? ''
+
+  const ok = await verifySignature(webhookId, timestamp, signature, raw)
   if (!ok) {
     return NextResponse.json({ error: 'invalid_signature' }, { status: 401 })
   }
