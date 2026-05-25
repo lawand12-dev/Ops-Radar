@@ -13,13 +13,45 @@
 OpsRadar is **two products fused into one purchase**:
 
 1. **AI employees** — named, persistent, scheduled, scoped, hireable AI teammates that run on the customer's existing SaaS stack. Today there are 28 built-in (Revenue, Collections, Scope, etc.) + a chat-driven flow to hire custom ones (Sarah the Bookkeeper, Marcus the SDR, etc.).
-2. **A company brain that knows everything** — a versioned markdown wiki, owned by the customer, mirrored to their Notion, exportable as a zip. Every employee writes findings into it. Every employee reads from it. Ask the brain any question, it answers because it has read across every tool + every agent finding + every decision.
+2. **A company brain that knows everything** — a versioned markdown wiki, mirrored to the customer's Notion, exportable as a zip from `/dashboard/brain/download`. Every employee writes findings into it. Every employee reads from it. Ask the brain any question, it answers because it has read across every tool + every agent finding + every decision.
 
 These two pillars are co-equal. The pitch isn't "AI Chief of Staff." The pitch is:
 
-> **Hire your AI workforce. Build a company brain you own forever. Fire us tomorrow — you keep both.**
+> **Hire your AI workforce. Build a company brain in your Notion.**
 
-Two artifacts. Two moats. One promise.
+Two artifacts, two homes. The **workforce** lives at OpsRadar — it's our runtime, our agents, our code. The **brain** lives in the customer's Notion — every Pattern Card, Decision Log entry, Risk Register row written there by their AI employees. They can read the brain at 3am on Notion mobile with no OpsRadar login. They can export the full versioned markdown zip. **The brain is theirs; the workforce that builds the brain is ours.**
+
+> **Note (the honest version):** an earlier draft of this doc said "Fire us tomorrow — you keep both." That was wrong on two counts: (a) it invites churn (no SaaS leader says "leaving is fine"), and (b) it overpromises portability — the workforce stops running the second you cancel. We keep the data-sovereignty pitch ("your brain in your Notion") because it's structurally true; we drop the "fire us tomorrow" framing because it isn't.
+
+---
+
+## The three differentiators that should headline marketing (demand-validated)
+
+OpsRadar already ships 5 capabilities inside its category that **no major competitor has shipped** (BOND / Lindy / Notion AI / Glean / Devin / Copilot Studio / Cresta / Decagon / Sierra). The sub-section demand audit (`docs/research/2026-05-25-subsection-demand-validation.md`) rates customer-demand strength 1-10 for each:
+
+| Rank | Differentiator | Demand | Pitch line |
+|---|---|---|---|
+| **1** | **Apprentice Mode** — the AI workforce learns from every rejection (CP-35, shipped) | **10/10** | *"An AI workforce that gets smarter every time you say 'no.'"* |
+| **2** | **Cross-agent synthesis** — 17 specialist agents → 10 orchestrator agents → one COO summary | **9/10** | *"One COO that reads 17 specialist agents and tells you the one thing that matters today."* |
+| **3** | **Approval-history personalization** — every approve/reject feeds back into prompts; after 30 days the agents sound like you (CP-19, shipped) | **9/10** | *"After 30 approvals, it drafts like you. After 100, your team can't tell the difference."* |
+| 4 | Versioned commit-graph brain (git-style diff/blame/rollback on knowledge) | 8/10 | *"Git for your company brain. Diff, blame, rollback any agent edit."* |
+| 5 | Agent-as-author attribution (every brain fact signed by the writing agent) | 7/10 | *"Every fact in your brain is signed by the agent that wrote it."* |
+| 6 | AI workforce org chart with delegation (CP-37, shipped) | 6/10 | *"An org chart your AI workforce actually follows."* (lead with cross-synthesis, not the chart) |
+| 7 | Public agent CHARTERS (CP-39, queued) | 5/10 | Engineer-voice not customer-voice — ship as a trust artifact, **don't headline** |
+
+**Headline rule**: lead the homepage + pricing page + YC pitch with the top 3 (Apprentice / Cross-synthesis / Personalization). The next 3 (commit graph / attribution / org chart) are credibility receipts shown deeper in the page. The 7th (charters) is a trust artifact under the hood — important for sales objection handling, not headline copy.
+
+**The strongest single-line proof point** from the research, verbatim from a 15-person agency on BizTech Magazine:
+
+> *"15-person agency paying $5,200/month on 10 AI apps — more than two full-time salaries."*
+
+That's the **wedge headline** for the agency vertical. OpsRadar's three top differentiators each kill one reason the customer needs 10 separate apps:
+
+- **Apprentice mode** kills "I have to retrain each AI from scratch"
+- **Cross-agent synthesis** kills "I have N reports from N AIs and no overview"
+- **Personalization** kills "every AI sounds the same and none sound like me"
+
+Stack the three together and the answer to "why pay $5,200/mo for 10 AIs?" becomes "you don't — pay $499/mo for one workforce that does all of it, learns your style, and synthesizes across the stack."
 
 ---
 
@@ -160,9 +192,9 @@ Public-by-default on `/dashboard`. Totals: approved automations × estimated tim
 
 ## The YC application paragraph (ready to use)
 
-> *"OpsRadar gives every business an AI workforce and a company brain they own forever. We hire AI employees — Bookkeeper, SDR, Project Coordinator, Account Manager — that read every tool you connect through Composio (25+ today, growing toward Composio's full 500+ catalog), take action only with your approval, and write everything they learn into a versioned brain mirrored to your Notion. Fire us tomorrow, you still keep the brain. We're the anti-11x: control-first, labor-priced ($0.05 per approved action), wedge-in via marketing agencies in 2026 then expanding to home services on the proven Avoca/ServiceTitan paid-demand precedent. YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
+> *"OpsRadar gives every business an AI workforce and a company brain. The 15-person agency we sell to is paying $5,200/month for ten separate AI tools — Notion AI, Lindy, Zapier, ChatGPT, an AI SDR, a writing assistant — none of which talk to each other. We replace all ten with one workforce of named AI employees (Bookkeeper, SDR, Project Coordinator, Account Manager) that read across 25→500+ Composio integrations, take action only with the owner's approval, and write everything they learn into a versioned brain mirrored to the customer's Notion. Three things make us defensible inside the category: (1) Apprentice Mode — the workforce learns from every rejection so it gets smarter the longer you use it, (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters today, (3) approval-history personalization — after 30 approvals the drafts sound like you. We're the anti-11x: control-first, labor-priced ($0.05 per approved action), wedge-in via marketing agencies then expanding to home services on the proven Avoca/ServiceTitan paid-demand precedent. YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
 
-That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x positioning + concrete pricing model + named wedge + named expansion path + integration breadth as moat.** Every clause cites an evidence anchor from the research files.
+That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x positioning + concrete pricing model + named wedge + three demand-validated moats + integration breadth as moat.** Every clause cites an evidence anchor in `docs/research/2026-05-25-*.md`.
 
 ---
 
@@ -171,7 +203,7 @@ That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x po
 1. **Agencies vs home services as Tier 1 wedge.** Both defensible. Decision should be made with founder gut + Iraq-based-founder constraints (sales motion you can actually run from Iraq + your network). Research can't answer this — only you can.
 2. **Whether Notion Brain mirror should become OPTIONAL or REMAIN mandatory.** Today it's tightly coupled. Some customers may not want Notion. Worth exploring "brain in our Postgres only, no Notion" tier.
 3. **Should the customer-visible "AI workforce" sidebar entry rename from `YOUR TEAM` → `YOUR WORKFORCE`?** Wording question; matters for marketing alignment.
-4. **Does the homepage hero replace "Operator-grade AI ops" with "Hire your AI workforce. Build your company brain"?** That's a marketing-copy migration (~10 pages of /copy/*.md updates). Hold until ICP wedge is locked.
+4. **Marketing copy migration to the new identity.** Homepage hero, `/pricing`, `/product`, `/about`, `/how-it-works` all still carry "AI Chief of Staff for marketing agencies" framing. Migration is ~10 pages of `docs/copy/*.md` updates. Hold until Tier 1 vertical wedge is locked.
 
 ---
 
@@ -189,6 +221,7 @@ Every claim above traces to:
 - `docs/research/2026-05-25-company-brain-pattern.md`
 - `docs/research/2026-05-25-horizontal-pricing.md`
 - `docs/research/2026-05-25-horizontal-workforce-comps.md`
+- `docs/research/2026-05-25-subsection-demand-validation.md` ← **drove the 3 headline differentiators**
 
 Plus the architecture decisions in `docs/adr/0001-0008-*.md`.
 

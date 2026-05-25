@@ -82,6 +82,7 @@ Evidence snapshots — every claim cited, no decisions inside. Read these to bac
 | [`research/2026-05-25-split-vs-unified-chat.md`](./research/2026-05-25-split-vs-unified-chat.md) | Q&A chat vs builder chat — Notion / Lindy / Devin / Copilot Studio patterns (informs CP-38) |
 | [`research/2026-05-25-agent-capability-declaration.md`](./research/2026-05-25-agent-capability-declaration.md) | How production agent systems declare allowed tools / charters (informs CP-39) |
 | [`research/2026-05-25-agent-code-doc-organization.md`](./research/2026-05-25-agent-code-doc-organization.md) | Best 2026 layout for agent codebase + strategy docs (the basis for this restructure) |
+| [`research/2026-05-25-subsection-demand-validation.md`](./research/2026-05-25-subsection-demand-validation.md) | Verified customer demand for 7 OpsRadar moats; ranks the 3 that should headline marketing |
 
 **Older snapshots:**
 
