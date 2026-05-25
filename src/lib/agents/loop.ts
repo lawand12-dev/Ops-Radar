@@ -266,23 +266,28 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     const automationsBlock = buildAutomationsSystemBlock(automationCatalog)
     if (automationsBlock) enrichments.push(automationsBlock)
 
-    // CP-28 — dual-write to the OpsRadar-hosted brain.
-    // Every key finding the agent produces (Pattern Cards, Risk Register
-    // entries, KPI Snapshots, etc.) should ALSO be written as markdown
-    // to the brain via write_brain_document. The brain is the customer's
-    // portable, exportable knowledge base; Notion is the rendered mirror.
+    // CP-29 — write to the brain as the PRIMARY structured-output target.
+    // The brain (brain_documents in Postgres, git-like versioned) is the
+    // source of truth. A daily sync engine renders the brain into the
+    // customer's Notion workspace (under "OpsRadar Brain (synced)") so
+    // the UI mirror stays current — you do NOT need to write to Notion
+    // databases directly for narrative content (Pattern Cards, Risk
+    // Register, KPI Snapshots, Decision Log entries, Quarterly Memory,
+    // etc.). The sync handles it.
     enrichments.push(
       [
-        '# Dual-write to the customer\'s brain',
+        '# Write to the brain — it is the source of truth',
         '',
-        'Every time you write structured content to Notion (Pattern Card, Risk Register entry, KPI Snapshot, Decision Log entry, client update, etc.), ALSO call the `write_brain_document` tool with the same content rendered as markdown.',
+        'For every structured narrative output you produce — Pattern Card, Risk Register entry, KPI Snapshot, Decision Log entry, client update, project status, etc. — call the `write_brain_document` tool with the content rendered as markdown.',
         '',
-        'The brain (Postgres-backed, exportable to markdown zip) is the source of truth + customer-owned ownership artifact. Notion is the customer-facing UI mirror.',
+        'The brain (Postgres-backed, version-controlled, exportable as a markdown zip) is the customer-owned source of truth. A daily sync engine renders the brain into their Notion workspace under "OpsRadar Brain (synced)" so they have a clickable UI mirror — you do NOT need to also push these narrative outputs into Notion databases manually.',
         '',
         'Path conventions (use kebab-case slugs):',
         ...BRAIN_DIRECTORIES.map((d) => `  - ${d}/<slug>.md`),
         '',
         'Call `list_brain_paths` first if you need to know what already exists before deciding to update vs create.',
+        '',
+        'You MAY still use Composio Notion actions for cases where the customer expects direct DB row updates (e.g. flipping a status field on a Clients DB row they actively view) — but treat those as UI affordances, not as the source of truth. The brain is.',
       ].join('\n'),
     )
 
