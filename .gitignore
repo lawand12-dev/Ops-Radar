@@ -52,3 +52,6 @@ knowledge-base/*.json
 # Large n8n source dirs — content extracted into knowledge-base/
 n8n-mcp-main/
 n8n-workflows-main/
+
+# Sentry Config File
+.env.sentry-build-plugin
