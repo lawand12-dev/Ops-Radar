@@ -24,6 +24,8 @@ import {
 } from './research'
 import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
 import type { EventSource } from '<npm>/lib/warehouse/types'
+import { commitBrainChanges, listBrainPaths } from '<npm>/lib/brain/store'
+import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import {
   listAutomations,
@@ -339,6 +341,70 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
   // questions the curated Notion brain can't answer at row granularity
   // (e.g. "every overdue invoice in Q3 2024 for client X", "MRR by month
   // over the last 12 months", "deal close rate trend vs 6 months ago").
+  // CP-28 — brain (markdown knowledge base) read/write.
+  out['write_brain_document'] = tool({
+    description:
+      "Write a markdown document to the customer's brain (their portable, exportable knowledge base). Use this when the customer wants to log a decision, capture a pattern, update their playbook, or add to their Risk Register. Path conventions:\n" +
+      BRAIN_DIRECTORIES.map((d) => `  ${d}/<slug>.md`).join('\n') +
+      "\nUse kebab-case slugs. The customer can export the whole brain as a markdown zip from /dashboard/brain/download.",
+    inputSchema: z.object({
+      path: z
+        .string()
+        .min(3)
+        .describe(
+          "Brain-relative path, e.g. 'decision-log/2026-05-25-fire-phoenix-studios.md'.",
+        ),
+      content: z
+        .string()
+        .min(20)
+        .describe('Full markdown content, starting with a # heading.'),
+      commit_message: z
+        .string()
+        .optional()
+        .describe('Optional one-line description of what this captures.'),
+    }),
+    execute: async (args) => {
+      try {
+        const result = await commitBrainChanges({
+          userId: ctx.userId,
+          authorType: 'coo-chat',
+          message: args.commit_message ?? `coo updated ${args.path}`,
+          changes: [{ path: args.path, content: args.content }],
+        })
+        return {
+          success: true as const,
+          commit_id: result.commitId,
+          created: result.documentsCreated,
+          updated: result.documentsUpdated,
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'commit failed',
+        }
+      }
+    },
+  })
+
+  out['list_brain_paths'] = tool({
+    description:
+      "List the paths of markdown documents in the customer's brain. Useful before deciding whether to update an existing document or create a new one. Optional prefix filter, e.g. prefix='clients/'.",
+    inputSchema: z.object({
+      prefix: z.string().optional(),
+    }),
+    execute: async ({ prefix }) => {
+      try {
+        const paths = await listBrainPaths({ userId: ctx.userId, prefix })
+        return { success: true as const, count: paths.length, paths }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'list failed',
+        }
+      }
+    },
+  })
+
   out['query_historical'] = tool({
     description:
       "Query the customer's full raw history (5+ years across all connected tools — Stripe transactions, HubSpot deals, Harvest hours, ClickUp tasks, etc.). Use this for trend questions, period drill-downs, and per-client historical lookups that the curated Notion brain can't answer. Returns either a filtered event list (set aggregate=false, max 500 rows) or a monthly aggregate (set aggregate=true, returns count + sum_amount_cents per month). Prefer aggregate=true for trend questions to keep context small.",

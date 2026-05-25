@@ -32,6 +32,9 @@ import {
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
 import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
 import type { EventSource } from '<npm>/lib/warehouse/types'
+import { commitBrainChanges, listBrainPaths } from '<npm>/lib/brain/store'
+import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
+import type { BrainAuthorType } from '<npm>/lib/brain/types'
 import { tool as aiTool } from 'ai'
 import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
@@ -107,6 +110,76 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
             return { success: true, name: args.name, body: await loadSkillBody(args.name) }
           } catch (err) {
             return { success: false, error: err instanceof Error ? err.message : 'load failed' }
+          }
+        },
+      }),
+      // CP-28 — write structured markdown to the OpsRadar-hosted brain
+      // (the "git-like" Postgres store). Every key finding the agent
+      // produces should also be written here as a markdown document.
+      // The brain becomes the customer's portable, exportable knowledge
+      // base — synced to their Notion workspace for the UI.
+      write_brain_document: aiTool({
+        description:
+          "Write a markdown document to the customer's brain (their portable, exportable knowledge base). Use this to log Pattern Cards, Risk Register entries, KPI Snapshots, Decision Log entries, client updates, etc. Path conventions:\n" +
+          BRAIN_DIRECTORIES.map((d) => `  ${d}/<slug>.md`).join('\n') +
+          "\nEvery time you'd write to Notion, ALSO call this with the same content rendered as markdown. The brain is the source of truth; Notion is a mirror.",
+        inputSchema: z.object({
+          path: z
+            .string()
+            .min(3)
+            .describe(
+              "Brain-relative path, e.g. 'pattern-cards/chronic-late-payers.md' or 'risk-register/q3-cash-runway.md'. Use kebab-case slugs. Use only the allowed top-level directories.",
+            ),
+          content: z
+            .string()
+            .min(20)
+            .describe(
+              'The full markdown content of the document. Should start with a # heading. Include all the structured data + narrative needed.',
+            ),
+          commit_message: z
+            .string()
+            .optional()
+            .describe('Optional one-line description of what this change captures.'),
+        }),
+        execute: async (args) => {
+          try {
+            const result = await commitBrainChanges({
+              userId,
+              authorType: `agent:${spec.slug}` as BrainAuthorType,
+              message: args.commit_message ?? `${spec.slug} updated ${args.path}`,
+              changes: [{ path: args.path, content: args.content }],
+            })
+            return {
+              success: true,
+              commit_id: result.commitId,
+              created: result.documentsCreated,
+              updated: result.documentsUpdated,
+            }
+          } catch (err) {
+            return {
+              success: false,
+              error: err instanceof Error ? err.message : 'commit failed',
+            }
+          }
+        },
+      }),
+      // CP-28 — light read of the brain's directory (to know what already exists
+      // before deciding to update vs create).
+      list_brain_paths: aiTool({
+        description:
+          "List the paths of markdown documents in the customer's brain. Useful before deciding whether to update an existing document or create a new one. Optional prefix filter, e.g. prefix='clients/' to list all client docs.",
+        inputSchema: z.object({
+          prefix: z.string().optional(),
+        }),
+        execute: async ({ prefix }) => {
+          try {
+            const paths = await listBrainPaths({ userId, prefix })
+            return { success: true, count: paths.length, paths }
+          } catch (err) {
+            return {
+              success: false,
+              error: err instanceof Error ? err.message : 'list failed',
+            }
           }
         },
       }),
@@ -192,6 +265,26 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     // already running and doesn't propose duplicates (CP-20).
     const automationsBlock = buildAutomationsSystemBlock(automationCatalog)
     if (automationsBlock) enrichments.push(automationsBlock)
+
+    // CP-28 — dual-write to the OpsRadar-hosted brain.
+    // Every key finding the agent produces (Pattern Cards, Risk Register
+    // entries, KPI Snapshots, etc.) should ALSO be written as markdown
+    // to the brain via write_brain_document. The brain is the customer's
+    // portable, exportable knowledge base; Notion is the rendered mirror.
+    enrichments.push(
+      [
+        '# Dual-write to the customer\'s brain',
+        '',
+        'Every time you write structured content to Notion (Pattern Card, Risk Register entry, KPI Snapshot, Decision Log entry, client update, etc.), ALSO call the `write_brain_document` tool with the same content rendered as markdown.',
+        '',
+        'The brain (Postgres-backed, exportable to markdown zip) is the source of truth + customer-owned ownership artifact. Notion is the customer-facing UI mirror.',
+        '',
+        'Path conventions (use kebab-case slugs):',
+        ...BRAIN_DIRECTORIES.map((d) => `  - ${d}/<slug>.md`),
+        '',
+        'Call `list_brain_paths` first if you need to know what already exists before deciding to update vs create.',
+      ].join('\n'),
+    )
 
     const systemPrompt =
       enrichments.length > 0
