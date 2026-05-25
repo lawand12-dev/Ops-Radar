@@ -34,6 +34,7 @@ import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
 import type { EventSource } from '<npm>/lib/warehouse/types'
 import { commitBrainChanges, listBrainPaths } from '<npm>/lib/brain/store'
 import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
+import { buildAgentBrainHintsBlock } from '<npm>/lib/brain/agent-hints'
 import type { BrainAuthorType } from '<npm>/lib/brain/types'
 import { tool as aiTool } from 'ai'
 import { z } from 'zod'
@@ -290,6 +291,14 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
         'You MAY still use Composio Notion actions for cases where the customer expects direct DB row updates (e.g. flipping a status field on a Clients DB row they actively view) — but treat those as UI affordances, not as the source of truth. The brain is.',
       ].join('\n'),
     )
+
+    // CP-30 — agent-specific brain path conventions. Tells THIS agent
+    // exactly which paths it should typically write to (e.g. revenue
+    // writes kpi-snapshots/<YYYY-Www>.md, scope writes
+    // risk-register/<client-slug>-scope-creep.md). Reduces creative
+    // path naming → consistent brain structure → cleaner Notion mirror.
+    const agentHintsBlock = buildAgentBrainHintsBlock(spec.slug)
+    if (agentHintsBlock) enrichments.push(agentHintsBlock)
 
     const systemPrompt =
       enrichments.length > 0

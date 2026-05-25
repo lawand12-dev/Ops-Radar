@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { refreshCapabilitiesForUser } from '<npm>/lib/composio/capability-cache'
 import { provisionBrainFromComposio } from '<npm>/lib/notion/provision'
+import { backfillHistory } from '<npm>/lib/warehouse/backfill'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -125,6 +126,16 @@ export async function POST(req: NextRequest) {
         provisionBrainFromComposio(conn.user_id, connectionId).catch((err) =>
           console.error(
             '[composio/webhook] Brain provision failed:',
+            err instanceof Error ? err.message : err,
+          ),
+        )
+
+        // CP-31 — also kick off the 12-month historical backfill across
+        // every connected toolkit. Fire-and-forget so the webhook returns
+        // immediately. Takes ~3-5 min total in parallel across sources.
+        backfillHistory(conn.user_id).catch((err) =>
+          console.error(
+            '[composio/webhook] Historical backfill failed:',
             err instanceof Error ? err.message : err,
           ),
         )
