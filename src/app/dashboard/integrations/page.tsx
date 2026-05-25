@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { IntegrationCard } from '<npm>/components/dashboard/integration-card';
+import { NotionConnectModal } from './_components/notion-connect-modal';
 
 type Connection = {
   tool: string;
@@ -146,7 +147,16 @@ export default function IntegrationsSettingsPage() {
 
     if (connected) {
       const label = connected.charAt(0).toUpperCase() + connected.slice(1);
-      setBanner({ kind: 'ok', text: `${label} connected via OAuth.` });
+      // Notion gets a dedicated callout because the Brain is now provisioning
+      // in the background — direct the customer to the setup progress page.
+      if (connected === 'notion') {
+        setBanner({
+          kind: 'ok',
+          text: 'Notion connected. Your Company Brain is provisioning in the background — open setup to watch progress.',
+        });
+      } else {
+        setBanner({ kind: 'ok', text: `${label} connected via OAuth.` });
+      }
 
       const activateBody = connectedAccountId
         ? { tool_slug: connected, connected_account_id: connectedAccountId }
@@ -241,8 +251,27 @@ export default function IntegrationsSettingsPage() {
     return connections.find((c) => c.tool === tool);
   }
 
+  // Notion gets a pre-flight modal so customers know to create a dedicated
+  // top-level page first (avoids granting access to their whole workspace
+  // and ensures the Brain provision lands somewhere clean).
+  const [notionModalOpen, setNotionModalOpen] = useState(false);
+  const [pendingNotionTool, setPendingNotionTool] = useState<ToolDef | null>(null);
+
   function handleConnect(tool: ToolDef) {
+    if (tool.key === 'notion') {
+      setPendingNotionTool(tool);
+      setNotionModalOpen(true);
+      return;
+    }
     void startComposioOAuth(tool.key, tool.label);
+  }
+
+  function handleNotionContinue() {
+    setNotionModalOpen(false);
+    if (pendingNotionTool) {
+      void startComposioOAuth(pendingNotionTool.key, pendingNotionTool.label);
+      setPendingNotionTool(null);
+    }
   }
 
   return (
@@ -260,11 +289,19 @@ export default function IntegrationsSettingsPage() {
         <div
           className={
             banner.kind === 'ok'
-              ? 'mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-success)]'
+              ? 'mb-4 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-success)]'
               : 'mb-4 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-warn)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-warn)_8%,transparent)] px-3 py-2.5 text-[12.5px] text-[var(--color-warn)]'
           }
         >
-          {banner.text}
+          <span>{banner.text}</span>
+          {banner.kind === 'ok' && searchParams.get('connected') === 'notion' && (
+            <a
+              href="/dashboard/integrations/setup"
+              className="rounded-[var(--radius)] border border-[var(--color-success)] px-2.5 py-1 text-[12.5px] font-medium hover:bg-[color-mix(in_srgb,var(--color-success)_15%,transparent)]"
+            >
+              View setup
+            </a>
+          )}
         </div>
       )}
 
@@ -307,6 +344,14 @@ export default function IntegrationsSettingsPage() {
         })}
       </div>
 
+      <NotionConnectModal
+        open={notionModalOpen}
+        onClose={() => {
+          setNotionModalOpen(false);
+          setPendingNotionTool(null);
+        }}
+        onContinue={handleNotionContinue}
+      />
     </>
   );
 }

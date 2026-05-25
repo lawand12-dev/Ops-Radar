@@ -26,6 +26,7 @@ import { encryptApiKey } from '<npm>/lib/integrations/crypto'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { getWorkspace } from './client'
 import { provisionBrainIfNeeded } from './create-brain'
+import { sendBrainReadyEmail } from './email-brain-ready'
 
 // Composio's ConnectionDataSchema is a discriminated union: { authScheme, val: {...} }.
 // IMPORTANT: The `access_token` in val is a Composio-internal proxy token — it is NOT
@@ -66,6 +67,37 @@ function extractComposioToken(conn: {
 }
 
 export async function provisionBrainFromComposio(
+  userId: string,
+  composioConnectionId: string,
+  agencyName?: string | null,
+): Promise<void> {
+  try {
+    await provisionBrainFromComposioImpl(userId, composioConnectionId, agencyName)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[brain/provision] failed:', message)
+    // Persist the failure so the progress page can surface it to the customer.
+    try {
+      const supabase = getServerSupabaseClient()
+      await supabase.from('notion_workspaces').upsert(
+        {
+          user_id: userId,
+          workspace_id: composioConnectionId,
+          parent_page_id: 'unknown',
+          access_token_encrypted: '',
+          backfill_status: 'failed',
+          backfill_error: message.slice(0, 500),
+        },
+        { onConflict: 'user_id' },
+      )
+    } catch (e) {
+      console.error('[brain/provision] failed to persist error:', e)
+    }
+    throw err
+  }
+}
+
+async function provisionBrainFromComposioImpl(
   userId: string,
   composioConnectionId: string,
   agencyName?: string | null,
@@ -184,5 +216,18 @@ export async function provisionBrainFromComposio(
       backfill_status: 'pending',
     },
     { onConflict: 'user_id' },
+  )
+
+  // Brain Home + 20 DBs exist. Notify the customer (fire-and-forget — never
+  // block the provisioning return path on email delivery).
+  sendBrainReadyEmail({
+    userId,
+    parentPageId,
+    workspaceName,
+  }).catch((err) =>
+    console.warn(
+      '[brain/provision] email notify failed:',
+      err instanceof Error ? err.message : err,
+    ),
   )
 }
