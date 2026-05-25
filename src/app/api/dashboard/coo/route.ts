@@ -43,7 +43,7 @@ import {
 } from '<npm>/lib/composio';
 import { wrapToolsWithApprovalGate } from '<npm>/lib/agents/approval-gate';
 import { getRecentOutcomes, formatOutcomesForPrompt } from '<npm>/lib/coo/outcomes';
-import { buildCooSystemPrompt, PROMPT_VERSION } from '<npm>/lib/coo/prompts/coo-system-v1';
+import { buildCooSystemPrompt, PROMPT_VERSION } from '<npm>/lib/coo/prompts/coo-system-v2';
 import type { Json } from '<npm>/lib/database.types';
 
 export const dynamic = 'force-dynamic';

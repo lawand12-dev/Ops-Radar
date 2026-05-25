@@ -84,7 +84,7 @@ function specFromCustomEmployee(
     requiredTier: "starter",
     requiredIntegrations: [],
     cronSchedule: row.schedule_cron ?? "0 0 * * *",
-    maxSteps: row.max_steps,
+    maxSteps: row.max_steps ?? 10,
     systemPrompt,
   }
 }

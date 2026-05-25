@@ -27,6 +27,7 @@ export const PLAN_FEATURES = {
   scope:           ['growth', 'pro', 'fo'],
   benchmarks:      ['growth', 'pro', 'fo'],
   coo_chat:        ['growth', 'pro', 'fo'],
+  hire_chat:       ['growth', 'pro', 'fo'],
   // Pro+ features
   agentic_actions: ['pro', 'fo'],
   retainer:        ['pro', 'fo'],

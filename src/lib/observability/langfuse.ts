@@ -91,7 +91,14 @@ export type TraceContext = {
   agentSlug?: string             // built-in or custom employee slug
   agentRunId?: string            // ties multiple tool calls in one cron run
   sessionId?: string             // for COO / employee chat threads
-  source: 'cron-agent' | 'coo-chat' | 'employee-chat' | 'consult-coo' | 'automation' | 'manual'
+  source:
+    | 'cron-agent'
+    | 'coo-chat'
+    | 'hire-chat'    // CP-38 — dedicated hiring surface
+    | 'employee-chat'
+    | 'consult-coo'
+    | 'automation'
+    | 'manual'
   tier?: string                  // starter / growth / pro / fo
 }
 

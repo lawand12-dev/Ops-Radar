@@ -219,8 +219,12 @@ function YourTeamSection({
   visibleEmployees: CustomEmployeeNavItem[];
   overflowCount: number;
 }) {
-  const hireHref = '/dashboard/coo?prompt=I%20want%20to%20hire%20a%20new%20AI%20employee';
+  // CP-38: hiring lives in its own /dashboard/hire surface (not as a COO
+  // pre-filled prompt). Notion 3.3 / Lindy 3.0 / Microsoft Copilot Studio
+  // all ship a separate "build agent" route from their Q&A chat.
+  const hireHref = '/dashboard/hire';
   const allHref = '/dashboard/employees';
+  const hireActive = pathname === hireHref || pathname.startsWith(`${hireHref}/`);
   const allActive = pathname === allHref;
 
   return (
@@ -234,11 +238,15 @@ function YourTeamSection({
         href={hireHref}
         className={cn(
           'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
-          'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+          hireActive
+            ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
+            : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
         )}
       >
-        <Plus size={16} strokeWidth={1.6} />
-        <span className="text-[13.5px] font-normal">Hire AI Employee</span>
+        <Plus size={16} strokeWidth={hireActive ? 2 : 1.6} />
+        <span className={cn('text-[13.5px]', hireActive ? 'font-semibold' : 'font-normal')}>
+          Hire AI Employee
+        </span>
       </Link>
 
       {/* All employees */}

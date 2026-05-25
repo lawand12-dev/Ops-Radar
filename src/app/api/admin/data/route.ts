@@ -7,16 +7,13 @@ import { applyRateLimit } from '../../../../lib/rate-limit'
 import { sanitizeString, serverErrorResponse } from '../../../../lib/security'
 import { getServerSupabaseClient } from '../../../../lib/supabase-server'
 
-type MutableTableName = 'audits' | 'build_requests'
-type AdminAuditRow = {
-  id: string
-  email?: string | null
-} & Record<string, unknown>
-
-const MUTABLE_TABLES = new Set<MutableTableName>([
-  'audits',
-  'build_requests',
-])
+// `audits` / `audit_sessions` / `audit_events` / `build_requests` were
+// dropped in CP-16 (the prospect-facing audit funnel was retired). The
+// admin panel pages still reference them — we return empty arrays so the
+// UI degrades to "no rows" instead of crashing. There are no longer any
+// mutable tables exposed through this admin endpoint.
+type MutableTableName = never
+const MUTABLE_TABLES = new Set<MutableTableName>()
 
 const JSON_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -55,38 +52,21 @@ export async function GET(request: NextRequest) {
     const supabase = getServerSupabaseClient()
 
     if (view === 'audits') {
-      const { data, error } = await supabase
-        .from('audits')
-        .select('id, created_at, name, email, company, answers, result, access_token')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        throw error
-      }
-
-      return Response.json({
-        audits: (data ?? []) as AdminAuditRow[],
-      }, { headers: JSON_HEADERS })
+      // CP-16 retired the audits table — return empty so the admin panel
+      // doesn't crash.
+      return Response.json({ audits: [] }, { headers: JSON_HEADERS })
     }
 
-    const [auditRes, buildRes, auditSessionsRes, auditEventsRes] = await Promise.all([
-      supabase.from('audits').select('*').order('created_at', { ascending: false }),
-      supabase.from('build_requests').select('*').order('created_at', { ascending: false }),
-      supabase.from('audit_sessions').select('*').order('updated_at', { ascending: false }),
-      supabase.from('audit_events').select('*').order('created_at', { ascending: false }),
-    ])
-
-    if (auditRes.error) throw auditRes.error
-    if (buildRes.error) throw buildRes.error
-    if (auditSessionsRes.error) throw auditSessionsRes.error
-    if (auditEventsRes.error) throw auditEventsRes.error
+    // Suppress unused-var lint without removing the import — easier to
+    // restore later if the audits/build_requests tables come back.
+    void supabase
 
     return Response.json(
       {
-        audits: auditRes.data ?? [],
-        builds: buildRes.data ?? [],
-        auditSessions: auditSessionsRes.data ?? [],
-        auditEvents: auditEventsRes.data ?? [],
+        audits: [],
+        builds: [],
+        auditSessions: [],
+        auditEvents: [],
       },
       { headers: JSON_HEADERS },
     )
@@ -108,21 +88,14 @@ export async function DELETE(request: Request) {
       return authResponse
     }
 
-    const body = await request.json()
-    const table = normalizeMutableTable(body?.table)
-    const id = sanitizeString(String(body?.id ?? ''), 200)
-
-    if (!table || !id) {
-      return Response.json({ error: 'Invalid request payload' }, { status: 400, headers: JSON_HEADERS })
-    }
-
-    const supabase = getServerSupabaseClient()
-    const { error } = await supabase.from(table).delete().eq('id', id)
-    if (error) {
-      throw error
-    }
-
-    return Response.json({ ok: true }, { headers: JSON_HEADERS })
+    // CP-16 dropped all tables this endpoint used to mutate. There's
+    // nothing valid to delete; reject every payload until the admin UI
+    // is rewired to whatever the new mutation surface is.
+    void normalizeMutableTable
+    return Response.json(
+      { error: 'Invalid request payload' },
+      { status: 400, headers: JSON_HEADERS },
+    )
   } catch (error) {
     console.error('[admin-data] DELETE failed:', error)
     return serverErrorResponse()
@@ -145,32 +118,12 @@ export async function POST(request: Request) {
     const action = sanitizeString(String(body?.action ?? ''), 64)
     const supabase = getServerSupabaseClient()
 
-    if (action === 'delete-old-audits') {
-      const days = Math.min(3650, Math.max(1, Math.round(Number(body?.days ?? 30))))
-      const cutoff = new Date(Date.now() - (days * 24 * 60 * 60 * 1000)).toISOString()
-      const { error, count } = await supabase
-        .from('audits')
-        .delete({ count: 'exact' })
-        .lt('created_at', cutoff)
-
-      if (error) {
-        throw error
-      }
-
-      return Response.json({ count: count ?? 0 }, { headers: JSON_HEADERS })
-    }
-
-    if (action === 'delete-test-audits') {
-      const { error, count } = await supabase
-        .from('audits')
-        .delete({ count: 'exact' })
-        .or('email.ilike.%test%,company.ilike.%test%')
-
-      if (error) {
-        throw error
-      }
-
-      return Response.json({ count: count ?? 0 }, { headers: JSON_HEADERS })
+    // CP-16 dropped the audits table — delete-old-audits / delete-test-audits
+    // are no-ops now. Return success with count=0 so the UI shows a confirmation
+    // instead of a 400.
+    if (action === 'delete-old-audits' || action === 'delete-test-audits') {
+      void supabase // silence unused
+      return Response.json({ count: 0 }, { headers: JSON_HEADERS })
     }
 
     return Response.json({ error: 'Invalid action' }, { status: 400, headers: JSON_HEADERS })

@@ -118,7 +118,7 @@ export function customRowToEmployee(row: CustomEmployeeRow): Employee {
       systemPrompt: row.system_prompt,
       composioApps: row.scoped_toolkits,
       model: row.model_slug ?? 'gpt-5.4',
-      maxSteps: row.max_steps,
+      maxSteps: row.max_steps ?? 10,
       cronSchedule: row.schedule_cron,
       scopedBrainPrefixes: row.scoped_brain_prefixes,
     },

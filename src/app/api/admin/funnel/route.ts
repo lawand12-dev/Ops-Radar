@@ -5,7 +5,7 @@ import {
 } from '../../../../lib/admin-session'
 import { applyRateLimit } from '../../../../lib/rate-limit'
 import { serverErrorResponse } from '../../../../lib/security'
-import { getServerSupabaseClient, hasServerSupabaseClient } from '../../../../lib/supabase-server'
+import { hasServerSupabaseClient } from '../../../../lib/supabase-server'
 
 const STEP_LABELS: Record<number, string> = {
   0: 'Agency type',
@@ -57,19 +57,11 @@ export async function GET(request: NextRequest) {
       return Response.json({ funnel: [], totalSessions: 0 }, { headers: JSON_HEADERS })
     }
 
-    const supabase = getServerSupabaseClient()
-
-    const { data: sessions, error } = await supabase
-      .from('audit_sessions')
-      .select('step_reached, created_at')
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-
-    if (error) {
-      console.error('[admin/funnel] supabase error:', error.message)
-      return Response.json({ funnel: [], totalSessions: 0 }, { headers: JSON_HEADERS })
-    }
-
-    const totalSessions = sessions?.length ?? 0
+    // CP-16 retired the audit_sessions table — the funnel always reports
+    // zero now. Kept the route so the admin page doesn't 404; safe to remove
+    // entirely once the admin UI is updated.
+    const sessions: Array<{ step_reached: number | null }> = []
+    const totalSessions = sessions.length
 
     const funnel = Array.from({ length: TOTAL_STEPS }, (_, step) => {
       const reachedCount = (sessions ?? []).filter((s) => (s.step_reached ?? 0) >= step).length

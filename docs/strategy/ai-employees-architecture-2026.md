@@ -243,10 +243,17 @@ For each `/dashboard/employees/[slug]` route:
 
 ### 5.3 The creation flow (Lindy + Notion pattern)
 
-**Customer in `/dashboard/coo`:**
+**> CP-38 UPDATE (May 2026):** the creation flow lives on the dedicated
+> `/dashboard/hire` surface, not inside the COO chat. This matches Notion 3.3
+> Custom Agents, Lindy 3.0 (`New Lindy` button), and Microsoft Copilot Studio
+> (separate from Agent Builder) — every major 2026 reference ships a
+> dedicated builder route. Mixing hiring into the COO Q&A chat confuses
+> tool-selection and the customer's mental model of "ask vs build."
+
+**Customer in `/dashboard/hire`:**
 > *"I want a Bookkeeper named Sarah. Every day at 8am, pull yesterday's Stripe charges, categorize them by our chart of accounts, write to the Real P&L brain doc, flag anything over $5,000 for my approval."*
 
-**COO calls `propose_custom_employee(description)` → returns a draft spec:**
+**The Hiring assistant calls `propose_custom_employee(description)` → returns a draft spec:**
 
 ```yaml
 name: Sarah

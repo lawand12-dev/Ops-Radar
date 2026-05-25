@@ -76,42 +76,6 @@ export type Database = {
           },
         ]
       }
-      agency_submissions: {
-        Row: {
-          active_clients: number | null
-          agency_type: string
-          audit_id: string | null
-          automation_wish: string
-          created_at: string
-          id: string
-          revenue: string | null
-          team_size: number | null
-          website_url: string | null
-        }
-        Insert: {
-          active_clients?: number | null
-          agency_type: string
-          audit_id?: string | null
-          automation_wish: string
-          created_at?: string
-          id?: string
-          revenue?: string | null
-          team_size?: number | null
-          website_url?: string | null
-        }
-        Update: {
-          active_clients?: number | null
-          agency_type?: string
-          audit_id?: string | null
-          automation_wish?: string
-          created_at?: string
-          id?: string
-          revenue?: string | null
-          team_size?: number | null
-          website_url?: string | null
-        }
-        Relationships: []
-      }
       agent_actions: {
         Row: {
           action_type: string
@@ -196,174 +160,6 @@ export type Database = {
         }
         Relationships: []
       }
-      // Hand-added for CP-20 automations layer. Regenerate via
-      // `npm run types:supabase` after the migration applies to overwrite
-      // these with the auto-generated shape.
-      customer_automations: {
-        Row: {
-          id: string
-          user_id: string
-          slug: string
-          name: string
-          description: string
-          status: string
-          trigger_kind: string
-          trigger_toolkit: string | null
-          trigger_slug: string | null
-          trigger_filter: Json
-          spec: Json
-          spec_version: number
-          autonomy: string
-          source: string
-          source_session: string | null
-          created_by: string
-          last_run_at: string | null
-          last_run_status: string | null
-          run_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          slug: string
-          name: string
-          description: string
-          status?: string
-          trigger_kind: string
-          trigger_toolkit?: string | null
-          trigger_slug?: string | null
-          trigger_filter?: Json
-          spec: Json
-          spec_version?: number
-          autonomy?: string
-          source?: string
-          source_session?: string | null
-          created_by?: string
-          last_run_at?: string | null
-          last_run_status?: string | null
-          run_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          slug?: string
-          name?: string
-          description?: string
-          status?: string
-          trigger_kind?: string
-          trigger_toolkit?: string | null
-          trigger_slug?: string | null
-          trigger_filter?: Json
-          spec?: Json
-          spec_version?: number
-          autonomy?: string
-          source?: string
-          source_session?: string | null
-          created_by?: string
-          last_run_at?: string | null
-          last_run_status?: string | null
-          run_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      automation_trigger_instances: {
-        Row: {
-          id: string
-          automation_id: string
-          user_id: string
-          composio_trigger_id: string
-          trigger_slug: string
-          connected_account_id: string
-          is_active: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          automation_id: string
-          user_id: string
-          composio_trigger_id: string
-          trigger_slug: string
-          connected_account_id: string
-          is_active?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          automation_id?: string
-          user_id?: string
-          composio_trigger_id?: string
-          trigger_slug?: string
-          connected_account_id?: string
-          is_active?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      automation_runs: {
-        Row: {
-          id: string
-          automation_id: string
-          user_id: string
-          trigger_event: Json
-          status: string
-          result: Json | null
-          error: string | null
-          steps: Json
-          queued_action_ids: string[]
-          started_at: string
-          finished_at: string | null
-        }
-        Insert: {
-          id?: string
-          automation_id: string
-          user_id: string
-          trigger_event: Json
-          status?: string
-          result?: Json | null
-          error?: string | null
-          steps?: Json
-          queued_action_ids?: string[]
-          started_at?: string
-          finished_at?: string | null
-        }
-        Update: {
-          id?: string
-          automation_id?: string
-          user_id?: string
-          trigger_event?: Json
-          status?: string
-          result?: Json | null
-          error?: string | null
-          steps?: Json
-          queued_action_ids?: string[]
-          started_at?: string
-          finished_at?: string | null
-        }
-        Relationships: []
-      }
-      automation_event_idempotency: {
-        Row: {
-          webhook_id: string
-          received_at: string
-          automation_ids: string[]
-        }
-        Insert: {
-          webhook_id: string
-          received_at?: string
-          automation_ids: string[]
-        }
-        Update: {
-          webhook_id?: string
-          received_at?: string
-          automation_ids?: string[]
-        }
-        Relationships: []
-      }
       agent_runs: {
         Row: {
           actions_taken: number
@@ -442,130 +238,114 @@ export type Database = {
         }
         Relationships: []
       }
-      audit_events: {
+      automation_event_idempotency: {
         Row: {
-          audit_id: string | null
-          created_at: string | null
-          event_name: string
-          id: string
-          metadata: Json | null
-          report_stage: string | null
-          section_id: string | null
-          session_id: string | null
-          source: string | null
-          step: number | null
+          automation_ids: string[]
+          received_at: string
+          webhook_id: string
         }
         Insert: {
-          audit_id?: string | null
-          created_at?: string | null
-          event_name: string
-          id?: string
-          metadata?: Json | null
-          report_stage?: string | null
-          section_id?: string | null
-          session_id?: string | null
-          source?: string | null
-          step?: number | null
+          automation_ids: string[]
+          received_at?: string
+          webhook_id: string
         }
         Update: {
-          audit_id?: string | null
-          created_at?: string | null
-          event_name?: string
+          automation_ids?: string[]
+          received_at?: string
+          webhook_id?: string
+        }
+        Relationships: []
+      }
+      automation_runs: {
+        Row: {
+          automation_id: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          queued_action_ids: string[]
+          result: Json | null
+          started_at: string
+          status: string
+          steps: Json
+          trigger_event: Json
+          user_id: string
+        }
+        Insert: {
+          automation_id: string
+          error?: string | null
+          finished_at?: string | null
           id?: string
-          metadata?: Json | null
-          report_stage?: string | null
-          section_id?: string | null
-          session_id?: string | null
-          source?: string | null
-          step?: number | null
+          queued_action_ids?: string[]
+          result?: Json | null
+          started_at?: string
+          status?: string
+          steps?: Json
+          trigger_event: Json
+          user_id: string
+        }
+        Update: {
+          automation_id?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          queued_action_ids?: string[]
+          result?: Json | null
+          started_at?: string
+          status?: string
+          steps?: Json
+          trigger_event?: Json
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "audit_events_audit_id_fkey"
-            columns: ["audit_id"]
+            foreignKeyName: "automation_runs_automation_id_fkey"
+            columns: ["automation_id"]
             isOneToOne: false
-            referencedRelation: "audits"
+            referencedRelation: "customer_automations"
             referencedColumns: ["id"]
           },
         ]
       }
-      audit_sessions: {
+      automation_trigger_instances: {
         Row: {
-          created_at: string | null
+          automation_id: string
+          composio_trigger_id: string
+          connected_account_id: string
+          created_at: string
           id: string
-          session_id: string
-          step_reached: number
-          updated_at: string | null
+          is_active: boolean
+          trigger_slug: string
+          user_id: string
         }
         Insert: {
-          created_at?: string | null
+          automation_id: string
+          composio_trigger_id: string
+          connected_account_id: string
+          created_at?: string
           id?: string
-          session_id: string
-          step_reached?: number
-          updated_at?: string | null
+          is_active?: boolean
+          trigger_slug: string
+          user_id: string
         }
         Update: {
-          created_at?: string | null
+          automation_id?: string
+          composio_trigger_id?: string
+          connected_account_id?: string
+          created_at?: string
           id?: string
-          session_id?: string
-          step_reached?: number
-          updated_at?: string | null
+          is_active?: boolean
+          trigger_slug?: string
+          user_id?: string
         }
-        Relationships: []
-      }
-      audits: {
-        Row: {
-          access_token: string | null
-          answers: Json
-          company: string
-          created_at: string | null
-          email: string
-          follow_up_1_sent: boolean | null
-          follow_up_2_sent: boolean | null
-          follow_up_3_sent: boolean | null
-          id: string
-          name: string
-          result: Json
-          share_expires_at: string | null
-          share_token: string | null
-          unsubscribe_token: string | null
-          unsubscribed_at: string | null
-        }
-        Insert: {
-          access_token?: string | null
-          answers: Json
-          company: string
-          created_at?: string | null
-          email: string
-          follow_up_1_sent?: boolean | null
-          follow_up_2_sent?: boolean | null
-          follow_up_3_sent?: boolean | null
-          id?: string
-          name: string
-          result: Json
-          share_expires_at?: string | null
-          share_token?: string | null
-          unsubscribe_token?: string | null
-          unsubscribed_at?: string | null
-        }
-        Update: {
-          access_token?: string | null
-          answers?: Json
-          company?: string
-          created_at?: string | null
-          email?: string
-          follow_up_1_sent?: boolean | null
-          follow_up_2_sent?: boolean | null
-          follow_up_3_sent?: boolean | null
-          id?: string
-          name?: string
-          result?: Json
-          share_expires_at?: string | null
-          share_token?: string | null
-          unsubscribe_token?: string | null
-          unsubscribed_at?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "automation_trigger_instances_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "customer_automations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       benchmarks: {
         Row: {
@@ -602,6 +382,125 @@ export type Database = {
           team_size_bucket?: string
         }
         Relationships: []
+      }
+      brain_commits: {
+        Row: {
+          agent_run_id: string | null
+          author_type: string
+          created_at: string
+          id: string
+          message: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_run_id?: string | null
+          author_type: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_run_id?: string | null
+          author_type?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      brain_document_versions: {
+        Row: {
+          commit_id: string
+          content: string
+          content_hash: string
+          content_size: number
+          created_at: string
+          document_id: string
+          embedding: string | null
+          embedding_model: string | null
+          id: string
+          path: string
+          user_id: string
+        }
+        Insert: {
+          commit_id: string
+          content: string
+          content_hash: string
+          content_size: number
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          embedding_model?: string | null
+          id?: string
+          path: string
+          user_id: string
+        }
+        Update: {
+          commit_id?: string
+          content?: string
+          content_hash?: string
+          content_size?: number
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          id?: string
+          path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brain_document_versions_commit_id_fkey"
+            columns: ["commit_id"]
+            isOneToOne: false
+            referencedRelation: "brain_commits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brain_document_versions_document_fk"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "brain_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brain_documents: {
+        Row: {
+          created_at: string
+          current_version_id: string | null
+          id: string
+          path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_version_id?: string | null
+          id?: string
+          path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_version_id?: string | null
+          id?: string
+          path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brain_documents_current_version_id_fkey"
+            columns: ["current_version_id"]
+            isOneToOne: false
+            referencedRelation: "brain_document_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       breadcrumbs: {
         Row: {
@@ -692,80 +591,6 @@ export type Database = {
           recommendation?: string | null
           user_id?: string
           win?: string | null
-        }
-        Relationships: []
-      }
-      build_requests: {
-        Row: {
-          audit_id: string | null
-          automation_title: string
-          budget: string
-          created_at: string | null
-          email: string
-          id: string
-          name: string
-          notes: string | null
-          timeline: string
-        }
-        Insert: {
-          audit_id?: string | null
-          automation_title: string
-          budget: string
-          created_at?: string | null
-          email: string
-          id?: string
-          name: string
-          notes?: string | null
-          timeline: string
-        }
-        Update: {
-          audit_id?: string | null
-          automation_title?: string
-          budget?: string
-          created_at?: string | null
-          email?: string
-          id?: string
-          name?: string
-          notes?: string | null
-          timeline?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "build_requests_audit_id_fkey"
-            columns: ["audit_id"]
-            isOneToOne: false
-            referencedRelation: "audits"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      client_n8n_config: {
-        Row: {
-          backfill_completed_at: string | null
-          client_id: string
-          created_at: string
-          n8n_api_key: string | null
-          n8n_base_url: string
-          n8n_webhook_secret: string
-          updated_at: string
-        }
-        Insert: {
-          backfill_completed_at?: string | null
-          client_id: string
-          created_at?: string
-          n8n_api_key?: string | null
-          n8n_base_url: string
-          n8n_webhook_secret: string
-          updated_at?: string
-        }
-        Update: {
-          backfill_completed_at?: string | null
-          client_id?: string
-          created_at?: string
-          n8n_api_key?: string | null
-          n8n_base_url?: string
-          n8n_webhook_secret?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -870,33 +695,6 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      coo_kb_gaps: {
-        Row: {
-          created_at: string
-          found_results: boolean
-          id: number
-          kb_query: string | null
-          user_id: string | null
-          user_question: string
-        }
-        Insert: {
-          created_at?: string
-          found_results?: boolean
-          id?: number
-          kb_query?: string | null
-          user_id?: string | null
-          user_question: string
-        }
-        Update: {
-          created_at?: string
-          found_results?: boolean
-          id?: number
-          kb_query?: string | null
-          user_id?: string | null
-          user_question?: string
         }
         Relationships: []
       }
@@ -1103,320 +901,306 @@ export type Database = {
         }
         Relationships: []
       }
-      // Hand-added for CP-27 brain storage (git-like Postgres tables).
-      // Regenerate via `npm run types:supabase` after migration applies.
-      brain_commits: {
-        Row: {
-          id: string
-          user_id: string
-          message: string | null
-          author_type: string
-          agent_run_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          message?: string | null
-          author_type: string
-          agent_run_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          message?: string | null
-          author_type?: string
-          agent_run_id?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      brain_document_versions: {
-        Row: {
-          id: string
-          user_id: string
-          document_id: string
-          commit_id: string
-          path: string
-          content: string
-          content_hash: string
-          content_size: number
-          created_at: string
-          embedding: string | null
-          embedding_model: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          document_id: string
-          commit_id: string
-          path: string
-          content: string
-          content_hash: string
-          content_size: number
-          created_at?: string
-          embedding?: string | null
-          embedding_model?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          document_id?: string
-          commit_id?: string
-          path?: string
-          content?: string
-          content_hash?: string
-          content_size?: number
-          created_at?: string
-          embedding?: string | null
-          embedding_model?: string | null
-        }
-        Relationships: []
-      }
-      brain_documents: {
-        Row: {
-          id: string
-          user_id: string
-          path: string
-          current_version_id: string | null
-          created_at: string
-          updated_at: string
-          embedding: string | null
-          embedding_model: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          path: string
-          current_version_id?: string | null
-          created_at?: string
-          updated_at?: string
-          embedding?: string | null
-          embedding_model?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          path?: string
-          current_version_id?: string | null
-          created_at?: string
-          updated_at?: string
-          embedding?: string | null
-          embedding_model?: string | null
-        }
-        Relationships: []
-      }
-      // Hand-added for CP-25 three-tier memory warehouse.
-      // Regenerate via `npm run types:supabase` after migration applies.
-      external_events: {
-        Row: {
-          id: string
-          user_id: string
-          source: string
-          event_type: string
-          external_id: string
-          occurred_at: string
-          amount_cents: number | null
-          client_external_id: string | null
-          payload: Json
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          source: string
-          event_type: string
-          external_id: string
-          occurred_at: string
-          amount_cents?: number | null
-          client_external_id?: string | null
-          payload: Json
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          source?: string
-          event_type?: string
-          external_id?: string
-          occurred_at?: string
-          amount_cents?: number | null
-          client_external_id?: string | null
-          payload?: Json
-          created_at?: string
-        }
-        Relationships: []
-      }
-      // Hand-added for CP-23 multi-tenant API usage tracking.
-      // Regenerate via `npm run types:supabase` after migration applies.
-      external_api_usage: {
-        Row: {
-          id: string
-          user_id: string
-          provider: string
-          operation: string
-          credits_used: number
-          tokens_used: number | null
-          cost_estimate_cents: number | null
-          metadata: Json
-          occurred_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          provider: string
-          operation: string
-          credits_used?: number
-          tokens_used?: number | null
-          cost_estimate_cents?: number | null
-          metadata?: Json
-          occurred_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          provider?: string
-          operation?: string
-          credits_used?: number
-          tokens_used?: number | null
-          cost_estimate_cents?: number | null
-          metadata?: Json
-          occurred_at?: string
-        }
-        Relationships: []
-      }
-      // Hand-added for CP-34 — Custom AI Employees.
-      // Regenerate via `npm run types:supabase` after migration applies.
-      custom_employees: {
-        Row: {
-          id: string
-          user_id: string
-          slug: string
-          name: string
-          role: string
-          emoji: string | null
-          avatar_url: string | null
-          persona_summary: string | null
-          system_prompt: string
-          schedule_cron: string | null
-          status: string
-          autonomy: string
-          model_slug: string | null
-          max_steps: number
-          scoped_toolkits: string[]
-          scoped_brain_prefixes: string[]
-          parent_employee_id: string | null
-          created_at: string
-          updated_at: string
-          last_run_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          slug: string
-          name: string
-          role: string
-          emoji?: string | null
-          avatar_url?: string | null
-          persona_summary?: string | null
-          system_prompt: string
-          schedule_cron?: string | null
-          status?: string
-          autonomy?: string
-          model_slug?: string | null
-          max_steps?: number
-          scoped_toolkits?: string[]
-          scoped_brain_prefixes?: string[]
-          parent_employee_id?: string | null
-          created_at?: string
-          updated_at?: string
-          last_run_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          slug?: string
-          name?: string
-          role?: string
-          emoji?: string | null
-          avatar_url?: string | null
-          persona_summary?: string | null
-          system_prompt?: string
-          schedule_cron?: string | null
-          status?: string
-          autonomy?: string
-          model_slug?: string | null
-          max_steps?: number
-          scoped_toolkits?: string[]
-          scoped_brain_prefixes?: string[]
-          parent_employee_id?: string | null
-          created_at?: string
-          updated_at?: string
-          last_run_at?: string | null
-        }
-        Relationships: []
-      }
       custom_employee_chat_threads: {
         Row: {
-          id: string
-          user_id: string
+          created_at: string
           employee_id: string | null
           employee_slug: string
-          title: string | null
-          created_at: string
+          id: string
           last_message_at: string
+          title: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
+          created_at?: string
           employee_id?: string | null
           employee_slug: string
-          title?: string | null
-          created_at?: string
+          id?: string
           last_message_at?: string
+          title?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
+          created_at?: string
           employee_id?: string | null
           employee_slug?: string
-          title?: string | null
-          created_at?: string
+          id?: string
           last_message_at?: string
+          title?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_employee_chat_threads_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "custom_employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_employee_messages: {
         Row: {
-          id: string
-          thread_id: string
-          user_id: string
-          role: string
           content: string
+          created_at: string
+          id: string
+          role: string
+          thread_id: string
           tool_calls: Json | null
           tool_results: Json | null
-          created_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          thread_id: string
-          user_id: string
-          role: string
           content?: string
+          created_at?: string
+          id?: string
+          role: string
+          thread_id: string
           tool_calls?: Json | null
           tool_results?: Json | null
-          created_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          thread_id?: string
-          user_id?: string
-          role?: string
           content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thread_id?: string
           tool_calls?: Json | null
           tool_results?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_employee_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "custom_employee_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_employees: {
+        Row: {
+          autonomy: string
+          avatar_url: string | null
+          created_at: string
+          emoji: string | null
+          id: string
+          last_run_at: string | null
+          max_steps: number | null
+          model_slug: string | null
+          name: string
+          parent_employee_id: string | null
+          persona_summary: string | null
+          role: string
+          schedule_cron: string | null
+          scoped_brain_prefixes: string[]
+          scoped_toolkits: string[]
+          slug: string
+          status: string
+          system_prompt: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autonomy?: string
+          avatar_url?: string | null
           created_at?: string
+          emoji?: string | null
+          id?: string
+          last_run_at?: string | null
+          max_steps?: number | null
+          model_slug?: string | null
+          name: string
+          parent_employee_id?: string | null
+          persona_summary?: string | null
+          role: string
+          schedule_cron?: string | null
+          scoped_brain_prefixes?: string[]
+          scoped_toolkits?: string[]
+          slug: string
+          status?: string
+          system_prompt: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autonomy?: string
+          avatar_url?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          last_run_at?: string | null
+          max_steps?: number | null
+          model_slug?: string | null
+          name?: string
+          parent_employee_id?: string | null
+          persona_summary?: string | null
+          role?: string
+          schedule_cron?: string | null
+          scoped_brain_prefixes?: string[]
+          scoped_toolkits?: string[]
+          slug?: string
+          status?: string
+          system_prompt?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_employees_parent_employee_id_fkey"
+            columns: ["parent_employee_id"]
+            isOneToOne: false
+            referencedRelation: "custom_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_automations: {
+        Row: {
+          autonomy: string
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          last_run_at: string | null
+          last_run_status: string | null
+          name: string
+          run_count: number
+          slug: string
+          source: string
+          source_session: string | null
+          spec: Json
+          spec_version: number
+          status: string
+          trigger_filter: Json
+          trigger_kind: string
+          trigger_slug: string | null
+          trigger_toolkit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autonomy?: string
+          created_at?: string
+          created_by?: string
+          description: string
+          id?: string
+          last_run_at?: string | null
+          last_run_status?: string | null
+          name: string
+          run_count?: number
+          slug: string
+          source?: string
+          source_session?: string | null
+          spec: Json
+          spec_version?: number
+          status?: string
+          trigger_filter?: Json
+          trigger_kind: string
+          trigger_slug?: string | null
+          trigger_toolkit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autonomy?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          last_run_at?: string | null
+          last_run_status?: string | null
+          name?: string
+          run_count?: number
+          slug?: string
+          source?: string
+          source_session?: string | null
+          spec?: Json
+          spec_version?: number
+          status?: string
+          trigger_filter?: Json
+          trigger_kind?: string
+          trigger_slug?: string | null
+          trigger_toolkit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      external_api_usage: {
+        Row: {
+          cost_estimate_cents: number | null
+          credits_used: number
+          id: string
+          metadata: Json
+          occurred_at: string
+          operation: string
+          provider: string
+          tokens_used: number | null
+          user_id: string
+        }
+        Insert: {
+          cost_estimate_cents?: number | null
+          credits_used?: number
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          operation: string
+          provider: string
+          tokens_used?: number | null
+          user_id: string
+        }
+        Update: {
+          cost_estimate_cents?: number | null
+          credits_used?: number
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          operation?: string
+          provider?: string
+          tokens_used?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      external_events: {
+        Row: {
+          amount_cents: number | null
+          client_external_id: string | null
+          created_at: string
+          event_type: string
+          external_id: string
+          id: string
+          occurred_at: string
+          payload: Json
+          source: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          client_external_id?: string | null
+          created_at?: string
+          event_type: string
+          external_id: string
+          id?: string
+          occurred_at: string
+          payload: Json
+          source: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number | null
+          client_external_id?: string | null
+          created_at?: string
+          event_type?: string
+          external_id?: string
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          source?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1553,6 +1337,77 @@ export type Database = {
           },
         ]
       }
+      hire_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          draft_card: Json | null
+          id: string
+          role: string
+          session_id: string
+          tool_steps: Json | null
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          draft_card?: Json | null
+          id?: string
+          role: string
+          session_id: string
+          tool_steps?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          draft_card?: Json | null
+          id?: string
+          role?: string
+          session_id?: string
+          tool_steps?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "hire_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hire_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          message_count: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingestion_sources: {
         Row: {
           created_at: string
@@ -1634,42 +1489,6 @@ export type Database = {
           last_synced_at?: string | null
           status?: string
           tool?: string
-        }
-        Relationships: []
-      }
-      kb_embeddings: {
-        Row: {
-          category: string | null
-          content_hash: string
-          content_preview: string | null
-          embedded_at: string
-          embedding: string
-          id: number
-          source_file: string
-          summary: string | null
-          title: string | null
-        }
-        Insert: {
-          category?: string | null
-          content_hash: string
-          content_preview?: string | null
-          embedded_at?: string
-          embedding: string
-          id?: number
-          source_file: string
-          summary?: string | null
-          title?: string | null
-        }
-        Update: {
-          category?: string | null
-          content_hash?: string
-          content_preview?: string | null
-          embedded_at?: string
-          embedding?: string
-          id?: number
-          source_file?: string
-          summary?: string | null
-          title?: string | null
         }
         Relationships: []
       }
@@ -1998,54 +1817,6 @@ export type Database = {
         }
         Relationships: []
       }
-      quick_win_onboarding_requests: {
-        Row: {
-          created_at: string | null
-          email: string
-          goal: string
-          id: string
-          primary_tool: string
-          source: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          goal: string
-          id?: string
-          primary_tool: string
-          source?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          goal?: string
-          id?: string
-          primary_tool?: string
-          source?: string | null
-        }
-        Relationships: []
-      }
-      research_cache: {
-        Row: {
-          expires_at: string
-          fetched_at: string
-          research_data: Json
-          url: string
-        }
-        Insert: {
-          expires_at: string
-          fetched_at?: string
-          research_data: Json
-          url: string
-        }
-        Update: {
-          expires_at?: string
-          fetched_at?: string
-          research_data?: Json
-          url?: string
-        }
-        Relationships: []
-      }
       retainer_configs: {
         Row: {
           client_name_display: string
@@ -2102,6 +1873,27 @@ export type Database = {
           id?: string
           scores?: Json
           share_token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tool_policies: {
+        Row: {
+          policy: string
+          tool_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          policy?: string
+          tool_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          policy?: string
+          tool_slug?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2220,6 +2012,19 @@ export type Database = {
       }
     }
     Functions: {
+      match_brain_documents: {
+        Args: {
+          match_count?: number
+          path_prefix?: string
+          query_embedding: string
+          target_user_id: string
+        }
+        Returns: {
+          content: string
+          path: string
+          similarity: number
+        }[]
+      }
       match_breadcrumbs_for_user: {
         Args: {
           match_count?: number
@@ -2378,3 +2183,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
