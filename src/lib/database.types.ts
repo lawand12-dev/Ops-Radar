@@ -1103,6 +1103,98 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-added for CP-27 brain storage (git-like Postgres tables).
+      // Regenerate via `npm run types:supabase` after migration applies.
+      brain_commits: {
+        Row: {
+          id: string
+          user_id: string
+          message: string | null
+          author_type: string
+          agent_run_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          message?: string | null
+          author_type: string
+          agent_run_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          message?: string | null
+          author_type?: string
+          agent_run_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      brain_document_versions: {
+        Row: {
+          id: string
+          user_id: string
+          document_id: string
+          commit_id: string
+          path: string
+          content: string
+          content_hash: string
+          content_size: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          document_id: string
+          commit_id: string
+          path: string
+          content: string
+          content_hash: string
+          content_size: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          document_id?: string
+          commit_id?: string
+          path?: string
+          content?: string
+          content_hash?: string
+          content_size?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      brain_documents: {
+        Row: {
+          id: string
+          user_id: string
+          path: string
+          current_version_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          path: string
+          current_version_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          path?: string
+          current_version_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       // Hand-added for CP-25 three-tier memory warehouse.
       // Regenerate via `npm run types:supabase` after migration applies.
       external_events: {
