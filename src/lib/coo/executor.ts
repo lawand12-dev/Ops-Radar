@@ -1393,23 +1393,31 @@ async function runGetInbox(ctx: ExecutorContext): Promise<ToolResult> {
     };
   }
   try {
-    // TODO(composio-slug): verify GMAIL_LIST_THREADS
     const unreadResp = await executeComposioAction<unknown>(
       ctx.userId,
       'gmail',
-      'GMAIL_LIST_THREADS',
-      { q: 'is:unread newer_than:7d', maxResults: 100 },
+      'GMAIL_FETCH_EMAILS',
+      { query: 'is:unread newer_than:7d', max_results: 100 },
     );
-    const unreadCount = asArray(unreadResp).length;
+    const unreadMessages =
+      unreadResp && typeof unreadResp === 'object' && 'messages' in unreadResp
+        ? (unreadResp as { messages?: unknown }).messages
+        : unreadResp;
+    const unreadCount = asArray(unreadMessages).length;
 
-    // TODO(composio-slug): verify GMAIL_LIST_DRAFTS
+    // GMAIL_FETCH_EMAILS with `in:drafts` is the supported way to count drafts;
+    // there is no GMAIL_LIST_DRAFTS slug in @composio/core.
     const draftsResp = await safeExecuteComposioAction<unknown>(
       ctx.userId,
       'gmail',
-      'GMAIL_LIST_DRAFTS',
-      { maxResults: 50 },
+      'GMAIL_FETCH_EMAILS',
+      { query: 'in:drafts', max_results: 50 },
     );
-    const draftsCount = asArray(draftsResp).length;
+    const draftMessages =
+      draftsResp && typeof draftsResp === 'object' && 'messages' in draftsResp
+        ? (draftsResp as { messages?: unknown }).messages
+        : draftsResp;
+    const draftsCount = asArray(draftMessages).length;
 
     // Look up clients with overdue invoices and match thread subjects best-effort
     let threadsWithOverdueClients = 0;
@@ -1451,6 +1459,7 @@ async function runGetInbox(ctx: ExecutorContext): Promise<ToolResult> {
     };
   } catch (err) {
     if (err instanceof ComposioNotConnectedError) return notConnected('Gmail');
+    console.error('[coo/executor] get_inbox failed:', err);
     return fetchFailed('Gmail');
   }
 }
