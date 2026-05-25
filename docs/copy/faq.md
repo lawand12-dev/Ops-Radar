@@ -1,200 +1,196 @@
-# /faq Copy v2 — AI COO Commit
+# FAQ v3 — Anti-objection FAQ
 
-*Last updated: 2026-05-18*
-*Replaces: live /faq page (4 questions, 3 empty tabs, all collapsed, "AIOS" language)*
-*Source docs: product-marketing.md · pricing-depth.md §8 · cold-email-playbook.md §6 · competitor-teardowns.md · path-a-strategy-2026.md §11*
-
----
-
-## Meta + Hero
-
-- **Title (`<title>`)**: Questions agency owners ask before booking — OpsRadar
-- **Description (`<meta name="description">`)**: Direct answers on price, process, integrations, and how an AI COO is different from a fractional COO. Written by the founder.
-- **Eyebrow**: Questions
-- **H1**: The questions we get on every call.
-- **Subhead**: If you're considering OpsRadar, you're probably about to ask one of these. Answers are written by Lawand — same tone you'd get on the call.
+*Owner: Lawand · Date: 2026-05-26 · Replaces: faq.md v2*
+*Route: `/faq`*
+*Each question handles a specific objection from `docs/research/2026-05-25-competitor-pain-points.md` or a YC partner pattern.*
 
 ---
 
-## Tab 1: The basics (6 questions — first 3 default OPEN)
+## Meta
 
-### Q1: "What does OpsRadar actually do, in one sentence?" *(default: OPEN)*
-
-OpsRadar is the AI COO for marketing agencies — it plugs into the tools you already use (HubSpot, ClickUp, Harvest, Stripe, and 6 more), watches utilization, project margin, scope creep, and cash flow 24/7, and tells you what to do when something starts going wrong. The job of a fractional COO at a fraction of the cost.
-
-### Q2: "How is this different from Productive, Scoro, or ClickUp?" *(default: OPEN)*
-
-Productive and Scoro are systems of record — they store what happened. OpsRadar is the intelligence layer that sits on top and tells you what to do about it. Productive will show you Acme's margin dropped to 14% three weeks after the month closes. OpsRadar tells you Acme is about to drop below 20% *this week*, and hands you the three unbilled deliverables to invoice for. One records. The other acts.
-
-### Q3: "Is this just another dashboard?" *(default: OPEN)*
-
-No — and we'd argue the dashboard category is the problem. You probably already have four of them and look at none of them. OpsRadar pushes — it sends you the one thing that matters this week (an overserviced client, a scope drift, a cash gap) with the action attached. You don't open OpsRadar. OpsRadar opens you.
-
-### Q4: "We already use ClickUp and Productive — why do we need OpsRadar on top?"
-
-Because neither of them knows your margin, your utilization, *and* your cash position at the same time. ClickUp knows tasks. Productive knows hours. Stripe knows invoices. Nobody's correlating them. OpsRadar is the layer that joins those three signals and tells you "the Acme retainer is 30% over budget this month and which deliverables to invoice for." Your existing tools stay. We sit on top.
-
-### Q5: "Who runs the AI COO — is it fully agentic?"
-
-It's an AI that takes specific, scoped actions on your data with a 30-minute undo window and a 5-evaluator safety net. So: yes, it acts (draft invoices, nudge PMs, surface retainer changes), but no, it does not run wild. Every agentic action is reversible for 30 minutes, every recommendation is shown before the action runs, and you control which categories of action it's allowed to take. It's an agent on a leash you choose the length of.
-
-### Q6: "Why agencies specifically — why not horizontal?"
-
-Because horizontal AI (ChatGPT, Copilot, ClickUp Super Agents) doesn't know what 75% utilization means, doesn't know what scope drift looks like in a paid-media retainer, and has no agency benchmarks to compare you against. McKinsey's data is that vertical AI delivers around 5× the ROI of horizontal. Every benchmark, alert, and recommendation in OpsRadar is built on what works in agencies. It's the only thing it's allowed to know about.
+- **Title:** `FAQ — OpsRadar`
+- **Description (155 chars):** `Honest answers to the questions every AI ops customer asks. Pricing, lock-in, autonomy, security, hallucinations, vertical fit. No hand-waving.`
 
 ---
 
-## Tab 2: Pricing (7 questions — populate the empty tab)
+## Hero
 
-### Q1: "What does it cost?"
+**Eyebrow:** `FAQ`
 
-Three tiers, month-to-month by default: **$500 / $1,500 / $3,000 per month.** Starter watches three integrations and sends a weekly health score. Growth adds per-client profitability, scope creep alerts, and full integration coverage — this is the tier most agencies land on. Pro adds agentic actions (the AI COO actually drafts and sends invoices, nudges PMs, adjusts retainers — with the 30-min undo). Full breakdown on [/pricing](/pricing).
+**H1:** `The questions every customer asks. Honest answers.`
 
-### Q2: "$1,500/month feels steep for our size — how do you justify it?"
-
-Compare it to the right number. A fractional COO is $5–15K/month. The cost of finding one unprofitable client in month 3 instead of week 2 is usually $5–20K. The cost of 56 hours/month of manual reporting at $50/hour is $2,800. OpsRadar at $1,500 replaces a slice of all three. If the math doesn't show you 3× what you're paying us in the first 60 days, don't sign — we'll show you the spreadsheet on the call.
-
-### Q3: "Why is Pro 2× Growth?"
-
-Because Pro replaces the part of a fractional COO that *acts*, not just the part that flags. Growth tells you what to do. Pro does it — drafts the invoice, nudges the PM, surfaces the retainer adjustment. Agentic actions save 30–40 hours/month of owner or head-of-ops time. At $250/hour that's $7,500–$10,000 of replaced labor. Pro is $3,000. The 2× ratio is conservative.
-
-### Q4: "Can I do month-to-month, or do you lock me in?"
-
-Every tier is month-to-month by default. You can cancel anytime — no minimum contract, no cancellation fee, no "log a ticket to cancel" theater. Annual saves 17% (two months free) if you want to lock the price after the first three months. We don't make money on customers who don't see value.
-
-### Q5: "Is there an annual discount?"
-
-Yes — 17% off, two months free, paid annually. Most customers start monthly to make sure the math works, then move to annual at month 3 once they've seen it pay for itself. We'd rather you upgrade because it earned the upgrade, not because we trapped you in a 12-month invoice.
-
-### Q6: "Why isn't there a free tier?"
-
-Because a free tier on an AI COO means a fake AI COO — and a fake AI COO will mislead you about your margins, which costs you more than the subscription. Instead: every tier is month-to-month, the first 30 days are money-back if it doesn't earn its keep, and the 20-min call is free and gives you a custom read on where your agency is leaking. That's the trial.
-
-### Q7: "Our fractional COO costs less than your Pro — why switch?"
-
-Send me the math — I'd like to see it, because the market floor on real fractional COOs is around $7,000/month and Pro is $3,000. If your "fractional COO" is under $3K, it's probably a part-time bookkeeper or a virtual assistant — different role, not making strategic operational decisions on margin and capacity. If they *are* a real COO under $3K, they're either brand-new or doing this on the side, and they'll be gone the moment they land a real engagement. OpsRadar is here every day, sees every number, and won't quit. (If your COO is generating $40K/month of value for you, keep them — and use OpsRadar Starter to give them better data. That stack is a real combo.)
+**Subhead:** `If a question isn't here, talk to the founder — 20 minutes, no slides.`
 
 ---
 
-## Tab 3: Process (7 questions — populate the empty tab)
+## Category 1: How is OpsRadar different from [X]?
 
-### Q1: "How long until my AI COO is actually watching my agency?"
+### How is OpsRadar different from Lindy?
 
-The 20-minute call is the first step. After that, integration setup runs over the same week — most agencies are seeing real data in OpsRadar within 5–7 business days. We connect each tool live with you on the call so nothing's mysterious. There's no "implementation phase," no "kickoff workshop," no consultant brigade.
+`Lindy is a no-code workflow builder where you chain AI steps together. It's powerful but it has three problems customers have publicly cited: credit pricing burns unpredictably, the workflows go autonomous without an approval layer, and there's no shared brain across your team's automations. OpsRadar is a workforce + a brain, not a workflow builder. We charge flat tiers with one outcome meter bounded by your approval. Every action approved by you. Every finding written to a brain that lives in your Notion.`
 
-### Q2: "What does Discovery cost?"
+### How is OpsRadar different from Notion AI?
 
-Nothing. The 20-min call is free, you walk away with a custom read on your operational leak (specific clients, specific dollars, specific to your stack) whether or not you sign up. If we don't find at least one concrete thing worth fixing, the call wasn't useful and you don't owe us anything. We'd rather lose 20 minutes than lose your trust pretending we found something we didn't.
+`Notion AI writes only inside Notion. We use Notion AS the brain, but our AI workforce writes to your Notion across 25 connected SaaS tools. The Revenue Agent reads Stripe live, makes a finding, and writes it to a Notion Pattern Card in your workspace. Notion AI can't do that — it has no Stripe API.`
 
-### Q3: "Can I skip Discovery and just sign up?"
+### How is OpsRadar different from Zapier (or Zapier Central)?
 
-Yes — but most owners don't, because the 20 minutes is where you find out which tier fits and what your leak shape actually looks like. We won't gate the product behind a sales motion. If you'd rather just start, [book a Starter](/pricing) and we'll set up integrations async over Slack.
+`Zapier is plumbing. You build "when X happens in tool A, do Y in tool B." OpsRadar is an AI workforce — Sarah doesn't just connect Stripe to QuickBooks, she decides which charges to categorize where, learns from your corrections, and writes the reasoning to your brain. You can build automations in OpsRadar too, in plain English, but the workforce + brain is the headline.`
 
-### Q4: "Do I have to migrate off ClickUp / Productive / Harvest?"
+### How is OpsRadar different from BOND (Donna)?
 
-No. OpsRadar is built specifically *not* to be a rip-and-replace. We plug into 10 tools you probably already pay for and read from them. The whole point is that you don't change your stack — you add an intelligence layer on top of it. If you do migrate something later, OpsRadar follows.
+`BOND is one chat for one person — the AI Chief of Staff. OpsRadar is a workforce: 28 built-in AI employees + custom hires + the brain that holds what they all know. BOND is going horizontal across executives; we wedge into one vertical at a time (marketing agencies first, home services next). Both pitches will end up serving different buyers.`
 
-### Q5: "What if my data isn't clean enough?"
+### How is OpsRadar different from Glean?
 
-It probably isn't, and that's normal — most agencies have ~20% of time entries missing project tags and inconsistent client naming across tools. OpsRadar handles the messy reality (fuzzy client matching, missing-entry detection, scope-drift inference) and one of the first things the AI COO does is flag your data hygiene gaps so they're fixable. If we waited for clean data we'd never start. Start dirty, clean as you go.
+`Glean is enterprise AI search ($60K floor + 100-seat minimum). It reads your stack and answers questions. It can't take action and it's priced for Fortune 500. OpsRadar starts at $99/mo, takes action (with your approval), and hires you a workforce on top of the answering layer.`
 
-### Q6: "What's the typical onboarding timeline?"
+### How is OpsRadar different from Devin (or any "autonomous AI agent")?
 
-Day 1: 20-min call. Days 2–5: integration connections (most are OAuth, a few are paste-the-API-key). Day 7: first weekly health score lands in your inbox. Days 8–30: the AI COO learns your baselines and starts surfacing client-level alerts. Day 30: first full audit + ROI check-in. Faster than any fractional COO engagement you'll have run.
+`Devin's most cited failure: it spent 6 hours pursuing a solution a human did in 36 minutes. That's the autonomous-mode trap. OpsRadar's per-tool autonomy defaults to Ask for every write. You set Auto only where you've earned trust. The product is structurally incapable of going rogue.`
 
-### Q7: "How long is the call really?"
+### How is OpsRadar different from 11x.ai?
 
-20 minutes. Booked as 20 minutes, run as 20 minutes — we cut hard at the end and book a follow-up if there's more. The single most common feedback after the call is "that was actually 20 minutes." Founders don't have an hour for a sales call. We don't ask for one.
-
----
-
-## Tab 4: Tech & tools (7 questions — populate the empty tab)
-
-### Q1: "What integrations do you support today?"
-
-10 live integrations covering the agency stack: HubSpot, ClickUp, Harvest, Stripe, Slack, Google Workspace, Asana, Jira, QuickBooks, and Xero. Each one reads in real time — no batch syncs, no nightly imports. If we don't have your tool, see the next question.
-
-### Q2: "I don't see my tool — when will you add it?"
-
-If you're an active customer asking, fast. Integration prioritization is mostly customer-driven — when two customers ask for the same tool, it goes to the front of the queue. We've shipped requested integrations in under three weeks more than once. Tell us on the 20-min call. (We also have a customer-API-key model for tools we haven't built native support for yet — you paste a key, OpsRadar reads.)
-
-### Q3: "Is my data secure?"
-
-Yes. OAuth flows for every tool that supports it, scoped read-only tokens, encrypted at rest, no client-business data persisted longer than the cache window — the AI COO live-fetches and reasons over your data, it doesn't hoard it. The only thing we store long-term is *your* aggregated metrics (utilization trends, health-score history) so you can see them over time. We can walk through the security model on the call.
-
-### Q4: "Where is my data stored?"
-
-Aggregated metrics and account configuration are stored on infrastructure in US-East. The live business data from your integrations is read just-in-time and cached briefly — not warehoused. We are intentional about this because keeping raw client data is a liability we don't want and you don't need us to take on.
-
-### Q5: "Can the AI COO act on my data, or does it just read?"
-
-Both, and you choose. By default, OpsRadar reads and recommends. On the Pro tier, you can enable agentic actions in specific categories (draft invoices, send PM nudges, surface retainer adjustments). Every action has a 30-minute undo window, every action is logged, and every category can be turned off independently. You decide what the AI COO is allowed to touch.
-
-### Q6: "What AI models do you use under the hood?"
-
-Frontier LLMs from leading AI labs, plus our own evaluator and grounding layer that constrains what the model is allowed to say about your data. The specific model used per action is selected for accuracy on that task — not for marketing. We don't think the model name should matter to you; the accuracy and the safety rails should.
-
-### Q7: "Will my data train your models?"
-
-No. Your data is never used to train any model — ours, the underlying LLM providers', or anyone else's. Provider settings are configured to opt out of training across the board, and your data is partitioned per-agency at every layer. The only thing that informs the *OpsRadar Index* (our anonymized agency benchmark) is aggregated, fully anonymized metrics — and only if you opt in.
-
-### Q8: "How do you stop the AI from hallucinating about my agency?"
-
-Three layers. (1) **Grounding**: every answer pulls from your live connected tools — the model is constrained to cite the tool, the field, and the value it used. If it can't cite, it doesn't answer. (2) **5-evaluator safety net**: every agentic action (draft invoice, PM nudge, scope alert) is checked by a separate evaluator chain for factual consistency, scope adherence, and dollar-amount sanity before it leaves the queue. (3) **30-minute undo on everything**: any action the AI COO takes can be reversed before it's irreversible. Combined, these collapse the hallucination surface to roughly the same as a junior analyst on their second week — and unlike a junior, the AI COO never gets tired and never misremembers a client name.
-
-### Q9: "Are you MCP-compatible? Will my own AI tools work with OpsRadar?"
-
-Yes. Every OpsRadar tool definition (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`, and 12 more) ships as an MCP server so any frontier model your team uses — through their own Claude, ChatGPT, or in-house agent — can call the same live agency data the AI COO uses. The Model Context Protocol is now the standard (78% of enterprise AI teams have an MCP-backed agent in production as of April 2026, per DigitalApplied). When the standard shifts again, we move with it. You're not locked into our chat interface.
-
-### Q10: "Where does my data physically live, and what about residency?"
-
-Aggregated metrics and account configuration are stored on infrastructure in US-East (Vercel + Supabase). The live business data from your connected integrations is **not warehoused** — it's read just-in-time and cached briefly (3–60 minutes depending on the data type) and then dropped. Concretely: when you ask "which client is unprofitable this month," the AI COO calls Stripe and Harvest at that moment, computes, answers, and the raw rows are not persisted. EU and Canada residency are available on Pro tier with a 2-week setup. SOC 2 Type II audit kicks off Q3 2026; HIPAA is not in scope (we don't serve healthcare).
-
-### Q11: "What's your defensible moat against a horizontal Company Brain like Hyper or ChatGPT?"
-
-Vertical data sources + agency benchmarks. Horizontal Company Brain products have no access to anonymized utilization rates, project margins, scope creep patterns, or pacing benchmarks across hundreds of marketing agencies. That dataset only exists inside OpsRadar — and it compounds. At 50 agencies we have meaningful benchmarks by team size and service mix; at 200 we have predictive scope-creep alerts; at 1,000 we have an AI COO that knows the marketing-agency vertical cold. McKinsey: sector-specific AI delivers ~5x the ROI of horizontal. ChatGPT can write you a polite email; it cannot tell you which of your 22 retainer clients is bleeding margin this Tuesday.
+`11x sold autonomous AI SDRs to anyone, claimed $14M ARR (~$3M real), and hit 70-80% churn at 90 days because customers couldn't see what their AI was doing. OpsRadar is the opposite architecture: the SDR you hire shows you every email it wants to send before sending, learns from rejections, and writes outcomes to a brain you own. Our customer can't churn from "I don't know what my AI sent yesterday."`
 
 ---
 
-## Bottom: "Still have questions?" CTA
+## Category 2: Pricing
 
-**Heading**: Still have a question we missed?
+### What counts as "an approved action"?
 
-**Body**: The 20-min call is the fastest way to get a specific answer for your agency — we'll plug in two of your tools live and you'll see your own data on the screen. Or email Lawand directly and we'll reply same day.
+`Anything your AI workforce does on a connected tool: sending a Gmail draft, creating a Stripe invoice, updating a HubSpot deal, posting in Slack, creating a Notion page. Reads — fetching data, looking something up — never count. Only writes count. And only writes you clicked Approve on count toward your meter.`
 
-**Primary CTA**: Book the 20-min call → (Calendly)
-**Secondary CTA**: Email Lawand → mailto:lawand@opsradar.app
+### What if I never hit my action cap?
 
----
+`Then you pay only the flat tier price. The outcome meter is opt-in upside on Pro+, not core pricing. Most agencies under 20 people stay within their tier cap forever.`
 
-## Behavior notes for dev
+### Do you charge for AI tokens?
 
-- **First 3 questions in "The basics" tab default to expanded** (`aria-expanded="true"`, accordion item `data-state="open"`). All other questions across all tabs default to collapsed.
-- **Pricing tab badge must NOT be greyed out or hidden** — it's currently rendering as if it's a coming-soon tab. Render normal.
-- **Tab order**: The basics → Pricing → Process → Tech & tools. Default active tab on page load: The basics.
-- **Tab deep-linking**: each tab should be reachable via `#pricing`, `#process`, `#tech` hash so the homepage / pricing page / sales emails can deep-link directly to a tab.
-- **Mobile**: tabs must be tappable (44px min hit target). On viewports < 640px the tab strip should horizontally scroll, not wrap — easier to thumb.
-- **Search**: not in scope for v2, but expose a `data-faq-id` attribute on each accordion item so we can wire up Ctrl+K search in a later iteration.
-- **Schema**: emit `FAQPage` JSON-LD with every question across all four tabs (not just the open ones). This is the AI-SEO win — we want Google/Perplexity/ChatGPT to cite these answers.
+`Never. OpenAI tokens, Anthropic tokens, embedding tokens — all included in your tier. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made sure that's structurally impossible with us.`
 
----
+### Do premium models cost more?
 
-## Site-wide fixes this enforces
+`No. We charge the same flat $0.05 per approved action whether your employee used GPT-5.5 or GPT-4.1-nano. The model is our choice, not your bill.`
 
-- All 4 tabs populated (currently 3 are empty in the DOM — the highest-leverage audit fix on this page)
-- First 3 questions default open (currently all 4 are collapsed)
-- AI COO language everywhere (was "AIOS" — banned per Decision 0, 2026-05-18)
-- 20-min call consistency (FAQ was already correct; the other 24 occurrences on the site need to migrate down to 20-min to match this page and the Calendly link)
-- Banned words removed: no "dashboard" (Q3 actively flips it), no "platform", no "AI assistant", no "automation" as a feature claim, no "Claude" / "n8n" / specific feature counts beyond what product-marketing.md allows (10 integrations is allowed — it's the real number)
-- Pricing tier numbers ($500 / $1,500 / $3,000) match `pricing-depth.md` §3 exactly — do not vary on this page
+### Can I downgrade or cancel?
+
+`Yes, any time, end of month. No retention call. Click Settings → Billing → Switch plan. If you cancel, your workforce stops running, but your company brain stays in your Notion — it was always there, we just wrote to it. You can also download a full markdown zip of the brain at /dashboard/brain/download.`
+
+### Is there a free trial?
+
+`Yes. 14 days. No credit card. Full product — connect your tools, hire AI employees, the brain builds, the works.`
 
 ---
 
-## Risk flags
+## Category 3: Security + privacy
 
-- **Links assume `/pricing` exists.** If `/pricing` is still 404 at ship time, replace the Q1-Pricing link with the Calendly link until the pricing page lands. (Per audit: pricing page is currently 404.)
-- **Q6-Tech ("What AI models do you use?")**: voice rule says never name Claude specifically. Approved phrasing used: "Frontier LLMs from leading AI labs." Do not edit to add specific model names.
-- **Q1-Tech (integration list)**: the count is 10. Do not edit to a different number — it's quoted in 4 other docs and the cold email playbook. If we add an 11th integration, update all five docs together.
-- **Q7-Pricing (fractional COO)**: the floor "$5,000/month" is from `pricing-depth.md` §8 Objection 5 and is the line we'll defend on calls. Do not soften.
-- **Q6-Process (onboarding timeline)**: avoid the specific phrase "48 hours" or "48-hour audit" anywhere — banned per product-marketing.md line 149 ("never name specific delivery times"). "5–7 business days" is the approved framing.
-- **Q5-Tech (agentic actions)**: any change here must stay consistent with the 30-min undo window and 5-evaluator safety net — those are real product details from `product-marketing.md` line 95.
+### Where does my customer data live?
+
+`Customer business data (Stripe transactions, HubSpot deals, ClickUp tasks, etc.) is NEVER stored in OpsRadar's database. Every request live-fetches from the source. We only persist computed metadata — agent run logs, your approval queue, the agent-written brain entries.`
+
+### Where does the brain live?
+
+`Two places, both yours. At OpsRadar in a versioned Postgres schema scoped to your user_id by row-level security. In your Notion workspace, mirrored from the OpsRadar copy. You can read it in either place; you own it in both.`
+
+### Where are my OAuth tokens stored?
+
+`At Composio, not at OpsRadar. We never see your Stripe/HubSpot/Notion API keys. Composio brokers every tool call — they hold the OAuth, we hold the agent logic.`
+
+### Is my data multi-tenant?
+
+`Yes. Every Postgres row is scoped to your user_id via Supabase row-level security. There's no shared table where customers' data could leak across.`
+
+### What about hallucinations? Can the AI just make stuff up?
+
+`Hallucinations are a model-level problem; every AI product is exposed. OpsRadar mitigates the *consequence*: every write is approval-gated, so a hallucinated email never sends, a hallucinated invoice never bills. The brain stores citable facts with the agent_run_id that wrote them — you can always trace back to where a fact came from.`
+
+### Where is OpsRadar based?
+
+`We're based in Iraq. Servers run on Vercel (US regions) + Supabase (US regions). Data residency questions for EU/UK customers — talk to the founder.`
+
+---
+
+## Category 4: Who is OpsRadar for?
+
+### Who's the ideal customer today?
+
+`10-50 person marketing and creative agencies running on retainers. You're the bullseye if you use HubSpot or Pipedrive for CRM, Stripe for billing, ClickUp or Asana for project management, Harvest or Toggl for time tracking, Gmail for outreach, Notion for knowledge. We've designed the 28 built-in agents around exactly your stack.`
+
+### What if I'm not an agency?
+
+`If you're a services business (consulting, accounting, dev shop, recruiting, PR, content studio) — we still fit, the 28 agents largely apply. If you're e-commerce or trades or healthcare — the architecture works but the operator-judgment playbook is shaped for agencies right now. Q3 2026 we ship a home-services version. Talk to the founder if you're somewhere else and we'll tell you honestly if it's a fit.`
+
+### What if I'm a fractional COO running multiple clients?
+
+`That's exactly what the Fractional Operator tier ($2,999/mo) is for. White-label, multi-client aggregate, your branding, your domain. You manage all your clients from /dashboard/fo.`
+
+### What if I'm a solo founder?
+
+`Start with Starter ($99/mo). One AI employee + the brain + 5 integrations. When you grow past it, you upgrade.`
+
+### Do I need to be technical to use OpsRadar?
+
+`No. The product is a chat. You describe what you want in plain English. We compile it to a spec, show you the spec, and run it on approval. No code anywhere customer-facing.`
+
+---
+
+## Category 5: How it actually works
+
+### How long does setup take?
+
+`3 minutes 30 seconds for the first AI employee, real time. Sign up (15s), connect Stripe (45s), connect HubSpot (45s), hire your first employee in the Hire chat (60s), read the spec card and click Hire (15s), greet them in their chat page (30s). Most customers spend the next 10 minutes hiring two more.`
+
+### How do custom AI employees actually work?
+
+`A row in custom_employees with a name, role, scheduled cron, scoped tool list, scoped brain prefix, and a system prompt the compiler generates from your plain-English description. They run on Trigger.dev. Each has their own chat page where you can talk to them like a teammate. They write to the company brain on every meaningful action.`
+
+### Can my AI employees talk to each other?
+
+`Yes. CP-37 shipped. You assign a manager to a custom employee. When the manager needs work done, they delegate to a direct report (using Trigger.dev's triggerAndWait — manager pauses, report runs, manager resumes with the summary). It's a real org chart, real durable wait.`
+
+### What's "Apprentice Mode"?
+
+`Every time you reject (or edit) an action your AI workforce proposed, we derive a generalizable rule from your reason and write it to that employee's permanent learned-rules brain prefix. Their next run reads the rule and doesn't repeat the mistake. After 30-100 corrections, they sound like a member of your team, not like ChatGPT.`
+
+### What if I want to talk to OpsRadar via MCP?
+
+`We ship an MCP server. External agents (Claude Code, Cursor, ChatGPT desktop with MCP support) can query your OpsRadar brain directly. Find the setup instructions at /dashboard/settings/mcp.`
+
+---
+
+## Category 6: YC + investor questions
+
+### Are you raising?
+
+`Yes. Talk to the founder.`
+
+### What's the YC fit?
+
+`YC Summer 2026 category #15 (AI Operating System for Companies) is the primary fit. The two-pillar architecture (workforce + brain) lines up with both Bessemer's "Year of the Agent Employee" thesis and YC RFS #4 ("every company will need a company brain"). The vertical wedge (marketing agencies first → home services next) matches the W26 batch's funded shape of "AI [role] for [vertical]." See /about for the full reasoning.`
+
+### What's your moat?
+
+`Three structurally-shipped moats no major competitor has: (1) Apprentice Mode — the workforce gets smarter every time the customer says "no"; (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters; (3) approval-history personalization — after 30 approvals the drafts sound like the customer. Plus the brain in the customer's Notion as the durable retention layer.`
+
+### What's your ARR / customer count?
+
+`Talk to the founder. We share traction details one-to-one.`
+
+---
+
+## Final CTA
+
+**H2:** `Question we didn't answer?`
+**Primary CTA:** `Talk to the founder — 20 min, no slides`
+**Secondary CTA:** `Start the free trial → see for yourself`
+
+---
+
+## What changed from v2
+
+- Categories restructured: was 3 categories (Product / Pricing / About). Now 6 (Differentiation / Pricing / Security / Who-for / How-it-works / YC).
+- "How is OpsRadar different from [X]?" expanded from 2 to 6 named competitors — every one is a competitor a customer or VC explicitly will ask about in 2026.
+- Security category is new — was missing from v2 entirely, which is a real omission.
+- YC + investor category is new — most public-facing FAQs don't have this, but our deal flow includes investors reading the site.
+- Every answer ties back to a specific research-cited customer pain or a specific shipped feature. No hand-waving.

@@ -1,288 +1,223 @@
-# Product Page Copy v2 — AI COO Commit (Merged /aios + /services)
+# Product Page Copy v3 — The AI Operating System
 
-*Drafted 2026-05-18. Replaces `/aios` and `/services` with one canonical product page.*
-*Voice rules: dollar amounts over adjectives, active voice, short sentences, founder-to-founder.*
-*Banned words enforced: no "platform," "dashboard," "workflow," "automation," "AI assistant," "AIOS-as-category."*
-
----
-
-## URL Decision
-
-- **Canonical URL: `/product`**
-- **Rationale:** `/aios` dies with the category retirement — keeping the URL alive bakes the AIOS word into the address bar and the share preview, which is the opposite of the AI COO commit. `/ai-coo` is keyword-pure but reads as a marketing landing slug and forces a redirect every time we rename the framing again. `/product` is the convention buyers expect from B2B SaaS (Stripe, Linear, Vercel all use it), it survives any future category rename, and it gives us a clean canonical for SEO consolidation off both `/aios` and `/services`. Internal nav label: **"Product."**
-- **Old URLs to 301 redirect:**
-  - `/aios` → `/product`
-  - `/services` → `/product`
-  - Update internal links in nav, footer, homepage CTAs, cold-email signatures, and `/how-it-works` step links.
+*Owner: Lawand · Date: 2026-05-26 · Replaces: product-page.md v2 (AI COO)*
+*Source of truth: `docs/positioning/identity.md` + `docs/copy/home.md` v3*
+*Route: `/product`*
 
 ---
 
 ## Meta
 
-- **Title (60 chars):** `Product — the AI COO for marketing agencies | OpsRadar`
-- **Description (155 chars):** `OpsRadar is the AI COO that watches your agency 24/7 — catches overserviced clients, scope drift, and cash leaks before they cost you. From $500/month.`
-- **OG direction:** 4-up grid card. Top-left "OPERATE — Runs the work." Top-right "OBSERVE — Sees every tool." Bottom-left "BRAIN — Answers in plain English." Bottom-right "GUARD — Watches overnight." Centered overlay: "The AI COO for marketing agencies." OpsRadar wordmark bottom-right. Dark theme, electric blue accent on one tile to draw the eye.
+- **Title:** `Product — OpsRadar AI Operating System`
+- **Description (155 chars):** `AI employees + company brain in your Notion + every integration you use. One workspace replaces 10 AI tools. Apprentice Mode learns from every "no".`
 
 ---
 
 ## Hero
 
-- **Eyebrow:** `THE PRODUCT`
-- **H1:** `The AI COO for marketing agencies.`
-- **Subhead (one sentence):** `OpsRadar is the intelligence layer that watches every tool overnight, runs the operational work that lives in your team's heads, and tells you what to do next — for $500–$3,000/month instead of the $10K/month a fractional COO charges to do less.`
-- **Sub-sub (one line under subhead, italic, dollar-anchored):** *Agentic AI delivers 171% average ROI; the AI OS market is $12.85B → $107.60B by 2033 (Grand View Research). You are buying the standard, not a bet.*
-- **Primary CTA (above the fold):** `Book a 20-min call →`
-- **Secondary CTA:** `See how it works in 30 days` (anchor link to timeline section)
-- **Trust line under CTAs:** `Built with operators at $1M–$3M agencies. 10 integrations live. 30-day money-back.`
-- **Hero visual direction:** A 4-up grid product shot showing the four pillars as live tiles — not a static diagram, an actual screenshot composite. Top-left OPERATE tile showing a completed task ("Sent overdue-invoice follow-up to Acme · $4,200 recovered"). Top-right OBSERVE tile showing a real-looking utilization gauge at 68% with a yellow flag. Bottom-left BRAIN tile showing a chat bubble: *"Which client is most at risk of going unprofitable this month?"* with a partial answer visible. Bottom-right GUARD tile showing an alert: *"Acme is 23% over scope · 3 unbilled deliverables found."* Each tile has its pillar name in the bottom corner. No fake "Acme demo" feel — use grayed-out client names ("Client A," "Client B") so it reads as a real product, not a marketing render.
+**Eyebrow:** `THE PRODUCT`
+
+**H1:** `One workspace. AI employees, a company brain, every integration you use.`
+
+**Subhead (28 words):**
+`The agencies you compete with pay $5,200/mo for 10 AI tools that don't talk. OpsRadar replaces all of them — with one workforce that learns from you.`
+
+**CTA:** `Start free trial` · `See pricing →`
 
 ---
 
-## What the AI COO does — four parts, one system
+## Section 1 — The two pillars (in depth)
 
-### Section headline
-`Four jobs a COO does. One AI that does all four.`
+**Section eyebrow:** `THE TWO ARTIFACTS`
 
-### Section subhead
-`A real COO costs you $10K/month and works part of the week. The AI COO runs in your stack and works all of it. Here's the job description.`
+### Pillar A: AI workforce
 
-### Layout
-4-up grid (desktop) → 2x2 (tablet) → vertical stack with sticky pillar tabs (mobile). Each card is the same height. Pillar name in a colored corner badge. Three example tasks rendered in human names — sentence case, not monospace, not `code-style`. Dollar outcome lives at the bottom of each card in bold electric blue.
+**H2:** `Hire AI employees the way you'd hire a person.`
 
----
+**Body (60 words):**
+`Every OpsRadar customer starts with 28 built-in AI employees the moment they sign in — Revenue, Collections, Scope, Delivery, Briefing, Profitability, Growth, Renewal, and 20 more, all shipped with senior-COO operator judgment baked into their prompts. You hire custom ones in plain English from the Hire chat: "I want a Bookkeeper named Sarah, every morning at 8, watching Stripe."`
 
-### OPERATE — Runs the operational work that lives in heads
+**Subsection: "How a custom hire works"**
 
-The AI COO does the recurring agency ops your team does manually every week — the work nobody documented because everyone already knows how it goes.
+`1. Open /dashboard/hire and describe the role. Plain English.`
+`2. We compile the spec — name, role, schedule, scoped tools, system prompt, first task. You read it as a card.`
+`3. Click Hire. Sarah starts running tomorrow at 8 AM.`
+`4. Sarah has her own chat page at /dashboard/employees/sarah. Talk to her like a teammate. She remembers.`
 
-**Three examples of what it runs:**
-- Overdue-invoice follow-up (sent on day 14, escalated on day 30, with the client-specific tone you'd use)
-- Monthly client recap (pulls performance from your ad accounts, drafts the email, ready to send)
-- New-client onboarding (kicks off the welcome sequence, opens the project, assigns the PM)
+**Subsection: "Built on the senior-COO playbook"**
 
-**Dollar outcome:**
-**Recovers ~$30K/year per 15-client agency** by cutting the 56 hours/week wasted on manual reporting (Agorapulse 2026 benchmark).
+`The 28 built-in agents don't just call APIs. Their prompts contain operator judgment distilled from agency-operator publications — signals + thresholds, decision trees, verbatim conversation scripts. The Collections Agent doesn't just say "this invoice is overdue." It says: at $X days late, send Y; at $Z days late, queue a margin-alert action with this draft email.`
 
----
+### Pillar B: Company brain
 
-### OBSERVE — Sees every tool you already pay for
+**H2:** `A second brain for your business — that you own forever.`
 
-The AI COO reads from HubSpot, ClickUp, Harvest, Stripe, and the rest of your stack, then surfaces what matters in one place. Owner-grade summaries, not analyst reports.
+**Body (58 words):**
+`Every employee writes findings to a shared, versioned brain — Pattern Cards (what's normal for client X), Decision Log (what we decided and why), Risk Register (what could hurt us next quarter), Real P&L, KPI Snapshots. Every entry is signed by the agent that wrote it, with a timestamp and a commit message. The whole brain is mirrored to your Notion workspace.`
 
-**Three examples of what it watches:**
-- Per-client margin in real time (not 3 weeks after month-end)
-- Team utilization vs the 75% target (industry average is 66.4%)
-- Cash flow against payroll and vendor obligations
+**Subsection: "What the brain knows about your business after 30 days"**
 
-**Dollar outcome:**
-**Closes the 30–90 day detection lag** that costs sub-$5M agencies 15–30% of profit. For a $2M agency, that's $300K–$600K a year of leak the COO now catches.
+- `Every Stripe transaction the Revenue Agent has looked at, with context`
+- `Every overdue invoice and the Collections Agent's notes on the customer pattern`
+- `Every scope risk the Scope Agent flagged, with the Harvest hours that triggered it`
+- `Every decision YOU made in the COO chat — recorded as a Decision Log entry`
+- `Every rejection you gave an AI employee — recorded as a Pattern Card and applied permanently`
 
----
+**Subsection: "Where the brain lives"**
 
-### BRAIN — Answers your questions in plain English
+`At OpsRadar: 3-table versioned Postgres (documents, immutable versions, commits). Curated paths get pgvector embeddings so the COO can semantic-search across them. Everything else stays markdown-only.`
 
-A real COO knows your clients, your team, your history. The AI COO does too — and you can ask it anything.
+`In your Notion: every brain write is mirrored to a corresponding Notion page in your workspace. You can read it on Notion mobile at 3 AM with no OpsRadar login.`
 
-**Three examples of what it knows:**
-- Every client you've ever billed, what they paid, what you delivered
-- Every campaign you've run, what worked, what didn't
-- Every operational decision and why you made it
-
-**Built as a Company Brain.** BRAIN is a persistent knowledge layer that pulls from every connected tool, keeps itself current, and turns your live data into an executable agent — exactly the primitive YC named in its Summer 2026 RFS. Most agencies have no single source of truth on margin per client. We are that source.
-
-**Dollar outcome:**
-**Replaces $400K/year of CAIO + analyst headcount** that 76% of enterprises now carry and your agency can't justify (IBM IBV 2026). The AI-driven knowledge management market itself is **$7.66B → $11.24B in one year (46.7% CAGR)** — and no horizontal player ships with agency data sources baked in (ResearchAndMarkets 2026).
-
-→ *See the chat interface below.*
+`At /dashboard/brain/download: the full versioned brain, exportable as a markdown zip, any time, on any tier.`
 
 ---
 
-### GUARD — Watches it overnight, alerts before it costs you
+## Section 2 — Cross-tool synthesis (the COO chat)
 
-The AI COO doesn't sleep. When something breaks — a credential, a scope, a client signal — you find out before the client does.
+**Section eyebrow:** `ASK ABOUT YOUR BUSINESS`
 
-**Three examples of what it catches:**
-- Scope drift on a retainer (flagged the moment unbilled work crosses 10% of contract value)
-- An overdue Google Ads refresh token (escalated with the affected accounts named)
-- A client going quiet on Slack + missing the last QBR + NPS dropped (churn risk in one alert)
+**H2:** `One COO. Seventeen specialist agents underneath. The one answer that matters.`
 
-**Dollar outcome:**
-**Recovers $1K–$20K/month per agency** in scope creep alone — the loss benchmark 57–87% of agencies report annually (Productive 2026).
+**Body (50 words):**
+`When you ask the COO chat "which clients should I worry about?", it doesn't make up an answer. It reads what the Revenue Agent, the Profitability Agent, and the Collections Agent have written to the brain in the last 30 days. Synthesizes across them. Cites the entries. Then answers.`
 
----
+**Subsection: "The orchestrator-worker pattern"**
 
-## BRAIN deep-dive — Ask your agency anything
+`Tool agents (17) watch one app each — Stripe Agent, HubSpot Agent, Harvest Agent, ClickUp Agent, and so on. They go deep on their toolkit.`
 
-*(Promoted from page bottom to position 3. The audit verdict: "Strongest copy on the site, buried 4 scrolls deep." It's now 1 scroll deep.)*
+`Domain agents (10) read what the tool agents wrote — Revenue, Collections, Scope, Delivery, Briefing — and synthesize across multiple tools. The Revenue Agent reads what Stripe + HubSpot + QuickBooks Agents wrote and produces the actual revenue health summary.`
 
-### Section headline
-`Ask the COO. Get the answer your tools won't give you.`
-
-### Section subhead
-`Most agency tools surface charts. The COO surfaces decisions. Ask in plain English, get a specific answer pulled from your live data — with the sources named, the numbers shown, and the action you should take.`
-
-### Visual block
-Render a real-looking chat interface — a vertical conversation pane sized like Slack, with the OpsRadar avatar on the left and the founder's question on the right. Five exchanges visible. Each answer shows: (a) the plain-English response, (b) the data sources it pulled from, (c) one suggested action with a button.
-
-### Five sample COO chat queries
-
-**Q1: "Which client is most at risk of going unprofitable this month?"**
-**A:** Client B. Margin dropped from 28% to 14% in the last 18 days. Driver: 47 unbilled hours on the May redesign brief — out of scope of the original SOW. Recommended action: send the change-order draft (already in your inbox).
-*Sources: Harvest, the May SOW, ClickUp tasks tagged "redesign."*
-
-**Q2: "Why was ROAS down on Meta for Client A last week?"**
-**A:** Spend was up 22%, conversions flat. Top driver: creative fatigue on Ad Set #4 (frequency 6.8, CTR collapsed from 1.9% to 0.6%). The newer ad sets are pacing fine. Recommended action: pause Ad Set #4.
-*Sources: Meta Ads API, the last 28-day campaign log.*
-
-**Q3: "Are we going to make payroll next month?"**
-**A:** Yes — projected cash at month-end is $84K against $61K of payroll + vendor obligations. Watch: Client C is 21 days past due on a $14K invoice. If they slip past day 45, projected cash drops to $70K.
-*Sources: Stripe, your payroll calendar, AR aging.*
-
-**Q4: "Which AI tools are we paying for that nobody is using?"**
-**A:** Three. Jasper ($59/mo) — last log-in 67 days ago. Otter Business ($30/mo) — 4 active users out of 12 seats. Beautiful.ai ($45/mo) — zero usage in 90 days. Annualized: $1,608. Recommended action: cancel Jasper and Beautiful.ai this week.
-*Sources: connected billing accounts, SSO usage logs.*
-
-**Q5: "What did we spend on Google Ads in Q1 vs Q2 across all clients?"**
-**A:** Q1: $284,500 across 9 clients. Q2: $341,200 across 11 clients. Q2 is +20% on spend, +8% on managed-account count. Top mover: Client D scaled from $12K/mo to $38K/mo. Top concern: Client E dropped from $42K to $9K and hasn't responded to the last two strategy emails.
-*Sources: Google Ads, your CRM, the strategy email thread.*
-
-### Caption under the chat block
-`The COO is scoped to your agency. It does not hallucinate generic answers — every response is grounded in your connected tools, your SOWs, and your history.`
+`The COO chat reads the domain agents and writes the daily briefing. You read one thing, not seventeen.`
 
 ---
 
-## How it works in 30 days
+## Section 3 — The three differentiators
 
-### Section headline
-`From signed up to first dollar recovered, in 30 days.`
+**Section eyebrow:** `WHY OPSRADAR IS NOT A CHATBOT`
 
-### Layout
-Horizontal timeline (desktop) with 4 nodes. Each node has: a day/week label, a 3-word headline, a 1-sentence description, and the concrete artifact you get. Vertical stepper on mobile.
+### Differentiator 1 — Apprentice Mode
 
-| When | What happens | What you get |
-|------|--------------|--------------|
-| **Day 1** | Connect your stack (10 tools available, 4-tool minimum to start). Average setup: 22 minutes. | A live map of your agency the moment the last OAuth screen closes. |
-| **Week 1** | The COO learns your shape. Benchmarks your utilization, margin, scope health against agencies your size. | First "agency vitals" report. Tells you where you sit vs the 66.4% utilization average and the 15% margin floor. |
-| **Week 2** | First alerts fire. Scope drift on the worst-offender client, the AI tools nobody's using, the invoice that's 21 days late. | Three specific recommendations with dollar amounts attached. You decide which the COO acts on. |
-| **Day 30** | First dollar recovered, math attached. Most agencies recover their first month's subscription in week 2. | A signed change order, a sent invoice, or a canceled subscription — your call. |
+**H3:** `Your AI workforce gets smarter every time you say "no."`
 
-### Caption
-`No 6-month implementation. No data migration. The COO plugs into the stack you already run.`
+**Body (45 words):**
+`Every time you reject an action, OpsRadar derives a generalizable rule from your reason and writes it to that employee's permanent learned-rules brain prefix. The next time Sarah is about to do the thing you didn't want, she reads the rule and doesn't.`
 
----
+**Concrete example (verbatim):**
+`Day 1: Sarah drafts a follow-up email to an international Stripe customer. You reject it: "We don't auto-follow-up international customers — they're on a different cadence."`
+`Day 2 onwards: Sarah never drafts a follow-up to an international Stripe customer again. The rule is in her brain, signed by you, dated, reversible if you ever change your mind.`
 
-## Integrations
+### Differentiator 2 — Approval-history personalization
 
-### Section headline
-`Plugs into the 10 tools agencies actually use.`
+**H3:** `After 30 approvals it drafts like you. After 100, your team can't tell the difference.`
 
-### Section subhead
-`We don't replace your stack. We make it smarter. Connect the 4 you depend on most and the COO has enough context to start. Add the rest when you want.`
+**Body (42 words):**
+`Every approve / reject / edit you make on an action feeds into every agent's next prompt as a "your past decisions" block. The system literally reads your decision history before drafting anything for you. The voice converges on yours.`
 
-### Logo grid (10 logos, monochrome, hover-color on the brand color)
-HubSpot · Pipedrive · ClickUp · Asana · Harvest · Toggl · Stripe · QuickBooks · Google Ads · Meta Ads
+### Differentiator 3 — Cross-agent synthesis
 
-### Caption row
-`Don't see your tool? We ship a new integration every 2 weeks. Tell us what you run on the demo call — if it's the 11th most-requested, it's already on the roadmap.`
+**H3:** `One COO that reads 17 specialist agents and tells you the one thing that matters today.`
 
-### Built MCP-native
-Each integration ships as an MCP-compatible tool definition (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`), so the AI COO calls them the same way 78% of enterprise AI teams now call agent tools in production (DigitalApplied 2026 — MCP servers grew from 1,200 in Q1 2025 to 9,400+ in April 2026). When your team adopts Claude, ChatGPT, or any frontier model with tool use, your AI COO is already speaking the standard.
+**Body (38 words):**
+`You don't get 10 separate AI reports to read. You get one daily briefing, synthesized across every agent's findings, ranked by what's actually at stake. The other 9 reports stay one click away if you want to drill in.`
 
 ---
 
-## Proof and outcomes
+## Section 4 — Three more durable moats (the credibility receipts)
 
-### Section headline
-`Outcomes we measure. Numbers we won't make up.`
+**Section eyebrow:** `WHAT'S UNDER THE HOOD`
 
-### Layout
-Three-column "what the COO recovers" panel. Each column = one pillar of value with the source benchmark cited.
+### Receipt 1 — Versioned commit-graph brain (git-style)
 
-| Recovery type | Benchmark source | What the COO recovers on average |
-|---------------|------------------|----------------------------------|
-| **Margin leak** | 15–30% of profit leaks to ops inefficiency (multiple 2026 benchmarks) | $300K–$600K/year for a $2M agency |
-| **Scope creep** | 57–87% of agencies report it; $1K–$20K/month range (Productive 2026) | $12K–$240K/year per agency |
-| **Reporting waste** | 56 hours/week manual reporting at a 15-client agency (Agorapulse 2026) | $30K/year in time |
+`Every brain entry has an immutable version row. Every commit has a message and an author (the agent that wrote it). You can diff what changed between two versions. You can roll back any agent edit. It's the only AI-knowledge-base architecture in the category that gives you git-style operations on your company's memory.`
 
-### Bridge block (until we have public customer quotes)
-`Built with operators at agencies between $1M and $3M ARR. First five customers signed under "operator-partner" terms — quotes go public as their outcome data clears the 60-day mark. Want to be one of them? Mention "operator-partner" on the call.`
+### Receipt 2 — Agent-as-author attribution
 
----
+`Every fact in your brain is signed by the agent that wrote it, the timestamp, and the agent_run_id that produced it. When your COO chat tells you something, you can click through to see which agent learned it, when, and from what data.`
 
-## Pricing teaser + CTA
+### Receipt 3 — Per-tool autonomy (Ask / Auto / Off)
 
-### Section
-**Headline:** `One subscription. The price of half a fractional COO's morning.`
-
-**Body (single sentence):**
-`Plans run $500, $1,500, and $3,000/month — the $1,500 Growth tier is the most common pick. A fractional COO costs $10K/month and works ~10 days a quarter; OpsRadar costs less than the fractional's commute and runs 24/7.`
-
-**CTA pair:**
-- Primary: `See full pricing →` (links to `/pricing`)
-- Secondary: `Book a 20-min call →` (Calendly)
+`For every tool, you set the autonomy level. Stripe writes might require approval (Ask). Notion writes might fire automatically (Auto). Gmail sends might be disabled entirely (Off). The defaults are conservative — writes ask, reads auto, sends ask — and you tune as you build trust.`
 
 ---
 
-## FAQ (product-page-specific, distinct from homepage FAQ)
+## Section 5 — Customer-built automations (Lindy-style)
 
-### Section headline
-`What buyers ask before the call.`
+**Section eyebrow:** `WHEN X HAPPENS, DO Y`
 
-**1. How is this different from Productive or Scoro?**
-Productive and Scoro are systems of record — they store what happened. The AI COO sits on top of them (and your other 8 tools) and tells you what to do next. Productive will tell you Client A's margin was 14% three weeks after month-end. The COO tells you Client A is about to drop below 20% *this week* — and gives you the three unbilled deliverables to invoice for to fix it. Keep Productive. Add the COO.
+**H2:** `Automations the way you'd describe them out loud.`
 
-**2. Can I keep my current PSA / CRM / time tracker?**
-Yes. The COO plugs into HubSpot, Pipedrive, ClickUp, Asana, Harvest, Toggl, Stripe, QuickBooks, Google Ads, and Meta Ads today. We add one new integration every two weeks. There is no rip-and-replace — the COO is the brain on top of the stack you already run.
+**Body (52 words):**
+`"When a HubSpot deal moves to closed-won, post in #ops Slack and create a Notion kickoff page" — that's an automation. You describe it to the COO chat in plain English. We compile it to a typed spec, show it to you as a card, you click Install. It runs forever.`
 
-**3. What if my tools aren't in your integration list?**
-Tell us on the demo call. If we don't already have it, two paths: (a) we ship it inside two weeks if it's a top-10 requested tool, (b) we connect via Zapier or your tool's API for week 1 while we build the native integration. We don't gate the call on integration coverage.
-
-**4. We already pay a fractional COO. Why both?**
-Most don't keep both. The fractional COO works 10 days a quarter and tells you what they found last quarter; the AI COO works every day and tells you what's happening this week. Customers who keep both put the fractional on strategy and the AI on operations. Customers who drop the fractional save $9.5K/month.
-
-**5. Can I trust an AI to act on my agency?**
-Every action the COO takes has a 30-minute undo window and runs through five safety evaluators before it ships. You set the rails on what it can act on automatically and what it has to recommend first. Most agencies start with "recommend only" for the first 30 days, then unlock automated actions on the categories they trust.
+**Receipts:**
+- `Built on Composio Triggers — 20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more`
+- `Executed durably on Trigger.dev — retries 5 times with exponential backoff if something fails`
+- `Every action still routes through the approval gate by default — automation doesn't mean autonomy`
 
 ---
 
-## Bottom CTA
+## Section 6 — Org chart + delegation (CP-37, shipped)
 
-### Headline
-`The COO you couldn't afford is now $500/month.`
+**Section eyebrow:** `YOUR AI WORKFORCE HAS HIERARCHY`
 
-### Subhead
-`Twenty minutes on the call. We map your stack, you see the demo on your own data, you decide.`
+**H2:** `An org chart your AI workforce actually follows.`
 
-### CTA pair
-- Primary: `Book the 20-min call →`
-- Secondary: `Or see pricing first →`
+**Body (48 words):**
+`Custom AI employees can have managers and direct reports. When Marcus the Account Manager needs a Stripe lookup, he delegates to Sarah the Bookkeeper — pauses his run, waits for her to finish, reads her summary, and continues. Real hierarchy, real delegation, real durable wait.`
 
-### Trust line
-`30-day money-back. No SDR funnel. The first call is with the founder.`
-
----
-
-## What this rewrite explicitly fixes from the audit
-
-- **Duplicates `/services` and `/aios` into one canonical product page** at `/product` (URL decision above). 301s wired for both legacy URLs.
-- **Removes the "AIOS is the category" self-declaration.** Category is now AI COO. The pillars stay as job functions, not as a category claim. AIOS appears zero times in the new copy.
-- **Adds CTA above the fold.** Primary "Book a 20-min call" and secondary "See how it works" are visible before the visitor scrolls. (Audit flagged: "No primary CTA visible above the fold.")
-- **4-up pillar grid replaces the long vertical scroll.** Desktop sees all four pillars at a glance; mobile keeps the stack but adds sticky pillar tabs so the visitor never loses the system shape. (Audit flagged: "presented as a long vertical sequence rather than a 4-up grid.")
-- **Promotes BRAIN deep-dive from scroll 4 to scroll 3.** Five sample queries, real-looking chat interface, named data sources. (Audit flagged: "Strongest copy on the site, buried 4 scrolls deep.")
-- **Banned-word sweep:** zero "platform" (old page had 5), zero "dashboard" (old had 3), zero "workflow" used as a noun (old had 15), zero "automation," zero "AI assistant." Replaced with "AI COO," "system," "the stack," "the work," "ops."
-- **Dollar amounts on every pillar.** Each of the four pillar cards now ends with a quantified outcome. Pricing teaser anchors to the $10K fractional COO comp. Proof table cites three benchmark recoveries with sources. (Audit flagged: "Zero dollar amounts on the page.")
-- **Human-named tasks.** "Overdue-invoice follow-up" replaces `invoice-reminders`. "Monthly client recap" replaces `client-monthly-recap`. "New-client onboarding" replaces `lead-router-v2`. No monospace, no code-style names. (Audit flagged: "Example workflow names use code-style monospace.")
-- **Integration logos as proof signal.** Replaces the missing visual asset the audit flagged on `/aios` ("empty right-half hero space"). Also rebuts the "is this real?" question buyers ask on every product page.
-- **Hero visual is a 4-up product shot, not a giant single word.** Replaces the "huge AIOS wordmark eats half the viewport on mobile" problem. (Audit flagged: "Above the fold is just a giant word AIOS.")
-- **Title attribute fixed.** New title is `Product — the AI COO for marketing agencies | OpsRadar` (one brand suffix, not two). (Audit flagged: "Double-brand suffix bug.")
+**Receipts:**
+- `Built on Trigger.dev's tasks.triggerAndWait pattern — the manager pauses, the report runs, the manager resumes with the result`
+- `Cycle-detection prevents infinite loops (managers can't report up the chain to themselves)`
+- `Visible at /dashboard/employees as an indented org tree`
 
 ---
 
-## Risk flags
+## Section 7 — Tech stack (the receipts for engineers reading)
 
-- **Depends on `/pricing` existing.** The pricing teaser CTA links to `/pricing`, which is currently a hard 404. If `/pricing` is not shipped before this rewrite goes live, the bottom-funnel CTA breaks. Mitigation: ship `/pricing` v0.1 the same day this page deploys.
-- **Depends on at least one defensible "operator-partner" bridge** for the proof section. Until we have a public customer quote, the "Built with operators at agencies between $1M and $3M ARR" line is doing real work. If we don't have at least one named operator we can reference internally, the line reads as marketing fluff and gets called out on the demo. Mitigation: lock in the Sean/SwishAd or Ala Obeidat name behind closed doors before launch, even if not on the page yet.
-- **BRAIN chat mockup must look real.** The audit's strongest praise was for the BRAIN section's example queries — but the mockup has to render like a real product surface, not a fake Acme demo. Mitigation: use grayed-out client names (Client A/B/C/D/E) instead of Acme; pull the chat UI styling from the actual product, not a Figma render; consider a short Loom embed below the static mockup if production budget allows.
-- **"Plugs into 10 tools" claim must match the live integration count.** If the integration list on the engineering side is currently 9 or 11, this page will read as either underselling or overselling. Mitigation: confirm the live count before launch and adjust the headline to match.
-- **The $1,500 Growth tier claim ("most common pick") needs a defensible source.** Today that's an aspirational statement based on Van Westendorp modeling, not actual customer distribution. Mitigation: either drop the "most common pick" qualifier until we have 10+ customers, or replace with the Van Westendorp framing ("priced at the value point agency owners told us they'd pay").
-- **The 30-day timeline must be defensible by support.** "First dollar recovered" by day 30 is the headline outcome — if support hears even one customer say "I'm at day 45 and haven't seen it yet," the copy gets quoted back in the cancel-survey. Mitigation: add an internal SLA that the founder reviews any account that hasn't hit recovery by day 21 and intervenes manually.
+**Section eyebrow:** `STACK`
+
+**H2:** `Built on what 2026 actually ships.`
+
+**Stack list:**
+- **Frontend:** Next.js 16 · React 19 · Tailwind v4 · shadcn/Radix · Framer Motion
+- **Backend:** Vercel Fluid Compute · Vercel AI SDK v6 · Vercel AI Gateway
+- **Database:** Supabase Postgres · pgvector · row-level security · multi-tenant
+- **Durable workflows:** Trigger.dev v3 (per-employee execution, delegation, automation runner)
+- **Scheduled cron:** Vercel Cron (28 built-in agents)
+- **AI models:** OpenAI GPT-5.5 / 5.4 / 4o / 4.1-nano · text-embedding-3-small · Anthropic Claude (scaffolded)
+- **Tool brokerage:** Composio (25 live integrations, growing to 500+)
+- **Web search:** Tavily
+- **Knowledge layer:** Anthropic Agent Skills (46 SKILL.md files across 9 domains)
+- **Observability:** Sentry · Statsig · Langfuse
+- **Rate limiting + cache:** Upstash Redis
+- **Email:** Resend
+- **MCP server:** OpsRadar's own brain is queryable as MCP by external agents
+
+---
+
+## Final CTA
+
+**H2:** `One workspace. Replaces 10 AI tools. Starts at $99.`
+**Body (24 words):** `Connect Stripe or HubSpot. Open the Hire chat. Describe your first AI employee. We do the rest. Two-week trial. No credit card.`
+
+**Primary CTA:** `Start free trial`
+**Secondary CTA:** `See pricing →`
+
+---
+
+## Brand-voice rules carried over from home.md
+
+| Use | Avoid |
+|---|---|
+| AI Operating System, AI workforce, AI employee, company brain | AI COO as the *category* label, "assistant," "copilot," "platform" |
+| Verbatim research citations | Made-up testimonials |
+| Concrete mechanics ("Trigger.dev triggerAndWait," "pgvector HNSW") | Hand-wave technobabble |
+| Approval gate / brain ownership as guarantees | "AI you can trust" |
+
+## What changed from v2
+
+- Old page led with "AI COO replacing fractional COO at 5%." That framing moves to home.md Section 5 as a use-case, not the lead.
+- New lead: the two-pillar architecture (AI workforce + company brain), then the three demand-validated differentiators, then receipts (cross-synthesis, org chart, automations).
+- Tech stack section added — engineers reading the product page get the same answer as YC's tech-stack question.
+- Section 6 (org chart) is brand new — CP-37 was shipped after v2 was written.
