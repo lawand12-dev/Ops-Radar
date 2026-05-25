@@ -24,6 +24,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { streamText, stepCountIs, type LanguageModel } from 'ai';
+import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse';
 import { openai, createOpenAI } from '@ai-sdk/openai';
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
@@ -291,6 +292,9 @@ export async function POST(request: NextRequest): Promise<Response> {
         if (closed) return;
         closed = true;
         controller.close();
+        // Best-effort: flush Langfuse traces before the function freezes.
+        // Fire-and-forget so we never block the stream shutdown on network IO.
+        flushLangfuse().catch(() => {});
       }
 
       // Resolve the active session — either reuse the one the client passed
@@ -394,6 +398,11 @@ export async function POST(request: NextRequest): Promise<Response> {
             tools,
             stopWhen: stepCountIs(5),
             temperature: 0.2,
+            experimental_telemetry: makeTelemetry({
+              userId,
+              sessionId: sessionId ?? undefined,
+              source: 'coo-chat',
+            }),
           });
 
           // Drive our SSE events off the typed full-stream. Each chunk

@@ -13,6 +13,7 @@
  */
 
 import { generateText, stepCountIs } from 'ai'
+import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse'
 import { openai } from '@ai-sdk/openai'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import {
@@ -330,13 +331,20 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
         ? `${spec.systemPrompt}\n\n${enrichments.join('\n\n')}`
         : spec.systemPrompt
 
-    // 6. Run the multi-step loop
+    // 6. Run the multi-step loop with Langfuse tracing.
+    // Trace identity: one trace per agent run, scoped to this customer.
     const result = await generateText({
       model: openai(spec.model),
       system: systemPrompt,
       prompt: `Run your analysis. Today is ${new Date().toISOString().slice(0, 10)}.`,
       tools,
       stopWhen: stepCountIs(spec.maxSteps),
+      experimental_telemetry: makeTelemetry({
+        userId,
+        agentSlug: spec.slug,
+        agentRunId: runId,
+        source: 'cron-agent',
+      }),
     })
 
     // 7. Mark connections used so we can show "last used" in the integrations UI
@@ -354,13 +362,18 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       metadata: { agent_slug: spec.slug, model: spec.model, max_steps: spec.maxSteps },
     })
 
-    return completeAgentRun(runId, {
+    const completed = await completeAgentRun(runId, {
       status: 'success',
       summary: result.text,
       tokensUsed,
     })
+    // Flush Langfuse before the Vercel function freezes so traces ship out.
+    await flushLangfuse()
+    return completed
   } catch (err) {
-    return failAgentRun(runId, err)
+    const failed = await failAgentRun(runId, err)
+    await flushLangfuse()
+    return failed
   }
 }
 
