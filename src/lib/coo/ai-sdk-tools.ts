@@ -22,6 +22,8 @@ import {
   researchCompetitor,
   analyzeDocument,
 } from './research'
+import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
+import type { EventSource } from '<npm>/lib/warehouse/types'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import {
   listAutomations,
@@ -330,6 +332,76 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
         focusAreas: focus_areas,
         ourPositioning: our_positioning,
       })
+    },
+  })
+
+  // CP-25 — historical event warehouse query. Use this for trend / drill-down
+  // questions the curated Notion brain can't answer at row granularity
+  // (e.g. "every overdue invoice in Q3 2024 for client X", "MRR by month
+  // over the last 12 months", "deal close rate trend vs 6 months ago").
+  out['query_historical'] = tool({
+    description:
+      "Query the customer's full raw history (5+ years across all connected tools — Stripe transactions, HubSpot deals, Harvest hours, ClickUp tasks, etc.). Use this for trend questions, period drill-downs, and per-client historical lookups that the curated Notion brain can't answer. Returns either a filtered event list (set aggregate=false, max 500 rows) or a monthly aggregate (set aggregate=true, returns count + sum_amount_cents per month). Prefer aggregate=true for trend questions to keep context small.",
+    inputSchema: z.object({
+      source: z
+        .string()
+        .describe(
+          "The source tool: 'stripe', 'hubspot', 'pipedrive', 'apollo', 'clickup', 'asana', 'monday', 'harvest', 'toggl', 'gmail', 'slack', 'calendly', 'notion', 'google_calendar', 'google_analytics', 'google_ads', 'linkedin', 'quickbooks', 'xero', 'bamboo_hr', 'gusto', 'typeform', 'intercom', 'zendesk'.",
+        ),
+      event_type: z
+        .string()
+        .optional()
+        .describe(
+          "Optional event type filter, e.g. 'invoice.paid', 'deal.stage_updated', 'charge.failed'.",
+        ),
+      client_external_id: z
+        .string()
+        .optional()
+        .describe('Optional filter to one specific client (the external id in the source tool).'),
+      occurred_after: z
+        .string()
+        .optional()
+        .describe('ISO date string. Filter to events at or after this time.'),
+      occurred_before: z
+        .string()
+        .optional()
+        .describe('ISO date string. Filter to events at or before this time.'),
+      aggregate: z
+        .boolean()
+        .default(false)
+        .describe(
+          'If true, return monthly aggregates (count + sum_amount_cents). If false, return the raw event list (capped at 500 rows).',
+        ),
+    }),
+    execute: async ({
+      source,
+      event_type,
+      client_external_id,
+      occurred_after,
+      occurred_before,
+      aggregate,
+    }) => {
+      if (aggregate) {
+        const rows = await aggregateByMonth({
+          userId: ctx.userId,
+          source: source as EventSource,
+          eventType: event_type,
+          clientExternalId: client_external_id,
+          occurredAfter: occurred_after,
+          occurredBefore: occurred_before,
+        })
+        return { success: true as const, mode: 'aggregate' as const, rows }
+      }
+      const events = await queryEvents({
+        userId: ctx.userId,
+        source: source as EventSource,
+        eventType: event_type,
+        clientExternalId: client_external_id,
+        occurredAfter: occurred_after,
+        occurredBefore: occurred_before,
+        limit: 200,
+      })
+      return { success: true as const, mode: 'list' as const, events }
     },
   })
 

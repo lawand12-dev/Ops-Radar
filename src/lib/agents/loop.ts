@@ -30,6 +30,8 @@ import {
   buildAutomationsSystemBlock,
 } from '<npm>/lib/automations/registry'
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
+import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
+import type { EventSource } from '<npm>/lib/warehouse/types'
 import { tool as aiTool } from 'ai'
 import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
@@ -106,6 +108,44 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
           } catch (err) {
             return { success: false, error: err instanceof Error ? err.message : 'load failed' }
           }
+        },
+      }),
+      // CP-25 — query the deep history warehouse for trend / drill-down questions.
+      query_historical: aiTool({
+        description:
+          "Query the customer's full raw history across connected tools (Stripe transactions, HubSpot deals, Harvest hours, etc.) for trend questions or period drill-downs that the Notion brain can't answer at row granularity. Set aggregate=true for monthly buckets (preferred for trends), aggregate=false for raw rows (max 200).",
+        inputSchema: z.object({
+          source: z.string().describe(
+            "Source slug: 'stripe', 'hubspot', 'harvest', 'clickup', etc.",
+          ),
+          event_type: z.string().optional(),
+          client_external_id: z.string().optional(),
+          occurred_after: z.string().optional().describe('ISO timestamp'),
+          occurred_before: z.string().optional().describe('ISO timestamp'),
+          aggregate: z.boolean().default(false),
+        }),
+        execute: async (args) => {
+          if (args.aggregate) {
+            const rows = await aggregateByMonth({
+              userId,
+              source: args.source as EventSource,
+              eventType: args.event_type,
+              clientExternalId: args.client_external_id,
+              occurredAfter: args.occurred_after,
+              occurredBefore: args.occurred_before,
+            })
+            return { success: true, mode: 'aggregate', rows }
+          }
+          const events = await queryEvents({
+            userId,
+            source: args.source as EventSource,
+            eventType: args.event_type,
+            clientExternalId: args.client_external_id,
+            occurredAfter: args.occurred_after,
+            occurredBefore: args.occurred_before,
+            limit: 200,
+          })
+          return { success: true, mode: 'list', events }
         },
       }),
     }

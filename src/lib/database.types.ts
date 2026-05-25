@@ -1103,6 +1103,47 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-added for CP-25 three-tier memory warehouse.
+      // Regenerate via `npm run types:supabase` after migration applies.
+      external_events: {
+        Row: {
+          id: string
+          user_id: string
+          source: string
+          event_type: string
+          external_id: string
+          occurred_at: string
+          amount_cents: number | null
+          client_external_id: string | null
+          payload: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          source: string
+          event_type: string
+          external_id: string
+          occurred_at: string
+          amount_cents?: number | null
+          client_external_id?: string | null
+          payload: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          source?: string
+          event_type?: string
+          external_id?: string
+          occurred_at?: string
+          amount_cents?: number | null
+          client_external_id?: string | null
+          payload?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
       // Hand-added for CP-23 multi-tenant API usage tracking.
       // Regenerate via `npm run types:supabase` after migration applies.
       external_api_usage: {
