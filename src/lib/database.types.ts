@@ -1274,6 +1274,140 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-added for CP-34 — Custom AI Employees.
+      // Regenerate via `npm run types:supabase` after migration applies.
+      custom_employees: {
+        Row: {
+          id: string
+          user_id: string
+          slug: string
+          name: string
+          role: string
+          emoji: string | null
+          avatar_url: string | null
+          persona_summary: string | null
+          system_prompt: string
+          schedule_cron: string | null
+          status: string
+          autonomy: string
+          model_slug: string | null
+          max_steps: number
+          scoped_toolkits: string[]
+          scoped_brain_prefixes: string[]
+          parent_employee_id: string | null
+          created_at: string
+          updated_at: string
+          last_run_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          slug: string
+          name: string
+          role: string
+          emoji?: string | null
+          avatar_url?: string | null
+          persona_summary?: string | null
+          system_prompt: string
+          schedule_cron?: string | null
+          status?: string
+          autonomy?: string
+          model_slug?: string | null
+          max_steps?: number
+          scoped_toolkits?: string[]
+          scoped_brain_prefixes?: string[]
+          parent_employee_id?: string | null
+          created_at?: string
+          updated_at?: string
+          last_run_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          slug?: string
+          name?: string
+          role?: string
+          emoji?: string | null
+          avatar_url?: string | null
+          persona_summary?: string | null
+          system_prompt?: string
+          schedule_cron?: string | null
+          status?: string
+          autonomy?: string
+          model_slug?: string | null
+          max_steps?: number
+          scoped_toolkits?: string[]
+          scoped_brain_prefixes?: string[]
+          parent_employee_id?: string | null
+          created_at?: string
+          updated_at?: string
+          last_run_at?: string | null
+        }
+        Relationships: []
+      }
+      custom_employee_chat_threads: {
+        Row: {
+          id: string
+          user_id: string
+          employee_id: string | null
+          employee_slug: string
+          title: string | null
+          created_at: string
+          last_message_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          employee_id?: string | null
+          employee_slug: string
+          title?: string | null
+          created_at?: string
+          last_message_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          employee_id?: string | null
+          employee_slug?: string
+          title?: string | null
+          created_at?: string
+          last_message_at?: string
+        }
+        Relationships: []
+      }
+      custom_employee_messages: {
+        Row: {
+          id: string
+          thread_id: string
+          user_id: string
+          role: string
+          content: string
+          tool_calls: Json | null
+          tool_results: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          thread_id: string
+          user_id: string
+          role: string
+          content?: string
+          tool_calls?: Json | null
+          tool_results?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          thread_id?: string
+          user_id?: string
+          role?: string
+          content?: string
+          tool_calls?: Json | null
+          tool_results?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       fo_audit_log: {
         Row: {
           action_kind: string

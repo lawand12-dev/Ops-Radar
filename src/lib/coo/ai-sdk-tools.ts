@@ -570,5 +570,49 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     },
   })
 
+  // CP-33 — on-demand agent dispatch (Devin pattern: chat is the doorway
+  // for triggering work, not just asking questions).
+  out['run_agent_now'] = tool({
+    description:
+      "Trigger one of the 28 agents to run immediately for THIS customer (instead of waiting for its cron). Use when the customer says 'run the revenue agent now', 'check scope creep on Acme', 'have the collections agent look at overdue invoices', etc. The agent reads its inputs, writes findings to the brain, and queues any proposed actions for approval. Returns a summary of what the agent did. Runs synchronously — the customer waits for the result.",
+    inputSchema: z.object({
+      agent_slug: z
+        .string()
+        .describe(
+          "The agent to run. Domain agents: revenue, collections, scope, delivery, briefing, profitability, team, growth, renewal, stack. Tool agents: tool-gmail, tool-hubspot, tool-pipedrive, tool-clickup, tool-asana, tool-monday, tool-harvest, tool-toggl, tool-slack, tool-calendly, tool-notion, tool-apollo, tool-stripe, tool-quickbooks, tool-google-calendar, tool-google-analytics, tool-google-ads, tool-linkedin, tool-bamboo-hr, tool-gusto, tool-typeform, tool-intercom, tool-zendesk. Meta: evaluator.",
+        ),
+    }),
+    execute: async ({ agent_slug }) => {
+      const { AGENTS } = await import('<npm>/lib/agents/registry')
+      const { runAgent } = await import('<npm>/lib/agents/loop')
+      const spec = AGENTS[agent_slug as keyof typeof AGENTS]
+      if (!spec) {
+        return {
+          success: false as const,
+          error: `unknown agent slug: ${agent_slug}`,
+        }
+      }
+      try {
+        const result = await runAgent(spec, ctx.userId)
+        return {
+          success: true as const,
+          agent: agent_slug,
+          status: result.status,
+          reason: result.reason,
+          summary: result.summary,
+          actions_taken: result.actionsTaken ?? 0,
+          notion_writes: result.notionWrites ?? 0,
+          risks_flagged: result.risksFlagged ?? 0,
+          view_url: '/dashboard/runs',
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'agent run failed',
+        }
+      }
+    },
+  })
+
   return out
 }

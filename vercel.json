@@ -43,6 +43,8 @@
     { "path": "/api/cron/agents/tool-gusto",             "schedule": "0 10 1 * *"  },
     { "path": "/api/cron/agents/tool-typeform",          "schedule": "0 10 * * 1"  },
     { "path": "/api/cron/agents/tool-intercom",          "schedule": "0 9 * * *"   },
-    { "path": "/api/cron/agents/tool-zendesk",           "schedule": "0 9 * * *"   }
+    { "path": "/api/cron/agents/tool-zendesk",           "schedule": "0 9 * * *"   },
+
+    { "path": "/api/cron/custom-employees",              "schedule": "0 * * * *"   }
   ]
 }
