@@ -54,6 +54,7 @@ Short, numbered, decided. Open these to answer "why is the system shaped this wa
 | [`adr/0006-orchestrator-worker-pattern.md`](./adr/0006-orchestrator-worker-pattern.md) | 10 domain orchestrators read 17 tool workers (CP-19) | Before new agent design |
 | [`adr/0007-senior-coo-playbook.md`](./adr/0007-senior-coo-playbook.md) | Embed operator judgment in every agent prompt (CP-21) | Before any prompt rewrite |
 | [`adr/0008-observability-sentry-statsig-langfuse.md`](./adr/0008-observability-sentry-statsig-langfuse.md) | Sentry + Statsig + Langfuse stack | Before adding a new observability vendor |
+| [`adr/0009-engineering-stack-2026-05.md`](./adr/0009-engineering-stack-2026-05.md) | **Engineering stack stress-test (2026-05-26)** — 4-layer 2026-consensus audit. 81% aligned, 8 concrete upgrades ranked by impact/effort. Re-evaluate every 90 days | Before any architectural change. Sibling to `positioning/identity.md` |
 
 ## Positioning
 
@@ -83,6 +84,10 @@ Evidence snapshots — every claim cited, no decisions inside. Read these to bac
 | [`research/2026-05-25-agent-capability-declaration.md`](./research/2026-05-25-agent-capability-declaration.md) | How production agent systems declare allowed tools / charters (informs CP-39) |
 | [`research/2026-05-25-agent-code-doc-organization.md`](./research/2026-05-25-agent-code-doc-organization.md) | Best 2026 layout for agent codebase + strategy docs (the basis for this restructure) |
 | [`research/2026-05-25-subsection-demand-validation.md`](./research/2026-05-25-subsection-demand-validation.md) | Verified customer demand for 7 OpsRadar moats; ranks the 3 that should headline marketing |
+| [`research/2026-05-26-engineering-runtime.md`](./research/2026-05-26-engineering-runtime.md) | **Engineering stress-test 1/4 — Runtime + orchestration** (Vercel AI SDK, Trigger.dev, scheduling). 85% aligned |
+| [`research/2026-05-26-engineering-agent-arch.md`](./research/2026-05-26-engineering-agent-arch.md) | **Engineering stress-test 2/4 — Agent architecture** (orchestrator-worker, charters, HITL, GEPA). 80% aligned |
+| [`research/2026-05-26-engineering-brain.md`](./research/2026-05-26-engineering-brain.md) | **Engineering stress-test 3/4 — Brain / memory** (Postgres, embeddings, Mem0/Letta/Zep). 90% aligned — highest |
+| [`research/2026-05-26-engineering-tools.md`](./research/2026-05-26-engineering-tools.md) | **Engineering stress-test 4/4 — Tools + integrations** (Composio vs Pica/Arcade, MCP, OAuth, saga). 70% aligned — lowest |
 
 **Older snapshots:**
 
