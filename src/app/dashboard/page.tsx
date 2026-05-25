@@ -29,6 +29,11 @@ import { TeamLiveWidget } from './_components/team-live-widget';
 import { liveWorkforceViewEnabled } from '<npm>/lib/flags';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 
+// Reads cookies via getCurrentUserId() — must not be statically prerendered.
+// Without this, Next.js 16 fails the static page collection step with
+// "Dynamic server usage" and the route falls back to a generic error in prod.
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   // Flag-gated CP-36 widget. We resolve both the flag + the userId server-
   // side so the browser never even fetches the Trigger.dev token endpoint

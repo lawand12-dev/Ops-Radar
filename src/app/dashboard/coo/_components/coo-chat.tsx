@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Send, Loader2, CheckCircle, XCircle, Sparkles, AlertCircle } from 'lucide-react';
 import { MarkdownContent } from '<npm>/components/dashboard/markdown-content';
 
 type ToolStep = { name: string; label: string; done: boolean };
@@ -12,6 +12,8 @@ type ActionCard = {
   label: string;
   status: 'pending' | 'confirmed' | 'cancelled';
 };
+
+type ChatError = { message: string } | null;
 
 type UserMessage = { role: 'user'; content: string };
 type AssistantMessage = {
@@ -40,13 +42,31 @@ type ServerMessage = {
   created_at: string;
 };
 
-const SUGGESTED: string[] = [
-  'How did we do this month?',
-  'Which clients should I worry about?',
-  'Will I make payroll next month?',
-  'Which clients should I reprice?',
-  'How close are we to capacity?',
-  'What should I do today?',
+const SUGGESTION_GROUPS: Array<{ heading: string; items: string[] }> = [
+  {
+    heading: 'Ask about your business',
+    items: [
+      'How did we do this month?',
+      'Which clients should I worry about?',
+      'Will I make payroll next month?',
+    ],
+  },
+  {
+    heading: 'Take action',
+    items: [
+      'Draft a follow-up to my overdue invoices',
+      'Run the revenue agent now',
+      'Hire a bookkeeper named Sarah who checks Stripe daily at 8am',
+    ],
+  },
+  {
+    heading: 'Research + review',
+    items: [
+      'Research [competitor name] for me',
+      'Review this contract',
+      'What is a typical retainer margin for design studios?',
+    ],
+  },
 ];
 
 function serverToMessage(m: ServerMessage): Message {
@@ -73,6 +93,8 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
+  const [chatError, setChatError] = useState<ChatError>(null);
+  const [lastUserText, setLastUserText] = useState<string>('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   // Track which session is currently displayed so we know when a fetched
@@ -126,6 +148,8 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
     const userMsg: UserMessage = { role: 'user', content: trimmed };
     const history = [...messages, userMsg];
     setMessages(history);
+    setLastUserText(trimmed);
+    setChatError(null);
     setInput('');
     setLoading(true);
 
@@ -145,9 +169,19 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
       });
 
       if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => ({})) as { error?: string };
+        const data = await res.json().catch(() => ({})) as { error?: string; message?: string };
         setStreaming(null);
-        setMessages([...history, { role: 'assistant', content: data.error ?? 'Something went wrong.', toolSteps: [], actionCard: null }]);
+        // Roll back the user message so the retry button works cleanly.
+        setMessages(messages);
+        setChatError({
+          message:
+            data.message ??
+            (data.error === 'quota_exceeded'
+              ? "You've hit this month's AI compute cap. Resets next month."
+              : data.error === 'unauthorized'
+              ? 'Your session expired. Refresh the page to sign in again.'
+              : 'Something went wrong on our side. Try again in a moment.'),
+        });
         return;
       }
 
@@ -204,9 +238,17 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
             setStreaming(current);
           }
 
-          if (event.type === 'done' || event.type === 'error') {
-            const finalContent = event.type === 'error' ? event.message : current.content;
-            const finalMsg: AssistantMessage = { ...current, content: finalContent };
+          if (event.type === 'error') {
+            // Don't commit a half-streamed assistant bubble — show a clear
+            // error banner with retry instead.
+            setStreaming(null);
+            setMessages(messages);
+            setChatError({ message: event.message });
+            onMessagePersisted();
+          }
+
+          if (event.type === 'done') {
+            const finalMsg: AssistantMessage = { ...current };
             setMessages((m) => [...m, finalMsg]);
             setStreaming(null);
             onMessagePersisted();
@@ -216,7 +258,8 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
     } catch {
       if (ac.signal.aborted) return;
       setStreaming(null);
-      setMessages([...history, { role: 'assistant', content: 'Connection error. Please try again.', toolSteps: [], actionCard: null }]);
+      setMessages(messages);
+      setChatError({ message: 'Network hiccup. Check your connection and retry.' });
     } finally {
       setLoading(false);
     }
@@ -265,13 +308,13 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
       <div key={index} className="flex justify-start coo-msg-enter">
         <div className="max-w-[85%] space-y-2">
           {isThinking && (
-            <div className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12px] text-[var(--color-fg-muted)]">
-              <span className="coo-thinking-dots" aria-hidden>
-                <span className="coo-dot" />
-                <span className="coo-dot" />
-                <span className="coo-dot" />
-              </span>
-              <span>Thinking…</span>
+            <div
+              className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12px] text-[var(--color-fg-muted)]"
+              role="status"
+              aria-label="COO is thinking"
+            >
+              <Loader2 size={12} className="shrink-0 animate-spin text-[var(--color-primary)]" />
+              <span>Reading your question…</span>
             </div>
           )}
 
@@ -298,34 +341,50 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
           )}
 
           {m.actionCard && (
-            <div className="rounded-[var(--radius)] border border-emerald-500/30 bg-emerald-950/20 px-4 py-3">
-              <p className="mb-2 text-[12px] text-emerald-300">{m.actionCard.label}</p>
+            <div className="rounded-[var(--radius-lg)] border border-amber-500/40 bg-amber-950/15 px-4 py-3.5 shadow-[0_0_0_1px_rgba(245,158,11,0.05)]">
+              <div className="mb-2 flex items-center gap-1.5">
+                <span className="inline-flex h-5 items-center rounded-full bg-amber-500/15 px-2 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                  Awaiting approval
+                </span>
+                <span className="text-[10px] text-[var(--color-fg-subtle)]">
+                  {m.actionCard.action_type.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <p className="mb-3 text-[13px] leading-[1.5] text-[var(--color-fg)]">
+                {m.actionCard.label}
+              </p>
               {m.actionCard.status === 'pending' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => void confirmAction(m.actionCard!.action_id, index)}
-                    aria-label="Confirm action"
-                    className="rounded-[var(--radius)] bg-emerald-600 px-3 py-1 text-[12px] font-medium text-white hover:bg-emerald-500"
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    onClick={() => void dismissAction(m.actionCard!.action_id, index)}
-                    aria-label="Cancel action"
-                    className="rounded-[var(--radius)] border border-[var(--color-border)] px-3 py-1 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => void confirmAction(m.actionCard!.action_id, index)}
+                      aria-label="Approve and run this action"
+                      title="Approve and run this action now"
+                      className="inline-flex items-center gap-1.5 rounded-[var(--radius)] bg-emerald-600 px-3.5 py-1.5 text-[12px] font-medium text-white hover:bg-emerald-500 transition-colors"
+                    >
+                      <CheckCircle size={12} /> Approve &amp; run
+                    </button>
+                    <button
+                      onClick={() => void dismissAction(m.actionCard!.action_id, index)}
+                      aria-label="Dismiss this action"
+                      className="inline-flex items-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-border)] px-3.5 py-1.5 text-[12px] text-[var(--color-fg-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-fg)] transition-colors"
+                    >
+                      <XCircle size={12} /> Dismiss
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[11px] text-[var(--color-fg-subtle)]">
+                    Nothing runs until you approve.
+                  </p>
+                </>
               )}
               {m.actionCard.status === 'confirmed' && (
                 <p className="flex items-center gap-1.5 text-[12px] text-emerald-400">
-                  <CheckCircle size={12} /> Action confirmed
+                  <CheckCircle size={12} /> Approved — action queued to run
                 </p>
               )}
               {m.actionCard.status === 'cancelled' && (
                 <p className="flex items-center gap-1.5 text-[12px] text-[var(--color-fg-subtle)]">
-                  <XCircle size={12} /> Cancelled
+                  <XCircle size={12} /> Dismissed
                 </p>
               )}
             </div>
@@ -352,20 +411,39 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
 
         {!loadingSession && messages.length === 0 && !streaming && (
           <div className="pt-2">
-            <p className="mb-4 text-[13px] text-[var(--color-fg-muted)]">
-              Ask me anything about your agency — I have access to your live data.
-            </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {SUGGESTED.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => void send(q)}
-                  className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-left text-[12.5px] text-[var(--color-fg-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-fg)] transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
+            <div className="mb-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
+              <div className="mb-1.5 flex items-center gap-2">
+                <Sparkles size={14} className="text-[var(--color-primary)]" />
+                <p className="text-[13px] font-medium text-[var(--color-fg)]">
+                  Your AI Chief of Staff
+                </p>
+              </div>
+              <p className="text-[12.5px] leading-[1.55] text-[var(--color-fg-muted)]">
+                Ask about your numbers, take action on connected tools (Gmail, Stripe, HubSpot…), research competitors, review contracts, or hire a new AI employee.
+                <span className="block mt-1 text-[11.5px] text-[var(--color-fg-subtle)]">
+                  Anything that changes outside data is queued for your approval before it runs.
+                </span>
+              </p>
             </div>
+
+            {SUGGESTION_GROUPS.map((group) => (
+              <div key={group.heading} className="mb-4 last:mb-0">
+                <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-fg-subtle)]">
+                  {group.heading}
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {group.items.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => void send(q)}
+                      className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-left text-[12.5px] text-[var(--color-fg-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-fg)] transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -381,6 +459,30 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
           }
           return renderAssistant(msg as AssistantMessage, index);
         })}
+
+        {chatError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 rounded-[var(--radius-lg)] border border-red-500/30 bg-red-950/20 px-4 py-3"
+          >
+            <AlertCircle size={14} className="mt-0.5 shrink-0 text-red-400" />
+            <div className="flex-1">
+              <p className="text-[12.5px] leading-[1.5] text-red-200">{chatError.message}</p>
+              {lastUserText && (
+                <button
+                  onClick={() => {
+                    const text = lastUserText;
+                    setChatError(null);
+                    void send(text);
+                  }}
+                  className="mt-1.5 text-[12px] font-medium text-red-300 underline-offset-2 hover:text-red-200 hover:underline"
+                >
+                  Retry last message
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         <div ref={bottomRef} />
       </div>
