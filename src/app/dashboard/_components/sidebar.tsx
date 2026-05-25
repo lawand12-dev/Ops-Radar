@@ -10,16 +10,10 @@ import {
   ChevronRight,
   Zap,
   BrainCircuit,
-  BarChart2,
-  Target,
-  FileText,
   Building2,
-  Webhook,
   Sparkles,
   Network,
-  Inbox,
   Users,
-  Database,
   Bot,
   History,
   Workflow,
@@ -40,43 +34,32 @@ type SidebarProps = {
   brandName?: string | null;
 };
 
+// CP-33 — research-backed sidebar (Lindy / Devin / BOND pattern):
+//   - Chat is the doorway (creation, dispatch, Q&A)
+//   - Dedicated pages are the cockpit (queues, lists, history, settings)
+//   - Deep reference data (profitability, scope, performance, briefings archive,
+//     live data explorer) lives in the customer-owned Notion brain.
 const navSections: NavSection[] = [
-  {
-    tag: null,
-    items: [
-      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
   {
     tag: 'TODAY',
     items: [
-      { label: 'Actions',    href: '/dashboard/actions',    icon: Zap   },
-      { label: 'Briefings',  href: '/dashboard/briefings',  icon: Inbox },
-      { label: 'AI Ops Team', href: '/dashboard/agents',    icon: Bot   },
-    ],
-  },
-  {
-    tag: 'CLIENTS',
-    items: [
-      { label: 'Profitability', href: '/dashboard/profitability', icon: FileText },
-      { label: 'Scope',         href: '/dashboard/scope',         icon: Target   },
-      { label: 'Retainers',     href: '/dashboard/retainer',      icon: Users    },
-    ],
-  },
-  {
-    tag: 'INTELLIGENCE',
-    items: [
-      { label: 'Ask COO',       href: '/dashboard/coo',         icon: BrainCircuit },
-      { label: 'Company Brain', href: '/dashboard/brain',       icon: Sparkles     },
-      { label: 'Performance',   href: '/dashboard/performance', icon: BarChart2    },
+      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Ask COO',  href: '/dashboard/coo', icon: BrainCircuit },
     ],
   },
   {
     tag: 'OPERATIONS',
     items: [
-      { label: 'Runs',        href: '/dashboard/runs',        icon: History  },
+      { label: 'Actions',     href: '/dashboard/actions',     icon: Zap      },
       { label: 'Automations', href: '/dashboard/automations', icon: Workflow },
-      { label: 'Live Data',   href: '/dashboard/business',    icon: Database },
+      { label: 'Agents',      href: '/dashboard/agents',      icon: Bot      },
+      { label: 'Runs',        href: '/dashboard/runs',        icon: History  },
+    ],
+  },
+  {
+    tag: 'BRAIN',
+    items: [
+      { label: 'Company Brain', href: '/dashboard/brain', icon: Sparkles },
     ],
   },
   {
@@ -89,28 +72,19 @@ const navSections: NavSection[] = [
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Integrations', href: '/dashboard/integrations',          icon: Plug      },
-      { label: 'Tool Autonomy', href: '/dashboard/settings/automation',  icon: Bot       },
-      { label: 'Usage',         href: '/dashboard/settings/usage',       icon: Gauge     },
-      { label: 'MCP',          href: '/dashboard/settings/mcp',          icon: Network   },
-      { label: 'Webhooks',     href: '/dashboard/webhooks',              icon: Webhook   },
-      { label: 'Team',         href: '/dashboard/settings/team',         icon: Building2 },
-      { label: 'Settings',     href: '/dashboard/settings',              icon: Settings  },
+      { label: 'Integrations',  href: '/dashboard/integrations',         icon: Plug    },
+      { label: 'Tool Autonomy', href: '/dashboard/settings/automation',  icon: Bot     },
+      { label: 'Usage',         href: '/dashboard/settings/usage',       icon: Gauge   },
+      { label: 'MCP',           href: '/dashboard/settings/mcp',         icon: Network },
+      { label: 'Team',          href: '/dashboard/settings/team',        icon: Users   },
+      { label: 'Settings',      href: '/dashboard/settings',             icon: Settings },
     ],
   },
 ];
 
 export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandName }: SidebarProps) {
   const pathname = usePathname();
-  const [unreadBriefings, setUnreadBriefings] = useState(0);
   const [pendingActions, setPendingActions] = useState(0);
-
-  useEffect(() => {
-    fetch('/api/dashboard/briefing?unread_only=true')
-      .then((r) => r.json())
-      .then((d: { count?: number }) => setUnreadBriefings(d.count ?? 0))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     fetch('/api/dashboard/actions?status=pending&limit=1')
@@ -169,11 +143,6 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
                   <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
                     {label}
                   </span>
-                  {href === '/dashboard/briefings' && unreadBriefings > 0 && (
-                    <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
-                      {unreadBriefings}
-                    </span>
-                  )}
                   {href === '/dashboard/actions' && pendingActions > 0 && (
                     <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
                       {pendingActions}

@@ -72,25 +72,25 @@ Plus 10 cron agents that run on schedule:
 
 **Customer Dashboard** (`/dashboard/*`)
 
-Sidebar groups: Overview / TODAY / CLIENTS / INTELLIGENCE / OPERATIONS / PARTNER (FO only) / WORKSPACE.
+Sidebar groups (CP-33 reorg): TODAY / OPERATIONS / BRAIN / PARTNER (FO only) / WORKSPACE.
+
+Customer mental model (research-backed — Lindy, Devin, BOND patterns):
+- Dashboard = **doing today** (chat doorway + queues + history)
+- Notion = **the reference archive** (deep data, customer-owned, standalone-useful)
+- Deleted in CP-33 (now live in Notion brain): `/dashboard/profitability`, `/dashboard/scope`, `/dashboard/retainer`, `/dashboard/performance`, `/dashboard/score`, `/dashboard/briefings`, `/dashboard/business`, `/dashboard/benchmarks`. Permanent redirects to `/dashboard/brain` are wired in `next.config.ts`.
 
 | Route | Purpose |
 |-------|---------|
-| `/dashboard` | Overview cockpit — KPI strip + narrative + activity feed |
-| `/dashboard/actions` | Agentic action queue (cron agent + COO writes) |
-| `/dashboard/briefings` | Daily AI-generated readouts |
-| `/dashboard/profitability` | Client profitability |
-| `/dashboard/scope` | Scope creep detection |
-| `/dashboard/retainer` | Retainer configs |
-| `/dashboard/coo` | Ask COO — chat agent (Vercel AI SDK + Composio sub-agents) |
-| `/dashboard/brain` | Customer-owned Notion Brain (20 DBs + 7 strategic pages) |
-| `/dashboard/performance` | 5-dimension agency health + peer benchmarks |
-| `/dashboard/runs` | Every agent run with status + drawer detail (CP-14) |
+| `/dashboard` | Overview cockpit — KPI strip + today's briefing card + activity feed |
+| `/dashboard/coo` | Ask COO — chat agent (Vercel AI SDK + Composio sub-agents). The **doorway**: create automations, dispatch agents (`run_agent_now`), Q&A. |
+| `/dashboard/actions` | Agentic action queue (cron agent + COO writes + automation runs) |
 | `/dashboard/automations` | Customer-built automations registry — Lindy-style "when X, do Y" (CP-20) |
 | `/dashboard/automations/[id]` | Automation detail — trigger config, read-only spec graph, run history, pause/resume, autonomy toggle (CP-20) |
-| `/dashboard/business` | Live Data — raw per-integration explorer |
+| `/dashboard/agents` | 28-agent status grid (AI Ops Team) |
+| `/dashboard/runs` | Every agent run with status + drawer detail (CP-14) |
+| `/dashboard/brain` | Customer-owned Notion Brain entry page (20 DBs + 7 strategic pages — the deep archive) |
 | `/dashboard/integrations` | Connect tools via Composio OAuth |
-| `/dashboard/webhooks` | Outgoing webhook configurations |
+| `/dashboard/webhooks` | Outgoing webhook configurations (kept as power-user endpoint, no sidebar entry) |
 | `/dashboard/settings` | Account settings |
 | `/dashboard/settings/automation` | Per-tool autonomy (Ask / Auto / Off) — sidebar label is "Tool Autonomy" (CP-14, renamed in CP-20) |
 | `/dashboard/settings/usage` | Per-customer API usage + monthly caps across OpenAI/Composio/Tavily/Anthropic (CP-23) |

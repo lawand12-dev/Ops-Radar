@@ -1,43 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/**
+ * /dashboard — the Overview (CP-33).
+ *
+ * Research-backed 4-block control-panel layout — BOND Presidential Brief +
+ * BOND Live Dashboard + Lindy Tasks summary, sized to fit one screen.
+ *
+ *   1. Today's Briefing card     ← what moved, who's blocked, top priority
+ *   2. Pending actions banner    ← "N actions waiting on you → /actions"
+ *   3. KPI strip (≤4 numbers)    ← MRR, pipeline, prospects, calls
+ *   4. Agent activity summary    ← "N runs today · F failed → /runs"
+ *
+ * The full agent log + full briefing archive live in their own surfaces
+ * (/dashboard/runs and /dashboard/brain) because 28-agent log volume would
+ * drown a single-page overview.
+ */
+
 import { CockpitKpiStrip } from './_components/cockpit-kpi-strip';
-import { CockpitAlertsRibbon } from './_components/cockpit-alerts-ribbon';
-import { CockpitHeroNarrative } from './_components/cockpit-hero-narrative';
-import { CockpitIntegrationHealth } from './_components/cockpit-integration-health';
-import { CockpitActivityFeed } from './_components/cockpit-activity-feed';
 import { HealthReportBanner } from './_components/health-report-banner';
 import { OnboardingChecklist } from './_components/onboarding-checklist';
+import { OverviewBriefingCard } from './_components/overview-briefing-card';
+import { OverviewPendingActions } from './_components/overview-pending-actions';
+import { OverviewAgentActivity } from './_components/overview-agent-activity';
 
 export default function DashboardPage() {
-  const greeting = useGreeting();
-
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <HealthReportBanner />
       <OnboardingChecklist />
       <Topbar />
-      <Greeting greeting={greeting} />
 
-      <div className="overview-section" style={{ animationDelay: '40ms' }}>
-        <CockpitKpiStrip />
-      </div>
+      {/* 1. Today's briefing */}
+      <OverviewBriefingCard />
 
-      <div className="overview-section" style={{ animationDelay: '90ms' }}>
-        <CockpitAlertsRibbon />
-      </div>
+      {/* 2. Pending actions */}
+      <OverviewPendingActions />
 
-      <div className="overview-section" style={{ animationDelay: '140ms' }}>
-        <CockpitHeroNarrative />
-      </div>
+      {/* 3. KPI strip */}
+      <CockpitKpiStrip />
 
-      <div
-        className="overview-section grid grid-cols-1 gap-3 lg:grid-cols-[3fr_2fr]"
-        style={{ animationDelay: '190ms' }}
-      >
-        <CockpitActivityFeed />
-        <CockpitIntegrationHealth />
-      </div>
+      {/* 4. Agent activity summary */}
+      <OverviewAgentActivity />
     </div>
   );
 }
@@ -46,52 +49,10 @@ function Topbar() {
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
       <h1 className="text-body font-medium text-[var(--color-fg)]">Overview</h1>
-      <LiveIndicator />
+      <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
+        <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
+        Live
+      </span>
     </div>
   );
-}
-
-function LiveIndicator() {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => clearInterval(id);
-  }, []);
-  void tick;
-  return (
-    <span className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-fg-subtle)]">
-      <span className="block size-1.5 rounded-full bg-[var(--color-success)] shadow-[0_0_5px_rgba(74,222,128,0.7)]" />
-      Live
-    </span>
-  );
-}
-
-function Greeting({ greeting }: { greeting: string }) {
-  const today = new Date();
-  const dateStr = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-  const week = isoWeek(today);
-  return (
-    <div className="flex items-baseline justify-between">
-      <h2 className="font-serif text-h2 text-[var(--color-fg)]">{greeting}</h2>
-      <span className="text-body-sm text-[var(--color-fg-subtle)]">{dateStr} · Week {week}</span>
-    </div>
-  );
-}
-
-function computeGreeting(): string {
-  const hr = new Date().getHours();
-  return hr < 12 ? 'Good morning.' : hr < 18 ? 'Good afternoon.' : 'Good evening.';
-}
-
-function useGreeting(): string {
-  const [g] = useState(computeGreeting);
-  return g;
-}
-
-function isoWeek(d: Date): number {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }

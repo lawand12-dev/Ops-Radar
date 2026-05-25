@@ -98,7 +98,7 @@ export function stuckDealRule(input: {
     severity: 'heads-up',
     label: severityLabel('heads-up'),
     message: `Deal "${input.dealName}" stuck ${input.daysInStage} days in stage.`,
-    href: '/dashboard/business',
+    href: '/dashboard/actions',
   };
 }
 
@@ -133,7 +133,7 @@ export function emptyCalendarRule(input: {
     severity: 'heads-up',
     label: severityLabel('heads-up'),
     message: 'No calls booked this week despite active pipeline.',
-    href: '/dashboard/business',
+    href: '/dashboard/actions',
   };
 }
 
@@ -151,6 +151,6 @@ export function scopeCreepRule(input: {
     severity: input.burnPct >= 100 ? 'needs-you' : 'watch',
     label: severityLabel(input.burnPct >= 100 ? 'needs-you' : 'watch'),
     message: `"${input.projectName}" is ${statusText} — review scope or bill overage.`,
-    href: '/dashboard/scope',
+    href: '/dashboard/actions',
   };
 }
