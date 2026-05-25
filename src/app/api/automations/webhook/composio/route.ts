@@ -17,7 +17,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { executeAutomation } from '<npm>/lib/automations/execute'
+import { tasks } from '@trigger.dev/sdk/v3'
+import type { executeAutomationTask } from '<npm>/trigger/execute-automation'
 import type { CustomerAutomation } from '<npm>/lib/automations/types'
 
 export const dynamic = 'force-dynamic'
@@ -162,24 +163,47 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // Execute each in parallel. Each invocation creates its own automation_runs row.
-  const results = await Promise.allSettled(
-    matchedAutomations.map((a) =>
-      executeAutomation({
-        automation: a,
-        triggerEvent: payload as unknown as Record<string, unknown>,
-        source: 'webhook',
-      }),
-    ),
-  )
-
-  const succeeded = results.filter((r) => r.status === 'fulfilled').length
-  const failed = results.filter((r) => r.status === 'rejected').length
+  // CP-TRIGGER-DEV step 3: Hand off to Trigger.dev for durable execution
+  // instead of running automations inline. This gives us:
+  //   - Per-automation retries with exponential backoff (5 attempts)
+  //   - Failure isolation — one bad automation doesn't kill the batch
+  //   - The webhook returns 200 in < 200ms regardless of automation duration,
+  //     eliminating Composio's own retry storms when handlers run long
+  //   - Per-run observability in the Trigger.dev dashboard
+  // See: docs/strategy/trigger-composio-integration-2026.md §Pattern 2.
+  const triggerEvent = payload as unknown as Record<string, unknown>
+  try {
+    await tasks.batchTrigger<typeof executeAutomationTask>(
+      'execute-automation',
+      matchedAutomations.map((a) => ({
+        payload: {
+          automationId: a.id,
+          userId: a.user_id,
+          triggerEvent,
+        },
+        options: {
+          tags: [`user:${a.user_id}`, `automation:${a.slug}`, 'source:webhook'],
+        },
+      })),
+    )
+  } catch (err) {
+    // If Trigger.dev itself is unreachable, fall back to logging — better
+    // to lose one webhook than to crash and force Composio to retry the
+    // whole signature-verified payload.
+    console.error('[automations/webhook] batchTrigger failed:', err)
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'dispatch_failed',
+        fired: 0,
+      },
+      { status: 502 },
+    )
+  }
 
   return NextResponse.json({
     ok: true,
     fired: matchedAutomations.length,
-    succeeded,
-    failed,
+    dispatched_via: 'trigger.dev',
   })
 }
