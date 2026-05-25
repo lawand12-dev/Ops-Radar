@@ -840,5 +840,50 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     },
   })
 
+  // ─── CP-37: org-chart + delegation ────────────────────────────────────────
+  //
+  // Set or clear a manager for one of the customer's CUSTOM AI employees.
+  // After this is set, the manager employee can call `delegate_to_employee`
+  // from inside its run (Trigger.dev `tasks.triggerAndWait`) — the report
+  // runs in parallel and the manager pauses until the report finishes.
+  //
+  // Constraints (enforced by setEmployeeManager):
+  //   - Both employee + manager must be CUSTOM (built-ins rejected in v1).
+  //   - No self-reference (manager ≠ employee).
+  //   - No cycles — walks up the proposed manager's parent chain to detect them.
+
+  out['set_employee_manager'] = tool({
+    description:
+      "Set or clear the manager for one of the customer's custom AI employees. Once set, the employee can delegate work to the manager via delegate_to_employee (Trigger.dev step.waitForEvent pattern — manager pauses until the report finishes, max 30 min). Pass manager_slug=null to remove the manager (the employee becomes top-level). Only works for CUSTOM employees — built-in agents can't be managed by the customer in v1. Returns an error code on failure (employee_not_found, manager_not_found, employee_not_custom, manager_not_custom, self_reference, cycle).",
+    inputSchema: z.object({
+      employee_slug: z
+        .string()
+        .describe("The slug of the employee whose manager you're setting."),
+      manager_slug: z
+        .string()
+        .nullable()
+        .describe(
+          "The slug of the new manager (must be another custom employee), or null to clear the manager.",
+        ),
+    }),
+    execute: async ({ employee_slug, manager_slug }) => {
+      try {
+        const { setEmployeeManager } = await import('<npm>/lib/employees/hierarchy')
+        const result = await setEmployeeManager(
+          ctx.userId,
+          employee_slug,
+          manager_slug,
+        )
+        return result
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'set_employee_manager failed',
+          code: 'write_failed' as const,
+        }
+      }
+    },
+  })
+
   return out
 }

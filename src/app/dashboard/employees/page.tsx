@@ -16,20 +16,52 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr'
-import { loadFullWorkforce } from '<npm>/lib/employees/registry'
+import { BUILT_IN_EMPLOYEES } from '<npm>/lib/employees/registry'
+import { loadCustomEmployeesWithParents } from '<npm>/lib/employees/hierarchy'
 import type { Employee } from '<npm>/lib/employees/types'
 
 export const dynamic = 'force-dynamic'
 
 const HIRE_PROMPT = 'I want to hire a new AI employee'
 
+/**
+ * CP-37: tree-flatten the custom employees so reports appear indented
+ * directly under their manager. Built-ins stay flat at depth 0.
+ */
+type CustomNode = { employee: Employee; depth: number; hasReports: boolean }
+
+function flattenCustomTree(custom: Employee[]): CustomNode[] {
+  const children = new Map<string | null, Employee[]>()
+  for (const e of custom) {
+    const key = e.parentSlug ?? null
+    const arr = children.get(key) ?? []
+    arr.push(e)
+    children.set(key, arr)
+  }
+  const out: CustomNode[] = []
+  const visit = (e: Employee, depth: number) => {
+    const kids = children.get(e.slug) ?? []
+    out.push({ employee: e, depth, hasReports: kids.length > 0 })
+    for (const kid of kids) visit(kid, depth + 1)
+  }
+  for (const top of children.get(null) ?? []) visit(top, 0)
+  // Safety net — any nodes whose parent wasn't found (e.g. archived parent)
+  // get flushed at depth 0 so they don't disappear.
+  const rendered = new Set(out.map((n) => n.employee.slug))
+  for (const e of custom) {
+    if (!rendered.has(e.slug)) {
+      out.push({ employee: e, depth: 0, hasReports: false })
+    }
+  }
+  return out
+}
+
 export default async function EmployeesPage() {
   const userId = await getCurrentUserId()
   if (!userId) redirect('/login')
 
-  const team = await loadFullWorkforce(userId)
-  const preHired = team.filter((e) => e.origin === 'built_in')
-  const customHires = team.filter((e) => e.origin === 'custom')
+  const customHires = await loadCustomEmployeesWithParents(userId)
+  const customTree = flattenCustomTree(customHires)
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,8 +69,12 @@ export default async function EmployeesPage() {
 
       <Section
         tag="PRE-HIRED TEAM"
-        subtitle={`${preHired.length} specialists included with your plan`}
-        employees={preHired}
+        subtitle={`${BUILT_IN_EMPLOYEES.length} specialists included with your plan`}
+        nodes={BUILT_IN_EMPLOYEES.map((e) => ({
+          employee: e,
+          depth: 0,
+          hasReports: false,
+        }))}
       />
 
       <Section
@@ -48,7 +84,7 @@ export default async function EmployeesPage() {
             ? 'Custom teammates you build by talking to your COO'
             : `${customHires.length} custom ${customHires.length === 1 ? 'hire' : 'hires'}`
         }
-        employees={customHires}
+        nodes={customTree}
         emptyState={
           <Link
             href="/dashboard/coo"
@@ -99,12 +135,12 @@ function EmployeesHero() {
 function Section({
   tag,
   subtitle,
-  employees,
+  nodes,
   emptyState,
 }: {
   tag: string
   subtitle: string
-  employees: Employee[]
+  nodes: CustomNode[]
   emptyState?: React.ReactNode
 }) {
   return (
@@ -116,12 +152,17 @@ function Section({
         <div className="text-caption text-[var(--color-fg-faint)]">{subtitle}</div>
       </div>
 
-      {employees.length === 0 ? (
+      {nodes.length === 0 ? (
         emptyState ?? null
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {employees.map((e) => (
-            <EmployeeCard key={`${e.origin}:${e.slug}`} employee={e} />
+          {nodes.map((n) => (
+            <EmployeeCard
+              key={`${n.employee.origin}:${n.employee.slug}`}
+              employee={n.employee}
+              depth={n.depth}
+              hasReports={n.hasReports}
+            />
           ))}
         </div>
       )}
@@ -129,14 +170,36 @@ function Section({
   )
 }
 
-function EmployeeCard({ employee }: { employee: Employee }) {
+function EmployeeCard({
+  employee,
+  depth,
+  hasReports,
+}: {
+  employee: Employee
+  depth: number
+  hasReports: boolean
+}) {
   const statusActive = employee.status === 'active'
+  // CP-37: indent reports under their manager by 16px per depth level.
+  // A leading "↳" glyph signals "reports to the row above". Solo (no manager,
+  // no reports) employees render exactly as before.
+  const indentPx = depth * 16
+  const isReport = depth > 0
   return (
     <Link
       href={`/dashboard/employees/${employee.slug}`}
+      style={indentPx > 0 ? { marginLeft: `${indentPx}px` } : undefined}
       className="group flex flex-col gap-2.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-colors hover:border-[var(--color-primary)]"
     >
       <div className="flex items-start gap-3">
+        {isReport && (
+          <span
+            aria-hidden
+            className="mt-1 text-body-sm text-[var(--color-fg-faint)]"
+          >
+            ↳
+          </span>
+        )}
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[20px] leading-none"
           aria-hidden
@@ -153,6 +216,11 @@ function EmployeeCard({ employee }: { employee: Employee }) {
               {employee.display.role}
             </span>
           </div>
+          {hasReports && (
+            <div className="mt-0.5 text-caption text-[var(--color-fg-subtle)]">
+              Manager
+            </div>
+          )}
         </div>
         <StatusDot active={statusActive} />
       </div>

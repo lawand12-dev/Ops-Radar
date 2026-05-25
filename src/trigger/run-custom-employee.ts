@@ -24,7 +24,7 @@
  * See: docs/strategy/trigger-composio-integration-2026.md §Pattern 1.
  */
 
-import { task, logger } from "@trigger.dev/sdk/v3"
+import { task, logger, metadata } from "@trigger.dev/sdk/v3"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { AgentSpec, AgentSlug } from "<npm>/lib/agents/types"
@@ -36,14 +36,45 @@ type CustomEmployeeRow = Database["public"]["Tables"]["custom_employees"]["Row"]
 export type RunCustomEmployeePayload = {
   employeeId: string
   userId: string
+  /**
+   * CP-37 — delegation context. When set, this run was kicked off by another
+   * employee calling `delegate_to_employee` from inside `runAgent`. We inject
+   * the delegating employee's slug + the task description into the system
+   * prompt so the report knows it's a delegation and focuses its run on the
+   * specific task instead of its default cron behavior.
+   */
+  delegatedFrom?: string
+  taskDescription?: string
 }
 
 /**
  * Synthesize an AgentSpec from a custom_employees row so we can hand it to
  * the shared `runAgent` loop. The slug is prefixed with `custom:` so brain
  * commits and agent_runs rows stay distinguishable from the 28 built-ins.
+ *
+ * When `delegation` is provided (CP-37), we splice a delegation header onto
+ * the front of the system prompt so the model treats this run as a focused
+ * sub-task instead of its default scheduled cycle.
  */
-function specFromCustomEmployee(row: CustomEmployeeRow): AgentSpec {
+function specFromCustomEmployee(
+  row: CustomEmployeeRow,
+  delegation?: { delegatedFrom: string; taskDescription: string },
+): AgentSpec {
+  const baseSystemPrompt = row.system_prompt
+  const systemPrompt = delegation
+    ? [
+        '# Delegated task',
+        '',
+        `You are being delegated to by **${delegation.delegatedFrom}** (your manager).`,
+        `Their request: ${delegation.taskDescription}`,
+        '',
+        'Focus your run on completing THIS specific task. When you finish, write a clear, concrete summary — your manager is paused right now waiting for your output, and your summary is what they see when they resume. Keep it tight, surface the key facts, and call out anything that needs follow-up.',
+        '',
+        '---',
+        '',
+        baseSystemPrompt,
+      ].join('\n')
+    : baseSystemPrompt
   return {
     slug: `custom:${row.slug}` as AgentSlug,
     displayName: `${row.name} · ${row.role}`,
@@ -54,7 +85,7 @@ function specFromCustomEmployee(row: CustomEmployeeRow): AgentSpec {
     requiredIntegrations: [],
     cronSchedule: row.schedule_cron ?? "0 0 * * *",
     maxSteps: row.max_steps,
-    systemPrompt: row.system_prompt,
+    systemPrompt,
   }
 }
 
@@ -67,8 +98,13 @@ export const runCustomEmployee = task({
   retry: { maxAttempts: 3, factor: 2, minTimeoutInMs: 5_000, maxTimeoutInMs: 60_000 },
 
   run: async (payload: RunCustomEmployeePayload, { ctx }) => {
-    const { employeeId, userId } = payload
-    logger.log("Starting custom employee run", { employeeId, userId, runId: ctx.run.id })
+    const { employeeId, userId, delegatedFrom, taskDescription } = payload
+    logger.log("Starting custom employee run", {
+      employeeId,
+      userId,
+      runId: ctx.run.id,
+      delegatedFrom: delegatedFrom ?? null,
+    })
 
     const supabase = getServerSupabaseClient()
     const { data: row, error } = await supabase
@@ -92,7 +128,26 @@ export const runCustomEmployee = task({
       return { skipped: "paused" as const, status: row.status }
     }
 
-    const spec = specFromCustomEmployee(row)
+    // CP-36: publish identity metadata so the realtime Team Live widget on
+    // /dashboard can render this run as "<emoji> <name> · running · …" without
+    // a server round-trip. The widget subscribes via useRealtimeRunsWithTag
+    // (tag: `user:<userId>`) and reads these fields off run.metadata.
+    metadata.set("employee_slug", row.slug)
+    metadata.set("employee_name", row.name)
+    metadata.set("employee_emoji", row.emoji)
+    metadata.set("user_id", userId)
+
+    // If this run was delegated, splice the manager + task description into
+    // the system prompt so the model focuses on the sub-task.
+    const delegation =
+      delegatedFrom && taskDescription
+        ? { delegatedFrom, taskDescription }
+        : undefined
+    if (delegation) {
+      metadata.set("delegated_from", delegation.delegatedFrom)
+      metadata.set("delegated_task", delegation.taskDescription.slice(0, 200))
+    }
+    const spec = specFromCustomEmployee(row, delegation)
     const result = await runAgent(spec, userId)
 
     // Mark last_run_at on success so the /dashboard/employees UI can show

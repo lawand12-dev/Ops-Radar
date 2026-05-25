@@ -1143,6 +1143,8 @@ export type Database = {
           content_hash: string
           content_size: number
           created_at: string
+          embedding: string | null
+          embedding_model: string | null
         }
         Insert: {
           id?: string
@@ -1154,6 +1156,8 @@ export type Database = {
           content_hash: string
           content_size: number
           created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
         }
         Update: {
           id?: string
@@ -1165,6 +1169,8 @@ export type Database = {
           content_hash?: string
           content_size?: number
           created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
         }
         Relationships: []
       }
@@ -1176,6 +1182,8 @@ export type Database = {
           current_version_id: string | null
           created_at: string
           updated_at: string
+          embedding: string | null
+          embedding_model: string | null
         }
         Insert: {
           id?: string
@@ -1184,6 +1192,8 @@ export type Database = {
           current_version_id?: string | null
           created_at?: string
           updated_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
         }
         Update: {
           id?: string
@@ -1192,6 +1202,8 @@ export type Database = {
           current_version_id?: string | null
           created_at?: string
           updated_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
         }
         Relationships: []
       }

@@ -33,7 +33,11 @@ import {
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
 import { queryEvents, aggregateByMonth } from '<npm>/lib/warehouse/query'
 import type { EventSource } from '<npm>/lib/warehouse/types'
-import { commitBrainChanges, listBrainPaths } from '<npm>/lib/brain/store'
+import {
+  commitBrainChanges,
+  listBrainPaths,
+  loadBrainDocuments,
+} from '<npm>/lib/brain/store'
 import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
 import { buildAgentBrainHintsBlock } from '<npm>/lib/brain/agent-hints'
 import type { BrainAuthorType } from '<npm>/lib/brain/types'
@@ -41,6 +45,8 @@ import { tool as aiTool } from 'ai'
 import { z } from 'zod'
 import type { AgentRunResult, AgentSpec, AgentSlug } from './types'
 import { getUserTier, tierAllows } from './tier-gate'
+import { orgChartDelegationEnabled } from '<npm>/lib/flags'
+import { loadEmployeeWithReports } from '<npm>/lib/employees/hierarchy'
 
 const VALID_SLUGS = new Set(Object.keys(COMPOSIO_TOOLS) as ToolSlug[])
 const isToolSlug = (v: string): v is ToolSlug => VALID_SLUGS.has(v as ToolSlug)
@@ -250,6 +256,96 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       }),
     }
 
+    // CP-37 — `delegate_to_employee`. Only added for custom employees (slug
+    // prefix 'custom:') with at least one direct report, AND only when the
+    // org-chart-delegation flag is on. Uses Trigger.dev's `tasks.triggerAndWait`
+    // to pause the manager's run, dispatch the report, then resume with the
+    // report's output as the tool result.
+    //
+    // Why custom-only: built-in agents (slug NOT prefixed 'custom:') run on
+    // Vercel Cron, not Trigger.dev. Their runs can't be paused. Delegation
+    // only works from the Trigger.dev-hosted custom employee path.
+    if (spec.slug.startsWith('custom:')) {
+      const delegationOn = await orgChartDelegationEnabled()
+      if (delegationOn) {
+        const managerSlug = spec.slug.slice('custom:'.length)
+        const { reports } = await loadEmployeeWithReports(userId, managerSlug)
+        if (reports.length > 0) {
+          const reportSlugList = reports
+            .map((r) => `${r.slug} (${r.display.name} · ${r.display.role})`)
+            .join(', ')
+          ;(tools as Record<string, unknown>)['delegate_to_employee'] = aiTool({
+            description:
+              `Delegate a discrete task to ONE of your direct reports. You PAUSE while they run (up to 30 min) and resume with their summary. Use when YOUR responsibility is to coordinate multiple specialists rather than do the work directly. Your reports: ${reportSlugList}.`,
+            inputSchema: z.object({
+              report_slug: z
+                .string()
+                .describe('Slug of one of YOUR direct reports.'),
+              task_description: z
+                .string()
+                .min(10)
+                .describe('Plain-English task for the report to do.'),
+            }),
+            execute: async (args: { report_slug: string; task_description: string }) => {
+              try {
+                const report = reports.find((r) => r.slug === args.report_slug)
+                if (!report || !report.customEmployeeId) {
+                  return {
+                    success: false as const,
+                    error: `"${args.report_slug}" is not one of your direct reports. Your reports are: ${reports.map((r) => r.slug).join(', ')}.`,
+                  }
+                }
+                // Lazy-import the Trigger.dev SDK + the task ref so the loop
+                // module stays usable outside a Trigger.dev runtime (e.g. from
+                // local scripts that import runAgent directly).
+                const { tasks } = await import('@trigger.dev/sdk/v3')
+                const { runCustomEmployee } = await import(
+                  '<npm>/trigger/run-custom-employee'
+                )
+                const result = await tasks.triggerAndWait<typeof runCustomEmployee>(
+                  'run-custom-employee',
+                  {
+                    employeeId: report.customEmployeeId,
+                    userId,
+                    delegatedFrom: managerSlug,
+                    taskDescription: args.task_description,
+                  },
+                )
+                if (!result.ok) {
+                  return {
+                    success: false as const,
+                    error: `Report run failed: ${result.error ?? 'unknown error'}`,
+                  }
+                }
+                // result.output is the task's return value (typed via the import).
+                const output = result.output as {
+                  summary?: string
+                  status?: string
+                  reason?: string
+                  actions_taken?: number
+                  notion_writes?: number
+                }
+                return {
+                  success: true as const,
+                  report_slug: report.slug,
+                  status: output?.status ?? 'success',
+                  reason: output?.reason,
+                  summary: output?.summary ?? '(no summary returned)',
+                  actions_taken: output?.actions_taken ?? 0,
+                  notion_writes: output?.notion_writes ?? 0,
+                }
+              } catch (err) {
+                return {
+                  success: false as const,
+                  error: err instanceof Error ? err.message : 'delegation failed',
+                }
+              }
+            },
+          })
+        }
+      }
+    }
+
     // 5. Personalize the system prompt with three best-effort enrichments —
     // any of these returning null leaves the agent on its base behaviour:
     //   (a) "How We Work" — customer-authored rules from Notion
@@ -257,14 +353,29 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     //       re-suggest things they've already decided against
     //   (c) Approval patterns — aggregated approve / reject / edit feedback
     //       for this specific agent, so the model adjusts its style
-    const [howWeWork, decisions, patterns, skillCatalog, automationCatalog] =
-      await Promise.all([
-        readHowWeWork(userId),
-        readDecisionLog(userId),
-        getApprovalPatterns(userId, spec.slug, 60),
-        loadSkillCatalog(),
-        loadAutomationCatalog(userId),
-      ])
+    const [
+      howWeWork,
+      decisions,
+      patterns,
+      skillCatalog,
+      automationCatalog,
+      learnedRules,
+    ] = await Promise.all([
+      readHowWeWork(userId),
+      readDecisionLog(userId),
+      getApprovalPatterns(userId, spec.slug, 60),
+      loadSkillCatalog(),
+      loadAutomationCatalog(userId),
+      // CP-35 — every employee reads its own learned rules (from rejections)
+      // on every run. The path prefix uses spec.slug verbatim, so custom
+      // employees (`custom:sarah`) and built-ins (`revenue`) both land in
+      // distinct namespaces under `employees/<slug>/learned-rules/`.
+      loadBrainDocuments({
+        userId,
+        prefixes: [`employees/${spec.slug}/learned-rules/`],
+        limit: 50,
+      }),
+    ])
 
     const enrichments: string[] = []
     if (howWeWork) {
@@ -292,6 +403,21 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
     // already running and doesn't propose duplicates (CP-20).
     const automationsBlock = buildAutomationsSystemBlock(automationCatalog)
     if (automationsBlock) enrichments.push(automationsBlock)
+
+    // CP-35 — Apprentice Mode. Every employee reads its own learned rules
+    // (derived from past customer rejections + edits) at the top of every
+    // run. These are higher-priority than skills because they were authored
+    // BY the customer's behaviour — they reflect what THIS specific customer
+    // wants, not industry norms.
+    if (learnedRules.length > 0) {
+      enrichments.push(
+        [
+          '# Your learned rules (apply these — they come from past customer corrections)',
+          '',
+          learnedRules.map((r) => r.content).join('\n---\n'),
+        ].join('\n'),
+      )
+    }
 
     // CP-29 — write to the brain as the PRIMARY structured-output target.
     // The brain (brain_documents in Postgres, git-like versioned) is the

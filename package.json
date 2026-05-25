@@ -23,6 +23,7 @@
     "@statsig/web-analytics": "^3.33.1",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.100.1",
+    "@trigger.dev/react-hooks": "^4.4.6",
     "@trigger.dev/sdk": "^4.4.6",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",

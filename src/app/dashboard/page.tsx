@@ -1,7 +1,5 @@
-'use client';
-
 /**
- * /dashboard — the Overview (CP-33).
+ * /dashboard — the Overview (CP-33, extended in CP-36).
  *
  * Research-backed 4-block control-panel layout — BOND Presidential Brief +
  * BOND Live Dashboard + Lindy Tasks summary, sized to fit one screen.
@@ -9,11 +7,16 @@
  *   1. Today's Briefing card     ← what moved, who's blocked, top priority
  *   2. Pending actions banner    ← "N actions waiting on you → /actions"
  *   3. KPI strip (≤4 numbers)    ← MRR, pipeline, prospects, calls
+ *   3.5 Team Live widget (CP-36) ← per-employee realtime status, flag-gated
  *   4. Agent activity summary    ← "N runs today · F failed → /runs"
  *
  * The full agent log + full briefing archive live in their own surfaces
  * (/dashboard/runs and /dashboard/brain) because 28-agent log volume would
  * drown a single-page overview.
+ *
+ * This is a Server Component so we can await `liveWorkforceViewEnabled()`
+ * + read the current userId from Supabase SSR without round-tripping the
+ * flag value to the browser. All children are client components.
  */
 
 import { CockpitKpiStrip } from './_components/cockpit-kpi-strip';
@@ -22,8 +25,20 @@ import { OnboardingChecklist } from './_components/onboarding-checklist';
 import { OverviewBriefingCard } from './_components/overview-briefing-card';
 import { OverviewPendingActions } from './_components/overview-pending-actions';
 import { OverviewAgentActivity } from './_components/overview-agent-activity';
+import { TeamLiveWidget } from './_components/team-live-widget';
+import { liveWorkforceViewEnabled } from '<npm>/lib/flags';
+import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Flag-gated CP-36 widget. We resolve both the flag + the userId server-
+  // side so the browser never even fetches the Trigger.dev token endpoint
+  // when the feature is off. If the flag check throws (Statsig unreachable)
+  // the flags lib returns the default (false) — fail-closed.
+  const [showLive, userId] = await Promise.all([
+    liveWorkforceViewEnabled(),
+    getCurrentUserId(),
+  ]);
+
   return (
     <div className="flex flex-col gap-4">
       <HealthReportBanner />
@@ -38,6 +53,9 @@ export default function DashboardPage() {
 
       {/* 3. KPI strip */}
       <CockpitKpiStrip />
+
+      {/* 3.5. Team Live (CP-36) — between KPIs and agent activity. */}
+      {showLive && userId ? <TeamLiveWidget userId={userId} /> : null}
 
       {/* 4. Agent activity summary */}
       <OverviewAgentActivity />

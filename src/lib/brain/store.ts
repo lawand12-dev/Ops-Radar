@@ -25,6 +25,7 @@
 
 import crypto from 'node:crypto'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import { openai } from '<npm>/lib/openai'
 import type {
   BrainDocument,
   CommitBrainChangesInput,
@@ -37,6 +38,68 @@ import type {
 
 function sha256Hex(content: string): string {
   return crypto.createHash('sha256').update(content, 'utf8').digest('hex')
+}
+
+// ─── CP-35 — embed-on-commit for curated paths ───────────────────────────
+//
+// Only a small curated subset of brain paths gets embedded at write time:
+//   pattern-cards/, decision-log/, risk-register/, employees/<slug>/learned-rules/
+// Everything else stays embedding-free (per
+// docs/strategy/three-tier-memory-architecture-2026.md §Adjustment 2 —
+// embedding clients/, projects/, agent-runs/ would burn credits with no
+// measurable retrieval gain). The HNSW index on brain_document_versions
+// also has a matching WHERE clause so the index stays compact.
+
+const EMBED_STRING_PREFIXES = [
+  'pattern-cards/',
+  'decision-log/',
+  'risk-register/',
+] as const
+
+const EMBED_REGEX_PREFIXES: RegExp[] = [/^employees\/[^/]+\/learned-rules\//]
+
+const EMBED_MODEL = 'text-embedding-3-small'
+
+function shouldEmbedPath(path: string): boolean {
+  if (EMBED_STRING_PREFIXES.some((p) => path.startsWith(p))) return true
+  if (EMBED_REGEX_PREFIXES.some((r) => r.test(path))) return true
+  return false
+}
+
+/**
+ * Returns an OpenAI embedding for the given content, or null if anything
+ * fails. NEVER throws — embedding is a best-effort enrichment; failures
+ * must not block the brain commit.
+ */
+async function maybeEmbed(
+  content: string,
+): Promise<{ embedding: number[]; model: string } | null> {
+  try {
+    const trimmed = content.slice(0, 8000)
+    if (!trimmed.trim()) return null
+    const r = await openai.embeddings.create({
+      model: EMBED_MODEL,
+      input: trimmed,
+    })
+    const vec = r.data[0]?.embedding
+    if (!vec || vec.length !== 1536) return null
+    return { embedding: vec, model: EMBED_MODEL }
+  } catch (err) {
+    console.warn(
+      '[brain/store] embedding failed (continuing without):',
+      err instanceof Error ? err.message : String(err),
+    )
+    return null
+  }
+}
+
+/**
+ * pgvector wants the literal `[0.123, 0.456, ...]` string form on insert
+ * via supabase-js. (The column is `vector(1536)`; supabase-js serializes
+ * via JSON.stringify by default which yields the same shape.)
+ */
+function vectorToLiteral(vec: number[]): string {
+  return `[${vec.join(',')}]`
 }
 
 // ─── Write path ──────────────────────────────────────────────────────────
@@ -99,19 +162,31 @@ export async function commitBrainChanges(
       if (wasNew) created += 1
       else updated += 1
 
-      // 3. Insert version
+      // 3. Insert version — with optional embedding for curated paths.
+      // The embedding call is fire-and-forget at the per-path level: if it
+      // fails, we still insert the version with embedding=null.
       const contentHash = sha256Hex(change.content)
+      const embedResult = shouldEmbedPath(change.path)
+        ? await maybeEmbed(change.content)
+        : null
+
+      const versionPayload: Record<string, unknown> = {
+        user_id: userId,
+        document_id: documentId,
+        commit_id: commitId,
+        path: change.path,
+        content: change.content,
+        content_hash: contentHash,
+        content_size: Buffer.byteLength(change.content, 'utf8'),
+      }
+      if (embedResult) {
+        versionPayload.embedding = vectorToLiteral(embedResult.embedding)
+        versionPayload.embedding_model = embedResult.model
+      }
+
       const { data: versionRow, error: versionErr } = await supabase
         .from('brain_document_versions')
-        .insert({
-          user_id: userId,
-          document_id: documentId,
-          commit_id: commitId,
-          path: change.path,
-          content: change.content,
-          content_hash: contentHash,
-          content_size: Buffer.byteLength(change.content, 'utf8'),
-        })
+        .insert(versionPayload as never)
         .select('id')
         .single()
 
@@ -261,4 +336,77 @@ export async function documentHistory(
       createdAt: row.created_at,
     }
   })
+}
+
+// ─── CP-35 — Semantic search over the curated brain ──────────────────────
+
+export type SemanticSearchBrainInput = {
+  userId: string
+  query: string
+  /** Optional path prefix filter, e.g. `employees/sarah/learned-rules/`. */
+  prefix?: string
+  /** Max number of matches to return (default 5). */
+  limit?: number
+}
+
+export type SemanticSearchBrainMatch = {
+  path: string
+  content: string
+  similarity: number
+}
+
+/**
+ * Returns the top-K most semantically similar CURRENT-version brain
+ * documents for a user, optionally restricted to one path prefix.
+ *
+ * Used by Apprentice Mode to find similar past rules before deriving a
+ * new one (so we don't write near-duplicate rules each rejection).
+ *
+ * Safety: the caller MUST pass the authenticated user's id. The RPC
+ * function trusts the parameter — RLS is enforced by always calling from
+ * a server-only path with a known userId. Returns an empty list on any
+ * failure (embedding error, RPC error, etc.) — never throws.
+ */
+export async function semanticSearchBrain(
+  input: SemanticSearchBrainInput,
+): Promise<SemanticSearchBrainMatch[]> {
+  const { userId, query, prefix, limit } = input
+  if (!query.trim()) return []
+
+  const embedResult = await maybeEmbed(query)
+  if (!embedResult) return []
+
+  const supabase = getServerSupabaseClient()
+  const rpc = supabase.rpc as unknown as (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{
+    data: Array<{ path: string; content: string; similarity: number }> | null
+    error: unknown
+  }>
+
+  try {
+    const { data, error } = await rpc('match_brain_documents', {
+      target_user_id: userId,
+      query_embedding: vectorToLiteral(embedResult.embedding),
+      match_count: limit ?? 5,
+      path_prefix: prefix ?? null,
+    })
+    if (error) {
+      const msg = (error as { message?: string })?.message ?? String(error)
+      console.warn('[brain/store] semanticSearchBrain rpc failed:', msg)
+      return []
+    }
+    return (data ?? []).map((m) => ({
+      path: m.path,
+      content: m.content,
+      similarity: m.similarity,
+    }))
+  } catch (err) {
+    console.warn(
+      '[brain/store] semanticSearchBrain threw:',
+      err instanceof Error ? err.message : String(err),
+    )
+    return []
+  }
 }

@@ -18,7 +18,11 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server'
+import { tasks } from '@trigger.dev/sdk/v3'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
+import { apprenticeModeEnabled } from '<npm>/lib/flags'
+// Type-only — used to give `tasks.trigger` the right payload shape.
+import type { learnFromRejection } from '<npm>/trigger/learn-from-rejection'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -63,10 +67,11 @@ export async function POST(
 
   // Verify the row exists AND belongs to this user. Even though RLS should
   // already scope this, we do an explicit check so a missing row returns 404
-  // rather than a silent no-op.
+  // rather than a silent no-op. We also pull agent_slug + payload so the
+  // CP-35 Apprentice Mode handler has full context when the customer rejects.
   const { data: row, error: fetchErr } = await supabase
     .from('agent_actions')
-    .select('id, user_id')
+    .select('id, user_id, agent_slug, payload')
     .eq('id', id)
     .maybeSingle()
 
@@ -115,6 +120,46 @@ export async function POST(
 
   if (updateErr) {
     return NextResponse.json({ error: 'db_error' }, { status: 500 })
+  }
+
+  // CP-35 — Apprentice Mode. When the customer rejects (or edits) an action,
+  // fire-and-forget a Trigger.dev task that derives a generalizable rule and
+  // writes it to that employee's learned-rules in the brain. Gated by the
+  // `apprenticeModeEnabled` Statsig flag so we can kill the feature instantly
+  // if it generates bad rules.
+  //
+  // NOTE: not awaited — the customer's feedback save must not slow down
+  // because Trigger.dev is slow. The .catch() suppresses the unhandled
+  // rejection so a Trigger.dev outage doesn't surface in Sentry as a 500.
+  if ((op === 'reject' || op === 'edit') && row.agent_slug) {
+    try {
+      const flagOn = await apprenticeModeEnabled()
+      if (flagOn) {
+        void tasks
+          .trigger<typeof learnFromRejection>('learn-from-rejection', {
+            userId,
+            employeeSlug: row.agent_slug,
+            actionId: id,
+            originalProposal: row.payload,
+            rejectionReason: typeof body.reason === 'string' ? body.reason : '',
+            edits:
+              typeof body.edit_diff === 'string' && body.edit_diff.length > 0
+                ? body.edit_diff
+                : undefined,
+          })
+          .catch((err) => {
+            console.warn(
+              '[actions/feedback] learn-from-rejection trigger failed:',
+              err instanceof Error ? err.message : String(err),
+            )
+          })
+      }
+    } catch (err) {
+      console.warn(
+        '[actions/feedback] apprenticeModeEnabled check failed:',
+        err instanceof Error ? err.message : String(err),
+      )
+    }
   }
 
   return NextResponse.json({ ok: true })
