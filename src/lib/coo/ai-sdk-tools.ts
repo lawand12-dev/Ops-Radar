@@ -614,5 +614,231 @@ export function buildAiSdkCooTools(ctx: ExecutorContext): Record<string, Tool> {
     },
   })
 
+  // ─── CP-34b: AI Employee hiring + lifecycle (6 tools) ──────────────────
+  //
+  // The customer talks to the COO in plain English ("I want a Bookkeeper
+  // named Sarah, every day at 8am, checks Stripe"). The COO:
+  //   1. propose_custom_employee → compiles description into a typed draft
+  //      → returns it as an inline card the chat UI renders for confirmation
+  //   2. install_custom_employee → after the customer clicks Hire, persists
+  //      the draft to custom_employees, returns the new employee's URL
+  //   3+ list / inspect / pause / archive — lifecycle management
+  //
+  // See: docs/strategy/ai-employees-architecture-2026.md §5.5 and
+  //      docs/dev/specs/2026-05-25-ai-employees-master-plan.md CP-34b
+
+  out['propose_custom_employee'] = tool({
+    description:
+      "Compile the customer's described AI Employee (a NAMED, PERSISTENT teammate with persona, schedule, scoped tools) into a typed draft. Returns the draft for the customer to confirm — does NOT persist or run anything immediately. Use ONLY when the customer is HIRING a new named teammate (e.g. 'I want a Bookkeeper named Sarah'). For one-off task running, use run_agent_now. For event-triggered automations, use propose_automation. The customer must explicitly click Hire (which calls install_custom_employee) before this employee exists.",
+    inputSchema: z.object({
+      description: z
+        .string()
+        .min(20)
+        .describe(
+          "The customer's full request verbatim — what kind of employee, what name (if mentioned), what schedule, what tools they should use, what they should do. The compiler reads this in full.",
+        ),
+    }),
+    execute: async ({ description }) => {
+      try {
+        const { compileCustomEmployee } = await import('<npm>/lib/employees/compile')
+        const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
+          '<npm>/lib/employees/registry'
+        )
+        const { getConnectedToolSlugs } = await import('<npm>/lib/composio')
+
+        const [connectedToolkits, existingTeam] = await Promise.all([
+          getConnectedToolSlugs(ctx.userId),
+          loadCustomEmployees(ctx.userId),
+        ])
+
+        const draft = await compileCustomEmployee({
+          description,
+          connectedToolkits,
+          existingTeam: existingTeam.map((e) => ({ slug: e.slug, display: e.display })),
+          reservedSlugs: Object.keys(BUILT_IN_BY_SLUG),
+        })
+
+        return {
+          success: true as const,
+          draft,
+          // The chat client renders an inline confirmation card from this:
+          card_kind: 'custom_employee_draft' as const,
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'compile failed',
+        }
+      }
+    },
+  })
+
+  out['install_custom_employee'] = tool({
+    description:
+      'Persist a CONFIRMED CustomEmployeeDraft (returned from propose_custom_employee) so the employee starts working on schedule. Use this ONLY after the customer has explicitly confirmed the draft from a propose_custom_employee card. The draft fields must be passed back unchanged unless the customer edited them.',
+    inputSchema: z.object({
+      draft: z
+        .object({
+          slug: z.string(),
+          name: z.string(),
+          role: z.string(),
+          emoji: z.string(),
+          persona_summary: z.string(),
+          schedule_human: z.string(),
+          schedule_cron: z.string().nullable(),
+          scoped_toolkits: z.array(z.string()),
+          scoped_brain_prefixes: z.array(z.string()),
+          model_slug: z.string(),
+          max_steps: z.number(),
+          system_prompt: z.string(),
+          first_task: z.string(),
+          unsupported: z
+            .object({ reason: z.string() })
+            .nullable()
+            .default(null),
+        })
+        .describe('The confirmed draft, structurally matching CustomEmployeeDraft.'),
+    }),
+    execute: async ({ draft }) => {
+      try {
+        const { installCustomEmployee } = await import('<npm>/lib/employees/install')
+        const result = await installCustomEmployee({
+          userId: ctx.userId,
+          // The runtime schema is wider (z.string() vs z.enum() on model_slug),
+          // but we trust the model to pass back exactly what propose returned.
+          draft: draft as Parameters<typeof installCustomEmployee>[0]['draft'],
+        })
+        return result
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'install failed',
+        }
+      }
+    },
+  })
+
+  out['list_custom_employees'] = tool({
+    description:
+      "List the customer's custom AI employees (the team they've hired — NOT the 28 built-in agents). Returns each employee's slug, name, role, status, schedule, scoped toolkits, and last_run_at. Use when the customer asks who's on their team, or to compare against an existing one before proposing a new hire.",
+    inputSchema: z.object({
+      status: z.enum(['active', 'paused', 'archived']).optional(),
+    }),
+    execute: async ({ status }) => {
+      try {
+        const { loadCustomEmployees } = await import('<npm>/lib/employees/registry')
+        const all = await loadCustomEmployees(ctx.userId)
+        const filtered = status ? all.filter((e) => e.status === status) : all
+        return {
+          success: true as const,
+          employees: filtered.map((e) => ({
+            slug: e.slug,
+            name: e.display.name,
+            role: e.display.role,
+            emoji: e.display.emoji,
+            status: e.status,
+            autonomy: e.autonomy,
+            schedule_cron: e.runtime.cronSchedule,
+            scoped_toolkits: e.runtime.composioApps,
+            url: `/dashboard/employees/${e.slug}`,
+          })),
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'list failed',
+        }
+      }
+    },
+  })
+
+  out['inspect_custom_employee'] = tool({
+    description:
+      'Return the full spec for ONE custom employee — system prompt, persona summary, scoped toolkits + brain paths, model + max_steps. Call after list_custom_employees when the customer wants details on a specific hire.',
+    inputSchema: z.object({
+      slug: z.string().describe("The employee's slug (kebab-case)."),
+    }),
+    execute: async ({ slug }) => {
+      try {
+        const { loadCustomEmployeeBySlug } = await import('<npm>/lib/employees/registry')
+        const emp = await loadCustomEmployeeBySlug(ctx.userId, slug)
+        if (!emp) {
+          return { success: false as const, error: `no custom employee with slug "${slug}"` }
+        }
+        return {
+          success: true as const,
+          employee: {
+            slug: emp.slug,
+            name: emp.display.name,
+            role: emp.display.role,
+            emoji: emp.display.emoji,
+            persona_summary: emp.display.personaSummary,
+            bio: emp.display.bio,
+            status: emp.status,
+            autonomy: emp.autonomy,
+            schedule_cron: emp.runtime.cronSchedule,
+            scoped_toolkits: emp.runtime.composioApps,
+            scoped_brain_prefixes: emp.runtime.scopedBrainPrefixes,
+            model: emp.runtime.model,
+            max_steps: emp.runtime.maxSteps,
+            system_prompt: emp.runtime.systemPrompt,
+          },
+        }
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'inspect failed',
+        }
+      }
+    },
+  })
+
+  out['pause_custom_employee'] = tool({
+    description:
+      'Pause or resume a custom employee. Pausing leaves the spec and brain memory intact — the employee just stops running on schedule. Pass resume=true to flip a paused employee back to active.',
+    inputSchema: z.object({
+      slug: z.string(),
+      resume: z.boolean().optional().default(false),
+    }),
+    execute: async ({ slug, resume }) => {
+      try {
+        const { changeCustomEmployeeStatus } = await import('<npm>/lib/employees/install')
+        return await changeCustomEmployeeStatus({
+          userId: ctx.userId,
+          slug,
+          action: resume ? 'resume' : 'pause',
+        })
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'status change failed',
+        }
+      }
+    },
+  })
+
+  out['archive_custom_employee'] = tool({
+    description:
+      "Archive a custom employee — they stop running, are hidden from the team view, but their brain memory + run history are preserved. Use only when the customer explicitly wants to retire an employee. NOT a delete — installing a new employee with the same slug will reactivate this row's spec.",
+    inputSchema: z.object({
+      slug: z.string(),
+    }),
+    execute: async ({ slug }) => {
+      try {
+        const { changeCustomEmployeeStatus } = await import('<npm>/lib/employees/install')
+        return await changeCustomEmployeeStatus({
+          userId: ctx.userId,
+          slug,
+          action: 'archive',
+        })
+      } catch (err) {
+        return {
+          success: false as const,
+          error: err instanceof Error ? err.message : 'archive failed',
+        }
+      }
+    },
+  })
+
   return out
 }

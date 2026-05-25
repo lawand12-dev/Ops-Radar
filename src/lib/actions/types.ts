@@ -177,7 +177,7 @@ export type ComposioActionPayload = {
   toolkit: string                     // e.g. 'gmail'
   action_slug: string                 // e.g. 'GMAIL_SEND_EMAIL'
   arguments: Record<string, unknown>  // shape varies per action
-  source: 'cron-agent' | 'coo-chat'
+  source: 'cron-agent' | 'coo-chat' | 'employee-chat'
   agent_slug?: string                 // for cron source: which agent
   summary?: string                    // one-line human description
   result?: unknown                    // populated after execute

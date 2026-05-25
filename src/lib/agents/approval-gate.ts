@@ -30,7 +30,7 @@ import {
 } from './tool-policies'
 
 /** Source surface that's invoking the agent — informs the customer card. */
-export type ApprovalSource = 'cron-agent' | 'coo-chat'
+export type ApprovalSource = 'cron-agent' | 'coo-chat' | 'employee-chat'
 
 export type ApprovalGateOptions = {
   userId: string

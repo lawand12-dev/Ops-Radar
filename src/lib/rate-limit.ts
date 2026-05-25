@@ -7,6 +7,7 @@ type RateLimitName =
   | 'auth-signin'
   | 'auth-forgot-password'
   | 'dashboard-coo'
+  | 'dashboard-employee-chat'
   | 'integrations-connect'
   | 'share'
   | 'dashboard-actions'
@@ -21,6 +22,7 @@ const RATE_LIMITS: Record<RateLimitName, { limit: number; window: '1 h' }> = {
   'auth-signin': { limit: 20, window: '1 h' },
   'auth-forgot-password': { limit: 5, window: '1 h' },
   'dashboard-coo': { limit: 30, window: '1 h' },
+  'dashboard-employee-chat': { limit: 60, window: '1 h' },
   'integrations-connect': { limit: 10, window: '1 h' },
   share: { limit: 60, window: '1 h' },
   'dashboard-actions': { limit: 120, window: '1 h' },
@@ -46,6 +48,7 @@ const FAIL_CLOSED_ROUTES = new Set<RateLimitName>([
   'auth-signin',
   'auth-forgot-password',
   'dashboard-coo',
+  'dashboard-employee-chat',
   'integrations-connect',
   'dashboard-health-report',
 ])

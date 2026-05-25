@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -18,6 +18,7 @@ import {
   History,
   Workflow,
   Gauge,
+  Plus,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
 import Image from 'next/image';
@@ -26,12 +27,22 @@ import { ThemeToggle } from '<npm>/components/dashboard/theme-toggle';
 
 type NavItem = { label: string; href: string; icon: typeof LayoutDashboard };
 type NavSection = { tag: string | null; items: NavItem[] };
+
+export type CustomEmployeeNavItem = {
+  slug: string;
+  name: string;
+  role: string;
+  emoji: string;
+  status: 'active' | 'paused' | 'archived';
+};
+
 type SidebarProps = {
   userInitials: string;
   userName: string;
   userRole: string;
   brandLogoUrl?: string | null;
   brandName?: string | null;
+  customEmployees?: CustomEmployeeNavItem[];
 };
 
 // CP-33 — research-backed sidebar (Lindy / Devin / BOND pattern):
@@ -82,7 +93,14 @@ const navSections: NavSection[] = [
   },
 ];
 
-export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandName }: SidebarProps) {
+export function Sidebar({
+  userInitials,
+  userName,
+  userRole,
+  brandLogoUrl,
+  brandName,
+  customEmployees = [],
+}: SidebarProps) {
   const pathname = usePathname();
   const [pendingActions, setPendingActions] = useState(0);
 
@@ -92,6 +110,10 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
       .then((d: { pending_count?: number }) => setPendingActions(d.pending_count ?? 0))
       .catch(() => {});
   }, []);
+
+  const teamEmployees = customEmployees.filter((e) => e.status === 'active');
+  const visibleEmployees = teamEmployees.slice(0, 6);
+  const overflowCount = Math.max(0, teamEmployees.length - 6);
 
   return (
     <aside className="fixed top-0 left-0 z-40 flex h-screen w-[220px] min-w-[220px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -120,38 +142,47 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-1">
         {navSections.map((section, sectionIdx) => (
-          <div key={section.tag ?? sectionIdx} className={sectionIdx === 0 ? 'mt-1' : 'mt-3.5'}>
-            {section.tag && (
-              <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">
-                {section.tag}
-              </div>
-            )}
-            {section.items.map(({ label, href, icon: Icon }) => {
-              const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
-              return (
-                <Link
-                  key={label}
-                  href={href}
-                  className={cn(
-                    'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
-                    active
-                      ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
-                      : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
-                  )}
-                >
-                  <Icon size={16} strokeWidth={active ? 2 : 1.6} />
-                  <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
-                    {label}
-                  </span>
-                  {href === '/dashboard/actions' && pendingActions > 0 && (
-                    <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
-                      {pendingActions}
+          <Fragment key={section.tag ?? sectionIdx}>
+            <div className={sectionIdx === 0 ? 'mt-1' : 'mt-3.5'}>
+              {section.tag && (
+                <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">
+                  {section.tag}
+                </div>
+              )}
+              {section.items.map(({ label, href, icon: Icon }) => {
+                const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    className={cn(
+                      'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
+                      active
+                        ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
+                        : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+                    )}
+                  >
+                    <Icon size={16} strokeWidth={active ? 2 : 1.6} />
+                    <span className={cn('text-[13.5px]', active ? 'font-semibold' : 'font-normal')}>
+                      {label}
                     </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
+                    {href === '/dashboard/actions' && pendingActions > 0 && (
+                      <span className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[9px] font-bold text-white">
+                        {pendingActions}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+            {section.tag === 'OPERATIONS' && (
+              <YourTeamSection
+                pathname={pathname}
+                visibleEmployees={visibleEmployees}
+                overflowCount={overflowCount}
+              />
+            )}
+          </Fragment>
         ))}
       </nav>
 
@@ -176,5 +207,112 @@ export function Sidebar({ userInitials, userName, userRole, brandLogoUrl, brandN
         <SignOutButton />
       </div>
     </aside>
+  );
+}
+
+function YourTeamSection({
+  pathname,
+  visibleEmployees,
+  overflowCount,
+}: {
+  pathname: string;
+  visibleEmployees: CustomEmployeeNavItem[];
+  overflowCount: number;
+}) {
+  const hireHref = '/dashboard/coo?prompt=I%20want%20to%20hire%20a%20new%20AI%20employee';
+  const allHref = '/dashboard/employees';
+  const allActive = pathname === allHref;
+
+  return (
+    <div className="mt-3.5">
+      <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">
+        YOUR TEAM
+      </div>
+
+      {/* Hire */}
+      <Link
+        href={hireHref}
+        className={cn(
+          'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
+          'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+        )}
+      >
+        <Plus size={16} strokeWidth={1.6} />
+        <span className="text-[13.5px] font-normal">Hire AI Employee</span>
+      </Link>
+
+      {/* All employees */}
+      <Link
+        href={allHref}
+        className={cn(
+          'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
+          allActive
+            ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
+            : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+        )}
+      >
+        <Users size={16} strokeWidth={allActive ? 2 : 1.6} />
+        <span className={cn('text-[13.5px]', allActive ? 'font-semibold' : 'font-normal')}>
+          All employees
+        </span>
+      </Link>
+
+      {/* Custom employees */}
+      {visibleEmployees.map((emp) => {
+        const href = `/dashboard/employees/${emp.slug}`;
+        const active = pathname === href || pathname.startsWith(`${href}/`);
+        return (
+          <Link
+            key={emp.slug}
+            href={href}
+            className={cn(
+              'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
+              active
+                ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
+                : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
+            )}
+          >
+            <span
+              aria-hidden
+              className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-[14px] leading-none"
+            >
+              {emp.emoji}
+            </span>
+            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+              <span
+                className={cn(
+                  'truncate text-[13.5px]',
+                  active ? 'font-semibold' : 'font-normal',
+                )}
+              >
+                {emp.name}
+              </span>
+              <span className="truncate text-[11px] text-[var(--color-fg-subtle)]">
+                {emp.role}
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  'ml-auto inline-block size-1.5 shrink-0 rounded-full',
+                  emp.status === 'active'
+                    ? 'bg-[var(--color-success)]'
+                    : 'bg-[var(--color-fg-faint)]',
+                )}
+              />
+            </span>
+          </Link>
+        );
+      })}
+
+      {overflowCount > 0 && (
+        <Link
+          href={allHref}
+          className="mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 text-[var(--color-fg-muted)] no-underline transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
+        >
+          <span aria-hidden className="inline-flex h-4 w-4 shrink-0 items-center justify-center" />
+          <span className="text-[13.5px] font-normal">+{overflowCount} more</span>
+        </Link>
+      )}
+    </div>
   );
 }
