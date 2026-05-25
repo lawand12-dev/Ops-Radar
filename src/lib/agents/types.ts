@@ -74,8 +74,17 @@ export type AgentModel =
   | 'o3'
   | 'o4-mini'
 
+/**
+ * Spec slug: either one of the 28 built-in `AgentSlug` literals OR a
+ * `custom:<slug>` prefixed string for customer-hired AI employees. The
+ * latter is produced by `specFromCustomEmployee` in
+ * `src/trigger/run-custom-employee.ts`. Code paths that need to discriminate
+ * should use `spec.slug.startsWith('custom:')`.
+ */
+export type AgentSpecSlug = AgentSlug | `custom:${string}`
+
 export type AgentSpec = {
-  slug: AgentSlug
+  slug: AgentSpecSlug
   displayName: string
   description: string                     // one-line, used on the agent card
   model: AgentModel

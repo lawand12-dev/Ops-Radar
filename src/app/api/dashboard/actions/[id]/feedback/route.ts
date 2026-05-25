@@ -117,6 +117,10 @@ export async function POST(
     .from('agent_actions')
     .update(update)
     .eq('id', id)
+    // Defense-in-depth — the row was already ownership-checked above, but
+    // adding the user_id filter on the UPDATE closes the TOCTOU window and
+    // protects against future refactors that swap to a service-role client.
+    .eq('user_id', userId)
 
   if (updateErr) {
     return NextResponse.json({ error: 'db_error' }, { status: 500 })

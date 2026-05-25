@@ -27,7 +27,7 @@
 import { task, logger, metadata } from "@trigger.dev/sdk/v3"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
-import type { AgentSpec, AgentSlug } from "<npm>/lib/agents/types"
+import type { AgentSpec } from "<npm>/lib/agents/types"
 import type { ToolSlug } from "<npm>/lib/composio"
 import type { Database } from "<npm>/lib/database.types"
 
@@ -76,7 +76,7 @@ function specFromCustomEmployee(
       ].join('\n')
     : baseSystemPrompt
   return {
-    slug: `custom:${row.slug}` as AgentSlug,
+    slug: `custom:${row.slug}`,
     displayName: `${row.name} · ${row.role}`,
     description: row.persona_summary?.slice(0, 200) ?? `${row.role} (custom employee)`,
     model: (row.model_slug ?? "gpt-5.4") as AgentSpec["model"],
@@ -114,12 +114,19 @@ export const runCustomEmployee = task({
       .eq("user_id", userId)
       .maybeSingle()
 
-    if (error || !row) {
-      logger.warn("Custom employee not found or not accessible", {
+    if (error) {
+      // Transient Supabase failure — let Trigger.dev retry by throwing.
+      // Previously this returned a "not-found" skip and permanently lost
+      // the hourly run on a single DB blip.
+      logger.error("Custom employee lookup failed", {
         employeeId,
         userId,
-        error: error?.message,
+        error: error.message,
       })
+      throw new Error(`custom_employees lookup failed: ${error.message}`)
+    }
+    if (!row) {
+      logger.warn("Custom employee not found", { employeeId, userId })
       return { skipped: "not-found" as const }
     }
 
@@ -153,10 +160,17 @@ export const runCustomEmployee = task({
     // Mark last_run_at on success so the /dashboard/employees UI can show
     // "ran 12m ago" without a separate timestamp query per row.
     if (result.status === "success") {
-      await supabase
+      const { error: updateError } = await supabase
         .from("custom_employees")
         .update({ last_run_at: new Date().toISOString() })
         .eq("id", row.id)
+        .eq("user_id", row.user_id) // defense-in-depth — service-role bypasses RLS
+      if (updateError) {
+        logger.warn("Failed to mark last_run_at", {
+          employeeId,
+          error: updateError.message,
+        })
+      }
     }
 
     logger.log("Custom employee run finished", {

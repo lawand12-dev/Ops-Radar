@@ -27,6 +27,13 @@ export const dynamic = 'force-dynamic'
 
 // Token lifetime: 5 minutes. The widget rotates on a 4-minute timer so
 // there's a 1-minute overlap before the old token expires.
+//
+// IMPORTANT: `expirationTime` is forwarded to jose's `setExpirationTime`,
+// which interprets a *number* as Unix seconds since the epoch (NOT a TTL).
+// We pass a duration STRING ("5m") so the SDK computes the absolute expiry
+// itself. Passing `300000` as a number used to mint tokens that expired in
+// 1970 — silently breaking the realtime widget.
+const TOKEN_TTL = '5m'
 const TOKEN_TTL_MS = 5 * 60 * 1000
 
 export async function GET(): Promise<NextResponse> {
@@ -46,7 +53,7 @@ export async function GET(): Promise<NextResponse> {
           tags: [`user:${userId}`],
         },
       },
-      expirationTime: TOKEN_TTL_MS,
+      expirationTime: TOKEN_TTL,
     })
 
     const expiresAt = new Date(Date.now() + TOKEN_TTL_MS).toISOString()

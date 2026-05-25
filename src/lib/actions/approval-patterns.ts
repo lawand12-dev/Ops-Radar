@@ -67,7 +67,7 @@ const AGENT_DISPLAY_NAME: Record<AgentSlug, string> = {
  */
 export async function getApprovalPatterns(
   userId: string,
-  agentSlug: AgentSlug,
+  agentSlug: AgentSlug | string,
   sinceDays: number = 60,
 ): Promise<string | null> {
   try {
@@ -113,7 +113,11 @@ export async function getApprovalPatterns(
 
     const queued = total
     const approvalRate = queued > 0 ? Math.round((approved / queued) * 100) : 0
-    const agentName = AGENT_DISPLAY_NAME[agentSlug] ?? agentSlug
+    // `agentSlug` is widened to `AgentSlug | string` because custom employees
+    // ('custom:<slug>') flow through here too. Cast to the lookup's key type
+    // for the index — `??` handles unknown keys.
+    const agentName =
+      AGENT_DISPLAY_NAME[agentSlug as AgentSlug] ?? agentSlug
 
     const lines: string[] = []
     lines.push(

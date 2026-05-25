@@ -62,13 +62,23 @@ export async function installCustomEmployee(
   const supabase = getServerSupabaseClient()
 
   // Check for existing slug for THIS user — friendlier error than the DB
-  // unique-constraint violation.
-  const { data: existing } = await supabase
+  // unique-constraint violation. Note: this is racy against a concurrent
+  // install from the same user (same slug) — we catch the unique violation
+  // (Postgres error code 23505) at the INSERT below as defense-in-depth.
+  const { data: existing, error: existingErr } = await supabase
     .from('custom_employees')
     .select('id, status')
     .eq('user_id', userId)
     .eq('slug', draft.slug)
     .maybeSingle()
+
+  if (existingErr) {
+    console.error('[installCustomEmployee] existing-slug lookup failed', existingErr)
+    return {
+      success: false,
+      error: "We couldn't check whether that slug is taken — try again in a moment.",
+    }
+  }
 
   if (existing) {
     if (existing.status === 'archived') {
@@ -135,9 +145,19 @@ export async function installCustomEmployee(
     .single()
 
   if (insertErr || !inserted) {
+    // Postgres unique-violation — TOCTOU with the existence check above, or
+    // a parallel install from another tab. Show a clean message instead of
+    // leaking "duplicate key value violates unique constraint…" to the COO.
+    if (insertErr && (insertErr as { code?: string }).code === '23505') {
+      return {
+        success: false,
+        error: `You already have an employee with slug "${draft.slug}". Pick a different name or pause the existing one first.`,
+      }
+    }
+    console.error('[installCustomEmployee] insert failed', insertErr)
     return {
       success: false,
-      error: `Failed to create employee: ${insertErr?.message ?? 'unknown'}`,
+      error: "We couldn't create the employee — try again in a moment.",
     }
   }
 

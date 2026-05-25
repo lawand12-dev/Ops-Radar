@@ -39,9 +39,12 @@ const TOKEN_REFRESH_MS = 4 * 60 * 1000;
 
 export function TeamLiveWidget({ userId }: { userId: string }) {
   const [token, setToken] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const fetchingRef = useRef(false);
 
-  // Fetch token on mount + refresh every 4 min.
+  // Fetch token on mount + refresh every 4 min. Track failures separately
+  // from "no token yet" so the widget doesn't silently show "All agents idle"
+  // when the token endpoint is actually 500-ing.
   useEffect(() => {
     let cancelled = false;
 
@@ -53,13 +56,26 @@ export function TeamLiveWidget({ userId }: { userId: string }) {
           cache: 'no-store',
         });
         if (!res.ok) {
-          if (!cancelled) setToken(null);
+          if (!cancelled) {
+            setToken(null);
+            setTokenError(
+              res.status === 401
+                ? 'Sign in again to enable Team Live.'
+                : 'Live updates unavailable.',
+            );
+          }
           return;
         }
         const data = (await res.json()) as TokenResponse;
-        if (!cancelled) setToken(data.token);
+        if (!cancelled) {
+          setToken(data.token);
+          setTokenError(null);
+        }
       } catch {
-        if (!cancelled) setToken(null);
+        if (!cancelled) {
+          setToken(null);
+          setTokenError('Live updates unavailable.');
+        }
       } finally {
         fetchingRef.current = false;
       }
@@ -71,7 +87,7 @@ export function TeamLiveWidget({ userId }: { userId: string }) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [userId]);
 
   // Don't subscribe until we have a token. The hook handles `enabled: false`
   // by simply not opening a stream.
@@ -103,7 +119,29 @@ export function TeamLiveWidget({ userId }: { userId: string }) {
         </span>
       </div>
 
-      {!token && !error ? null : error ? null : liveRuns.length === 0 ? (
+      {tokenError ? (
+        <p className="text-body-sm text-[var(--color-fg-muted)]">
+          {tokenError} <button
+            type="button"
+            onClick={() => {
+              setTokenError(null);
+              setToken(null);
+              fetchingRef.current = false;
+            }}
+            className="underline-offset-2 hover:underline"
+          >
+            Retry
+          </button>
+        </p>
+      ) : error ? (
+        <p className="text-body-sm text-[var(--color-fg-muted)]">
+          Lost connection to live stream. Reload to retry.
+        </p>
+      ) : !token ? (
+        <p className="text-body-sm text-[var(--color-fg-subtle)]">
+          Connecting…
+        </p>
+      ) : liveRuns.length === 0 ? (
         <p className="text-body-sm text-[var(--color-fg-subtle)]">
           All agents idle.
         </p>

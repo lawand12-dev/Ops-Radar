@@ -26,6 +26,7 @@ import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { commitBrainChanges, semanticSearchBrain } from '<npm>/lib/brain/store'
 import type { BrainAuthorType } from '<npm>/lib/brain/types'
+import { withQuota } from '<npm>/lib/usage/track'
 
 export type LearnFromRejectionPayload = {
   userId: string
@@ -119,12 +120,40 @@ export const learnFromRejection = task({
       .filter(Boolean)
       .join('\n')
 
-    const { object } = await generateObject({
-      model: openai('gpt-5.4'),
-      schema: RuleSchema,
-      system: LEARN_RULE_SYSTEM_PROMPT,
-      prompt: userPrompt,
-    })
+    // Wrap the model call in the multi-tenant quota system. Without this,
+    // a customer at cap who racks up many rejections could blow past the
+    // per-tenant token cap with no enforcement.
+    const quotaOutcome = await withQuota(
+      {
+        userId,
+        provider: 'openai',
+        operation: 'apprentice_mode_rule_derive',
+      },
+      async () => {
+        const { object, usage } = await generateObject({
+          model: openai('gpt-5.4'),
+          schema: RuleSchema,
+          system: LEARN_RULE_SYSTEM_PROMPT,
+          prompt: userPrompt,
+        })
+        return {
+          result: object,
+          usage: { tokens: usage?.totalTokens ?? 0 },
+        }
+      },
+    )
+
+    if (!quotaOutcome.ok) {
+      logger.warn('Skipping rule derivation — quota check failed', {
+        userId,
+        employeeSlug,
+        actionId,
+        reason: quotaOutcome.error,
+      })
+      return { skipped: 'quota' as const, reason: quotaOutcome.error }
+    }
+
+    const object = quotaOutcome.result
 
     // 3. Commit to brain — curated-paths hook automatically embeds + indexes.
     const path = `employees/${employeeSlug}/learned-rules/${actionId}.md`

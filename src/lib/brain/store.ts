@@ -127,8 +127,13 @@ export async function commitBrainChanges(
     .single()
 
   if (commitErr || !commitRow) {
+    // Don't return a sentinel — callers (write_brain_document, agent loop,
+    // learn-from-rejection) won't notice an empty commitId and will report
+    // success while nothing was written. Trigger.dev retries on throw.
     console.error('[brain/store] commit insert failed:', commitErr?.message)
-    return { commitId: '', versionIds: [], documentsCreated: 0, documentsUpdated: 0 }
+    throw new Error(
+      `brain commit failed: ${commitErr?.message ?? 'unknown insert error'}`,
+    )
   }
   const commitId = commitRow.id as string
 

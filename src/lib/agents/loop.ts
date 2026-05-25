@@ -52,10 +52,16 @@ const VALID_SLUGS = new Set(Object.keys(COMPOSIO_TOOLS) as ToolSlug[])
 const isToolSlug = (v: string): v is ToolSlug => VALID_SLUGS.has(v as ToolSlug)
 
 export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRunResult> {
-  // 1. Tier gate
-  const tier = await getUserTier(userId)
-  if (!tier || !tierAllows(tier, spec.slug)) {
-    return logSkip(userId, spec.slug, 'tier')
+  // 1. Tier gate. Built-in agents are tier-gated via PLAN_AGENTS;
+  // custom employees (slug starts with `custom:`) are gated by the
+  // customer having connected the tool + having an active row — they
+  // bypass the built-in tier matrix entirely.
+  const isCustom = spec.slug.startsWith('custom:')
+  if (!isCustom) {
+    const tier = await getUserTier(userId)
+    if (!tier || !tierAllows(tier, spec.slug as AgentSlug)) {
+      return logSkip(userId, spec.slug, 'tier')
+    }
   }
 
   // 2. Integrations gate
@@ -302,6 +308,11 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
                 const { runCustomEmployee } = await import(
                   '<npm>/trigger/run-custom-employee'
                 )
+                // Bound the wait via the report task's own `maxDuration`
+                // (600s on `runCustomEmployee`) — Trigger.dev kills the
+                // run when it hits that limit, which causes triggerAndWait
+                // to resolve with `ok: false`. The manager handles that
+                // case below.
                 const result = await tasks.triggerAndWait<typeof runCustomEmployee>(
                   'run-custom-employee',
                   {
@@ -312,9 +323,23 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
                   },
                 )
                 if (!result.ok) {
+                  // `result.error` is `unknown` — extract a string message
+                  // properly (raw `?? 'unknown'` would coerce Error objects
+                  // to "[object Object]" and leak garbage into the model).
+                  const errMsg =
+                    result.error instanceof Error
+                      ? result.error.message
+                      : typeof result.error === 'string'
+                      ? result.error
+                      : 'unknown error'
+                  console.error('[delegate_to_employee] report failed', {
+                    managerSlug,
+                    reportSlug: report.slug,
+                    error: errMsg,
+                  })
                   return {
                     success: false as const,
-                    error: `Report run failed: ${result.error ?? 'unknown error'}`,
+                    error: `Report run failed: ${errMsg}`,
                   }
                 }
                 // result.output is the task's return value (typed via the import).
@@ -335,6 +360,11 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
                   notion_writes: output?.notion_writes ?? 0,
                 }
               } catch (err) {
+                console.error('[delegate_to_employee] threw', {
+                  managerSlug,
+                  reportSlug: args.report_slug,
+                  err,
+                })
                 return {
                   success: false as const,
                   error: err instanceof Error ? err.message : 'delegation failed',
@@ -532,7 +562,7 @@ async function markConnectionsUsed(userId: string, toolkits: ToolSlug[]): Promis
     .in('tool_slug', toolkits)
 }
 
-async function startAgentRun(userId: string, slug: AgentSlug): Promise<string | null> {
+async function startAgentRun(userId: string, slug: string): Promise<string | null> {
   const supabase = getServerSupabaseClient()
   const { data, error } = await supabase
     .from('agent_runs')
@@ -585,7 +615,7 @@ async function failAgentRun(runId: string, err: unknown): Promise<AgentRunResult
 
 async function logSkip(
   userId: string,
-  slug: AgentSlug,
+  slug: string,
   reason: string,
 ): Promise<AgentRunResult> {
   const supabase = getServerSupabaseClient()

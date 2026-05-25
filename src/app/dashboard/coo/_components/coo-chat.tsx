@@ -106,6 +106,9 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
     abortRef.current?.abort();
     setStreaming(null);
     setLoading(false);
+    // Don't carry session A's error banner / retry payload into session B.
+    setChatError(null);
+    setLastUserText('');
 
     if (!sessionId) {
       setMessages([]);
@@ -188,8 +191,12 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = '';
+      // Once the server has emitted `done` or `error`, every later event is
+      // a ghost — we must NOT mutate `streaming` or `messages` from it, or
+      // we resurrect the cleared bubble / append a ghost assistant turn.
+      let terminated = false;
 
-      while (true) {
+      streamLoop: while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -202,14 +209,18 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
           let event: AgentEvent;
           try { event = JSON.parse(line.slice(6)) as AgentEvent; } catch { continue; }
 
+          if (terminated) continue;
+
           if (event.type === 'session') {
             displayedSessionRef.current = event.session_id;
             onSessionResolved(event.session_id, event.title);
+            continue;
           }
 
           if (event.type === 'tool_call') {
             current = { ...current, toolSteps: [...current.toolSteps, { name: event.name, label: event.label, done: false }] };
             setStreaming(current);
+            continue;
           }
 
           if (event.type === 'tool_done') {
@@ -218,11 +229,13 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
               toolSteps: current.toolSteps.map((s) => s.name === event.name ? { ...s, done: true } : s),
             };
             setStreaming(current);
+            continue;
           }
 
           if (event.type === 'text_delta') {
             current = { ...current, content: current.content + event.delta };
             setStreaming(current);
+            continue;
           }
 
           if (event.type === 'action_proposed') {
@@ -236,22 +249,39 @@ export function CooChat({ sessionId, onSessionResolved, onMessagePersisted }: Pr
               },
             };
             setStreaming(current);
+            continue;
           }
 
           if (event.type === 'error') {
             // Don't commit a half-streamed assistant bubble — show a clear
-            // error banner with retry instead.
+            // error banner with retry instead. Bail out of the stream
+            // immediately so retry isn't blocked waiting on `finally`.
             setStreaming(null);
             setMessages(messages);
             setChatError({ message: event.message });
+            terminated = true;
+            setLoading(false);
+            try { abortRef.current?.abort(); } catch { /* noop */ }
             onMessagePersisted();
+            break streamLoop;
           }
 
           if (event.type === 'done') {
-            const finalMsg: AssistantMessage = { ...current };
-            setMessages((m) => [...m, finalMsg]);
+            // Only commit if there's anything to show — a no-op turn
+            // (e.g. server bug, all-tool-failures) leaves the empty
+            // wrapper visible otherwise.
+            const hasContent =
+              current.content.length > 0 ||
+              current.toolSteps.length > 0 ||
+              current.actionCard !== null;
+            if (hasContent) {
+              const finalMsg: AssistantMessage = { ...current };
+              setMessages((m) => [...m, finalMsg]);
+            }
             setStreaming(null);
+            terminated = true;
             onMessagePersisted();
+            break streamLoop;
           }
         }
       }
