@@ -220,7 +220,7 @@ The gap between 68% "using AI" and 8.8% "AI embedded in operations" is OpsRadar'
 **The 15-minute qualifier question (one question, told to all SDRs):**
 > "When was the last time you discovered a client had been losing you money for more than a month — and what did it cost you?"
 
-If they have an answer and a dollar figure, they qualify. Full persona research, disqualifiers, and sourcing playbook are in [`docs/strategy/icp-customer-research.md`](./icp-customer-research.md).
+If they have an answer and a dollar figure, they qualify. Full persona research, disqualifiers, and sourcing playbook are in [`docs/research/2026-05-icp-customer.md`](./icp-customer-research.md).
 
 ### 3.2 Expansion ICP (Customers 50–200)
 
@@ -251,7 +251,7 @@ $3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in 
 
 ### 4.2 The 4-Tier Pricing Structure
 
-*(Van Westendorp validated — see `docs/strategy/pricing-depth.md` for full analysis)*
+*(Van Westendorp validated — see `docs/positioning/pricing-depth.md` for full analysis)*
 
 | Tier | Price | Included | Expansion Trigger |
 |------|-------|----------|-------------------|

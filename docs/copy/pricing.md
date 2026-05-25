@@ -1,6 +1,6 @@
 # /pricing Copy v2 — Built from scratch
 
-*Built: 2026-05-18. Last updated: 2026-05-19. Source of truth: `docs/strategy/pricing-depth.md` + `docs/strategy/path-a-strategy-2026.md` §10.4 + §11.*
+*Built: 2026-05-18. Last updated: 2026-05-19. Source of truth: `docs/positioning/pricing-depth.md` + `docs/positioning/path-a-strategy.md` §10.4 + §11.*
 
 > **Voice guardrails on this page.** Banned: platform, dashboard (as commodity), reporting, AI assistant, ChatGPT-powered, automation, efficiency, holistic, enterprise-grade, workflow, n8n, Claude, "48-hour audit", specific feature counts ("12 dashboards"). Required: dollar amounts, named integrations, agency-specific outcomes, the COO anchor on every card. Short sentences. Founder-to-founder.
 

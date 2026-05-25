@@ -2,7 +2,7 @@
  * Brain storage types (CP-27).
  *
  * The OpsRadar-hosted git-like brain — Postgres-backed, not actual git.
- * See docs/strategy/three-tier-memory-architecture-2026.md for the why.
+ * See docs/adr/0004-three-tier-memory.md for the why.
  *
  * Public API surface:
  *   commitBrainChanges() — atomic multi-file write (Postgres transaction)

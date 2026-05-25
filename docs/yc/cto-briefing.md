@@ -29,7 +29,7 @@ You own the chatv2 backend. Five concrete asks at the bottom (§8) — none bloc
 
 3. **The moat is sequencing + integration depth + the execution layer.** Competitors who ship a smart dashboard stop at *observation*. We close the loop with n8n on each customer's own instance — generated from chat, deployed by chatv2, owned by the customer forever. They can leave OpsRadar tomorrow and their workflows keep running. That's why the AI COO claim is defensible against ClickUp Super Agents, Scoro, Kantata, Linear Agent, and every wrapper-startup that will appear in the next 12 months.
 
-Deeper version of the strategy is in [`docs/strategy/path-a-strategy-2026.md`](../strategy/path-a-strategy-2026.md) and [`docs/strategy/moats-and-friction-2026.md`](../strategy/moats-and-friction-2026.md). You don't need to read those for the YC story; the three lines above are the whole pitch.
+Deeper version of the strategy is in [`docs/positioning/path-a-strategy.md`](../strategy/path-a-strategy-2026.md) and [`docs/positioning/moats.md`](../strategy/moats-and-friction-2026.md). You don't need to read those for the YC story; the three lines above are the whole pitch.
 
 ---
 

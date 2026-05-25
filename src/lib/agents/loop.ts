@@ -237,7 +237,7 @@ export async function runAgent(spec: AgentSpec, userId: string): Promise<AgentRu
       }),
       // CP-34 — Option C escalation. Any employee mid-task can ask the COO
       // a cross-cutting question. The COO reads the full brain and answers
-      // with cross-employee context. See docs/strategy/ai-employees-architecture-2026.md §3.2.
+      // with cross-employee context. See docs/specs/ai-employees.md §3.2.
       consult_coo: aiTool({
         description:
           'Escalate a question to the AI Chief of Staff (the supervisor). Use this when you need cross-employee context you do not have access to — e.g. "How did Marcus classify the BigCo deal?" or "Is this customer on retainer or project terms?". Returns a direct answer plus optionally a reusable rule to remember.',

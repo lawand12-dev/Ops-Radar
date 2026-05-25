@@ -78,7 +78,7 @@
 
 ## What's NOT in the official competitor docs yet
 
-The current `docs/competitive/competitor-teardowns.md` and `docs/strategy/vs-pages.md` cover the PSA tools (Productive, Scoro, Kantata, Accelo, Float) exhaustively. **They don't cover AI agent products** (Lindy, Decagon, Sierra, Relevance, Wordware) as competitors. That's a gap because YC partners and agency-owner buyers in 2026 will absolutely ask "how is this different from Lindy?" before they ask "how is this different from Productive?"
+The current `docs/competitive/competitor-teardowns.md` and `docs/positioning/vs-pages.md` cover the PSA tools (Productive, Scoro, Kantata, Accelo, Float) exhaustively. **They don't cover AI agent products** (Lindy, Decagon, Sierra, Relevance, Wordware) as competitors. That's a gap because YC partners and agency-owner buyers in 2026 will absolutely ask "how is this different from Lindy?" before they ask "how is this different from Productive?"
 
 **Recommended additions:**
 - `/vs/lindy` landing page

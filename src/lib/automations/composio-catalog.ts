@@ -23,7 +23,7 @@ export const COMPOSIO_TRIGGER_CATALOG = [
   { toolkit: 'gmail', slug: 'GMAIL_EMAIL_SENT_TRIGGER', description: 'Email sent from connected Gmail account' },
   // TODO(composio-triggers): Stripe trigger slugs aren't yet enumerated in
   // Composio docs. When confirmed, add: invoice paid, charge failed,
-  // subscription updated, etc. See docs/strategy/automations-architecture-2026.md §4.
+  // subscription updated, etc. See docs/specs/automations.md §4.
 ] as const
 
 export const COMPOSIO_ACTION_CATALOG = [

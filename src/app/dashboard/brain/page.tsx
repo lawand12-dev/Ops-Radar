@@ -10,10 +10,10 @@
 //   4. Directory tree — browse what's inside
 //
 // Research basis:
-//   - docs/strategy/three-tier-memory-architecture-2026.md (Karpathy critique
+//   - docs/adr/0004-three-tier-memory.md (Karpathy critique
 //     + the markdown export safety valve)
-//   - docs/strategy/moats-and-friction-2026.md (ownership = moat)
-//   - docs/strategy/path-a-strategy-2026.md (YC #4 Company Brain)
+//   - docs/positioning/moats.md (ownership = moat)
+//   - docs/positioning/path-a-strategy.md (YC #4 Company Brain)
 
 import { redirect } from 'next/navigation'
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr'

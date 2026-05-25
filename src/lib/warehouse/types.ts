@@ -5,7 +5,7 @@
  * `external_events` table via recordEvent / recordEvents. The AI agents
  * query history via queryEvents / aggregateByMonth.
  *
- * See docs/strategy/three-tier-memory-architecture-2026.md for the full design.
+ * See docs/adr/0004-three-tier-memory.md for the full design.
  */
 
 import type { Json } from '<npm>/lib/database.types'

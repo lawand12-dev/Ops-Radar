@@ -21,7 +21,7 @@
  *      escalation all just work
  *   4. Marks last_run_at on success so the UI shows "ran Nm ago"
  *
- * See: docs/strategy/trigger-composio-integration-2026.md §Pattern 1.
+ * See: docs/specs/trigger-composio-integration.md §Pattern 1.
  */
 
 import { task, logger, metadata } from "@trigger.dev/sdk/v3"

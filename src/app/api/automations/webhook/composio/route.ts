@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
   //   - The webhook returns 200 in < 200ms regardless of automation duration,
   //     eliminating Composio's own retry storms when handlers run long
   //   - Per-run observability in the Trigger.dev dashboard
-  // See: docs/strategy/trigger-composio-integration-2026.md §Pattern 2.
+  // See: docs/specs/trigger-composio-integration.md §Pattern 2.
   const triggerEvent = payload as unknown as Record<string, unknown>
   try {
     await tasks.batchTrigger<typeof executeAutomationTask>(

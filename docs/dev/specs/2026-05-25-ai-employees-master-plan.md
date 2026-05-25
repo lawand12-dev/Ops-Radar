@@ -10,14 +10,14 @@
 
 Before touching code, read these strategy docs (they explain WHY each decision):
 
-1. [`docs/strategy/ai-employees-architecture-2026.md`](../../strategy/ai-employees-architecture-2026.md) — what AI Employees are + the 5 primitives
-2. [`docs/strategy/architecture-audit-2026.md`](../../strategy/architecture-audit-2026.md) — competitive audit vs Notion/Lindy/BOND
-3. [`docs/strategy/scheduler-decision-2026.md`](../../strategy/scheduler-decision-2026.md) — Trigger.dev pick + rationale
-4. [`docs/strategy/trigger-composio-integration-2026.md`](../../strategy/trigger-composio-integration-2026.md) — Trigger.dev + Composio integration patterns
-5. [`docs/strategy/observability-stack-2026.md`](../../strategy/observability-stack-2026.md) — Sentry + Langfuse + Statsig flags + pgvector sequencing
-6. [`docs/strategy/three-tier-memory-architecture-2026.md`](../../strategy/three-tier-memory-architecture-2026.md) — brain (CP-25/27) architecture inherited here
-7. [`docs/strategy/control-surface-research-2026.md`](../../strategy/control-surface-research-2026.md) — approval gate (CP-14) inherited here
-8. [`docs/strategy/automations-architecture-2026.md`](../../strategy/automations-architecture-2026.md) — CP-20 events inherited here
+1. [`docs/specs/ai-employees.md`](../../strategy/ai-employees-architecture-2026.md) — what AI Employees are + the 5 primitives
+2. [`docs/specs/architecture-audit.md`](../../strategy/architecture-audit-2026.md) — competitive audit vs Notion/Lindy/BOND
+3. [`docs/adr/0002-scheduler-trigger-dev.md`](../../strategy/scheduler-decision-2026.md) — Trigger.dev pick + rationale
+4. [`docs/specs/trigger-composio-integration.md`](../../strategy/trigger-composio-integration-2026.md) — Trigger.dev + Composio integration patterns
+5. [`docs/adr/0008-observability-sentry-statsig-langfuse.md`](../../strategy/observability-stack-2026.md) — Sentry + Langfuse + Statsig flags + pgvector sequencing
+6. [`docs/adr/0004-three-tier-memory.md`](../../strategy/three-tier-memory-architecture-2026.md) — brain (CP-25/27) architecture inherited here
+7. [`docs/adr/0005-control-first-approval-gate.md`](../../strategy/control-surface-research-2026.md) — approval gate (CP-14) inherited here
+8. [`docs/specs/automations.md`](../../strategy/automations-architecture-2026.md) — CP-20 events inherited here
 
 ---
 
@@ -959,14 +959,14 @@ When all of CP-34→37 ships, a typical first-time customer journey is:
 
 All architecture decisions in this spec are backed by:
 
-- [`docs/strategy/ai-employees-architecture-2026.md`](../../strategy/ai-employees-architecture-2026.md)
-- [`docs/strategy/architecture-audit-2026.md`](../../strategy/architecture-audit-2026.md)
-- [`docs/strategy/scheduler-decision-2026.md`](../../strategy/scheduler-decision-2026.md)
-- [`docs/strategy/trigger-composio-integration-2026.md`](../../strategy/trigger-composio-integration-2026.md)
-- [`docs/strategy/observability-stack-2026.md`](../../strategy/observability-stack-2026.md)
-- [`docs/strategy/three-tier-memory-architecture-2026.md`](../../strategy/three-tier-memory-architecture-2026.md)
-- [`docs/strategy/control-surface-research-2026.md`](../../strategy/control-surface-research-2026.md)
-- [`docs/strategy/automations-architecture-2026.md`](../../strategy/automations-architecture-2026.md)
-- [`docs/strategy/senior-coo-playbook-2026.md`](../../strategy/senior-coo-playbook-2026.md)
-- [`docs/strategy/moats-and-friction-2026.md`](../../strategy/moats-and-friction-2026.md)
-- [`docs/strategy/path-a-strategy-2026.md`](../../strategy/path-a-strategy-2026.md)
+- [`docs/specs/ai-employees.md`](../../strategy/ai-employees-architecture-2026.md)
+- [`docs/specs/architecture-audit.md`](../../strategy/architecture-audit-2026.md)
+- [`docs/adr/0002-scheduler-trigger-dev.md`](../../strategy/scheduler-decision-2026.md)
+- [`docs/specs/trigger-composio-integration.md`](../../strategy/trigger-composio-integration-2026.md)
+- [`docs/adr/0008-observability-sentry-statsig-langfuse.md`](../../strategy/observability-stack-2026.md)
+- [`docs/adr/0004-three-tier-memory.md`](../../strategy/three-tier-memory-architecture-2026.md)
+- [`docs/adr/0005-control-first-approval-gate.md`](../../strategy/control-surface-research-2026.md)
+- [`docs/specs/automations.md`](../../strategy/automations-architecture-2026.md)
+- [`docs/adr/0007-senior-coo-playbook.md`](../../strategy/senior-coo-playbook-2026.md)
+- [`docs/positioning/moats.md`](../../strategy/moats-and-friction-2026.md)
+- [`docs/positioning/path-a-strategy.md`](../../strategy/path-a-strategy-2026.md)

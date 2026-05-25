@@ -45,7 +45,7 @@ function sha256Hex(content: string): string {
 // Only a small curated subset of brain paths gets embedded at write time:
 //   pattern-cards/, decision-log/, risk-register/, employees/<slug>/learned-rules/
 // Everything else stays embedding-free (per
-// docs/strategy/three-tier-memory-architecture-2026.md §Adjustment 2 —
+// docs/adr/0004-three-tier-memory.md §Adjustment 2 —
 // embedding clients/, projects/, agent-runs/ would burn credits with no
 // measurable retrieval gain). The HNSW index on brain_document_versions
 // also has a matching WHERE clause so the index stays compact.

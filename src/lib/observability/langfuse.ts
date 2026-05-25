@@ -20,7 +20,7 @@
  *     calls are silent; nothing fails. This lets local development without
  *     Langfuse keys still work.
  *
- * See: docs/strategy/observability-stack-2026.md §2 for the verified pick.
+ * See: docs/adr/0008-observability-sentry-statsig-langfuse.md §2 for the verified pick.
  */
 
 import { Langfuse } from 'langfuse'

@@ -95,7 +95,7 @@ YC's term for ideas that look shiny and easy but get crushed:
 - Marketplace ideas with no liquidity strategy
 - Browser extensions / Chrome plugins without distribution
 - "We're like Stripe but for Z" infrastructure plays without proof
-- B2B SaaS for a captive market (see Razorpay's Monopoly Incentive Gap — `docs/strategy/moats-and-friction-2026.md` Provocation 2)
+- B2B SaaS for a captive market (see Razorpay's Monopoly Incentive Gap — `docs/positioning/moats.md` Provocation 2)
 
 **OpsRadar passes the tarpit test** because:
 - Not an AI wrapper — full agent + integrations + benchmark data moat

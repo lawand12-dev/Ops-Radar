@@ -13,7 +13,7 @@
  *   - The webhook can ack Composio in < 200ms regardless of automation
  *     duration, eliminating Composio's own retry storms
  *
- * See: docs/strategy/trigger-composio-integration-2026.md §Pattern 2.
+ * See: docs/specs/trigger-composio-integration.md §Pattern 2.
  */
 
 import { task, logger } from "@trigger.dev/sdk/v3"

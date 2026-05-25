@@ -27,7 +27,7 @@ TypeScript paths use `<npm>/*` → `./src/*` (configured in tsconfig.json). Use 
 
 ### Single-system architecture (CP-15)
 
-OpsRadar is one Next.js app on Vercel + Supabase. The previously separate `chatv2` Hono.js service was severed in CP-15 — see [`docs/strategy/composio-vs-n8n-decision-2026.md`](./docs/strategy/composio-vs-n8n-decision-2026.md) for the architectural rationale. **There is no second backend, no n8n integration, no workflow generator.** Everything runs from this repo.
+OpsRadar is one Next.js app on Vercel + Supabase. The previously separate `chatv2` Hono.js service was severed in CP-15 — see [`docs/adr/0001-composio-broker.md`](./docs/adr/0001-composio-broker.md) for the architectural rationale. **There is no second backend, no n8n integration, no workflow generator.** Everything runs from this repo.
 
 ### The 3-layer agent stack
 
@@ -242,7 +242,7 @@ Customer business data fetched from integrations (Stripe charges, HubSpot deals,
 
 ### CP-14 v1 control surface (May 2026)
 
-5-commit ship of the v1 agent control layer — see [`docs/strategy/control-surface-research-2026.md`](./docs/strategy/control-surface-research-2026.md):
+5-commit ship of the v1 agent control layer — see [`docs/adr/0005-control-first-approval-gate.md`](./docs/adr/0005-control-first-approval-gate.md):
 
 1. **Approval gate** (3b5a42c) — cron agent writes queue to /dashboard/actions
 2. **Vercel AI SDK migration** (1799209) — COO chat moved off raw OpenAI SDK
@@ -252,7 +252,7 @@ Customer business data fetched from integrations (Stripe charges, HubSpot deals,
 
 ### CP-15 chatv2 sever (May 2026)
 
-Severed all chatv2 / n8n connections — see [`docs/strategy/composio-vs-n8n-decision-2026.md`](./docs/strategy/composio-vs-n8n-decision-2026.md) for the architectural decision. If durable workflow primitives are ever needed (high-volume triggers, multi-day waits), use **Inngest** or **Trigger.dev**, not n8n / chatv2.
+Severed all chatv2 / n8n connections — see [`docs/adr/0001-composio-broker.md`](./docs/adr/0001-composio-broker.md) for the architectural decision. If durable workflow primitives are ever needed (high-volume triggers, multi-day waits), use **Inngest** or **Trigger.dev**, not n8n / chatv2.
 
 ### CP-16 audit takedown + KB disconnect (May 2026)
 
@@ -281,7 +281,7 @@ Migrated the knowledge base from RAG (vector embeddings + retrieval) to Anthropi
 3. `b2ce0b3` (CP-17c) — Polish pass: added `## Related skills` cross-references to the top-10 most-likely-to-be-called skills so the agent composes skills properly mid-turn (e.g. `firing-a-client` → `diagnosing-difficult-clients` → `discussing-margin-with-client`).
 4. `c8f3a30` (post-deploy fix) — `check-outcomes` cron throttled from hourly to daily (Vercel Hobby plan).
 
-**Why this pattern wins:** matches Anthropic's published Agent Skills spec, Ramp Glass / Block / Anthropic's own production usage, and the post-RAG canonical pattern Karpathy + Tom Blomfield (YC RFS #4 author) publicly described. Earns YC #4 "Company Brain" by construction, not by claim. See research basis in [`docs/strategy/agent-skills-architecture-2026.md`](./docs/strategy/agent-skills-architecture-2026.md) (newly added in this commit).
+**Why this pattern wins:** matches Anthropic's published Agent Skills spec, Ramp Glass / Block / Anthropic's own production usage, and the post-RAG canonical pattern Karpathy + Tom Blomfield (YC RFS #4 author) publicly described. Earns YC #4 "Company Brain" by construction, not by claim. See research basis in [`docs/adr/0003-skills-over-rag.md`](./docs/adr/0003-skills-over-rag.md) (newly added in this commit).
 
 **Authoring guidelines** are in [`knowledge-base/skills/INDEX.md`](./knowledge-base/skills/INDEX.md). Headline rules: only `name` + `description` in frontmatter (no `tags`, `category`, `coo_relevance`, `when_to_use`); body ≤ 250 lines; open with italic anxious-question opener; include conversation scripts; end with "What NOT to do".
 
@@ -312,7 +312,7 @@ Adopts Anthropic's 4-field subagent contract: Objective / Source priority / Outp
 
 Two critical bugs fixed in the same pass: every domain agent now has `notion` in its `composioApps` (silently missing before, so every Notion-write instruction was dead code), and cron schedules don't race with their upstream tool agents.
 
-Research basis: [`docs/strategy/domain-agent-orchestration-2026.md`](./docs/strategy/domain-agent-orchestration-2026.md) (Anthropic Multi-Agent Research, Cognition "Don't Build Multi-Agents" Flappy Bird failure, arXiv 2510.01285 blackboard pattern, Karpathy LLM Wiki, Claude Code /goals + Bloom).
+Research basis: [`docs/adr/0006-orchestrator-worker-pattern.md`](./docs/adr/0006-orchestrator-worker-pattern.md) (Anthropic Multi-Agent Research, Cognition "Don't Build Multi-Agents" Flappy Bird failure, arXiv 2510.01285 blackboard pattern, Karpathy LLM Wiki, Claude Code /goals + Bloom).
 
 ### CP-20 — Customer-built automations, Lindy-style (May 2026)
 
@@ -337,7 +337,7 @@ Approval-gate `ApprovalSource` union extended with `'automation'`. Resolution: p
 
 **Naming disambiguation**: the existing CP-14 page at `/dashboard/settings/automation` was renamed in the sidebar to **"Tool Autonomy"** so it doesn't collide with the new **"Automations"** entry under OPERATIONS.
 
-Research basis: [`docs/strategy/automations-architecture-2026.md`](./docs/strategy/automations-architecture-2026.md) (Lindy 2.0 architecture lessons, Anthropic Agent Skills standard, Vercel Workflows for Phase 7, Anti-patterns from n8n/Zapier 2026 critiques).
+Research basis: [`docs/specs/automations.md`](./docs/specs/automations.md) (Lindy 2.0 architecture lessons, Anthropic Agent Skills standard, Vercel Workflows for Phase 7, Anti-patterns from n8n/Zapier 2026 critiques).
 
 ### CP-21 — Senior-COO playbook embedded in 10 domain agents (May 2026)
 
@@ -355,7 +355,7 @@ Generic framing: agencies + services businesses broadly (design, marketing, dev 
 
 Competitive context: **BOND (YC X25)** is the closest horizontal competitor — "AI Chief of Staff for CEOs/busy execs." OpsRadar's wedge is vertical depth + operator judgment embedded in agents (BOND has none of this published).
 
-Research basis: [`docs/strategy/senior-coo-playbook-2026.md`](./docs/strategy/senior-coo-playbook-2026.md).
+Research basis: [`docs/adr/0007-senior-coo-playbook.md`](./docs/adr/0007-senior-coo-playbook.md).
 
 ### CP-22 — AI COO replaces ChatGPT/Perplexity for business research (May 2026)
 

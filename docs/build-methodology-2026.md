@@ -1,4 +1,4 @@
-<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/strategy/composio-vs-n8n-decision-2026.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/adr/0001-composio-broker.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
 
 # Build Methodology — GStack Adapted for OpsRadar + chatv2
 

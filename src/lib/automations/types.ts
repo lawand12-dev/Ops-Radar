@@ -7,7 +7,7 @@
  * webhook → /api/automations/webhook/composio), the executor walks the spec
  * and queues each Composio call through the approval gate.
  *
- * See docs/strategy/automations-architecture-2026.md for the full design.
+ * See docs/specs/automations.md for the full design.
  */
 
 import type { Json } from '<npm>/lib/database.types'

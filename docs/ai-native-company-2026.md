@@ -1,4 +1,4 @@
-<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/strategy/composio-vs-n8n-decision-2026.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/adr/0001-composio-broker.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
 
 # The AI-Native Company — Blueprint for chatv2 + OpsRadar
 
@@ -429,4 +429,4 @@ This blueprint synthesises:
 - [Laminar — Top 6 Agent Observability Platforms 2026](https://laminar.sh/article/2026-04-23-top-6-agent-observability-platforms) — Loop 4 cost tracking + drift detection
 - [n8n Blog — Best practices for deploying AI agents](https://blog.n8n.io/best-practices-for-deploying-ai-agents-in-production/) — Loop 1's deployment + rollback boundaries
 - Companion technical spec: [`architecture-2026.md`](./architecture-2026.md)
-- OpsRadar main-branch references: `docs/yc/research-addendum.md`, `docs/yc/build-architecture.md`, `docs/strategy/path-a-strategy-2026.md`
+- OpsRadar main-branch references: `docs/yc/research-addendum.md`, `docs/yc/build-architecture.md`, `docs/positioning/path-a-strategy.md`

@@ -16,7 +16,7 @@
  * The COO's identity is preserved as a single advisor — every employee
  * escalates to the same COO, not to N personal advisors. This is the
  * hierarchical pattern (Anthropic, Devin, IBM) — see
- * docs/strategy/ai-employees-architecture-2026.md §3.2.
+ * docs/specs/ai-employees.md §3.2.
  */
 
 import { generateObject } from 'ai'

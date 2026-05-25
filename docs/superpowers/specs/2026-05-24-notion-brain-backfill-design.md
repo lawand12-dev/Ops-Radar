@@ -4,7 +4,7 @@
 **Status:** Approved — implementation pending
 **Owners:** OpsRadar core
 **Related:**
-- [`docs/strategy/agent-skills-architecture-2026.md`](../../strategy/agent-skills-architecture-2026.md) (Brain as Agent Skills consumer)
+- [`docs/adr/0003-skills-over-rag.md`](../../strategy/agent-skills-architecture-2026.md) (Brain as Agent Skills consumer)
 - [`docs/dev/notion-brain-schema-2026.md`](../../dev/notion-brain-schema-2026.md) (20-database schema)
 - [`src/lib/backfill/orchestrator.ts`](../../../src/lib/backfill/orchestrator.ts) (existing scaffold to replace)
 

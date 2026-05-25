@@ -22,7 +22,7 @@
  *   the request proceeds — fail-open for non-critical flags, fail-closed
  *   for kill switches that gate new features.
  *
- * See: docs/strategy/observability-stack-2026.md §4 for the verified pick.
+ * See: docs/adr/0008-observability-sentry-statsig-langfuse.md §4 for the verified pick.
  */
 
 import { flag, dedupe } from 'flags/next'

@@ -1,6 +1,6 @@
 # OpsRadar Docs — Index
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-05-25*
 
 This folder is the operating system for OpsRadar's go-to-market, copy, design, product, and capital raise. Every document is action-shaped — opened the moment you need to do the thing it describes.
 
@@ -10,7 +10,10 @@ This folder is the operating system for OpsRadar's go-to-market, copy, design, p
 
 ```
 docs/
-├── strategy/        ← master strategy, market research, pricing, ICP
+├── adr/             ← architecture decisions (numbered, dated, short, post-hoc)
+├── research/        ← raw research snapshots (dated, no decisions inside)
+├── specs/           ← implementation specs (the "how it actually works" docs)
+├── positioning/     ← pricing, moats, GTM strategy, vs-pages
 ├── yc/              ← YC Summer 2026 application track
 ├── fundraising/     ← VC research, investor outreach guide
 ├── go-to-market/    ← outbound playbooks, partner program, community plan
@@ -24,24 +27,82 @@ docs/
     └── archive/                 ← historical plans + specs
 ```
 
+**Restructured on 2026-05-25** (the old `strategy/` folder was split into the four buckets above). Rule of thumb:
+
+| Bucket | What goes here | Naming |
+|---|---|---|
+| `adr/` | "We picked X. Status: accepted." | `NNNN-slug.md` (zero-padded sequential) |
+| `research/` | "Here's what the world looks like as of date Y." | `YYYY-MM-DD-slug.md` |
+| `specs/` | "Here's how the implemented thing works." | `slug.md` |
+| `positioning/` | "Here's who we are / who we sell to / how we price." | `slug.md` |
+
+Convention follows Nygard / Pragmatic Engineer 2026 — see [`research/2026-05-25-agent-code-doc-organization.md`](./research/2026-05-25-agent-code-doc-organization.md).
+
 ---
 
-## Strategy & Market
+## Architecture Decisions (ADRs)
+
+Short, numbered, decided. Open these to answer "why is the system shaped this way?"
+
+| # | Decision | When to read |
+|---|----------|--------------|
+| [`adr/0001-composio-broker.md`](./adr/0001-composio-broker.md) | Composio over n8n for tool brokerage | Before "should we add a workflow builder?" |
+| [`adr/0002-scheduler-trigger-dev.md`](./adr/0002-scheduler-trigger-dev.md) | Trigger.dev for durable scheduling | Before adding a new cron / durable workflow |
+| [`adr/0003-skills-over-rag.md`](./adr/0003-skills-over-rag.md) | Anthropic Agent Skills > RAG | Before writing a new SKILL.md or "should we add RAG?" |
+| [`adr/0004-three-tier-memory.md`](./adr/0004-three-tier-memory.md) | Brain = Supabase warehouse + Notion mirror + Composio live | Before any memory change |
+| [`adr/0005-control-first-approval-gate.md`](./adr/0005-control-first-approval-gate.md) | Approval-gate every write action (CP-14 spec) | Before adding a new agent surface |
+| [`adr/0006-orchestrator-worker-pattern.md`](./adr/0006-orchestrator-worker-pattern.md) | 10 domain orchestrators read 17 tool workers (CP-19) | Before new agent design |
+| [`adr/0007-senior-coo-playbook.md`](./adr/0007-senior-coo-playbook.md) | Embed operator judgment in every agent prompt (CP-21) | Before any prompt rewrite |
+| [`adr/0008-observability-sentry-statsig-langfuse.md`](./adr/0008-observability-sentry-statsig-langfuse.md) | Sentry + Statsig + Langfuse stack | Before adding a new observability vendor |
+
+## Positioning
 
 | Document | What it is | When to read |
 |----------|------------|--------------|
-| [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) | The master strategy. AI COO for agencies thesis, 27-competitor gap, 4-tier pricing, YC #15 fit, 90-day execution plan | Always. This is the working document |
-| [`strategy/icp-customer-research.md`](./strategy/icp-customer-research.md) | 3 personas, 10 buying triggers, disqualifier list, JTBD map, 15-channel sourcing, 10 qualifying questions | Before any cold-prospecting batch |
-| [`strategy/pricing-depth.md`](./strategy/pricing-depth.md) | Van Westendorp + WTP + competitive anchor. Tiers: $750 / $1,500 / $3,000 / $1,200+$300 | Before any pricing conversation or tier change |
-| [`strategy/ai-market-research-2026.md`](./strategy/ai-market-research-2026.md) | $2.52T AI spend / 8.8% actual production adoption gap / CAIO trend data | Before investor conversations |
-| [`strategy/agency-tools-research-2026.md`](./strategy/agency-tools-research-2026.md) | Deep research on agency tool fragmentation — HubSpot/Pipedrive/ClickUp/Harvest adoption patterns, 59-65% cite fragmentation, 20% can't report margins | Before ICP calls or product prioritization |
-| [`strategy/vs-pages.md`](./strategy/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
-| [`strategy/ai-data-revolution-2026.md`](./strategy/ai-data-revolution-2026.md) | Cloud→AI wave shift applied to agencies | Before YC application or pricing change |
-| [`strategy/moats-and-friction-2026.md`](./strategy/moats-and-friction-2026.md) | Razorpay's 6 provocations on moats applied to OpsRadar | Before YC interview, before any "let's add an easy feature" decision |
-| [`strategy/control-surface-research-2026.md`](./strategy/control-surface-research-2026.md) | Research that informed CP-14: 4-feature MVP control surface every winning agent product shipped in v1 (Lindy, Devin, Claude Code, Cursor, Zapier). The 8 control dimensions, what to skip in v1, NEVER-AUTO 3-tier safety stack. Vercel AI SDK v6 `needsApproval` killer insight. | Before adding any new agent surface; before any "should we ship X control feature?" decision |
-| [`strategy/composio-vs-n8n-decision-2026.md`](./strategy/composio-vs-n8n-decision-2026.md) | The architecture decision that deprecated the workflow-builder layer. Market evidence (agencies use Zapier not n8n; Lindy ships without workflow canvas) + technical evidence (Composio actions ≈ n8n, triggers thinner but adequate for ICP). | Before any "should we add a workflow builder?" question |
-| [`strategy/competitive-landscape-2026-05.md`](./strategy/competitive-landscape-2026-05.md) | Who's winning by category (Lindy SMB, Decagon/Sierra enterprise CS, Cursor coding, Glean enterprise brain). The unclaimed agency-AI-COO lane. 18-month probability spread. Differentiation matrix vs each category leader. | Before fundraising; before YC interview competitor question |
-| [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md) | The decision and research behind migrating the KB from RAG → Anthropic Agent Skills (CP-17). The 46-skill catalog map, post-RAG canonical pattern (Karpathy + Tom Blomfield + Anthropic + Ramp Glass), loader spec, frontmatter rules, composition chains, when NOT to add a skill. | Before writing a new SKILL.md; before any "should we go back to RAG?" question |
+| [`positioning/path-a-strategy.md`](./positioning/path-a-strategy.md) | The master strategy. 27-competitor gap, 4-tier pricing, YC #15 fit, 90-day execution plan | Always. The working document |
+| [`positioning/pricing-depth.md`](./positioning/pricing-depth.md) | Van Westendorp + WTP + competitive anchor. Current tiers + their reasoning | Before any pricing conversation or tier change |
+| [`positioning/moats.md`](./positioning/moats.md) | Razorpay's 6 provocations on moats applied to OpsRadar | Before YC interview, before any "let's add an easy feature" decision |
+| [`positioning/vs-pages.md`](./positioning/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
+
+## Research
+
+Evidence snapshots — every claim cited, no decisions inside. Read these to back up a claim or update a positioning doc.
+
+**Fresh (this session — 2026-05-25):**
+
+| Document | What it answers |
+|----------|-----------------|
+| [`research/2026-05-25-yc-acceptance-pattern.md`](./research/2026-05-25-yc-acceptance-pattern.md) | What YC actually funded in W25 / S25 / W26 in the AI-ops / agent / COO space, the pitch shapes they accept |
+| [`research/2026-05-25-competitor-pain-points.md`](./research/2026-05-25-competitor-pain-points.md) | What real customers complain about in Lindy / Notion AI / BOND / Devin / Glean / Copilot Studio |
+| [`research/2026-05-25-investor-2026-theses.md`](./research/2026-05-25-investor-2026-theses.md) | a16z / Sequoia / Bessemer / Pragmatic Engineer 2026 essays on where vertical AI / agents are going |
+| [`research/2026-05-25-revenue-momentum-signals.md`](./research/2026-05-25-revenue-momentum-signals.md) | Public ARR / funding / customer-count signals (Sierra, Cognition, Glean, Decagon, BOND, Lindy, 11x.ai) |
+| [`research/2026-05-25-vertical-intent-ranking.md`](./research/2026-05-25-vertical-intent-ranking.md) | Which business vertical has the strongest measurable demand for an AI Chief of Staff |
+| [`research/2026-05-25-fractional-coo-labor-gap.md`](./research/2026-05-25-fractional-coo-labor-gap.md) | Where the human fractional-COO market is densest and most substitutable by AI |
+| [`research/2026-05-25-pricing-deep-dive.md`](./research/2026-05-25-pricing-deep-dive.md) | Pricing model evidence for SMB-mid AI workforce — what wins, what kills (11x post-mortem) |
+| [`research/2026-05-25-split-vs-unified-chat.md`](./research/2026-05-25-split-vs-unified-chat.md) | Q&A chat vs builder chat — Notion / Lindy / Devin / Copilot Studio patterns (informs CP-38) |
+| [`research/2026-05-25-agent-capability-declaration.md`](./research/2026-05-25-agent-capability-declaration.md) | How production agent systems declare allowed tools / charters (informs CP-39) |
+| [`research/2026-05-25-agent-code-doc-organization.md`](./research/2026-05-25-agent-code-doc-organization.md) | Best 2026 layout for agent codebase + strategy docs (the basis for this restructure) |
+
+**Older snapshots:**
+
+| Document | What it answers |
+|----------|-----------------|
+| [`research/2026-05-icp-customer.md`](./research/2026-05-icp-customer.md) | 3 personas, 10 buying triggers, disqualifier list, JTBD map, 15-channel sourcing |
+| [`research/2026-05-ai-market.md`](./research/2026-05-ai-market.md) | $2.52T AI spend / 8.8% production adoption gap / CAIO trend data |
+| [`research/2026-05-competitive-landscape.md`](./research/2026-05-competitive-landscape.md) | Who's winning by category. 18-month probability spread. Differentiation matrix |
+| [`research/2026-05-agency-tools.md`](./research/2026-05-agency-tools.md) | Agency tool fragmentation — HubSpot/Pipedrive/ClickUp/Harvest adoption patterns |
+| [`research/2026-05-ai-data-revolution.md`](./research/2026-05-ai-data-revolution.md) | Cloud→AI wave shift |
+| [`research/2026-05-agent-capability-survey.md`](./research/2026-05-agent-capability-survey.md) | Earlier survey on Anthropic Skills / A2A / MCP capability declaration |
+
+## Specs (current implementation)
+
+| Document | What it is |
+|----------|------------|
+| [`specs/ai-employees.md`](./specs/ai-employees.md) | CP-34 — custom AI employees architecture (hireable, scheduled, scoped) |
+| [`specs/automations.md`](./specs/automations.md) | CP-20 — customer-built event-triggered automations |
+| [`specs/architecture-audit.md`](./specs/architecture-audit.md) | Cross-app architecture audit vs Notion / Lindy / BOND |
+| [`specs/trigger-composio-integration.md`](./specs/trigger-composio-integration.md) | Three integration patterns between Trigger.dev and Composio |
+| [`specs/cp-30-31-32-verification.md`](./specs/cp-30-31-32-verification.md) | Verification checklist for CP-30/31/32 implementation |
 
 ---
 
@@ -148,19 +209,19 @@ Historical plans and specs are in [`dev/archive/`](./dev/archive/).
 
 ## Architecture (current truth)
 
-**Single-system architecture.** OpsRadar is one Next.js 16 app on Vercel + Supabase. There is no second backend, no workflow generator, no n8n integration. The decision to sever the previously separate `chatv2` service is documented in [`strategy/composio-vs-n8n-decision-2026.md`](./strategy/composio-vs-n8n-decision-2026.md).
+**Single-system architecture.** OpsRadar is one Next.js 16 app on Vercel + Supabase. There is no second backend, no workflow generator, no n8n integration. The decision to sever the previously separate `chatv2` service is documented in [`adr/0001-composio-broker.md`](./adr/0001-composio-broker.md).
 
-**Knowledge base = Anthropic Agent Skills (CP-17).** 46 SKILL.md files in `knowledge-base/skills/<domain>/<name>/SKILL.md`, loaded into every agent's system prompt as `name + description` pairs, fetched in full via the `load_skill` tool on demand. No RAG on the hot path. Spec in [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md); authoring rules in [`knowledge-base/skills/INDEX.md`](../knowledge-base/skills/INDEX.md).
+**Knowledge base = Anthropic Agent Skills (CP-17).** 46 SKILL.md files in `knowledge-base/skills/<domain>/<name>/SKILL.md`, loaded into every agent's system prompt as `name + description` pairs, fetched in full via the `load_skill` tool on demand. No RAG on the hot path. Spec in [`adr/0003-skills-over-rag.md`](./adr/0003-skills-over-rag.md); authoring rules in [`knowledge-base/skills/INDEX.md`](../knowledge-base/skills/INDEX.md).
 
 **Audit funnel retired (CP-16).** `/audit` is a "Coming soon: live demo" placeholder. `/results` and `/share/[id]` are deleted. Marketing CTAs still resolve.
 
-Read [`CLAUDE.md`](../CLAUDE.md) for the technical map (routes, libs, services). Read [`strategy/control-surface-research-2026.md`](./strategy/control-surface-research-2026.md) for the CP-14 control-surface decisions. Read [`strategy/agent-skills-architecture-2026.md`](./strategy/agent-skills-architecture-2026.md) for the KB architecture.
+Read [`CLAUDE.md`](../CLAUDE.md) for the technical map (routes, libs, services). Read [`adr/0005-control-first-approval-gate.md`](./adr/0005-control-first-approval-gate.md) for the CP-14 control-surface decisions. Read [`adr/0003-skills-over-rag.md`](./adr/0003-skills-over-rag.md) for the KB architecture.
 
 ---
 
 ## Quick Reference
 
-**The bet in 10 minutes:** [`strategy/path-a-strategy-2026.md`](./strategy/path-a-strategy-2026.md) — Parts 1, 3, 5, and 8.
+**The bet in 10 minutes:** [`positioning/path-a-strategy.md`](./positioning/path-a-strategy.md) — Parts 1, 3, 5, and 8.
 
 **YC Summer 2026 fit:** Category #15 "AI Operating System for Companies" (primary), #2 "AI-Native Service Companies" (secondary), #4 "Company Brain" + #12 "Software for Agents" (also strong). See [`yc/research-addendum.md`](./yc/research-addendum.md).
 

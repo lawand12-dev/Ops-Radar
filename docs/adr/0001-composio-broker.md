@@ -103,7 +103,7 @@ If pushback: the evidence is in Lindy's customer logos. 79% sub-50-employee. Sam
 - [ ] Remove `/api/automation-roi` proxy route
 - [ ] Remove `src/lib/chatv2/` directory if no consumers remain
 - [ ] Drop "+ workflow builder" framing from YC pitch + pricing page
-- [ ] Add `docs/strategy/composio-vs-n8n-decision-2026.md` (this doc) reference to `docs/architecture-2026.md`
+- [ ] Add `docs/adr/0001-composio-broker.md` (this doc) reference to `docs/architecture-2026.md`
 - [ ] Archive (don't delete) chatv2 repo after 30-day cooldown
 
 ---
