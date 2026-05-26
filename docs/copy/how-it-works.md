@@ -1,7 +1,8 @@
-# How It Works v3 — The 4-step journey
+# How It Works v4 — Named agents + earned autonomy
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: how-it-works.md v2 (AI COO)*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: how-it-works.md v3*
 *Route: `/how-it-works`*
+*v4 changes: Step 2 names the 11 domain agents (Riley/Cole/Scott/Devon/Brian/Penny/Tia/Grace/Renee/Sam/Evan); Step 4 reframes around earned autonomy.*
 
 ---
 
@@ -43,19 +44,28 @@
 
 **Step number / icon area:** `02 · MEET YOUR WORKFORCE`
 
-**H2:** `28 AI employees already work for you. They started the moment you signed in.`
+**H2:** `28 named AI employees already work for you. They started the moment you signed in.`
 
-**Body (54 words):**
-`The Revenue Agent already has access to your Stripe. The Scope Agent already has access to your Harvest. The Collections Agent already has access to your overdue invoices. None of them have done anything yet — they ship daily and weekly schedules. You can also run any of them on demand from the COO chat.`
+**Body (62 words):**
+`💰 Riley already has access to your Stripe. 📐 Scott already has access to your Harvest. 📨 Cole already has access to your overdue invoices. None of them have done anything yet — they ship daily and weekly schedules. You can also run any of them on demand from the COO chat. Each has their own emoji, their own bio, their own page.`
 
-**Subsection: "The 28, grouped"**
+**Subsection: "The 11 named domain agents (plus Evan the Evaluator)"**
 
-- **Money (3):** Revenue · Collections · Profitability
-- **Work (3):** Scope · Delivery · Team
-- **Sales + Growth (3):** Growth · Renewal · Stack
-- **Daily ops (1):** Briefing
-- **Toolkit specialists (17):** Stripe · HubSpot · ClickUp · Asana · Monday · Harvest · Toggl · Gmail · Slack · Calendly · Notion · Apollo · QuickBooks · Google Calendar · Google Analytics · Google Ads · LinkedIn · BambooHR · Gusto · Intercom · Zendesk · Typeform · Pipedrive
-- **Quality control (1):** Evaluator (daily audit over every other agent's work)
+- 💰 **Riley** — Revenue Analyst. Watches MRR, cash collected, and overdue invoices every morning.
+- 📨 **Cole** — Collections Lead. Chases overdue invoices with the right nudge at the right time.
+- 📐 **Scott** — Scope Watchdog. Flags scope creep before it eats a client retainer.
+- 🚚 **Devon** — Delivery Manager. Tracks project health and surfaces stuck work daily.
+- 📰 **Brian** — Daily Briefer. Writes your morning COO briefing of what changed overnight.
+- 📊 **Penny** — Profitability Analyst. Calculates per-client margin and flags money-losing accounts.
+- 👥 **Tia** — Team Lead. Monitors burnout, utilization, and capacity across the team.
+- 📈 **Grace** — Growth Strategist. Tracks pipeline and marketing funnel health every Monday.
+- 🔁 **Renee** — Renewals Lead. Watches contract expiries and flags renewals at risk.
+- 🧰 **Sam** — Stack Auditor. Audits your software stack monthly for waste and overlap.
+- 🧐 **Evan** — Quality Evaluator. Reviews every other agent's proposed actions for quality daily.
+
+**Subsection: "17 toolkit specialists underneath them"**
+
+`Each one watches one app deeply: Stripe Specialist, HubSpot Specialist, ClickUp Specialist, Harvest Specialist, Gmail Specialist, Slack Specialist, Notion Specialist, Calendly Specialist, Pipedrive Specialist, Apollo Specialist, QuickBooks Specialist, Google Calendar / Analytics / Ads Specialists, LinkedIn Specialist, BambooHR + Gusto + Typeform + Intercom + Zendesk + Asana + Monday + Toggl Specialists. They feed findings up to the 11 named domain agents. The orchestrator-worker pattern (CP-19).`
 
 ---
 
@@ -92,12 +102,18 @@
 
 ## Step 4 — Approve, reject, watch the brain compound (forever)
 
-**Step number / icon area:** `04 · APPROVE + LEARN`
+**Step number / icon area:** `04 · APPROVE + LEARN + GRADUATE`
 
-**H2:** `The workforce works. You stay in control. The brain builds itself.`
+**H2:** `Earned autonomy. The workforce starts cautious. Graduates to fast as you build trust.`
 
-**Body (62 words):**
-`Every time an employee wants to do something — send an email, create an invoice, update a deal, post in Slack — the action shows up in your approval queue at /dashboard/actions. You read it, see exactly what it'll do, approve or reject. Reject something? OpsRadar learns the rule. The next time Sarah is about to do that thing, she doesn't.`
+**Body (78 words):**
+`Every time an employee wants to do something — send an email, create an invoice, update a deal, post in Slack — the first 30 times that action type fires, it shows up in your approval queue at /dashboard/actions. You read it, see exactly what it'll do, approve or reject. Reject something? OpsRadar learns the rule (Apprentice Mode). After 30+ approvals at >90% rate on a routine action type, that action graduates to Auto-with-notification. Your time stops being burned on the obvious yeses.`
+
+**Subsection: "Three risk tiers"**
+
+- **HIGH RISK (always Ask, regardless of confidence)** — Firing a client. Sending invoices to billing. Mass email. Anything irreversible or customer-facing-and-financial. These NEVER auto-fire, even at 99% confidence. You set the floor.
+- **MEDIUM RISK (Auto with notification after earned trust)** — Drafting a Slack reply, scheduling a meeting, queuing an internal note. Starts as Ask. Graduates to Auto-with-notification at 90%+ approval rate over 30 actions.
+- **LOW RISK (silent Auto by default)** — Notion writes, brain commits, internal log updates. Fire-and-forget. You can flip them to Ask if you're risk-averse.
 
 **Subsection: "What the brain looks like after week 1, week 4, week 12"**
 

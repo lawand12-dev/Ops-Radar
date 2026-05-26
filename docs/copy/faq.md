@@ -1,8 +1,8 @@
-# FAQ v3 — Anti-objection FAQ
+# FAQ v4 — Earned-autonomy + brain-as-asset reframe
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: faq.md v2*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: faq.md v3*
 *Route: `/faq`*
-*Each question handles a specific objection from `docs/research/2026-05-25-competitor-pain-points.md` or a YC partner pattern.*
+*v4 changes: Devin and 11x answers reframe around earned autonomy (not "every action approved, always"); added a new FAQ on brain-as-exit-value math; added FAQ on fractional COO multi-tenant motion.*
 
 ---
 
@@ -47,11 +47,11 @@
 
 ### How is OpsRadar different from Devin (or any "autonomous AI agent")?
 
-`Devin's most cited failure: it spent 6 hours pursuing a solution a human did in 36 minutes. That's the autonomous-mode trap. OpsRadar's per-tool autonomy defaults to Ask for every write. You set Auto only where you've earned trust. The product is structurally incapable of going rogue.`
+`Devin's most cited failure: it spent 6 hours pursuing a solution a human did in 36 minutes. That's the autonomous-from-day-one trap. OpsRadar runs on EARNED autonomy: high-risk actions (firing a client, sending invoices, mass email) stay Ask forever; medium-risk actions auto-fire only after you've approved them 30+ times at 90%+ rate; low-risk actions fire silently. Agents earn their autonomy. They don't get it for free.`
 
 ### How is OpsRadar different from 11x.ai?
 
-`11x sold autonomous AI SDRs to anyone, claimed $14M ARR (~$3M real), and hit 70-80% churn at 90 days because customers couldn't see what their AI was doing. OpsRadar is the opposite architecture: the SDR you hire shows you every email it wants to send before sending, learns from rejections, and writes outcomes to a brain you own. Our customer can't churn from "I don't know what my AI sent yesterday."`
+`11x sold autonomous AI SDRs to anyone on day one, claimed $14M ARR (~$3M real), and hit 70-80% churn at 90 days because customers couldn't see what their AI had done. OpsRadar is the opposite architecture: the SDR you hire starts in Ask mode (you see every email before it sends), graduates to Auto only after earning your trust through 30+ approvals, and writes every outcome — approved, rejected, edited — to a brain you own. Our customer can't churn from "I don't know what my AI sent yesterday" because by structure they DO know.`
 
 ---
 
@@ -123,7 +123,7 @@
 
 ### What if I'm a fractional COO running multiple clients?
 
-`That's exactly what the Fractional Operator tier ($2,999/mo) is for. White-label, multi-client aggregate, your branding, your domain. You manage all your clients from /dashboard/fo.`
+`That's exactly what the Fractional Operator tier ($2,999/mo) is for. White-label, multi-client aggregate, your branding, your domain. You manage all your clients from /dashboard/fo. Each client agency gets its own AI workforce and brain, scoped to their tools — but you see the aggregate dashboard across all of them. See /for/fractional-coo for the full pitch.`
 
 ### What if I'm a solo founder?
 
@@ -171,7 +171,11 @@
 
 ### What's your moat?
 
-`Three structurally-shipped moats no major competitor has: (1) Apprentice Mode — the workforce gets smarter every time the customer says "no"; (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters; (3) approval-history personalization — after 30 approvals the drafts sound like the customer. Plus the brain in the customer's Notion as the durable retention layer.`
+`The honest moat is the STACKING of four things no competitor combines: 28 vertical-specialist agents with senior-COO playbook baked in; signed-by-author-agent provenance on every brain fact; git-style commit-graph versioning with diff/blame/rollback; customer-owned in their Notion. On top of that: 3 demand-validated differentiators (Apprentice Mode, cross-agent synthesis, approval-history personalization). The shared brain itself is table stakes in 2026 (Notion 3.0, Glean, CrewAI all ship it) — the COMBINATION is the moat.`
+
+### Why does the brain matter so much — isn't it just docs?
+
+`Documented agencies sell at 8-12× EBITDA. Undocumented agencies sell at 5-9× EBITDA. (First Page Sage / Wayfront M&A data.) On a $2M-EBITDA agency, that's $6M of extra exit value. The brain we help you build IS the operating IP a buyer pays a higher multiple for. The agents commoditize over time — anyone with the OpenAI Agents SDK can rebuild "28 agents" in a sprint. What they can't rebuild is two years of your accumulated, signed-by-agent, versioned brain. That's the asset.`
 
 ### What's your ARR / customer count?
 
@@ -194,3 +198,10 @@
 - Security category is new — was missing from v2 entirely, which is a real omission.
 - YC + investor category is new — most public-facing FAQs don't have this, but our deal flow includes investors reading the site.
 - Every answer ties back to a specific research-cited customer pain or a specific shipped feature. No hand-waving.
+
+## What changed in v4 (2026-05-26 inversions update)
+
+- Devin and 11x competitor answers reframed around earned autonomy (vs "every action approved, always"). Honest evolution of the anti-rogue-agent story.
+- New FAQ: "Why does the brain matter so much — isn't it just docs?" — anchors on the agency-exit EBITDA-multiple math.
+- "What's your moat?" rewrites from "3 differentiators + brain" to "STACKING of 4 things no competitor combines, plus 3 demand-validated differentiators on top." Sharper, more honest (per the shared-knowledge-layer research).
+- Fractional-COO FAQ updated to reference `/for/fractional-coo` page.

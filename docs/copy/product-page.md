@@ -1,7 +1,9 @@
-# Product Page Copy v3 — The AI Operating System
+# Product Page Copy v4 — Brain-as-asset framing
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: product-page.md v2 (AI COO)*
-*Source of truth: `docs/positioning/identity.md` + `docs/copy/home.md` v3*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: product-page.md v3*
+*Hero shift v3 → v4: brain-led ("the asset you exit on"), workforce as the engine that builds it.*
+*Control shift v3 → v4: earned autonomy throughout, no more "every action approved, always."*
+*Source: `docs/positioning/identity.md` + `docs/positioning/inversions.md`*
 *Route: `/product`*
 
 ---
@@ -17,10 +19,10 @@
 
 **Eyebrow:** `THE PRODUCT`
 
-**H1:** `One workspace. AI employees, a company brain, every integration you use.`
+**H1:** `Your AI workforce builds the company brain you exit on.`
 
-**Subhead (28 words):**
-`The agencies you compete with pay $5,200/mo for 10 AI tools that don't talk. OpsRadar replaces all of them — with one workforce that learns from you.`
+**Subhead (38 words):**
+`28 named specialists run on your stack. They write what they learn into a versioned brain mirrored to your Notion. Documented agencies sell at 8-12× EBITDA — that's the asset. Approval-gated by default, earned-autonomy as trust accumulates.`
 
 **CTA:** `Start free trial` · `See pricing →`
 
@@ -30,12 +32,31 @@
 
 **Section eyebrow:** `THE TWO ARTIFACTS`
 
-### Pillar A: AI workforce
+### Pillar A: The company brain (the asset)
 
-**H2:** `Hire AI employees the way you'd hire a person.`
+**H2:** `A second brain for your business — written by your AI workforce, owned by you forever.`
 
-**Body (60 words):**
-`Every OpsRadar customer starts with 28 built-in AI employees the moment they sign in — Revenue, Collections, Scope, Delivery, Briefing, Profitability, Growth, Renewal, and 20 more, all shipped with senior-COO operator judgment baked into their prompts. You hire custom ones in plain English from the Hire chat: "I want a Bookkeeper named Sarah, every morning at 8, watching Stripe."`
+**Body (62 words):**
+`Every AI employee writes findings to a shared, versioned brain — Pattern Cards (what's normal for client X), Decision Log (what we decided and why), Risk Register (what could hurt us next quarter), Real P&L, KPI Snapshots, Client Profiles. Every entry is signed by the agent that wrote it, with a timestamp and a commit message. The whole brain is mirrored to your Notion workspace.`
+
+**Subsection: "Why the brain is the asset (not the workforce)"**
+
+`Documented agencies sell at 8-12× EBITDA. Undocumented agencies sell at 5-9×. For a $2M-EBITDA agency, that's $6M of extra exit value. The agents commoditize — OpenAI Agents SDK lets any competent dev rebuild "28 agents" in a sprint. What they CAN'T rebuild is two years of your accumulated, signed-author, git-versioned brain. That's the moat. That's the artifact you sell when you exit.`
+
+**Subsection: "Where the brain lives"**
+
+`At OpsRadar: 3-table versioned Postgres (documents, immutable versions, commits). Curated paths get pgvector embeddings so the COO can semantic-search across them. Everything else stays markdown-only.`
+
+`In your Notion: every brain write is mirrored to a corresponding Notion page in your workspace. You can read it on Notion mobile at 3 AM with no OpsRadar login.`
+
+`At /dashboard/brain/download: the full versioned brain, exportable as a markdown zip, any time, on any tier.`
+
+### Pillar B: The AI workforce (the engine that builds it)
+
+**H2:** `28 named specialists. Hire more in plain English.`
+
+**Body (72 words):**
+`Every OpsRadar customer starts with 28 named built-in AI employees the moment they sign in — 💰 Riley (Revenue Analyst), 📨 Cole (Collections Lead), 📐 Scott (Scope Watchdog), 🚚 Devon (Delivery Manager), 📰 Brian (Daily Briefer), 📊 Penny (Profitability Analyst), 👥 Tia (Team Lead), 📈 Grace (Growth Strategist), 🔁 Renee (Renewals Lead), 🧰 Sam (Stack Auditor), 🧐 Evan (Evaluator), plus 17 toolkit specialists — all shipped with senior-COO operator judgment baked into their prompts. Hire custom ones in plain English: "I want a Bookkeeper named Sarah."`
 
 **Subsection: "How a custom hire works"**
 
@@ -46,30 +67,15 @@
 
 **Subsection: "Built on the senior-COO playbook"**
 
-`The 28 built-in agents don't just call APIs. Their prompts contain operator judgment distilled from agency-operator publications — signals + thresholds, decision trees, verbatim conversation scripts. The Collections Agent doesn't just say "this invoice is overdue." It says: at $X days late, send Y; at $Z days late, queue a margin-alert action with this draft email.`
-
-### Pillar B: Company brain
-
-**H2:** `A second brain for your business — that you own forever.`
-
-**Body (58 words):**
-`Every employee writes findings to a shared, versioned brain — Pattern Cards (what's normal for client X), Decision Log (what we decided and why), Risk Register (what could hurt us next quarter), Real P&L, KPI Snapshots. Every entry is signed by the agent that wrote it, with a timestamp and a commit message. The whole brain is mirrored to your Notion workspace.`
+`The 28 built-in agents don't just call APIs. Their prompts contain operator judgment distilled from agency-operator publications — signals + thresholds, decision trees, verbatim conversation scripts. Cole (Collections Lead) doesn't just say "this invoice is overdue." He says: at $X days late, send Y; at $Z days late, queue a margin-alert action with this draft email. Penny (Profitability Analyst) flags clients trending toward unprofitable in week 2, not at quarterly review.`
 
 **Subsection: "What the brain knows about your business after 30 days"**
 
-- `Every Stripe transaction the Revenue Agent has looked at, with context`
-- `Every overdue invoice and the Collections Agent's notes on the customer pattern`
-- `Every scope risk the Scope Agent flagged, with the Harvest hours that triggered it`
-- `Every decision YOU made in the COO chat — recorded as a Decision Log entry`
-- `Every rejection you gave an AI employee — recorded as a Pattern Card and applied permanently`
-
-**Subsection: "Where the brain lives"**
-
-`At OpsRadar: 3-table versioned Postgres (documents, immutable versions, commits). Curated paths get pgvector embeddings so the COO can semantic-search across them. Everything else stays markdown-only.`
-
-`In your Notion: every brain write is mirrored to a corresponding Notion page in your workspace. You can read it on Notion mobile at 3 AM with no OpsRadar login.`
-
-`At /dashboard/brain/download: the full versioned brain, exportable as a markdown zip, any time, on any tier.`
+- `Every Stripe transaction Riley has looked at, with the margin context she derived`
+- `Every overdue invoice and Cole's notes on the customer payment pattern`
+- `Every scope risk Scott flagged, with the Harvest hours that triggered it`
+- `Every decision YOU made in the COO chat — recorded as a Decision Log entry, signed by you`
+- `Every rejection you gave an AI employee — recorded as a Pattern Card and applied permanently (see: Apprentice Mode)`
 
 ---
 
@@ -79,12 +85,12 @@
 
 **H2:** `One COO. Seventeen specialist agents underneath. The one answer that matters.`
 
-**Body (50 words):**
-`When you ask the COO chat "which clients should I worry about?", it doesn't make up an answer. It reads what the Revenue Agent, the Profitability Agent, and the Collections Agent have written to the brain in the last 30 days. Synthesizes across them. Cites the entries. Then answers.`
+**Body (60 words):**
+`When you ask the COO chat "which clients should I worry about?", it doesn't make up an answer. It reads what Riley (Revenue), Penny (Profitability), and Cole (Collections) have written to the brain in the last 30 days. Synthesizes across them. Cites the entries by author + date. Then answers — with a clickable trail back to the source brain entries.`
 
 **Subsection: "The orchestrator-worker pattern"**
 
-`Tool agents (17) watch one app each — Stripe Agent, HubSpot Agent, Harvest Agent, ClickUp Agent, and so on. They go deep on their toolkit.`
+`Tool specialists (17) watch one app each — Stripe Specialist, HubSpot Specialist, Harvest Specialist, ClickUp Specialist, and so on. They go deep on their toolkit.`
 
 `Domain agents (10) read what the tool agents wrote — Revenue, Collections, Scope, Delivery, Briefing — and synthesize across multiple tools. The Revenue Agent reads what Stripe + HubSpot + QuickBooks Agents wrote and produces the actual revenue health summary.`
 
@@ -135,9 +141,9 @@
 
 `Every fact in your brain is signed by the agent that wrote it, the timestamp, and the agent_run_id that produced it. When your COO chat tells you something, you can click through to see which agent learned it, when, and from what data.`
 
-### Receipt 3 — Per-tool autonomy (Ask / Auto / Off)
+### Receipt 3 — Earned autonomy (risk-tiered + confidence-graduated)
 
-`For every tool, you set the autonomy level. Stripe writes might require approval (Ask). Notion writes might fire automatically (Auto). Gmail sends might be disabled entirely (Off). The defaults are conservative — writes ask, reads auto, sends ask — and you tune as you build trust.`
+`Three autonomy tiers, set per tool. High-risk actions (firing a client, sending invoices, mass email) stay Ask forever. Medium-risk actions (drafting replies, scheduling meetings) auto-fire with notification once they've earned 30+ approvals at >90% rate. Low-risk actions (Notion writes, internal logs) fire silently. The agents earn their autonomy. They don't get it on day one. You can always override the tier per tool: Ask, Auto, Off.`
 
 ---
 
@@ -221,3 +227,13 @@
 - New lead: the two-pillar architecture (AI workforce + company brain), then the three demand-validated differentiators, then receipts (cross-synthesis, org chart, automations).
 - Tech stack section added — engineers reading the product page get the same answer as YC's tech-stack question.
 - Section 6 (org chart) is brand new — CP-37 was shipped after v2 was written.
+
+## What changed in v4 (2026-05-26 inversions update)
+
+- Hero rewritten to lead with the brain-as-asset framing: `Your AI workforce builds the company brain you exit on.`
+- Pillar order flipped — brain first (the asset), workforce second (the engine).
+- Brain pillar gained the "why it's the asset" subsection with the 8-12× EBITDA agency-exit math anchor.
+- Workforce pillar names the 11 named domain agents (Riley, Cole, Scott, Devon, Brian, Penny, Tia, Grace, Renee, Sam, Evan) — the marketing harvest of `employee-metadata.ts`.
+- COO chat synthesis section uses named agents (Riley/Penny/Cole) instead of generic role labels.
+- Receipt 3 (autonomy) rewrites from "Per-tool autonomy: Ask / Auto / Off" → "Earned autonomy: risk-tiered + confidence-graduated. Agents earn autonomy after 30+ approvals at >90% rate."
+- Senior-COO playbook subsection updates examples to reference Cole + Penny by name.

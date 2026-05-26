@@ -1,8 +1,8 @@
-# Pricing Page Copy v3 — $99 / $499 / $1499 / $2999 + outcome layer
+# Pricing Page Copy v4 — Brain-led framing on the same $99/$499/$1499/$2999 tiers
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: pricing.md v2 ($750/$1500/$3000)*
-*Source of pricing: `docs/positioning/identity.md` Section "Pricing — research-locked"*
-*Source of research: `docs/research/2026-05-25-horizontal-pricing.md` + `docs/research/2026-05-25-pricing-deep-dive.md`*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: pricing.md v3*
+*Pricing structure unchanged from v3. What changed: the hero leads with the brain-as-asset ("the agency you can sell"), and the "anti-Lindy" block adds an "earned autonomy" rule.*
+*Source: `docs/positioning/identity.md` (updated with inversions) + `docs/positioning/inversions.md`*
 
 ---
 
@@ -17,13 +17,13 @@
 
 ## Hero
 
-**H1:** `Replace $5,200/mo of AI tools with one workspace that starts at $99.`
+**H1:** `Build the asset you exit on. Starts at $99/mo.`
 
-**Subhead (38 words):**
-`Flat tiers. One visible outcome meter. You only pay above your cap when you literally click Approve on an action. No tokens billed. No credits multiplied for premium models. No surprise invoices. The anti-Lindy pricing.`
+**Subhead (44 words):**
+`Replace $5,200/mo of scattered AI tools. Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA vs 5-9× undocumented — that's $6M of extra exit value on a $2M-EBITDA agency. The asset compounds. The pricing doesn't surprise you.`
 
 **Trust microcopy under subhead:**
-`14 days free · No credit card · Brain stays in your Notion`
+`14 days free · No credit card · Brain stays in your Notion · Exportable any time`
 
 ---
 
@@ -122,8 +122,8 @@
 
 ## The "anti-Lindy" trust block (under the tiers)
 
-**Section eyebrow:** `THREE PRICING RULES WE'LL NEVER BREAK`
-**Section H2:** `Why your bill from us looks the same way every month.`
+**Section eyebrow:** `FOUR RULES WE'LL NEVER BREAK`
+**Section H2:** `Why your bill from us looks the same way every month — and why your agents never go rogue.`
 
 ### Rule 1 — No token billing
 `OpenAI, Anthropic, embedding tokens — all included in your tier. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made sure that's never us.`
@@ -133,6 +133,9 @@
 
 ### Rule 3 — Outcome meter is bounded by your finger
 `The only thing that runs the meter past your cap is an action you literally clicked Approve on in /dashboard/actions. Reject it and the meter doesn't move. We are structurally incapable of surprising you with a bill.`
+
+### Rule 4 — Earned autonomy, never blind autonomy
+`Every high-risk action (firing a client, sending an invoice, mass email) stays Ask-only forever. Routine actions auto-fire only after you've approved them 30+ times at a 90%+ rate. The agents earn autonomy. They don't get it on day one. Anti-11x by structure, not by marketing.`
 
 ---
 
@@ -194,3 +197,15 @@
 - "$5,200 wedge" comparison table is new — strongest single sales asset on the page
 - "Three pricing rules" block replaces generic trust copy with named anti-Lindy / anti-11x guarantees
 - "Fractional COO" framing moved off this page entirely — it belongs on home.md Section 5 as a use-case, not as the pricing anchor
+
+## What changed in v4 (2026-05-26 inversions update)
+
+- Hero leads with brain-as-asset (`build the asset you exit on`) instead of price-comparison
+- Subhead anchors on the agency-exit EBITDA-multiple math (8-12× documented vs 5-9× undocumented; $6M of extra exit value on a $2M-EBITDA agency)
+- Added "Rule 4 — Earned autonomy, never blind autonomy" to the anti-Lindy trust block
+- Tier structure unchanged — pricing was research-locked in v3
+
+## Aligned with
+
+- `docs/positioning/identity.md` (updated 2026-05-26)
+- `docs/positioning/inversions.md` (v4 changes driven by Inversion 1 + Inversion 2)

@@ -1,8 +1,8 @@
-# About Page Copy v3 — The two-pillar origin story
+# About Page Copy v4 — The brain-as-asset origin story
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: about.md v2 (AI COO origin)*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: about.md v3*
+*Source: `docs/positioning/identity.md` (updated) + `docs/positioning/inversions.md`*
 *Route: `/about`*
-*Source: `docs/positioning/identity.md` + `docs/research/2026-05-25-subsection-demand-validation.md`*
 
 ---
 
@@ -17,10 +17,10 @@
 
 **Eyebrow:** `THE STORY`
 
-**H1:** `Built by two operators. Shipped in 48 days. Using AI to build AI.`
+**H1:** `Built so agency owners can finally sell what they built.`
 
-**Subhead (32 words):**
-`We're Lawand and the OpsRadar team. We watched 15-person marketing agencies pay $5,200 a month for 10 AI tools that don't talk to each other. We built one workspace that replaces all of them.`
+**Subhead (42 words):**
+`We're Lawand and the OpsRadar team. We watched agency owners write the same scope-creep decision 40 times across Slack threads that disappear at vendor cancellation. We built a workforce that documents those decisions into a Notion you own — and exit on, at 8-12× EBITDA instead of 5-9×.`
 
 ---
 
@@ -70,17 +70,17 @@
 
 **H2:** `Four convictions that shape every decision.`
 
-### Conviction 1 — The brain is yours, not ours
+### Conviction 1 — The brain is the asset. It's yours.
 
-`Your company brain lives in your Notion workspace. You can read it on Notion mobile with no OpsRadar login. You can export it as a markdown zip from /dashboard/brain/download on day 1 of your trial. We don't believe in vendor lock-in — we believe in earning the right to keep you by being useful, not by holding your data hostage.`
+`When you sell your agency, the buyer pays for documented operations — 8-12× EBITDA instead of 5-9× (First Page Sage / Wayfront M&A data). The brain we help you build IS that documentation. It lives in your Notion. You can export it as a markdown zip from /dashboard/brain/download on day 1 of your trial. We don't hold your data hostage because the data IS what the buyer pays for. Helping you keep it is helping you exit at a higher multiple.`
 
-### Conviction 2 — Control beats autonomy
+### Conviction 2 — Earned autonomy beats blind autonomy
 
-`The horror stories you've read about AI agents — sent the wrong email, billed the wrong customer, deleted the database — they all share one architecture: autonomous mode, no approval, no audit. We chose the opposite from day one. Every action your workforce wants to take pops up in your queue. Approve, reject, or edit. Nothing fires until you click. The product gets less impressive in a demo and more trustworthy in production.`
+`The horror stories you've read about AI agents — sent the wrong email, billed the wrong customer, deleted the database — they all share one architecture: full autonomy on day one, no audit, no graduation. We chose the opposite. Every high-risk action stays in your queue forever (firing a client, sending invoices, mass email). Routine actions auto-fire only after you've approved them 30+ times at 90%+ rate. The agents EARN their autonomy. They don't get it for free. The product gets less impressive in a demo and more trustworthy in production.`
 
-### Conviction 3 — Vertical wedge, universal architecture
+### Conviction 3 — Vertical wedge, universal architecture, multi-tenant leverage
 
-`We sell to marketing agencies first because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. But the architecture is universal — workforce + brain + integrations applies to every business with operational complexity. Q3 2026, we expand to home services (HVAC, plumbing, electrical). Q4, more verticals.`
+`We sell to marketing agencies first because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. But we have a second motion that compounds: fractional COOs running 5-10 agency clients each, on a multi-tenant version of the same product. Each FO is a 5-10× leveraged buyer. Q3 2026 we expand to home services (HVAC, plumbing, electrical). Q4, more verticals. The architecture is universal; the wedge is sharp.`
 
 ### Conviction 4 — Pricing should never surprise you
 
@@ -144,3 +144,10 @@
 - Added "What we won't build" section — research said customers respond to honest negative-space framing more than positive feature claims.
 - Added Q2-Q4 2026 roadmap section — direct from ADR 0009. Publishing the engineering plan is itself a trust signal.
 - Dropped fractional-COO replacement framing as the through-line. It's still mentioned (Conviction 3) but isn't the lead identity anymore.
+
+## What changed in v4 (2026-05-26 inversions update)
+
+- Hero rewritten to lead with the brain-as-asset / exit-value framing instead of "two operators built this."
+- Conviction 1 ("brain is yours") rewrites to anchor on the EBITDA-multiple math (8-12× documented vs 5-9× undocumented). Same data sovereignty, sharper buyer math.
+- Conviction 2 swaps "control beats autonomy" for "earned autonomy beats blind autonomy" — same anti-11x DNA, evolved mechanism.
+- Conviction 3 adds the fractional-COO multi-tenant leverage motion as a co-equal go-to-market with the agency wedge.

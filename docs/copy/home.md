@@ -1,46 +1,52 @@
-# Homepage Copy v3 — AI Operating System
+# Homepage Copy v4 — Brain-led identity (inversions update)
 
-*Owner: Lawand · Date: 2026-05-26 · Replaces: home.md v2 (AI COO framing)*
+*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: home.md v3 (workforce-led)*
 *Category language locked: **The AI Operating System for your business.***
+*Hero shift v3 → v4: brain-led ("the agency you can sell") instead of workforce-led.*
+*Control shift v3 → v4: "earned autonomy" instead of "every action approved by you, always."*
 *Wedge in hero subhead: marketing agencies. Brand stays universal.*
 *Voice anchor: dollar-specific, peer-to-peer, every claim is research-cited.*
-*Source of truth for every claim: `docs/positioning/identity.md` + `docs/research/2026-05-25-*.md`*
+*Source of truth: `docs/positioning/identity.md` + `docs/positioning/inversions.md` + `docs/research/2026-05-*.md`*
 
 ---
 
 ## Meta
 
-- **Title (60 chars):** `The AI Operating System for your business — OpsRadar`
-- **Description (155 chars):** `Hire AI employees. Build a company brain in your Notion. Replace the 10 AI tools your agency pays $5,200/mo for — with one workforce that learns you.`
-- **OG title:** `The AI Operating System for your business.`
-- **OG description:** `AI employees + a company brain in your Notion. The 15-person agency you compete with pays $5,200/mo for 10 separate AI tools. We replace all of them.`
-- **OG image direction:** Dark background. Large white type: `The AI Operating System for your business.` Below it, smaller: `AI employees · Company brain · Every tool you use.` Bottom-left: a single agent card mock — `🧮 Sarah · Bookkeeper · checking Stripe at 8:04 AM`. No logos, no UI chrome.
+- **Title (60 chars):** `The agency you can sell — OpsRadar AI Operating System`
+- **Description (155 chars):** `Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA. Replace 10 AI tools, build the asset you exit on.`
+- **OG title:** `The agency you can sell.`
+- **OG description:** `Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA vs 5-9× undocumented. We build the asset, not just the dashboard.`
+- **OG image direction:** Dark background. Large white type: `The agency you can sell.` Below it, smaller: `Your AI workforce writes the SOPs you exit on.` Bottom-left: a Notion page mock showing a versioned Pattern Card titled "Acme Co — payment behavior" signed `🧾 Cole · 2 days ago`. No logos, no UI chrome.
 
 ---
 
 ## Hero (above the fold)
 
 **Eyebrow (small caps, with a small green dot):**
-`OPERATING SYSTEM · BUILT FOR HOW YOU ACTUALLY WORK`
+`THE AI OPERATING SYSTEM · BUILT FOR THE AGENCY YOU'LL ONE DAY SELL`
 
 **H1 (primary):**
-`The AI Operating System for your business.`
+`The agency you can sell.`
 
-**Subhead one (the two pillars, 18 words):**
-`Hire your AI employees. Build a company brain in your Notion. We do both, in one workspace, from day one.`
+**Subhead one (the brain-led promise, 23 words):**
+`Your AI workforce writes the SOPs into a Notion you keep. Every decision, every pattern, every fix — signed, dated, exportable. The asset you exit on.`
 
-**Subhead two (the wedge — research-backed quote):**
-`The 15-person agency you compete with pays $5,200 a month for 10 different AI tools that don't talk to each other. We replace all of them — with one workforce that learns from every "no" you say.`
-*(Source: BizTech Magazine 2025, agency tool-sprawl survey. Cited in `docs/research/2026-05-25-subsection-demand-validation.md`.)*
+**Subhead two (the dollar math that locks it in):**
+`Agencies with documented operations sell at 8-12× EBITDA. Undocumented peers exit at 5-9×. For a $2M EBITDA agency, that's $6M of extra exit value — captured by an AI workforce that documents itself as it works.`
+*(Source: First Page Sage + Wayfront M&A multiples for marketing/creative agencies. Cited in `docs/research/2026-05-26-inversion-1-brain-as-product.md`.)*
 
-**Primary CTA text:** `Hire your first AI employee — free for 14 days`
+**Subhead three (the wedge — what they pay for today):**
+`Today that same 15-person agency pays $5,200 a month for 10 different AI tools that don't talk to each other. We replace all of them with one workforce that builds your brain instead of scattering across ten apps.`
+*(Source: BizTech Magazine 2025, agency tool-sprawl survey.)*
+
+**Primary CTA text:** `Build the asset — free for 14 days`
 **Primary CTA hover state:** `→ no credit card, no demo, takes 4 minutes`
 
 **Secondary CTA text:** `See how the workforce + brain works →`
 **Secondary CTA destination:** `/how-it-works`
 
 **Trust microcopy (· separated, single line under CTAs):**
-`14-day free trial · No credit card · Your brain stays in your Notion`
+`14-day free trial · No credit card · Your brain lives in your Notion · Exportable any time`
 
 ---
 
@@ -50,34 +56,35 @@
 
 **Section H2:** `Two artifacts. Two homes. One workspace.`
 
-**Section intro (28 words):**
-`Most AI tools sell you a chatbot or a workflow. OpsRadar sells you two things you can put on a balance sheet: an AI workforce that runs your operations, and a company brain that knows how it all works.`
+**Section intro (32 words):**
+`Most AI tools sell you a chatbot or a workflow that disappears when you cancel. OpsRadar sells you two things you can put on a balance sheet: a company brain you keep forever, and an AI workforce that builds it.`
 
-### Pillar A — AI workforce
+### Pillar A — Company brain (the asset)
 
-**Tag:** `Lives at OpsRadar`
+**Tag:** `Lives in your Notion · You own it forever`
+**Headline:** `A second brain for your business — written by your AI workforce, owned by you.`
+
+**Body (58 words):**
+`Every AI employee writes what they learn into a versioned brain. Pattern cards. Decision logs. Risk register. Real P&L. Client profiles. The brain is mirrored to your Notion workspace — exportable as a markdown zip the day you sign up, the day you cancel, and every day in between. When you sell the agency, the brain goes with it as exit-value IP.`
+
+**Receipts (4 bullets):**
+- `In your Notion — read it on Notion mobile at 3 AM with no OpsRadar login.`
+- `Git-style commit graph — every fact signed by the agent that wrote it, every change diffable and reversible.`
+- `Exportable as a markdown zip from /dashboard/brain/download — no lock-in.`
+- `8-12× EBITDA exit multiple for documented agencies vs 5-9× for undocumented (First Page Sage). The brain is literally the operating IP a buyer pays for.`
+
+### Pillar B — AI workforce (the engine that builds it)
+
+**Tag:** `Lives at OpsRadar · 28 named specialists`
 **Headline:** `Hire AI employees the way you'd hire a person.`
 
 **Body (52 words):**
-`Pick a role. Give them a name and a schedule. Scope which tools they touch. They start work tomorrow. Twenty-eight built-in roles ship the moment you sign in — Revenue, Collections, Scope, Delivery, Client Briefings, and twenty-three more. Hire custom ones in plain English from the Hire chat: "I want a Bookkeeper named Sarah."`
+`Pick a role. Give them a name and a schedule. Scope which tools they touch. They start work tomorrow. Twenty-eight named specialists ship the moment you sign in — 💰 Riley (Revenue), 📨 Cole (Collections), 📐 Scott (Scope), 📰 Brian (Daily Brief), 📊 Penny (Profitability), and 23 more. Hire custom ones in plain English: "I want a Bookkeeper named Sarah."`
 
 **Receipts (3 bullets, each one differentiator):**
-- `Apprentice Mode — every time you reject an action, your AI learns that rule forever. After 30 days she sounds less like ChatGPT and more like your team.`
-- `Approval gate on every action — nothing fires until you say yes. The anti-11x: zero rogue agent risk.`
+- `Apprentice Mode — every time you reject an action, your AI learns that rule forever. After 30 days they sound less like ChatGPT and more like your team.`
+- `Earned autonomy — every high-risk action approved by you. Routine actions auto-fire after you've approved them 30 times. Earned trust, not blind autonomy.`
 - `Built on 25 connected tools today, growing toward 500 — Stripe, HubSpot, ClickUp, Harvest, Gmail, Slack, Notion, Calendly, and 17 more.`
-
-### Pillar B — Company brain
-
-**Tag:** `Lives in your Notion`
-**Headline:** `A second brain for your business — that you own forever.`
-
-**Body (54 words):**
-`Every employee writes what they learn into a versioned brain. Pattern cards. Decision logs. Risk register. Real P&L. The brain is mirrored to your Notion workspace — exportable as a markdown zip the day you sign up, the day you cancel, and every day in between. Ask the COO any question and it knows the answer because it has read everything.`
-
-**Receipts (3 bullets):**
-- `Mirrored to your Notion — read it on Notion mobile at 3 AM with no OpsRadar login.`
-- `Git-style commit graph — every fact signed by the agent that wrote it, every change diffable and reversible.`
-- `Exportable as a markdown zip from /dashboard/brain/download — no lock-in.`
 
 ---
 
@@ -150,37 +157,45 @@
 
 ---
 
-## Section 4 — The control surface (the anti-rogue-agent story)
+## Section 4 — The control surface (earned autonomy, the anti-rogue-agent story)
 
 **Section eyebrow:** `WHY OPSRADAR IS NOT 11X`
 
-**Section H2:** `Every action approved by you. Always.`
+**Section H2:** `Earned autonomy. Not blind autonomy.`
 
-**Section body (52 words):**
-`The horror stories you've read about AI agents going rogue — sending wrong emails, billing wrong customers, deleting wrong data — they're all the same architecture: autonomous mode, no approval, no audit. OpsRadar is the opposite. Every action your AI workforce wants to take pops up in your Actions queue. Approve, reject, or edit. Nothing fires until you click.`
+**Section body (66 words):**
+`The horror stories you've read about AI agents — sending wrong emails, billing wrong customers, deleting wrong data — share one architecture: autonomous from day one, no audit, no graduation. OpsRadar starts every high-risk action in your Actions queue. You approve, reject, or edit. After you've approved a routine action 30 times at 90%+ rate, OpsRadar promotes it to auto-fire with notification. The agents earn autonomy. They don't get it for free.`
 
 **Receipt bullets:**
-- `Per-tool autonomy: Ask, Auto, Off — you set the comfort level per tool.`
-- `Approval queue at /dashboard/actions — see everything pending in one place.`
+- `Risk-tiered defaults: high-risk actions (firing a client, mass email) ALWAYS ask. Medium-risk actions (drafting replies, scheduling meetings) graduate to Auto after earning trust. Low-risk actions (Notion writes, internal logs) fire silently.`
+- `Per-tool autonomy override: Ask, Auto, Off — you set the floor per tool, OpsRadar earns the ceiling.`
+- `Approval queue at /dashboard/actions — see everything pending in one place, with the confidence score the agent assigned.`
 - `Every action logged with the agent that proposed it, the data it saw, and the reason it gave.`
 - `Reject something and OpsRadar learns the rule for next time (see: Apprentice Mode above).`
 
 ---
 
-## Section 5 — Social proof / who it's for (with the agency wedge)
+## Section 5 — Who it's for (agencies + the fractional-COO leverage layer)
 
 **Section eyebrow:** `WHO USES OPSRADAR TODAY`
 
-**Section H2:** `Built first for marketing agencies. Built to grow with you.`
+**Section H2:** `Built first for marketing agencies. Doubled for fractional operators.`
 
-**Section body (44 words):**
-`We wedged into 10-50 person marketing and creative agencies because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. If that's you, OpsRadar fits the day you connect Stripe. If it's not — talk to us about your stack.`
+**Section body (52 words):**
+`We wedged into 10-50 person marketing and creative agencies because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. If that's you, OpsRadar fits the day you connect Stripe. If you're a fractional COO running 5-10 agency clients — there's a multi-tenant version designed for exactly that.`
 
 **Three customer-shaped use-cases (research-backed):**
 
 - **Revenue health** — `💰 Riley, your Revenue Analyst, watches MRR, paid-MTD, overdue invoices, and customer churn. Catches a low-margin client in week 2, not at quarter close.`
+- **Collections cadence** — `📨 Cole, your Collections Lead, drafts the right nudge at the right time. Apprentice Mode learns your tone after 30 approvals. By month two he sounds like you.`
 - **Scope creep detection** — `📐 Scott, your Scope Watchdog, reads Harvest logged hours against ClickUp scope per client. Flags retainer overruns before you've eaten the cost.`
 - **Daily briefing** — `📰 Brian, your Daily Briefer, reads every other agent's finding overnight and writes you a one-page brief at 6 AM. The one thing you read before standup.`
+- **Per-client margin** — `📊 Penny, your Profitability Analyst, calculates per-client margin and flags money-losing accounts before the quarterly review.`
+
+**Fractional Operator callout card:**
+> **`🪪 RUNNING MULTIPLE AGENCIES?`**
+> `If you're a fractional COO managing 5-10 client agencies, OpsRadar runs as a multi-tenant workspace. White-label your brand, manage all clients from /dashboard/fo, $2,999/mo for unlimited clients.`
+> **CTA:** `See the Fractional Operator workspace →` (`/for/fractional-coo`)
 
 **Footer link:** `Expanding to home services (HVAC, plumbing, electrical) in Q3 2026 — built on the same architecture. [Get on the waitlist →]`
 
@@ -234,10 +249,26 @@
 
 ## What's NEW in v3
 
-- H1 claims a category (`AI Operating System`) instead of a role
+- H1 claimed a category (`AI Operating System`) instead of a role
 - Two-pillar architecture explicit in Section 1
 - Three demand-validated differentiators each anchored to a verbatim customer pain quote
 - Tools grid showing the 25 live integrations + the "growing to 500" roadmap
 - Anti-11x control-surface section (the safety story YC + customers both ask for)
 - New pricing teaser anchoring against the $5,200 wedge
 - Brain ownership stated as concrete guarantee ("exportable from day 1") — not "fire us tomorrow"
+
+## What's NEW in v4 (this revision, 2026-05-26 inversions update)
+
+- **Hero is brain-led, not workforce-led** — H1 says "the agency you can sell" instead of "the AI Operating System." Inversion 1 finding: agents commoditize, brain doesn't. Anchor on agency-exit EBITDA-multiple math (8-12× documented vs 5-9× undocumented).
+- **Pillar order flipped** — brain comes first (the asset), workforce comes second (the engine that builds it).
+- **Section 4 says "earned autonomy" not "every action approved by you, always"** — Inversion 2 finding: human-on-the-loop wins long-term, approval-fatigue is a real problem. Three risk tiers (always Ask / Auto-with-notification / silent Auto).
+- **Section 5 names the agents** — Riley, Cole, Scott, Brian, Penny appear by name. They were already in `employee-metadata.ts`; this is the marketing harvest.
+- **Section 5 adds Fractional Operator callout** — Inversion 3 finding: agencies-plus-FO is the highest-probability path to $10M ARR. Multi-tenant leverage layer using existing `/dashboard/fo`.
+- **Eyebrow reframed** — `THE AI OPERATING SYSTEM · BUILT FOR THE AGENCY YOU'LL ONE DAY SELL` (still claims the category; adds the exit-value hook).
+
+## Aligned with
+
+- `docs/positioning/identity.md` (updated 2026-05-26 with the inversions)
+- `docs/positioning/inversions.md` (the 3-inversion verdict doc)
+- `docs/research/2026-05-26-inversion-{1,2,3}-*.md` (raw evidence)
+- `docs/research/2026-05-26-shared-knowledge-layer.md` (moat sharpening)
