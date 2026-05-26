@@ -12,41 +12,62 @@
 
 ## Meta
 
-- **Title (60 chars):** `The agency you can sell — OpsRadar AI Operating System`
-- **Description (155 chars):** `Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA. Replace 10 AI tools, build the asset you exit on.`
-- **OG title:** `The agency you can sell.`
-- **OG description:** `Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA vs 5-9× undocumented. We build the asset, not just the dashboard.`
-- **OG image direction:** Dark background. Large white type: `The agency you can sell.` Below it, smaller: `Your AI workforce writes the SOPs you exit on.` Bottom-left: a Notion page mock showing a versioned Pattern Card titled "Acme Co — payment behavior" signed `🧾 Cole · 2 days ago`. No logos, no UI chrome.
+- **Title (60 chars):** `Hire an AI workforce. Keep the brain it builds — OpsRadar`
+- **Description (155 chars):** `28 named AI employees run your agency across Stripe, HubSpot, ClickUp, Gmail. They write everything they learn into a Notion you own. $499/mo.`
+- **OG title:** `Hire an AI workforce. Keep the brain it builds.`
+- **OG description:** `28 named AI employees that run your marketing agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.`
+- **OG image direction:** Dark background. Large white type, two-line H1: `Hire an AI workforce.` / `Keep the brain it builds.` Below it, a row of three agent cards: `💰 Riley · Revenue` / `📨 Cole · Collections` / `📐 Scott · Scope`. Bottom-right: small text `OpsRadar · $499/mo`. No other UI chrome.
 
 ---
 
 ## Hero (above the fold)
 
-**Eyebrow (small caps, with a small green dot):**
-`THE AI OPERATING SYSTEM · BUILT FOR THE AGENCY YOU'LL ONE DAY SELL`
+**Eyebrow (small caps, small green dot):**
+`THE AI OPERATING SYSTEM · ONE WORKFORCE, ONE BRAIN, YOUR STACK`
 
-**H1 (primary):**
-`The agency you can sell.`
+**H1 (primary — 8 words, both pillars):**
+`Hire an AI workforce. Keep the brain it builds.`
 
-**Subhead one (the brain-led promise, 23 words):**
-`Your AI workforce writes the SOPs into a Notion you keep. Every decision, every pattern, every fix — signed, dated, exportable. The asset you exit on.`
+**Subhead (29 words — what it is, who it's for, what you keep):**
+`OpsRadar gives every marketing agency 28 named AI employees that run your operations across Stripe, HubSpot, Harvest, ClickUp, Gmail and 20 more — and writes everything they learn into a Notion you own forever.`
 
-**Subhead two (the dollar math that locks it in):**
-`Agencies with documented operations sell at 8-12× EBITDA. Undocumented peers exit at 5-9×. For a $2M EBITDA agency, that's $6M of extra exit value — captured by an AI workforce that documents itself as it works.`
-*(Source: First Page Sage + Wayfront M&A multiples for marketing/creative agencies. Cited in `docs/research/2026-05-26-inversion-1-brain-as-product.md`.)*
+**Sub-subhead (the moment of "ok wait that's interesting"):**
+`Riley watches your revenue. Cole drafts collections. Scott catches scope creep. Brian writes your morning brief. The other 24 are listed below. Hire your own custom ones in plain English.`
 
-**Subhead three (the wedge — what they pay for today):**
-`Today that same 15-person agency pays $5,200 a month for 10 different AI tools that don't talk to each other. We replace all of them with one workforce that builds your brain instead of scattering across ten apps.`
-*(Source: BizTech Magazine 2025, agency tool-sprawl survey.)*
-
-**Primary CTA text:** `Build the asset — free for 14 days`
-**Primary CTA hover state:** `→ no credit card, no demo, takes 4 minutes`
+**Primary CTA text:** `Start free trial — hire in 4 minutes`
+**Primary CTA hover state:** `→ no credit card, no demo, no sales call`
 
 **Secondary CTA text:** `See how the workforce + brain works →`
 **Secondary CTA destination:** `/how-it-works`
 
 **Trust microcopy (· separated, single line under CTAs):**
-`14-day free trial · No credit card · Your brain lives in your Notion · Exportable any time`
+`$499/mo · 14-day free trial · Brain stays in your Notion · Exportable any time`
+
+---
+
+### Why this hero, copywriter notes
+
+**The H1 does three jobs in 8 words.**
+- *Hire* = it's software (verb tells you product type — you hire on a SaaS, not on a service).
+- *AI workforce* = the category (no ambiguity about LLM agents).
+- *Keep the brain it builds* = the moat-as-promise (data sovereignty + accumulated value + ownership all in five words).
+
+**The subhead does three more jobs in 29 words.**
+- "OpsRadar gives every marketing agency" = who it's for (wedge).
+- "28 named AI employees that run your operations across [tools]" = what it does + integration breadth.
+- "writes everything they learn into a Notion you own forever" = the brain-as-asset hook, without the EBITDA math (moved to Section 1 where it has space to land).
+
+**The sub-subhead is the hook line.**
+"Riley watches your revenue. Cole drafts collections." — named characters in service of a concrete outcome. Reader curiosity now wants to know who the other 24 are. They scroll. The page wins the scroll.
+
+**What we explicitly kept from v4:**
+- Brain-as-asset positioning (moved from H1 to Section 1, where it has more room than a hero line can hold)
+- Earned autonomy framing (still in Section 4, untouched)
+- Fractional Operator callout (Section 5, untouched)
+
+**What we explicitly dropped from v4:**
+- "The agency you can sell" H1 — too narrow (only resonates with owners thinking about exit) and didn't tell the visitor what the product IS
+- EBITDA math in the hero — too niche for the H1 surface (80% of agency owners don't think in multiples), kept in Section 1 where readers who care will see it
 
 ---
 
@@ -259,12 +280,22 @@
 
 ## What's NEW in v4 (this revision, 2026-05-26 inversions update)
 
-- **Hero is brain-led, not workforce-led** — H1 says "the agency you can sell" instead of "the AI Operating System." Inversion 1 finding: agents commoditize, brain doesn't. Anchor on agency-exit EBITDA-multiple math (8-12× documented vs 5-9× undocumented).
 - **Pillar order flipped** — brain comes first (the asset), workforce comes second (the engine that builds it).
 - **Section 4 says "earned autonomy" not "every action approved by you, always"** — Inversion 2 finding: human-on-the-loop wins long-term, approval-fatigue is a real problem. Three risk tiers (always Ask / Auto-with-notification / silent Auto).
 - **Section 5 names the agents** — Riley, Cole, Scott, Brian, Penny appear by name. They were already in `employee-metadata.ts`; this is the marketing harvest.
 - **Section 5 adds Fractional Operator callout** — Inversion 3 finding: agencies-plus-FO is the highest-probability path to $10M ARR. Multi-tenant leverage layer using existing `/dashboard/fo`.
-- **Eyebrow reframed** — `THE AI OPERATING SYSTEM · BUILT FOR THE AGENCY YOU'LL ONE DAY SELL` (still claims the category; adds the exit-value hook).
+
+## What's NEW in v4.1 (hero correction, 2026-05-26)
+
+Founder feedback: v4's "The agency you can sell" H1 was research-shaped, not customer-shaped. First-time visitors didn't know what OpsRadar IS — the H1 was a future-vague benefit ("you can sell") instead of a product description.
+
+Hero rewrites to copywriter craft, not research defense:
+
+- **H1**: `Hire an AI workforce. Keep the brain it builds.` (8 words, two action verbs, both pillars, ownership in second clause)
+- **Subhead**: tells the visitor what (28 named agents), who-for (every marketing agency), and what-they-keep (Notion they own) in 29 words.
+- **Sub-subhead**: names Riley, Cole, Scott, Brian by character + outcome — the "OK wait that's interesting" hook that wins the scroll.
+- **EBITDA math moved** from hero to Section 1 — too niche for the H1 surface; lands harder where the reader has context.
+- **OG image** swaps from "exit-value" framing to the actual 3 named agents (Riley / Cole / Scott) — what readers will share.
 
 ## Aligned with
 
