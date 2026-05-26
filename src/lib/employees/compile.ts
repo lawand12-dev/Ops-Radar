@@ -1,31 +1,15 @@
 /**
- * Compile natural-language descriptions into typed CustomEmployeeDraft (CP-34b).
- *
- * The COO chat tool `propose_custom_employee` takes the customer's free-form
- * description ("I want a Bookkeeper named Sarah, every day at 8am, checks
- * Stripe") and uses `generateObject` to compile it into a structured draft
- * the customer can confirm before we persist.
- *
- * Pattern mirrors src/lib/automations/compile.ts (the CP-20 automation
- * compiler) — same Lindy 2.0 "on rails" principle. The model can ONLY
- * choose toolkits and brain prefixes that exist; it cannot invent slugs.
- *
- * Hard guarantees:
- *   - slug is kebab-case + reserved-slug check happens caller-side
- *   - scoped_toolkits ⊆ ToolSlug enum (validated via catalog)
- *   - scoped_brain_prefixes ⊆ BRAIN_DIRECTORIES (so brain reads/writes
- *     can never escape the customer's organized layout)
- *   - schedule_cron is either null (chat-only employee) or a real 5-field
- *     cron expression
- *   - model_slug is restricted to the same enum the runAgent loop accepts
+ * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * Type exports preserved so consumers still compile. Function bodies
+ * return empty data and log a warning. Rebuild on Nango per CP-45 plan.
  */
 
 import { z } from 'zod'
-import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
-import { COMPOSIO_TOOLS, type ToolSlug } from '<npm>/lib/composio'
-import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
 import type { Employee } from './types'
+
+// ─── Local ToolSlug stub (was imported from deleted <npm>/lib/composio) ──
+// Kept as a permissive string alias so downstream type checks still pass.
+type ToolSlug = string
 
 // ─── Schema: what generateObject returns ────────────────────────────────
 
@@ -110,111 +94,43 @@ export type CustomEmployeeDraft = z.infer<typeof CustomEmployeeDraftSchema>
 // ─── Inputs the caller assembles ────────────────────────────────────────
 
 export type CompileEmployeeInput = {
-  /** The customer's natural-language description verbatim. */
   description: string
-  /** ToolSlugs the customer has actually connected (filtered to what works today). */
   connectedToolkits: ToolSlug[]
-  /** Current workforce — used so the model can avoid name/slug collisions. */
   existingTeam: Array<Pick<Employee, 'slug' | 'display'>>
-  /** Reserved slugs (the 28 built-ins) — model must not propose these. */
   reservedSlugs: string[]
 }
 
-// ─── The actual compile call ────────────────────────────────────────────
+// ─── Stubbed compile call ───────────────────────────────────────────────
 
 export async function compileCustomEmployee(
   input: CompileEmployeeInput,
 ): Promise<CustomEmployeeDraft> {
-  const prompt = buildEmployeeCompilationPrompt(input)
-  const { object } = await generateObject({
-    model: openai('gpt-5.4'),
-    schema: CustomEmployeeDraftSchema,
-    system: EMPLOYEE_COMPILER_SYSTEM,
-    prompt,
-  })
-  return object
+  void input
+  console.warn('[STUB] compileCustomEmployee — composio-to-nango migration in progress')
+  return {
+    slug: 'stub-employee',
+    name: 'Stub',
+    role: 'Placeholder',
+    emoji: '🛠️',
+    persona_summary:
+      'Stubbed employee returned during the Composio-to-Nango migration. Real compilation is offline.',
+    schedule_human: 'Chat-only (no schedule)',
+    schedule_cron: null,
+    scoped_toolkits: [],
+    scoped_brain_prefixes: [],
+    model_slug: 'gpt-5.4',
+    max_steps: 20,
+    system_prompt:
+      'You are a stub employee created during the Composio-to-Nango migration. Real compilation is offline; this is a placeholder so the codebase compiles.',
+    first_task: 'Wait for the Nango migration to complete.',
+    unsupported: {
+      reason: 'Employee compilation is temporarily disabled during the Composio-to-Nango migration.',
+    },
+  }
 }
-
-// ─── System prompt: voice + non-negotiable rules ────────────────────────
-
-const EMPLOYEE_COMPILER_SYSTEM = [
-  "You are compiling an OpsRadar customer's request into a typed CustomEmployeeDraft.",
-  '',
-  'This is the "AI employee" feature — the customer is hiring a named, persistent AI teammate who has a personality, runs on a schedule (or chat-only), can call specific SaaS tools through Composio, and writes durable notes to a versioned Postgres brain.',
-  '',
-  'HARD RULES:',
-  '1. You MAY ONLY use toolkit slugs from the AVAILABLE TOOLKITS list. Do not invent slugs.',
-  '2. You MAY ONLY use brain prefixes from the AVAILABLE BRAIN DIRECTORIES list, each ending in "/". You SHOULD also include "employees/<slug>/" so the employee has a private workspace.',
-  '3. `slug` must be kebab-case, must NOT shadow any RESERVED SLUG, and must NOT match an EXISTING EMPLOYEE slug.',
-  '4. `name` must NOT collide with an existing employee\'s name in EXISTING TEAM.',
-  '5. If the customer\'s request cannot be expressed (e.g. needs a toolkit they have not connected, needs sub-minute cron precision, references a reserved slug), set `unsupported` to {reason: "<plain-English explanation>"} and leave other fields filled with safe placeholders. The caller surfaces this to the customer.',
-  '6. `system_prompt` must:',
-  '   - Start with "You are <Name>, the <role> for {agency_name}."',
-  '   - Describe what data sources they read at the start of each run',
-  '   - List 2-5 specific tasks they perform',
-  '   - State their decision rules / when to ask for approval vs auto',
-  '   - End with where they write findings in the brain (matching scoped_brain_prefixes)',
-  '7. `schedule_cron` is UTC. Pick a sensible default if the customer is vague (e.g. "every day" → "0 9 * * *"). If the customer asks for a frequency Vercel/Trigger.dev can\'t do (every 30 seconds), explain in `schedule_human` and set `unsupported`.',
-  '8. `first_task` should be the most-natural single thing this employee would do as their first run. One concrete sentence. No fluff.',
-  '9. `emoji` should fit the role (💰 for finance, 📊 for analyst, 📝 for writer, 🤝 for AM, etc.).',
-].join('\n')
-
-// ─── User prompt builder ────────────────────────────────────────────────
 
 export function buildEmployeeCompilationPrompt(input: CompileEmployeeInput): string {
-  const { description, connectedToolkits, existingTeam, reservedSlugs } = input
-
-  const toolkitList = connectedToolkits.length
-    ? connectedToolkits
-        .map((t) => `  - ${t} (${COMPOSIO_TOOLS[t]})`)
-        .join('\n')
-    : '  (none connected yet — employee will be chat/brain-only)'
-
-  const brainList = BRAIN_DIRECTORIES.map((d) => `  - ${d}/ — for ${humanizeBrainDir(d)}`).join('\n')
-
-  const teamList = existingTeam.length
-    ? existingTeam
-        .map((e) => `  - ${e.slug} (${e.display.name} · ${e.display.role})`)
-        .join('\n')
-    : '  (no existing custom employees)'
-
-  return [
-    'AVAILABLE TOOLKITS (Composio):',
-    toolkitList,
-    '',
-    'AVAILABLE BRAIN DIRECTORIES (path prefixes):',
-    brainList,
-    '  - employees/<slug>/ — private working notes for THIS employee',
-    '',
-    'EXISTING TEAM (do not collide with these names or slugs):',
-    teamList,
-    '',
-    'RESERVED SLUGS (the 28 built-in agents — do not propose these):',
-    reservedSlugs.length ? '  ' + reservedSlugs.join(', ') : '  (none)',
-    '',
-    "CUSTOMER'S REQUEST:",
-    description.trim(),
-  ].join('\n')
-}
-
-// ─── Helper: humanize brain directory names for the prompt ──────────────
-
-function humanizeBrainDir(dir: string): string {
-  const map: Record<string, string> = {
-    'pattern-cards': 'recurring patterns + insights',
-    'risk-register': 'flagged risks per client/project',
-    'decision-log': 'strategic decisions you and the team have made',
-    'kpi-snapshots': 'weekly KPI snapshots',
-    'real-pl': 'profit & loss working ledger',
-    clients: 'per-client durable notes',
-    'quarterly-memory': 'quarterly retrospectives + outlook',
-    projects: 'per-project working notes',
-    'service-lines': 'service-line economics + positioning',
-    team: 'team utilization, burnout, capacity notes',
-    'tool-stack': 'tool stack audit notes',
-    contracts: 'contract terms + renewal dates',
-    pages: 'misc canonical pages',
-    'agent-runs': 'agent run summaries',
-  }
-  return map[dir] ?? dir
+  void input
+  console.warn('[STUB] buildEmployeeCompilationPrompt — composio-to-nango migration in progress')
+  return ''
 }

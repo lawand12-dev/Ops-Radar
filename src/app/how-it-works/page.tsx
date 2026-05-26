@@ -64,15 +64,15 @@ const STEPS: Step[] = [
     tag: "Connect",
     duration: "~5 minutes",
     headline: "Connect the tools you already use.",
-    body: "Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Composio handles every OAuth handshake. We never see your API keys.",
+    body: "Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Nango handles every OAuth handshake. We never see your API keys.",
     yourSide: [
       "Click the integrations you use. Stripe + HubSpot + ClickUp + Harvest + Gmail + Notion + Slack is the common starter set.",
       "Approve each OAuth scope as it pops up — read scopes by default, write scopes per tool.",
     ],
     ourSide: [
-      "Composio brokers the OAuth and holds the token. OpsRadar never stores customer API keys.",
+      "Nango brokers the OAuth and holds the token. OpsRadar never stores customer API keys.",
       "Every read live-fetches from source — your client business data never lands in our database.",
-      "25 integrations live today, growing toward Composio's full 500+ catalog.",
+      "25 integrations live today, growing toward Nango's full 500+ catalog.",
     ],
     youGet:
       "Your AI workforce now has the live data it needs to start working. No CSV uploads, no nightly ETL jobs, no syncing.",
@@ -87,7 +87,7 @@ const STEPS: Step[] = [
       "28 named AI employees already work for you. They started the moment you signed in.",
     body: "💰 Riley already has access to your Stripe. 📐 Scott already has access to your Harvest. 📨 Cole already has access to your overdue invoices. None of them have done anything yet — they ship daily and weekly schedules. You can also run any of them on demand from the COO chat. Each has their own emoji, their own bio, their own page.",
     yourSide: [
-      "Open /dashboard/agents to see the grid of 28 employees on day one.",
+      "Each of the 28 named employees appears in the YOUR TEAM section of the sidebar from day one.",
       "Click any one to read their bio, schedule, and which tools they're scoped to.",
       "Toggle the autonomy tier per tool — Ask / Auto / Off — if you want to override the defaults.",
     ],
@@ -373,7 +373,7 @@ function ArchitectureSection() {
                     streamText loop
                            │
                            ▼
-                  Composio tool call
+                  Nango tool call
                            │
                            ▼
                    Approval gate

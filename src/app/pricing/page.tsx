@@ -184,7 +184,7 @@ const WEDGE_ROWS = [
   {
     tool: "Zapier Pro",
     cost: "$73/mo + tasks",
-    why: "25+ integrations native via Composio, growing to 500",
+    why: "25+ integrations native via Nango, growing to 500",
   },
   {
     tool: "AI SDR (11x or similar)",

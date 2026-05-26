@@ -72,7 +72,7 @@ function BackLink() {
   return (
     <div>
       <Link
-        href="/dashboard/employees"
+        href="/dashboard"
         className="inline-flex items-center gap-1.5 text-caption text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)]"
       >
         <ArrowLeft size={12} />
@@ -232,10 +232,10 @@ function NotFound({ slug }: { slug: string }) {
           is on your team.
         </p>
         <Link
-          href="/dashboard/employees"
+          href="/dashboard"
           className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 text-body-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          Browse your team
+          Back to dashboard
         </Link>
       </section>
     </div>

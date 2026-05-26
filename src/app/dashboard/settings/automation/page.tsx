@@ -19,7 +19,7 @@ export default function AutomationSettingsPage() {
           Tool Autonomy
         </h1>
         <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">
-          Control how much freedom your AI Ops Team has when writing to each connected tool. Reads are always free — these settings only affect write actions (sending email, charging cards, updating records). To build custom automations (&ldquo;when X happens, do Y&rdquo;), see <a href="/dashboard/automations" className="underline">Automations</a>.
+          Control how much freedom your AI Ops Team has when writing to each connected tool. Reads are always free — these settings only affect write actions (sending email, charging cards, updating records).
         </p>
       </div>
       <AutomationSettings />

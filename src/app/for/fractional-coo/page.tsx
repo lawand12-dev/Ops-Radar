@@ -115,7 +115,7 @@ const OBJECTIONS: Array<{ q: string; a: string }> = [
   },
   {
     q: "I'm not technical. Is this hard to set up?",
-    a: "Onboarding a new client takes about 15 minutes: invite the client to your FO org, get them through Composio OAuth on their tools, choose which of the 28 agents to enable, set autonomy defaults. We have a 5-min Loom walking through it.",
+    a: "Onboarding a new client takes about 15 minutes: invite the client to your FO org, get them through Nango OAuth on their tools, choose which of the 28 agents to enable, set autonomy defaults. We have a 5-min Loom walking through it.",
   },
   {
     q: "What about pricing for my clients — do I bake OpsRadar into my retainer or charge separately?",
@@ -412,7 +412,7 @@ function HowItWorksSection() {
           </h2>
           <p className="mt-6 max-w-3xl text-body leading-[1.65] text-[var(--color-fg-muted)]">
             Each client agency you onboard gets their own OAuth connections
-            (their Stripe, their HubSpot, their ClickUp). Composio handles every
+            (their Stripe, their HubSpot, their ClickUp). Nango handles every
             credential — you never see the API keys. Each client gets their own
             company brain mirrored to their own Notion workspace. The 28
             built-in agents run independently per client. If you add a custom AI

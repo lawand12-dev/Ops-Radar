@@ -1,56 +1,76 @@
 /**
- * Per-tool autonomy policy lookup.
+ * Per-tool autonomy policy (CP-14).
  *
- * Each user can set a policy per Composio toolkit:
- *   ask  — default; writes queue for approval
- *   auto — writes execute immediately (still audited)
- *   off  — writes return an error to the model
+ * Each customer can flip each toolkit between three modes:
+ *   - 'ask'  — destructive writes go to the approval queue (default)
+ *   - 'auto' — destructive writes fire immediately, audit-logged
+ *   - 'off'  — destructive writes refused outright
  *
- * Reads always pass through regardless of policy (gate handles classification).
+ * The policy is keyed by **toolkit slug** (e.g. 'gmail', 'hubspot'), not by
+ * individual tool name. The destructive-vs-readonly check stays in
+ * src/lib/agents/hooks.ts; this file just answers "what's the policy for
+ * this toolkit on this customer?"
  *
- * Designed to be called once per agent run, then looked up in memory for each
- * tool call so we don't N+1-query the DB per Composio invocation.
+ * Loaded once at runAgent start, cached in-memory for the duration of the
+ * run. Updates from /dashboard/settings/automation only take effect on the
+ * next run — cheap, predictable, easy to reason about.
  */
 
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 
 export type ToolPolicy = 'ask' | 'auto' | 'off'
 
-export type ToolPolicyMap = Map<string, ToolPolicy>
-
-const DEFAULT_POLICY: ToolPolicy = 'ask'
+export type ToolPolicyMap = Record<string, ToolPolicy>
 
 /**
- * Load all of the user's per-tool policies in one query. Returns a Map keyed
- * by tool_slug (the OpsRadar toolkit slug, e.g. 'gmail'). Missing entries
- * default to 'ask' at lookup time via getToolPolicy().
+ * Load the full policy map for a user. Missing rows default to 'ask'.
  */
 export async function loadToolPolicies(userId: string): Promise<ToolPolicyMap> {
-  const supabase = getServerSupabaseClient()
-  // tool_policies isn't in generated types yet (created in 20260523 migration)
-  // — minimal cast keeps the call typed without blocking on regen.
-  const { data, error } = await (supabase
-    .from('tool_policies' as unknown as 'agent_actions')
-    .select('tool_slug, policy')
-    .eq('user_id', userId)) as unknown as {
-      data: Array<{ tool_slug: string; policy: string }> | null
-      error: { message: string } | null
+  try {
+    const supabase = getServerSupabaseClient()
+    const { data, error } = await (supabase
+      .from('tool_policies' as unknown as 'agent_actions')
+      .select('tool_slug, policy')
+      .eq('user_id', userId)) as unknown as {
+        data: Array<{ tool_slug: string; policy: ToolPolicy }> | null
+        error: { message: string } | null
+      }
+
+    if (error) {
+      console.warn('[tool-policies] load failed:', error.message)
+      return {}
     }
 
-  const map: ToolPolicyMap = new Map()
-  if (error || !data) {
-    if (error) console.warn('[tool-policies] load failed:', error.message)
-    return map
-  }
-  for (const row of data) {
-    if (row.policy === 'ask' || row.policy === 'auto' || row.policy === 'off') {
-      map.set(row.tool_slug, row.policy)
+    const map: ToolPolicyMap = {}
+    for (const row of data ?? []) {
+      map[row.tool_slug] = row.policy
     }
+    return map
+  } catch (err) {
+    console.warn('[tool-policies] threw:', err)
+    return {}
   }
-  return map
 }
 
-/** Reads a single policy from a pre-loaded map, defaulting to 'ask'. */
-export function getToolPolicy(map: ToolPolicyMap, toolSlug: string): ToolPolicy {
-  return map.get(toolSlug.toLowerCase()) ?? DEFAULT_POLICY
+/**
+ * Resolve the policy for a specific tool call. Tool names follow the
+ * convention `<toolkit>_<verb>` (e.g. 'gmail_send' → toolkit 'gmail').
+ *
+ * Resolution order:
+ *   1. Per-toolkit row in tool_policies table (if set)
+ *   2. Global default passed in (used by employee chat "test mode")
+ *   3. 'ask' (system default)
+ */
+export function resolvePolicyForTool({
+  toolName,
+  policies,
+  globalDefault = 'ask',
+}: {
+  toolName: string
+  policies: ToolPolicyMap
+  globalDefault?: ToolPolicy
+}): ToolPolicy {
+  const [toolkit] = toolName.split('_')
+  if (toolkit && policies[toolkit]) return policies[toolkit]
+  return globalDefault
 }

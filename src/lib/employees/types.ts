@@ -52,7 +52,7 @@ export type EmployeeRuntime = {
 /**
  * The unified Employee object.
  *
- * Consumers (sidebar, /dashboard/employees, dispatcher) only see this shape.
+ * Consumers (sidebar, dispatcher, /dashboard/employees/[slug]) only see this shape.
  * Whether the employee came from code or DB is hidden behind `origin`.
  */
 export type Employee = {

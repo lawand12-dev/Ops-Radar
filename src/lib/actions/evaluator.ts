@@ -83,7 +83,7 @@ export async function evaluateActionsForUser(userId: string): Promise<void> {
   const cutoff = Date.now() - DISMISSAL_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
   const recentlyDismissed = new Set(
     recentOutcomes
-      .filter((o) => o.decision === 'dismissed' && new Date(o.decided_at).getTime() > cutoff)
+      .filter((o) => o.decision === 'dismissed' && o.decided_at != null && new Date(o.decided_at).getTime() > cutoff)
       .map((o) => o.action_type),
   );
 

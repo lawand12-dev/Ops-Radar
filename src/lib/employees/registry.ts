@@ -92,7 +92,7 @@ export async function resolveEmployee(
 
 /**
  * Load the full workforce for a user (built-in + custom).
- * Used by /dashboard/employees grid and by sidebar "YOUR TEAM" section.
+ * Used by the sidebar "YOUR TEAM" section and the dashboard team widget.
  */
 export async function loadFullWorkforce(userId: string): Promise<Employee[]> {
   const custom = await loadCustomEmployees(userId)

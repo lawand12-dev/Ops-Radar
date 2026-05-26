@@ -187,3 +187,33 @@ export const customEmployeesPerCustomer = flag<boolean>({
     'Per-customer override for the AI Employees feature. Use Statsig targeting to disable for individual users.',
   identify: identifyUser,
 })
+
+/**
+ * Master kill switch for the agent loop itself. Flip OFF in Statsig to halt
+ * every runAgent / runAgentStream call globally — useful when a tool starts
+ * misbehaving in production and we need to stop the bleeding before
+ * shipping a fix. Default ON so the engine works out of the box.
+ */
+export const agentLoopEnabled = flag<boolean>({
+  key: 'agent-loop-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description:
+    'Master kill switch for runAgent / runAgentStream. Disable in Statsig to pause every agent run globally.',
+  identify: identifyUser,
+})
+
+/**
+ * Per-toolkit kill switch for Gmail. Flip OFF in Statsig to stop every
+ * employee from making Gmail calls while a fix ships. Reads stay allowed
+ * regardless (handled in hooks/classifyToolCall); this gate stops the
+ * loop from even loading Gmail tools.
+ */
+export const gmailToolkitEnabled = flag<boolean>({
+  key: 'gmail-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description:
+    'Whether the Gmail toolkit is available to employees. Flip OFF in Statsig to halt all Gmail tool calls (sends, drafts, modifies) without redeploying.',
+  identify: identifyUser,
+})

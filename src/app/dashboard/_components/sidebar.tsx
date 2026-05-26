@@ -9,15 +9,12 @@ import {
   Settings,
   ChevronRight,
   Zap,
-  BrainCircuit,
   Building2,
   Sparkles,
   Network,
   Users,
   Bot,
   History,
-  Workflow,
-  Gauge,
   Plus,
 } from 'lucide-react';
 import { cn } from '<npm>/lib/utils';
@@ -55,16 +52,13 @@ const navSections: NavSection[] = [
     tag: 'TODAY',
     items: [
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Ask COO',  href: '/dashboard/coo', icon: BrainCircuit },
     ],
   },
   {
     tag: 'OPERATIONS',
     items: [
-      { label: 'Actions',     href: '/dashboard/actions',     icon: Zap      },
-      { label: 'Automations', href: '/dashboard/automations', icon: Workflow },
-      { label: 'Agents',      href: '/dashboard/agents',      icon: Bot      },
-      { label: 'Runs',        href: '/dashboard/runs',        icon: History  },
+      { label: 'Actions', href: '/dashboard/actions', icon: Zap     },
+      { label: 'Runs',    href: '/dashboard/runs',    icon: History },
     ],
   },
   {
@@ -85,7 +79,6 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Integrations',  href: '/dashboard/integrations',         icon: Plug    },
       { label: 'Tool Autonomy', href: '/dashboard/settings/automation',  icon: Bot     },
-      { label: 'Usage',         href: '/dashboard/settings/usage',       icon: Gauge   },
       { label: 'MCP',           href: '/dashboard/settings/mcp',         icon: Network },
       { label: 'Team',          href: '/dashboard/settings/team',        icon: Users   },
       { label: 'Settings',      href: '/dashboard/settings',             icon: Settings },
@@ -223,9 +216,7 @@ function YourTeamSection({
   // pre-filled prompt). Notion 3.3 / Lindy 3.0 / Microsoft Copilot Studio
   // all ship a separate "build agent" route from their Q&A chat.
   const hireHref = '/dashboard/hire';
-  const allHref = '/dashboard/employees';
   const hireActive = pathname === hireHref || pathname.startsWith(`${hireHref}/`);
-  const allActive = pathname === allHref;
 
   return (
     <div className="mt-3.5">
@@ -246,22 +237,6 @@ function YourTeamSection({
         <Plus size={16} strokeWidth={hireActive ? 2 : 1.6} />
         <span className={cn('text-[13.5px]', hireActive ? 'font-semibold' : 'font-normal')}>
           Hire AI Employee
-        </span>
-      </Link>
-
-      {/* All employees */}
-      <Link
-        href={allHref}
-        className={cn(
-          'mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] no-underline',
-          allActive
-            ? 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]'
-            : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]',
-        )}
-      >
-        <Users size={16} strokeWidth={allActive ? 2 : 1.6} />
-        <span className={cn('text-[13.5px]', allActive ? 'font-semibold' : 'font-normal')}>
-          All employees
         </span>
       </Link>
 
@@ -313,13 +288,12 @@ function YourTeamSection({
       })}
 
       {overflowCount > 0 && (
-        <Link
-          href={allHref}
-          className="mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 text-[var(--color-fg-muted)] no-underline transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
+        <div
+          className="mb-0.5 flex items-center gap-2.5 rounded-[var(--radius)] px-3 py-2 text-[var(--color-fg-muted)]"
         >
           <span aria-hidden className="inline-flex h-4 w-4 shrink-0 items-center justify-center" />
           <span className="text-[13.5px] font-normal">+{overflowCount} more</span>
-        </Link>
+        </div>
       )}
     </div>
   );

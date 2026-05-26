@@ -81,7 +81,7 @@ export function elevatedErrorRateRule(input: {
     severity: 'watch',
     label: severityLabel('watch'),
     message: `${input.tool} elevated error rate — ${input.errors24h} errors in 24h.`,
-    href: '/dashboard/automations',
+    href: '/dashboard/runs',
   };
 }
 
@@ -117,7 +117,7 @@ export function failingWorkflowRule(input: {
     severity: 'needs-you',
     label: severityLabel('needs-you'),
     message: `Workflow "${input.workflowName}" failing for ${Math.round(elapsedMin)}m — not auto-recovered.`,
-    href: '/dashboard/automations',
+    href: '/dashboard/runs',
   };
 }
 

@@ -1,104 +1,34 @@
 /**
- * Shared types for the 10-agent system.
- *
- * Source: docs/dev/specs/2026-05-23-agents-notion-composio-design.md §4
+ * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * Type-only module. The full 28-agent system was Composio-coupled and was
+ * deleted. Types that downstream code imports are kept here as `string`
+ * aliases so the codebase still compiles. Rebuild on Nango per CP-45.
  */
 
-import type { ToolSlug } from '<npm>/lib/composio'
-import type { Plan } from '<npm>/lib/tier'
-
-export type AgentSlug =
-  // Domain agents (synthesize across tools)
-  | 'revenue'
-  | 'collections'
-  | 'scope'
-  | 'delivery'
-  | 'briefing'
-  | 'profitability'
-  | 'team'
-  | 'growth'
-  | 'renewal'
-  | 'stack'
-  // Tool agents (one per connected integration)
-  | 'tool-gmail'
-  | 'tool-hubspot'
-  | 'tool-pipedrive'
-  | 'tool-apollo'
-  | 'tool-calendly'
-  | 'tool-clickup'
-  | 'tool-asana'
-  | 'tool-monday'
-  | 'tool-harvest'
-  | 'tool-toggl'
-  | 'tool-notion'
-  | 'tool-slack'
-  | 'tool-stripe'
-  | 'tool-quickbooks'
-  | 'tool-google-calendar'
-  | 'tool-google-analytics'
-  | 'tool-google-ads'
-  | 'tool-linkedin'
-  | 'tool-bamboo-hr'
-  | 'tool-gusto'
-  | 'tool-typeform'
-  | 'tool-intercom'
-  | 'tool-zendesk'
-  // Meta agents
-  | 'evaluator'
-
-/**
- * AgentTier mirrors the canonical Plan from `<npm>/lib/tier` so agents respect
- * the same gating as the rest of the dashboard. We declare the minimum tier
- * an agent requires; `fo` is treated as ≥ pro by tierAllows.
- */
-export type AgentTier = Extract<Plan, 'starter' | 'growth' | 'pro'>
-
-/**
- * Real OpenAI model IDs as of May 2026.
- *
- * General models (synthesis / tool use):
- *   gpt-5.5      — flagship, $5/$30 per 1M, 1.05M ctx     — use for weekly synthesis only
- *   gpt-5.4      — $2.50/$15 per 1M                        — production sweet spot
- *   gpt-5.4-mini — cheaper                                 — daily background work
- *   gpt-4.1-nano — $0.10/$0.40 per 1M                      — cheapest, trivial tasks
- *
- * Reasoning models (slower, multi-step):
- *   o3      — $2/$8 per 1M                                 — pattern detection, scoring
- *   o4-mini — $1.10/~$4 per 1M                             — cheapest reasoning
- */
-export type AgentModel =
-  | 'gpt-5.5'
-  | 'gpt-5.4'
-  | 'gpt-5.4-mini'
-  | 'gpt-4.1-nano'
-  | 'o3'
-  | 'o4-mini'
-
-/**
- * Spec slug: either one of the 28 built-in `AgentSlug` literals OR a
- * `custom:<slug>` prefixed string for customer-hired AI employees. The
- * latter is produced by `specFromCustomEmployee` in
- * `src/trigger/run-custom-employee.ts`. Code paths that need to discriminate
- * should use `spec.slug.startsWith('custom:')`.
- */
-export type AgentSpecSlug = AgentSlug | `custom:${string}`
+export type AgentSlug = string
+export type AgentSpecSlug = string
+export type AgentModel = string
+export type AgentTier = 'starter' | 'growth' | 'pro'
 
 export type AgentSpec = {
   slug: AgentSpecSlug
   displayName: string
-  description: string                     // one-line, used on the agent card
+  description: string
   model: AgentModel
-  composioApps: ToolSlug[]                // which Composio apps the agent loads tools from
   requiredTier: AgentTier
-  requiredIntegrations: ToolSlug[]        // hard requirements — if missing, agent run is skipped
-  cronSchedule: string                    // standard 5-field cron, e.g. '0 7 * * *'
-  maxSteps: number                        // multi-step tool loop budget
+  requiredIntegrations: string[]
+  cronSchedule: string
+  maxSteps: number
   systemPrompt: string
+  // Kept optional so legacy spec literals that include this field still
+  // typecheck during the migration. Will be removed when the Nango layer
+  // replaces the per-toolkit composioApps list with Nango provider keys.
+  composioApps?: string[]
 }
 
 export type AgentRunResult = {
   status: 'success' | 'failed' | 'skipped'
-  reason?: string                         // e.g. 'tier', 'missing-integration:harvest'
+  reason?: string
   summary?: string
   actionsTaken?: number
   notionWrites?: number

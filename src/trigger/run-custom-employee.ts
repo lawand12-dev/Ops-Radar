@@ -28,7 +28,10 @@ import { task, logger, metadata } from "@trigger.dev/sdk/v3"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { AgentSpec } from "<npm>/lib/agents/types"
-import type { ToolSlug } from "<npm>/lib/composio"
+// ToolSlug was sourced from <npm>/lib/composio (deleted 2026-05-26). Aliased
+// to string during migration; reconstruct as a narrower union once the Nango
+// toolkit map stabilizes.
+type ToolSlug = string
 import type { Database } from "<npm>/lib/database.types"
 
 type CustomEmployeeRow = Database["public"]["Tables"]["custom_employees"]["Row"]
@@ -157,8 +160,8 @@ export const runCustomEmployee = task({
     const spec = specFromCustomEmployee(row, delegation)
     const result = await runAgent(spec, userId)
 
-    // Mark last_run_at on success so the /dashboard/employees UI can show
-    // "ran 12m ago" without a separate timestamp query per row.
+    // Mark last_run_at on success so the employee detail page (and any
+    // future team widget) can show "ran 12m ago" without a per-row query.
     if (result.status === "success") {
       const { error: updateError } = await supabase
         .from("custom_employees")

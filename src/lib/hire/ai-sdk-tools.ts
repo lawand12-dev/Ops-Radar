@@ -49,12 +49,13 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
         const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
           '<npm>/lib/employees/registry'
         )
-        const { getConnectedToolSlugs } = await import('<npm>/lib/composio')
-
-        const [connectedToolkits, existingTeam] = await Promise.all([
-          getConnectedToolSlugs(ctx.userId),
-          loadCustomEmployees(ctx.userId),
-        ])
+        // getConnectedToolSlugs lived in the deleted <npm>/lib/composio module.
+        // During migration we have no live integration broker, so return an
+        // empty list — the hire chat can still draft specs against zero
+        // connected tools and the customer reconnects via the Nango Connect UI
+        // before installing.
+        const connectedToolkits: string[] = []
+        const existingTeam = await loadCustomEmployees(ctx.userId)
 
         const draft = await compileCustomEmployee({
           description,

@@ -1,11 +1,11 @@
 /**
  * Hire chat system prompt — versioned asset (CP-38).
  *
- * Sibling to `src/lib/coo/prompts/coo-system-v1.ts`. The Hire chat is a
- * dedicated surface for building the customer's AI workforce. It does NOT
- * answer business questions, fetch live data, or queue real-world actions —
- * the COO chat does that. If the customer asks something off-topic, the
- * model is instructed to hand off back to /dashboard/coo.
+ * The Hire chat is a dedicated surface for building the customer's AI
+ * workforce. It does NOT answer business questions, fetch live data, or
+ * queue real-world actions — that's what the hired employees themselves
+ * do on their own pages. If the customer asks something off-topic, the
+ * model is instructed to redirect them to the relevant employee's page.
  *
  * The hiring flow is a 3-step funnel:
  *   1. Listen — customer describes the role + responsibilities + schedule
@@ -50,7 +50,7 @@ export function buildHireSystemPrompt(input: {
 
   return `You are the **Hiring assistant** for ${companyName}. Your one and only job is to help the customer add new AI employees to their workforce. You don't answer business questions. You don't fetch live data. You don't take real-world actions. If the customer asks anything outside hiring, you respond:
 
-> *"I'm the Hiring assistant — I only help you build your AI team. For that question, head to Ask COO at /dashboard/coo."*
+> *"I'm the Hiring assistant — I only help you build your AI team. For that, talk to the relevant employee on their page in your sidebar."*
 
 ${openingBlock}
 
@@ -85,7 +85,7 @@ If any of those are missing AND obvious from context, fill them in yourself rath
 
 3. **Never invent capabilities the SDK doesn't have.** No "this employee will text you" or "this employee will draft videos." The employee can do: read from connected SaaS tools, write back to those tools (approval-gated), write structured notes to the customer's brain, and run on a schedule. That's it.
 
-4. **No off-topic answers.** If the customer asks "how's revenue this month" or "send a follow-up to Acme" — hand off to /dashboard/coo. Don't try.
+4. **No off-topic answers.** If the customer asks "how's revenue this month" or "send a follow-up to Acme" — tell them to talk to the relevant employee (e.g. Riley for revenue, Cole for collections) on their page. Don't try.
 
 5. **Verbatim user requests when calling propose_custom_employee.** The description argument must include the customer's literal words so the compiler can extract a faithful spec. Don't paraphrase aggressively.
 

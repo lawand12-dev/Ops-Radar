@@ -23,8 +23,8 @@ const nextConfig: NextConfig = {
     // Anthropic Agent Skills — bundle the skills/ tree (everything else in
     // knowledge-base/ is legacy / archive and intentionally excluded so the
     // serverless function stays small).
-    '/api/dashboard/coo': ['./knowledge-base/skills/**/*'],
-    '/api/dashboard/agents': ['./knowledge-base/skills/**/*'],
+    '/api/dashboard/employees/**': ['./knowledge-base/skills/**/*'],
+    '/api/dashboard/hire/**': ['./knowledge-base/skills/**/*'],
     '/api/cron/**': ['./knowledge-base/skills/**/*'],
   },
   outputFileTracingExcludes: {
@@ -43,7 +43,13 @@ const nextConfig: NextConfig = {
       { source: '/for/development',                 destination: '/',                       permanent: true },
       // ── Dashboard route renames (legacy) ───────────────────────────────
       { source: '/dashboard/settings/integrations', destination: '/dashboard/integrations', permanent: true },
-      { source: '/dashboard/workflow-health',       destination: '/dashboard/automations',  permanent: true },
+      { source: '/dashboard/workflow-health',       destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/automations',           destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/automations/:id*',      destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/agents',                destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/employees',             destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/coo',                   destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/coo/:path*',            destination: '/dashboard',              permanent: true },
       { source: '/dashboard/clients',               destination: '/dashboard',              permanent: true },
       { source: '/dashboard/financials',            destination: '/dashboard',              permanent: true },
       // CP-33 — deleted dashboard sections (moved to Notion brain):
