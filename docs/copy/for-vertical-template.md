@@ -20,14 +20,14 @@ So the four pages split into three buckets:
 | Page | ICP status | Decision | Why |
 |------|------------|----------|-----|
 | `/for/full-service` | **In ICP** (explicitly named in §11.1 ICP definition) | **KEEP and rewrite as flagship vertical page** | "Full-service digital" is the largest single Tier-1 segment after paid media + SEO combined. Highest-volume vertical we should be winning. |
-| `/for/ecommerce` | **In ICP when reframed** | **KEEP and reframe to "marketing agencies that serve e-commerce clients"** | DTC/e-com is the dominant client portfolio for most paid-media agencies in our ICP. Don't pitch in-house e-com ops (out of ICP); pitch agencies running e-com clients (in ICP). |
+| `/for/ecommerce` | **In ICP when reframed** | **KEEP and reframe to "agencies that serve e-commerce clients"** | DTC/e-com is the dominant client portfolio for most paid-media agencies in our ICP. Don't pitch in-house e-com ops (out of ICP); pitch agencies running e-com clients (in ICP). |
 | `/for/recruiting` | **Adjacent (not Tier-1)** | **DISQUALIFIER above the fold + polite redirect** | Recruiting has retainer + placement-fee mix. Stack overlap is <30% (no Bullhorn integration). Page absorbs SEO traffic but qualifies prospects out cleanly. Founder sign-off required before treating recruiting as a serious vertical wedge. |
 | `/for/design` | **Out of ICP** (explicit disqualifier — "design shops" = project-based studio) | **DISQUALIFIER above the fold + redirect to /pricing or /for/full-service** | Doc-anchored disqualifier. We keep the page only to capture organic search traffic ("design agency operations") and route the rare retainer-heavy design-AGENCY visitor — but the page tells in-house teams + studios "this isn't for you." |
 | `/for/development` | **Out of ICP** (explicit disqualifier — "dev shops") | **DEPRECATE — 301 → / (homepage)** | Dev shops run project + milestone billing. Zero stack overlap. There is no rewrite that doesn't dilute the brand. Kill the page. |
 
 **Why disqualifier > full deprecation for recruiting + design:** the SEO audit shows the site is starving for organic traffic. Two pages with clean disqualifier copy are a *better* lead-qualifier than a 404 — they convert curious in-ICP visitors who land on the wrong page (a marketing-agency owner whose Google search included "design" because they also do creative for clients) and politely turn away genuine out-of-ICP visitors. The disqualifier *is* a sales tool.
 
-**Why dev gets deprecated and design doesn't:** design has a non-zero "creative-led marketing agency" overlap. Dev does not — agencies that build software are a fundamentally different ops shape (sprints, story points, code review cycles) and there is no plausible rewrite that lands an in-ICP buyer.
+**Why dev gets deprecated and design doesn't:** design has a non-zero "creative-led agency" overlap. Dev does not — agencies that build software are a fundamentally different ops shape (sprints, story points, code review cycles) and there is no plausible rewrite that lands an in-ICP buyer.
 
 ---
 
@@ -232,7 +232,7 @@ Secondary: Run the 3-minute audit first
 
 - **URL:** `/for/ecommerce`
 - **Title:** Agencies running e-commerce clients | AI COO — OpsRadar
-- **Meta:** The AI COO for marketing agencies running DTC and e-commerce clients. Catches MER drift, creative-fatigue ad spend leaks, and Q4 capacity disasters before they cost you the renewal.
+- **Meta:** The AI COO for agencies running DTC and e-commerce clients. Catches MER drift, creative-fatigue ad spend leaks, and Q4 capacity disasters before they cost you the renewal.
 - **Eyebrow:** AI COO · for agencies running e-commerce clients
 - **H1 (primary):** **Your client's BFCM is your bottleneck. Your AI COO sees it in October.**
 - **Alternate H1s:**
@@ -247,7 +247,7 @@ Secondary: Run the 3-minute audit first
 
 ### Disqualifier framing (paragraph 1 below the hero)
 
-> "This page is for marketing agencies that *run* e-commerce clients — paid-media shops, full-service agencies with DTC books, performance creative studios. If you're an in-house e-commerce ops team trying to run your own operations, OpsRadar isn't built for you yet. The benchmarks here are tuned for agencies billing 5–30 DTC clients on retainer."
+> "This page is for agencies that *run* e-commerce clients — paid-media shops, full-service agencies with DTC books, performance creative studios. If you're an in-house e-commerce ops team trying to run your own operations, OpsRadar isn't built for you yet. The benchmarks here are tuned for agencies billing 5–30 DTC clients on retainer."
 
 ### The 3 pains, 3 fixes
 
@@ -319,16 +319,16 @@ Sub: Book a 20-min demo. We'll show you what creative fatigue + unbilled hours c
 
 ## /for/recruiting — DISQUALIFIER PAGE (adjacent, not Tier-1 ICP)
 
-**Strategic frame:** Per `icp-customer-research.md` §4 the disqualifier list excludes **production-only studios and "pure performance / commission-only billing"** but is silent on recruiting/staffing. Recruiting agencies have *retainer + placement-fee* mix, similar utilization shape, but **none of our 10 integrations covers Bullhorn / Crelate / JobAdder**. Per strategy doc §11.1 (ICP narrowing): **marketing agencies are the wedge.** Recruiting may be a 2027 vertical wedge, but is not a Tier-1 fit today. The page exists to capture SEO traffic on "recruiting agency operations" / "recruiting ops" searches and politely qualify visitors out — or route the rare hybrid (a marketing agency with an embedded talent practice) to the right page.
+**Strategic frame:** Per `icp-customer-research.md` §4 the disqualifier list excludes **production-only studios and "pure performance / commission-only billing"** but is silent on recruiting/staffing. Recruiting agencies have *retainer + placement-fee* mix, similar utilization shape, but **none of our 10 integrations covers Bullhorn / Crelate / JobAdder**. Per strategy doc §11.1 (ICP narrowing): **agencies are the wedge.** Recruiting may be a 2027 vertical wedge, but is not a Tier-1 fit today. The page exists to capture SEO traffic on "recruiting agency operations" / "recruiting ops" searches and politely qualify visitors out — or route the rare hybrid (a agency with an embedded talent practice) to the right page.
 
 ### Hero (with disqualifier above the fold)
 
 - **URL:** `/for/recruiting`
 - **Title:** Recruiting agencies | OpsRadar
-- **Meta:** OpsRadar is the AI COO for marketing agencies. We don't yet serve recruiting agencies as a primary vertical — here's why, and what we recommend instead.
-- **Eyebrow:** Heads up — OpsRadar is built for marketing agencies
+- **Meta:** OpsRadar is the AI COO for agencies. We don't yet serve recruiting agencies as a primary vertical — here's why, and what we recommend instead.
+- **Eyebrow:** Heads up — OpsRadar is built for agencies
 - **H1:** **Recruiting agencies have a margin problem. We're just not the team to fix it — yet.**
-- **Subhead (the disqualifier, explicit):** OpsRadar is the AI COO for marketing agencies — paid media, SEO, full-service, social, content. Recruiting and staffing agencies share a lot of the same operational pain (utilization, fee splits, placement velocity, retainer vs contingent margin) but run on a different stack: Bullhorn, Crelate, JobAdder, Loxo — none of which we integrate with today. If you're a recruiting agency, we'd rather tell you that here than waste your 20-min call.
+- **Subhead (the disqualifier, explicit):** OpsRadar is the AI COO for agencies — paid media, SEO, full-service, social, content. Recruiting and staffing agencies share a lot of the same operational pain (utilization, fee splits, placement velocity, retainer vs contingent margin) but run on a different stack: Bullhorn, Crelate, JobAdder, Loxo — none of which we integrate with today. If you're a recruiting agency, we'd rather tell you that here than waste your 20-min call.
 - **Primary CTA:** *(softened)* — **Tell us anyway →** (anchored to a 3-question form: "If you're 70% marketing / 30% talent, or running an in-house RecOps team for an agency holding co, we want to know.")
 - **Secondary CTA:** Or see what we *do* build at /for/full-service →
 
@@ -337,8 +337,8 @@ Sub: Book a 20-min demo. We'll show you what creative fatigue + unbilled hours c
 **Why we're saying no:**
 
 1. **Stack mismatch.** Your daily-driver tools (Bullhorn, JobAdder, Loxo, Crelate) aren't in our 10 integrations. The time-to-value for you would be 6+ months of integration work — too long for either of us.
-2. **KPI mismatch.** Our benchmarks are tuned for retainer marketing agencies: utilization at 75%, scope creep on monthly retainers, MER on ad clients. Your benchmarks (time-to-fill, placement velocity, fee split per recruiter, contingent vs retained mix) need their own data layer — which we'd have to build from scratch.
-3. **The wedge is marketing.** Per our 2026 strategy, the first 50 customers are marketing agencies. We're not splitting focus until we're at 100+.
+2. **KPI mismatch.** Our benchmarks are tuned for retainer agencies: utilization at 75%, scope creep on monthly retainers, MER on ad clients. Your benchmarks (time-to-fill, placement velocity, fee split per recruiter, contingent vs retained mix) need their own data layer — which we'd have to build from scratch.
+3. **The wedge is marketing.** Per our 2026 strategy, the first 50 customers are agencies. We're not splitting focus until we're at 100+.
 
 **What we recommend instead:**
 - **Bullhorn Analytics** (if you're on Bullhorn) — built for your KPI shape
@@ -350,7 +350,7 @@ Sub: Book a 20-min demo. We'll show you what creative fatigue + unbilled hours c
 
 ### Hybrid case (the polite exception)
 
-> "If you're a marketing agency with an embedded talent practice (e.g., you do creative recruiting for clients alongside your paid-media work), or if you're a recruiting agency holding company with an internal marketing-ops team — both of those *are* in our ICP. Tell us in the form and we'll route the call appropriately."
+> "If you're a agency with an embedded talent practice (e.g., you do creative recruiting for clients alongside your paid-media work), or if you're a recruiting agency holding company with an internal marketing-ops team — both of those *are* in our ICP. Tell us in the form and we'll route the call appropriately."
 
 ### Form (3 questions)
 
@@ -377,10 +377,10 @@ Sub: If you fit the hybrid case (marketing + talent), tell us. Otherwise, bookma
 
 - **URL:** `/for/design`
 - **Title:** Design agencies & studios | OpsRadar
-- **Meta:** OpsRadar is the AI COO for marketing agencies — not design studios. If you run a retainer-heavy design AGENCY, here's where we might still fit. If you run a project-based studio, here's what we recommend instead.
-- **Eyebrow:** Heads up — OpsRadar is built for marketing agencies
+- **Meta:** OpsRadar is the AI COO for agencies — not design studios. If you run a retainer-heavy design AGENCY, here's where we might still fit. If you run a project-based studio, here's what we recommend instead.
+- **Eyebrow:** Heads up — OpsRadar is built for agencies
 - **H1:** **Project-based design studios don't have the problem we solve.**
-- **Subhead:** OpsRadar is the AI COO for retainer-heavy marketing agencies — we catch margin leaks on monthly retainers, scope creep on long-running relationships, and utilization drift across delivery teams. If you're a design studio billing by project / milestone / fixed-fee, your problem is closer to "did this project deliver on time and budget" — and the right tool for that is Productive or Float, not us. If you're a *design AGENCY* with retainer clients (brand systems, ongoing design ops, design subscription model) — keep reading, we might fit.
+- **Subhead:** OpsRadar is the AI COO for retainer-heavy agencies — we catch margin leaks on monthly retainers, scope creep on long-running relationships, and utilization drift across delivery teams. If you're a design studio billing by project / milestone / fixed-fee, your problem is closer to "did this project deliver on time and budget" — and the right tool for that is Productive or Float, not us. If you're a *design AGENCY* with retainer clients (brand systems, ongoing design ops, design subscription model) — keep reading, we might fit.
 
 ### Below-the-fold: the two-path branch
 
@@ -398,7 +398,7 @@ We don't yet serve project-based design work because:
 
 #### Path B — "We're a retainer-heavy design agency" (the soft yes, qualified)
 
-If you run a brand-design subscription model, an embedded design ops practice for marketing agencies, or a design retainer book (≥60% retainer revenue, 10+ team members, monthly billing), OpsRadar might still fit — but it's an edge case for us.
+If you run a brand-design subscription model, an embedded design ops practice for agencies, or a design retainer book (≥60% retainer revenue, 10+ team members, monthly billing), OpsRadar might still fit — but it's an edge case for us.
 
 **Conditions for the soft yes:**
 - ≥60% of revenue is on monthly retainer
@@ -427,7 +427,7 @@ Path B: "Book a 20-min call. We'll tell you if it's a fit in the first 5 minutes
 
 **Rationale (one paragraph):**
 
-Dev shops are explicitly disqualified in `icp-customer-research.md` §4 (production-only studios). Unlike design, there is no plausible "retainer-heavy dev agency" rewrite that lands an in-ICP buyer — agencies that build software operate on sprints, story points, code review, deployment frequency, and milestone billing. Zero stack overlap with our 10 integrations (no GitHub, no Linear, no Jira). The page is doing nothing right now except diluting the "AI COO for marketing agencies" brand for any visitor who lands on it from a misdirected Google query. A 301 to the homepage absorbs the SEO juice into a higher-value destination and removes a confused entry-point. **No copy to write. Implementation:** add to `next.config.ts` redirects array; `/for/development` → `/` with HTTP 301.
+Dev shops are explicitly disqualified in `icp-customer-research.md` §4 (production-only studios). Unlike design, there is no plausible "retainer-heavy dev agency" rewrite that lands an in-ICP buyer — agencies that build software operate on sprints, story points, code review, deployment frequency, and milestone billing. Zero stack overlap with our 10 integrations (no GitHub, no Linear, no Jira). The page is doing nothing right now except diluting the "AI COO for agencies" brand for any visitor who lands on it from a misdirected Google query. A 301 to the homepage absorbs the SEO juice into a higher-value destination and removes a confused entry-point. **No copy to write. Implementation:** add to `next.config.ts` redirects array; `/for/development` → `/` with HTTP 301.
 
 ---
 
@@ -455,9 +455,9 @@ Dev shops are explicitly disqualified in `icp-customer-research.md` §4 (product
 
 2. **Design DECIDE: disqualifier vs deprecate.** This doc commits to disqualifier (Path A + Path B branch). The alternative — full deprecation like dev — is also defensible. **Founder sign-off:** does the branding-studio-on-retainer edge case justify keeping the page? If "no, kill all production-studio pages," then `/for/design` joins `/for/development` in the 301 list. The current call is "keep, with disqualifier."
 
-3. **`/for/full-service` may cannibalize the homepage.** Both pages now claim to be the flagship "AI COO for [marketing/full-service] agencies" entry point. **Mitigation:** the homepage stays category-creation framed ("AI COO for marketing agencies"), the full-service page is the vertical-specific landing for paid-search traffic on "full-service agency operations" / "full-service digital agency margin." Different audiences, same product. But the H1 risk is real — flag for QA when both ship.
+3. **`/for/full-service` may cannibalize the homepage.** Both pages now claim to be the flagship "AI COO for [marketing/full-service] agencies" entry point. **Mitigation:** the homepage stays category-creation framed ("AI COO for agencies"), the full-service page is the vertical-specific landing for paid-search traffic on "full-service agency operations" / "full-service digital agency margin." Different audiences, same product. But the H1 risk is real — flag for QA when both ship.
 
-4. **`/for/ecommerce` reframing requires editorial discipline.** The page is *only* in ICP under the "marketing agencies that serve e-com clients" framing. If a copy editor later softens the disqualifier paragraph ("OpsRadar helps any e-commerce business"), the page silently becomes a magnet for in-house e-com ops teams — who churn in 60 days. **Editorial rule:** the disqualifier paragraph below the hero is locked. Don't soften it.
+4. **`/for/ecommerce` reframing requires editorial discipline.** The page is *only* in ICP under the "agencies that serve e-com clients" framing. If a copy editor later softens the disqualifier paragraph ("OpsRadar helps any e-commerce business"), the page silently becomes a magnet for in-house e-com ops teams — who churn in 60 days. **Editorial rule:** the disqualifier paragraph below the hero is locked. Don't soften it.
 
 5. **The Sunday-nights bar is high.** `/for/paid-media`'s "Sunday nights are for your family" is the best headline on the site. The H1s in this doc (`/for/full-service`: "You're profitable on paper. You're bleeding in the spreadsheet"; `/for/ecommerce`: "Your client's BFCM is your bottleneck. Your AI COO sees it in October.") need user-testing on the next 20 prospect calls — if they don't repeat the headline back to us unprompted, they're not landing yet.
 

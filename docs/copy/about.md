@@ -80,7 +80,7 @@
 
 ### Conviction 3 — Vertical wedge, universal architecture, multi-tenant leverage
 
-`We sell to marketing agencies first because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. But we have a second motion that compounds: fractional COOs running 5-10 agency clients each, on a multi-tenant version of the same product. Each FO is a 5-10× leveraged buyer. Q3 2026 we expand to home services (HVAC, plumbing, electrical). Q4, more verticals. The architecture is universal; the wedge is sharp.`
+`We sell to agencies first because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. But we have a second motion that compounds: fractional COOs running 5-10 agency clients each, on a multi-tenant version of the same product. Each FO is a 5-10× leveraged buyer. Q3 2026 we expand to home services (HVAC, plumbing, electrical). Q4, more verticals. The architecture is universal; the wedge is sharp.`
 
 ### Conviction 4 — Pricing should never surprise you
 

@@ -1,7 +1,7 @@
 # /audit Funnel Copy v2 — AI COO Commit
 
 *Owner: Lawand · Date: 2026-05-18 · Replaces: live `www.opsradar.co/audit` (13-step flow, mixed-vertical options, "Free · Results sent to your inbox")*
-*Category language locked: **AI COO for marketing agencies**. Zero AIOS in this rewrite.*
+*Category language locked: **AI COO for agencies**. Zero AIOS in this rewrite.*
 *Voice anchor: peer-to-peer like "Sunday nights are for your family." Specific, dollar-anchored, founder-to-founder.*
 
 ---
@@ -10,10 +10,10 @@
 
 - **Title (58 chars):** `Free 3-min agency leak audit — OpsRadar`
   *(Replaces the double-brand bug `Audit — OpsRadar — OpsRadar`. Names the deliverable, not the activity.)*
-- **Description (152 chars):** `Find the $30K–$80K you're leaking this year to scope creep, unprofitable clients, and untracked hours. Built for marketing agencies $1M–$3M.`
+- **Description (152 chars):** `Find the $30K–$80K you're leaking this year to scope creep, unprofitable clients, and untracked hours. Built for agencies $1M–$3M.`
 - **OG title:** `Find the $30K–$80K you're leaking this year — in 3 minutes.`
 - **OG description:** `Conservative, agency-specific leak math. Your custom report lands in your inbox in 5 minutes, with a 20-min call to walk through it.`
-- **OG image direction:** Dark bg. Large white serif: "Find the $30K–$80K you're leaking this year." Below it, smaller mono: "3 minutes · For marketing agencies $1M–$3M · Dollar estimate in your inbox." Bottom-right: a single mock alert in amber — "Scope creep · Acme · +14h unbilled this month · ~$2.1K leak". No UI chrome.
+- **OG image direction:** Dark bg. Large white serif: "Find the $30K–$80K you're leaking this year." Below it, smaller mono: "3 minutes · For agencies $1M–$3M · Dollar estimate in your inbox." Bottom-right: a single mock alert in amber — "Scope creep · Acme · +14h unbilled this month · ~$2.1K leak". No UI chrome.
 
 ---
 
@@ -31,7 +31,7 @@
 `Answer 7 questions about your stack, your retainers, and where time goes. I'll come back with a conservative dollar estimate of what's leaking — and the 3 places to plug it first. (Productive.io 2026: 50% of agencies leave 20%+ of profit untapped. The average 7-figure shop runs 18–22% margins; the leak is usually bigger than the margin.)`
 
 **Trust microcopy (· separated, single line):**
-`Free · Results in your inbox in 5 minutes · Built for marketing agencies $1M–$5M`
+`Free · Results in your inbox in 5 minutes · Built for agencies $1M–$5M`
 *(Replaces the live "Free · Results sent to your inbox" — adds the timing promise and the audience filter. ICP qualifier is right in the trust line, not hidden in a footer.)*
 
 **Primary CTA:** `Start the audit`
@@ -48,7 +48,7 @@
 **FIRST-PERSON "I" (the AI COO is the speaker).**
 
 Rationale:
-1. **Category coherence.** The product is the *AI COO for marketing agencies*. The audit is the AI COO doing what an AI COO does — diagnosing your agency. Switching to "we" mid-funnel breaks the metaphor.
+1. **Category coherence.** The product is the *AI COO for agencies*. The audit is the AI COO doing what an AI COO does — diagnosing your agency. Switching to "we" mid-funnel breaks the metaphor.
 2. **The live audit already runs first-person** ("I tailor benchmarks…") on Step 0 — it just doesn't commit. Auditor flagged the inconsistency with the rest-of-site "we." Fix is: keep "I" inside the audit experience, keep "we" on marketing pages, label the seam.
 3. **Distinctiveness.** No competitor's audit funnel speaks in first person as a named role. Productive, Scoro, Kantata, ZenPilot — all "we." The "I" voice is on-strategy and unowned.
 4. **It de-corporates the moment.** Persona A (Marcus, $1.8M paid-media founder) says he wants "someone to tell me what's wrong" — not a committee. First-person "I" delivers that tone; "we" doesn't.
@@ -115,10 +115,10 @@ Rationale:
 **Eyebrow:** `1 / 7 · AGENCY PROFILE`
 
 **Question (H2):**
-`First — are you a marketing agency?`
+`First — are you a agency?`
 
 **Helper text:**
-`I only run real audits for marketing agencies $1M–$5M. Pick the closest fit — if you're not a marketing agency, I'll show you a quick summary instead.`
+`I only run real audits for agencies $1M–$5M. Pick the closest fit — if you're not a agency, I'll show you a quick summary instead.`
 
 **Why this matters block:**
 `A paid-media agency, an SEO shop, and a social agency leak money in different ways — but they share a stack, a retainer model, and benchmarks I can actually math against. Outside marketing, my numbers stop being honest.`
@@ -128,9 +128,9 @@ Rationale:
 - `SEO / content`
 - `Social media management`
 - `Full-service digital`
-- `Not a marketing agency — show me what OpsRadar does anyway`
+- `Not a agency — show me what OpsRadar does anyway`
 
-*(Removes: Recruiting/Staffing, Design/Creative, Development, PR/Communications, E-commerce, "Other." The strategy ICP per §11.1 is marketing agencies only. Keeping the non-ICP options on the page invites bad-fit completions that pollute the lead list and dilute conversion math.)*
+*(Removes: Recruiting/Staffing, Design/Creative, Development, PR/Communications, E-commerce, "Other." The strategy ICP per §11.1 is agencies only. Keeping the non-ICP options on the page invites bad-fit completions that pollute the lead list and dilute conversion math.)*
 
 **Validation:**
 - One option required.
@@ -316,7 +316,7 @@ Rationale:
 
 ## Step 1 disqualifier flow — the graceful exit
 
-> **The full flow when a user picks "Not a marketing agency — show me what OpsRadar does anyway."**
+> **The full flow when a user picks "Not a agency — show me what OpsRadar does anyway."**
 
 ### Screen 1 (replaces the rest of the funnel)
 
@@ -326,7 +326,7 @@ Rationale:
 `Honest answer: OpsRadar's not built for you yet.`
 
 **Body (first-person, AI COO voice):**
-`I'm the AI COO for marketing agencies. Every benchmark I use, every alert I write, and every recommendation I make is calibrated against agencies running paid media, SEO, social, or full-service work. If I ran the audit on you, the numbers would be wrong in ways I wouldn't catch — and I'd rather not waste your 3 minutes pretending otherwise.`
+`I'm the AI COO for agencies. Every benchmark I use, every alert I write, and every recommendation I make is calibrated against agencies running paid media, SEO, social, or full-service work. If I ran the audit on you, the numbers would be wrong in ways I wouldn't catch — and I'd rather not waste your 3 minutes pretending otherwise.`
 
 `If that changes — if OpsRadar adds your vertical, or if you start a marketing arm — I'll let you know.`
 
@@ -337,7 +337,7 @@ Rationale:
 - Microcopy below CTA: `One email when we ship. No list, no spam. Skip if you'd rather not.`
 
 **Two link-style exits at the bottom (no emphasis):**
-- `→ See what OpsRadar does for marketing agencies` *(routes to `/`)*
+- `→ See what OpsRadar does for agencies` *(routes to `/`)*
 - `→ Read the strategy doc instead` *(routes to `/about` or a public-facing strategy summary)*
 
 ### What this captures
@@ -346,7 +346,7 @@ Rationale:
 - Nurture sequence: **one email only**, sent when OpsRadar ships a non-marketing vertical (probably never in the first 12 months — but the option is preserved).
 - The lead is *never* routed to the main audit followup sequence, the cold email sequence, or the demo Calendly. Polite exit means polite exit.
 
-*(The disqualifier costs us some email captures vs. the current "Other → run the audit anyway" flow. That's the trade — we're explicitly choosing tier-1 conversion velocity over total list size. Per `path-a-strategy-2026.md` §11.1, the beachhead is marketing agencies $1M–$3M. Every non-marketing email in the list dilutes the math.)*
+*(The disqualifier costs us some email captures vs. the current "Other → run the audit anyway" flow. That's the trade — we're explicitly choosing tier-1 conversion velocity over total list size. Per `path-a-strategy-2026.md` §11.1, the beachhead is agencies $1M–$3M. Every non-marketing email in the list dilutes the math.)*
 
 ---
 
@@ -417,8 +417,8 @@ The email must (a) reproduce the dollar leak estimate prominently in the subject
 | Decision | What it means site-wide |
 |---|---|
 | **7 steps, not 13** | The "3-minute audit" claim — repeated on `/`, `/for/paid-media`, `/for/seo`, `/services` — finally becomes true. Honor it on every page that mentions the audit. |
-| **ICP-only disqualifier upfront** | Every page that links into `/audit` should pre-qualify in the link copy too. Replace generic "Try the 3-minute audit" with "Free 3-min audit for marketing agencies $1M–$5M." |
-| **Dollar promise replaces "Free · Results"** | The trust line `Free · Results in your inbox in 5 minutes · Built for marketing agencies $1M–$5M` should appear on every CTA that links to `/audit`. The dollar range `$30K–$80K` appears anywhere we want to *sell* the audit (homepage CTA, /for pages, OG cards) — not on the audit page itself (where it's the H1). |
+| **ICP-only disqualifier upfront** | Every page that links into `/audit` should pre-qualify in the link copy too. Replace generic "Try the 3-minute audit" with "Free 3-min audit for agencies $1M–$5M." |
+| **Dollar promise replaces "Free · Results"** | The trust line `Free · Results in your inbox in 5 minutes · Built for agencies $1M–$5M` should appear on every CTA that links to `/audit`. The dollar range `$30K–$80K` appears anywhere we want to *sell* the audit (homepage CTA, /for pages, OG cards) — not on the audit page itself (where it's the H1). |
 | **AI COO category language** | The audit page uses the words "AI COO" once in the eyebrow, then disappears into first-person "I" voice for the duration of the funnel. The category lives in the framing; the voice does the work. |
 | **20-min call (not 30)** | Resolves the live-site audit's flagged inconsistency. The audit's secondary CTA, the post-submit screen, the email, and the Calendly embed all say 20. |
 | **Founder-named call** | "Book a call with the founder" / "with Lawand." No more plural "founders" — we have one founder doing demos. |

@@ -39,7 +39,7 @@
 
 ### How is OpsRadar different from BOND (Donna)?
 
-`BOND is one chat for one person — the AI Chief of Staff. OpsRadar is a workforce: 28 built-in AI employees + custom hires + the brain that holds what they all know. BOND is going horizontal across executives; we wedge into one vertical at a time (marketing agencies first, home services next). Both pitches will end up serving different buyers.`
+`BOND is one chat for one person — the AI Chief of Staff. OpsRadar is a workforce: 28 built-in AI employees + custom hires + the brain that holds what they all know. BOND is going horizontal across executives; we wedge into one vertical at a time (agencies first, home services next). Both pitches will end up serving different buyers.`
 
 ### How is OpsRadar different from Glean?
 
@@ -115,7 +115,7 @@
 
 ### Who's the ideal customer today?
 
-`10-50 person marketing and creative agencies running on retainers. You're the bullseye if you use HubSpot or Pipedrive for CRM, Stripe for billing, ClickUp or Asana for project management, Harvest or Toggl for time tracking, Gmail for outreach, Notion for knowledge. We've designed the 28 built-in agents around exactly your stack.`
+`10-50 person agencies running on retainers. You're the bullseye if you use HubSpot or Pipedrive for CRM, Stripe for billing, ClickUp or Asana for project management, Harvest or Toggl for time tracking, Gmail for outreach, Notion for knowledge. We've designed the 28 built-in agents around exactly your stack.`
 
 ### What if I'm not an agency?
 
@@ -167,7 +167,7 @@
 
 ### What's the YC fit?
 
-`YC Summer 2026 category #15 (AI Operating System for Companies) is the primary fit. The two-pillar architecture (workforce + brain) lines up with both Bessemer's "Year of the Agent Employee" thesis and YC RFS #4 ("every company will need a company brain"). The vertical wedge (marketing agencies first → home services next) matches the W26 batch's funded shape of "AI [role] for [vertical]." See /about for the full reasoning.`
+`YC Summer 2026 category #15 (AI Operating System for Companies) is the primary fit. The two-pillar architecture (workforce + brain) lines up with both Bessemer's "Year of the Agent Employee" thesis and YC RFS #4 ("every company will need a company brain"). The vertical wedge (agencies first → home services next) matches the W26 batch's funded shape of "AI [role] for [vertical]." See /about for the full reasoning.`
 
 ### What's your moat?
 

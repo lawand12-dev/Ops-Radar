@@ -4,7 +4,7 @@
 *Category language locked: **The AI Operating System for your business.***
 *Hero shift v3 → v4: brain-led ("the agency you can sell") instead of workforce-led.*
 *Control shift v3 → v4: "earned autonomy" instead of "every action approved by you, always."*
-*Wedge in hero subhead: marketing agencies. Brand stays universal.*
+*Wedge in hero subhead: agencies. Brand stays universal.*
 *Voice anchor: dollar-specific, peer-to-peer, every claim is research-cited.*
 *Source of truth: `docs/positioning/identity.md` + `docs/positioning/inversions.md` + `docs/research/2026-05-*.md`*
 
@@ -15,7 +15,7 @@
 - **Title (60 chars):** `Hire an AI workforce. Keep the brain it builds — OpsRadar`
 - **Description (155 chars):** `28 named AI employees run your agency across Stripe, HubSpot, ClickUp, Gmail. They write everything they learn into a Notion you own. $499/mo.`
 - **OG title:** `Hire an AI workforce. Keep the brain it builds.`
-- **OG description:** `28 named AI employees that run your marketing agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.`
+- **OG description:** `28 named AI employees that run your agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.`
 - **OG image direction:** Dark background. Large white type, two-line H1: `Hire an AI workforce.` / `Keep the brain it builds.` Below it, a row of three agent cards: `💰 Riley · Revenue` / `📨 Cole · Collections` / `📐 Scott · Scope`. Bottom-right: small text `OpsRadar · $499/mo`. No other UI chrome.
 
 ---
@@ -29,7 +29,7 @@
 `Hire an AI workforce. Keep the brain it builds.`
 
 **Subhead (29 words — what it is, who it's for, what you keep):**
-`OpsRadar gives every marketing agency 28 named AI employees that run your operations across Stripe, HubSpot, Harvest, ClickUp, Gmail and 20 more — and writes everything they learn into a Notion you own forever.`
+`OpsRadar gives every agency 28 named AI employees that run your operations across Stripe, HubSpot, Harvest, ClickUp, Gmail and 20 more — and writes everything they learn into a Notion you own forever.`
 
 **Sub-subhead (the moment of "ok wait that's interesting"):**
 `Riley watches your revenue. Cole drafts collections. Scott catches scope creep. Brian writes your morning brief. The other 24 are listed below. Hire your own custom ones in plain English.`
@@ -53,7 +53,7 @@
 - *Keep the brain it builds* = the moat-as-promise (data sovereignty + accumulated value + ownership all in five words).
 
 **The subhead does three more jobs in 29 words.**
-- "OpsRadar gives every marketing agency" = who it's for (wedge).
+- "OpsRadar gives every agency" = who it's for (wedge).
 - "28 named AI employees that run your operations across [tools]" = what it does + integration breadth.
 - "writes everything they learn into a Notion you own forever" = the brain-as-asset hook, without the EBITDA math (moved to Section 1 where it has space to land).
 
@@ -200,10 +200,10 @@
 
 **Section eyebrow:** `WHO USES OPSRADAR TODAY`
 
-**Section H2:** `Built first for marketing agencies. Doubled for fractional operators.`
+**Section H2:** `Built first for agencies. Doubled for fractional operators.`
 
 **Section body (52 words):**
-`We wedged into 10-50 person marketing and creative agencies because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. If that's you, OpsRadar fits the day you connect Stripe. If you're a fractional COO running 5-10 agency clients — there's a multi-tenant version designed for exactly that.`
+`We wedged into 10-50 person agencies because they live on retainers, hire fractional COOs, and pay for ten AI tools that don't talk. If that's you, OpsRadar fits the day you connect Stripe. If you're a fractional COO running 5-10 agency clients — there's a multi-tenant version designed for exactly that.`
 
 **Three customer-shaped use-cases (research-backed):**
 
@@ -292,7 +292,7 @@ Founder feedback: v4's "The agency you can sell" H1 was research-shaped, not cus
 Hero rewrites to copywriter craft, not research defense:
 
 - **H1**: `Hire an AI workforce. Keep the brain it builds.` (8 words, two action verbs, both pillars, ownership in second clause)
-- **Subhead**: tells the visitor what (28 named agents), who-for (every marketing agency), and what-they-keep (Notion they own) in 29 words.
+- **Subhead**: tells the visitor what (28 named agents), who-for (every agency), and what-they-keep (Notion they own) in 29 words.
 - **Sub-subhead**: names Riley, Cole, Scott, Brian by character + outcome — the "OK wait that's interesting" hook that wins the scroll.
 - **EBITDA math moved** from hero to Section 1 — too niche for the H1 surface; lands harder where the reader has context.
 - **OG image** swaps from "exit-value" framing to the actual 3 named agents (Riley / Cole / Scott) — what readers will share.
