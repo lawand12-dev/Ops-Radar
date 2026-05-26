@@ -4,17 +4,86 @@ import { fileURLToPath } from 'node:url'
 import type { NextConfig } from 'next'
 
 const rootDir = dirname(fileURLToPath(import.meta.url))
+// ─── Content Security Policy ──────────────────────────────────────────────
+//
+// The page is in a tight CSP by default. Each external service we wire up
+// needs explicit allowlisting on the relevant directive. Adding a new
+// integration that calls out to third-party domains? Add the domain here.
+//
+// Allowed third-party origins (and why):
+//
+//   Nango (OAuth broker)
+//     - api.nango.dev               → backend SDK calls + Connect Session ingress
+//     - connect.nango.dev           → hosted Connect UI iframe + popup
+//
+//   Statsig (flags + analytics + session replay)
+//     - api.statsig.com             → Node SDK flag fetches (server)
+//     - featureassets.org           → client-side feature gate evaluation
+//     - prodregistryv2.org          → client event logging
+//     - statsigapi.net              → exception + telemetry stream
+//     - sessionreplay.statsig.com   → session-replay event stream (just in case)
+//
+//   Sentry (error tracking)
+//     - *.ingest.us.sentry.io       → error event ingestion
+//     - *.sentry.io                 → telemetry
+//
+//   Vercel (analytics + speed insights + live preview feedback)
+//     - vitals.vercel-insights.com  → web vitals beacons
+//     - vercel.live                 → preview-deploy comment widget (preview only)
+//     - va.vercel-scripts.com       → analytics script CDN
+//
+//   Langfuse (agent observability — server-side, but the SDK may also be
+//   bundled into client routes if we ever stream traces from the browser)
+//     - cloud.langfuse.com
+//
+//   Supabase (auth + database, browser SDK)
+//     - *.supabase.co               → REST + Realtime websockets
+//
+const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+  : '*.supabase.co'
+
+const NANGO_DOMAINS = 'https://api.nango.dev https://connect.nango.dev'
+const STATSIG_DOMAINS =
+  'https://api.statsig.com https://featureassets.org https://prodregistryv2.org https://statsigapi.net https://sessionreplay.statsig.com'
+const SENTRY_DOMAINS = 'https://*.ingest.us.sentry.io https://*.sentry.io'
+const VERCEL_DOMAINS =
+  'https://vitals.vercel-insights.com https://vercel.live https://va.vercel-scripts.com'
+const LANGFUSE_DOMAINS = 'https://cloud.langfuse.com'
+const SUPABASE_DOMAINS = `https://${SUPABASE_HOST} wss://${SUPABASE_HOST}`
+
 const csp = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
+  // Frame ancestors stays locked — nobody embeds OpsRadar.
   "frame-ancestors 'none'",
+  // We DO embed Nango's Connect UI as a child iframe, hence frame-src below.
+  `frame-src 'self' https://connect.nango.dev https://vercel.live`,
   "object-src 'none'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"}`,
-  "connect-src 'self'",
+  // script-src: 'unsafe-eval' only in dev (Next.js fast refresh needs it).
+  // vercel.live is the preview comment widget; va.vercel-scripts.com is analytics.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"} https://vercel.live https://va.vercel-scripts.com`,
+  // Workers: blob: required for Statsig session-replay (which compiles its
+  // worker from a blob URL at runtime).
+  "worker-src 'self' blob:",
+  // connect-src: where the browser is allowed to make fetch/WebSocket calls.
+  // This is the directive that was blocking everything — every third-party
+  // service we use needs its domain listed here.
+  [
+    "connect-src 'self'",
+    NANGO_DOMAINS,
+    STATSIG_DOMAINS,
+    SENTRY_DOMAINS,
+    VERCEL_DOMAINS,
+    LANGFUSE_DOMAINS,
+    SUPABASE_DOMAINS,
+    // Statsig also probes cloudflare-dns.com for DNS-over-HTTPS fallback.
+    'https://cloudflare-dns.com',
+  ].join(' '),
 ].join('; ')
 
 const nextConfig: NextConfig = {
