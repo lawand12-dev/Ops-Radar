@@ -17,13 +17,13 @@ import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: "Pricing — AI COO for Agencies ($750–$3,000/mo)",
+  title: "Pricing — OpsRadar AI Operating System",
   description:
-    "The AI COO for marketing agencies — from $750/month. One-tenth the cost of a fractional COO, running 24/7 on the tools you already pay for. 30-day money-back. Book a 30-minute call.",
+    "Flat tiers from $99/mo. $0.05 per approved action over cap. No token surprises, no credit anxiety. Replaces $5,200/mo in scattered AI tools.",
   openGraph: {
-    title: "The AI COO for $750/mo. Not $10K/mo.",
+    title: "One workforce. One brain. Starts at $99/mo.",
     description:
-      "Four tiers from $750 to $3,000. Built for $1M–$5M agencies who can't afford a fractional COO but need one. Live on your stack in week one.",
+      "The 10 AI tools you're paying $5,200 a month for — replaced by one workspace. Flat tiers, outcome meter bounded by your approval. No surprises.",
     url: "https://www.opsradar.co/pricing",
     siteName: "OpsRadar",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Pricing" }],
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The AI COO for $500/mo. Not $10K/mo.",
+    title: "One workforce. One brain. Starts at $99/mo.",
     description:
-      "Four tiers from $750 to $3,000. Built for $1M–$5M agencies who can't afford a fractional COO but need one.",
+      "Flat tiers from $99/mo. $0.05 per approved action over cap. No token surprises.",
     images: ["/og-image.png"],
   },
 };
@@ -47,186 +47,202 @@ type Tier = {
   badgeTone?: "highlight" | "partner";
   price: string;
   priceUnit: string;
-  annualPrice: string;
-  annualNote: string;
+  billingNote: string;
   tagline: string;
-  cooAnchor: string;
+  pitchLine: string;
   includesHeader: string;
   bullets: string[];
-  audience: string;
-  outgrow: string;
+  notIncluded?: string;
+  outcomeMeter?: string;
   cta: { label: string; href: string };
 };
 
 const TIERS: Tier[] = [
   {
     name: "Starter",
-    price: "$750",
+    price: "$99",
     priceUnit: "/month",
-    annualPrice: "$7,500/year",
-    annualNote: "Annual prepay — 2 months free (17%).",
-    tagline:
-      "For the owner running ops solo with 3 tools and no time to pull numbers.",
-    cooAnchor: "vs a fractional COO: less than 1/10th the cost. Weekly instead of quarterly.",
+    billingNote: "Billed monthly · Cancel anytime",
+    tagline: "For solo operators + tiny teams",
+    pitchLine: "Get one AI employee + the brain. Connect 5 tools.",
     includesHeader: "What's included",
     bullets: [
-      "3 integrations of your choice (e.g. HubSpot + ClickUp + Harvest)",
-      "Weekly agency health score (0–100, per client and overall)",
-      "Monthly automation audit — what's leaking, what to fix first",
-      "Margin, utilization, and cash flow visibility in one place",
-      "Email alerts when something starts going wrong",
-      "1 owner seat",
-      "30-day money-back guarantee",
+      "1 seat",
+      "Up to 5 integrations connected",
+      "500 approved actions/mo included",
+      "All 28 built-in agents (Revenue, Collections, Scope, Delivery, Briefing, and 23 more)",
+      "Company brain — versioned, mirrored to your Notion, exportable any time",
     ],
-    audience:
-      "$500K–$1.5M agency, 5–10 people, founder doing ops in evenings and weekends.",
-    outgrow:
-      "You'll outgrow this when you connect a 4th tool, or your first unprofitable client costs you more than $750 to find.",
-    cta: { label: "Book a 30-min call", href: CALENDLY_STRATEGY_CALL_URL },
+    notIncluded:
+      "Custom AI employees · automations · org-chart delegation · multi-client view",
+    cta: { label: "Start free trial", href: "/pricing" },
   },
   {
     name: "Growth",
+    badge: "Most popular",
     badgeTone: "highlight",
-    price: "$1,500",
+    price: "$499",
     priceUnit: "/month",
-    annualPrice: "$15,000/year",
-    annualNote: "Annual prepay — 2 months free (17%).",
-    tagline:
-      "For the 10–25 person agency where the owner can't see every client's margin in real time anymore.",
-    cooAnchor:
-      "vs a fractional COO: 1/7th the cost. With live numbers they never had.",
-    includesHeader: "Everything in Starter, plus",
+    billingNote: "Billed monthly · Cancel anytime",
+    tagline: "For 5–15 person agencies",
+    pitchLine: "Hire custom AI employees. Connect everything. Automate everything.",
+    includesHeader: "What's included",
     bullets: [
-      "Per-client profitability + scope creep alerts — catch the leaking client in week 2, not month 3",
-      "All 10 integrations (HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Stripe, Calendly, Apollo)",
-      "COO chat — ask \"which client is at risk this month\" and get a real answer with live numbers",
-      "Threshold alerts on margin, utilization, cash flow",
-      "Peer benchmarks by team size and service mix",
-      "50 agentic actions/month included",
-      "3 seats included; +$100/seat after that",
-      "30-day money-back guarantee",
+      "5 seats",
+      "Unlimited integrations",
+      "5,000 approved actions/mo included",
+      "Hire custom AI employees from the Hire chat — name them, schedule them, scope their tools",
+      "Event-triggered automations (\"when HubSpot deal closes-won, do X\")",
+      "All 28 built-in agents",
+      "Apprentice Mode — workforce learns from every rejection",
     ],
-    audience:
-      "$1.5M–$3M agency, 10–25 people, owner-operator or head of ops, 6–8 tools in active use.",
-    outgrow:
-      "You'll outgrow this when you want OpsRadar to act on alerts, not just send them.",
-    cta: { label: "Book a 30-min call", href: CALENDLY_STRATEGY_CALL_URL },
+    outcomeMeter: "$0.05 per approved action over 5,000/mo",
+    cta: { label: "Start free trial", href: "/pricing" },
   },
   {
     name: "Pro",
-    price: "$3,000",
+    price: "$1,499",
     priceUnit: "/month",
-    annualPrice: "$30,000/year",
-    annualNote: "Annual prepay — 2 months free (17%).",
-    tagline:
-      "For the 25–50 person agency where decisions need to happen faster than the owner can make them.",
-    cooAnchor:
-      "vs a fractional COO: 1/3rd the cost — and OpsRadar does what they recommend, not just recommends it.",
-    includesHeader: "Everything in Growth, plus",
+    billingNote: "Billed monthly · Cancel anytime",
+    tagline: "For agencies running multiple retainers",
+    pitchLine: "Org-chart delegation. Priority models. The full workforce.",
+    includesHeader: "What's included",
     bullets: [
-      "Agentic actions — OpsRadar drafts the invoice, sends the PM nudge, adjusts the retainer. Every action has a 30-minute undo and a 5-evaluator safety net.",
-      "Multi-client view for your in-house head of ops",
-      "Custom alerts, webhooks, Slack + Teams routing",
-      "OpsRadar Index — drill into peer agency cohorts by service mix and size",
-      "Quarterly review with the founder (60 min, recorded, your team can join)",
-      "200 agentic actions/month included; $15/action after",
-      "10 seats included; +$100/seat after that",
-      "60-day money-back guarantee — agentic actions take 2–4 weeks of trust to enable",
+      "20 seats",
+      "Unlimited integrations",
+      "25,000 approved actions/mo included",
+      "Org-chart delegation — managers delegate to direct reports (Trigger.dev triggerAndWait)",
+      "Priority models — your queue jumps the line on GPT-5.5",
+      "Notion Brain provisioning (20 databases shipped on day 1)",
+      "Webhook outbox to your own systems",
+      "Everything from Growth",
     ],
-    audience:
-      "$3M–$5M agency, 25–50 people, head of ops on payroll or a fractional COO already embedded.",
-    outgrow:
-      "You'll outgrow this when you cross $5M ARR, run 3+ business units, or exceed 400 actions/month for two months running.",
-    cta: { label: "Talk to the founder", href: CALENDLY_STRATEGY_CALL_URL },
+    outcomeMeter: "$0.05 per approved action over 25,000/mo",
+    cta: { label: "Start free trial", href: "/pricing" },
   },
   {
     name: "Fractional Operator",
     badge: "For partners",
     badgeTone: "partner",
-    price: "$1,200",
-    priceUnit: "/month + $300 per agency",
-    annualPrice: "Monthly only",
-    annualNote: "Partner cash flow matches client cash flow.",
-    tagline:
-      "For fractional COOs and consultancies managing 3+ agency clients.",
-    cooAnchor:
-      "vs your manual onboarding audit: weeks of work compressed to hours, on every new client.",
+    price: "$2,999",
+    priceUnit: "/month",
+    billingNote: "Billed monthly · Cancel anytime",
+    tagline: "For fractional COOs running multiple clients",
+    pitchLine: "Multi-client white-label. Your brand, our engine.",
     includesHeader: "What's included",
     bullets: [
-      "Multi-client dashboard — one login, every agency",
-      "Side-by-side health scores, benchmarks, alerts across your book",
-      "Branded as your firm (optional white-label)",
-      "25% lifetime referral commission on every agency you bring on — no vesting cliff",
-      "Onboarding audit compressed from weeks to hours",
-      "Partner permissions and audit logs across the book",
-      "30-day money-back guarantee",
+      "Unlimited seats inside your FO org",
+      "White-label branding — your logo, your color, your domain",
+      "100,000 approved actions/mo pooled across all clients",
+      "Multi-client aggregate dashboard at /dashboard/fo",
+      "Client switcher built into every surface",
+      "Per-client audit log and margin reporting",
+      "Everything from Pro",
     ],
-    audience:
-      "Fractional COOs, agency ops consultants, and small consultancies running 3–10+ agency clients on retainer.",
-    outgrow:
-      "You'll outgrow this when you cross 15 agencies — talk to us about Enterprise partner terms.",
+    outcomeMeter: "$0.05 per approved action over 100,000/mo, pooled",
     cta: {
-      label: "Apply to join the partner program",
+      label: "Talk to founder",
       href: CALENDLY_STRATEGY_CALL_URL,
     },
   },
 ];
 
-const COMPARISON_ANCHOR = [
+const ANTI_LINDY_RULES = [
   {
-    name: "Fractional COO",
-    cost: "$7,000–$15,000/mo",
-    detail:
-      "Part-time human. Quarterly reviews. Knowledge leaves when they do.",
+    n: "01",
+    title: "No token billing.",
+    body: "OpenAI, Anthropic, embedding tokens — all included in your tier. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made sure that's never us.",
   },
   {
-    name: "Full-time COO",
-    cost: "$25,000–$43,000/mo",
-    detail:
-      "A real one. If you can afford one, you're not in our ICP.",
+    n: "02",
+    title: "No premium-model multipliers.",
+    body: "Lindy charges 60 credits for one GPT-4 call and 2 for a \"lite\" call. We charge the same flat $0.05 whether your employee used GPT-5.5 or GPT-4.1-nano. The model is our choice, not your bill.",
   },
   {
-    name: "OpsRadar AI COO",
-    cost: "$750–$3,000/mo",
-    detail:
-      "24/7 on your stack. Built only for agencies. Sees every client every day.",
-    highlight: true,
+    n: "03",
+    title: "Outcome meter is bounded by your finger.",
+    body: "The only thing that runs the meter past your cap is an action you literally clicked Approve on in /dashboard/actions. Reject it and the meter doesn't move. We are structurally incapable of surprising you with a bill.",
+  },
+  {
+    n: "04",
+    title: "Earned autonomy, never blind autonomy.",
+    body: "Every high-risk action (firing a client, sending an invoice, mass email) stays Ask-only forever. Routine actions auto-fire only after you've approved them 30+ times at a 90%+ rate. The agents earn autonomy. They don't get it on day one. Anti-11x by structure, not by marketing.",
   },
 ];
 
+const WEDGE_ROWS = [
+  {
+    tool: "Notion AI",
+    cost: "$20/user × 15 = $300",
+    why: "Brain lives in your Notion, written by your AI workforce",
+  },
+  {
+    tool: "Lindy 3.0 (Business tier)",
+    cost: "$300 + overages",
+    why: "Custom AI employees + automations native, no credit anxiety",
+  },
+  {
+    tool: "Zapier Pro",
+    cost: "$73/mo + tasks",
+    why: "25+ integrations native via Composio, growing to 500",
+  },
+  {
+    tool: "AI SDR (11x or similar)",
+    cost: "$1,000+/mo",
+    why: "Hire an SDR employee directly with the role you actually need",
+  },
+  {
+    tool: "ChatGPT Team",
+    cost: "$50 + per-seat",
+    why: "COO chat answers any business question with your live data",
+  },
+  {
+    tool: "AI bookkeeper",
+    cost: "$400/mo",
+    why: "Hire a Bookkeeper employee scoped to Stripe + QuickBooks",
+  },
+  {
+    tool: "Glean Light or search",
+    cost: "$40/user × 15 = $600",
+    why: "Brain knows everything across all 25 tools, no separate search needed",
+  },
+  {
+    tool: "AI meeting summarizer",
+    cost: "$30/user × 15 = $450",
+    why: "Calendly + Notion → briefing agent does this nightly",
+  },
+  {
+    tool: "Marketing AI writer",
+    cost: "$200/mo",
+    why: "Hire a marketing employee, scoped to Google Ads + Analytics",
+  },
+  {
+    tool: "Bardeen / productivity AI",
+    cost: "$129/mo",
+    why: "Automations + per-employee hires cover this surface",
+  },
+];
 
 const FAQS = [
   {
-    q: "$1,500 is steep for us.",
-    a: "If you compare $1,500 to a software subscription, yes — it's high. If you compare it to manual reporting time, the cost of finding an unprofitable client in month 3 instead of week 2, and the fractional COO you're either paying or thinking about hiring, it's not even close. Tell us what you're paying now to do these things and we'll show you the math in five minutes. If the number isn't 3x what you'd pay us, don't sign.",
+    q: "What counts as \"an approved action\"?",
+    a: "Anything your AI workforce does on a connected tool: sending a Gmail draft, creating a Stripe invoice, updating a HubSpot deal, posting in Slack, creating a Notion page. Reads — fetching data, looking something up — never count. Only writes count. And only writes you clicked Approve on count toward your meter.",
   },
   {
-    q: "Why is Pro 2x Growth?",
-    a: "Because Pro replaces the part of a fractional COO that acts. Growth tells you what to do. Pro does it — invoice drafts, PM nudges, retainer adjustments, with a 30-minute undo on everything. That saves 30 to 40 hours a month of owner or head-of-ops time. At $250/hour, that's $7,500 to $10,000 of value. Pro is $3,000. The 2x ratio is conservative.",
+    q: "What if I never hit my action cap?",
+    a: "Then you pay only the flat tier price. The outcome meter is opt-in upside on Pro+, not core pricing. Most agencies under 20 people stay within their tier cap forever.",
   },
   {
-    q: "Can we do month-to-month?",
-    a: "Yes. Every tier is month-to-month by default. Annual saves you 17% (2 months free). Most agencies start monthly, stay 3 months, then switch to annual when they're ready to lock the price.",
+    q: "Can I bring my own AI keys (BYOK)?",
+    a: "Not in v1. We aggregate AI cost across all customers and that's how we hold the flat tier price. If you have a strong reason to BYOK (regulated industry, internal compliance), talk to the founder.",
   },
   {
-    q: "We need to start at the lowest tier and prove it.",
-    a: "Starter is built for exactly that. The agencies that stay on Starter forever are running 3 tools and one or two clients — probably not you. Most agencies move to Growth in month 2 or 3 because per-client profitability pays for the upgrade twice over. We'll tell you when the math says move up.",
+    q: "What happens if I cancel?",
+    a: "Your workforce stops running. Your company brain stays in your Notion — it was always there, we just wrote to it. You can also download a full markdown zip of the brain from /dashboard/brain/download any time. We don't hold your data hostage.",
   },
   {
-    q: "Our fractional COO costs less than your Pro.",
-    a: "Which one? The market floor for a real fractional COO is $7,000/month. If yours is under $3,000, they're either brand new, doing this on the side, or both — meaning their knowledge walks out the door the moment they get a bigger client. If they're generating $40K of value a month, keep them. Run OpsRadar Starter alongside so they have live numbers instead of stale spreadsheets.",
-  },
-  {
-    q: "Do you discount?",
-    a: "Annual prepay: 17% off (2 months free). Multi-year prepay: 22% year 1, 25% year 2, price-locked. Founder pricing: 50% off for 3 months, capped at the first 10 logos. That's it. We don't match competitor prices because we're not competing on price with a PSA — we're competing on outcome with a fractional COO.",
-  },
-  {
-    q: "What if I want to cancel?",
-    a: "Email or message us. 30-day money-back, no questions asked. 60-day on Pro. After that, cancel any time at the end of your billing cycle. Your data was never trapped in us — it lives in HubSpot, ClickUp, Harvest, Stripe, etc. We were only reading from them.",
-  },
-  {
-    q: "Why isn't there a free tier?",
-    a: "Because a free tier turns the founder into a free-tier support engineer, and the founder needs to ride the first 100 customers to capture what's actually working. Our free surface is the audit at /audit — three minutes, real dollar number, no credit card. Then a 30-minute call, then paid.",
+    q: "Can I downgrade tiers?",
+    a: "Yes. Anytime. End of month. No retention call, no friction. Click Settings → Billing → Switch plan. Custom employees from a higher tier get auto-paused if they don't fit your new tier, until you reactivate.",
   },
 ];
 
@@ -238,11 +254,10 @@ export default function PricingPage() {
       <SiteNav activeHref="/pricing" />
 
       <PageHeader />
-      <ComparisonAnchorSection />
+      <TwoPromisesSection />
       <TiersSection />
-      <RiskReversalSection />
-      <FounderPricingSection />
-      <NotAPSASection />
+      <AntiLindySection />
+      <WedgeTableSection />
       <FaqSection />
       <FinalCTA />
 
@@ -261,12 +276,12 @@ function PageHeader() {
       <div className="mx-auto max-w-6xl px-6 pt-20 md:pt-28 pb-20 md:pb-24">
         <RevealOnScroll delay={0} offset={32}>
           <p className="text-label uppercase text-[var(--color-fg-subtle)]">
-            Pricing — flat per agency, not per user
+            Pricing — flat tiers, outcome meter bounded by your approval
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={120} offset={48}>
           <h1
-            className="mt-7 text-[var(--color-fg)] text-balance max-w-[16ch]"
+            className="mt-7 text-[var(--color-fg)] text-balance max-w-[20ch]"
             style={{
               fontFamily: "var(--font-sans)",
               fontSize: "var(--text-hero)",
@@ -275,88 +290,104 @@ function PageHeader() {
               fontWeight: 500,
             }}
           >
-            The AI COO for{" "}
-            <span className="text-[var(--color-primary)]">$750/mo</span>.
-            Not&nbsp;$10K/mo.
+            Build the asset you exit on.{" "}
+            <span className="text-[var(--color-primary)]">Starts at $99/mo.</span>
           </h1>
         </RevealOnScroll>
         <RevealOnScroll delay={280} offset={48}>
           <p
-            className="mt-8 max-w-[42rem] text-[var(--color-fg-muted)]"
+            className="mt-8 max-w-[44rem] text-[var(--color-fg-muted)]"
             style={{
               fontSize: "var(--text-lead)",
               lineHeight: "var(--text-lead--line-height)",
               fontWeight: 400,
             }}
           >
-            Every tier reads from the tools you already pay for, watches margin
-            and utilization 24/7, and tells you the next move. Flat per agency.
-            No seat tax. 30-day money-back, no questions asked.
+            Replace $5,200/mo of scattered AI tools. Your AI workforce writes
+            the SOPs into a Notion you keep. Documented agencies sell at 8–12×
+            EBITDA vs 5–9× undocumented &mdash; that&rsquo;s $6M of extra exit
+            value on a $2M-EBITDA agency. The asset compounds. The pricing
+            doesn&rsquo;t surprise you.
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={460} offset={40}>
           <div className="mt-10 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a 30-min call
+              <Link href="/pricing">
+                Start free trial
                 <ArrowRight className="size-4" />
-              </a>
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/audit">Or run the 3-minute audit first &rarr;</Link>
+              <a
+                href={CALENDLY_STRATEGY_CALL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Or talk to the founder first &rarr;
+              </a>
             </Button>
           </div>
         </RevealOnScroll>
-
+        <RevealOnScroll delay={580} offset={32}>
+          <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
+            14 days free &middot; No credit card &middot; Brain stays in your Notion &middot; Exportable any time
+          </p>
+        </RevealOnScroll>
       </div>
     </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Comparison anchor (the WTP frame)                                          */
+/*  Two promises stripe (above the tiers)                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function ComparisonAnchorSection() {
+function TwoPromisesSection() {
+  const cards = [
+    {
+      headline: "We never charge you for tokens.",
+      body: "OpenAI tokens, Anthropic tokens, embedding calls — those are our problem, not yours. Whatever your AI workforce consumes inside its tier is included. You pay for outcomes, not the math behind them.",
+    },
+    {
+      headline: "You only pay above cap for actions you clicked Approve.",
+      body: "Every billable action shows up in your approval queue. You read it, see what it'll do, click yes — or click no. Reject it, you don't pay. Approve it, $0.05. Three things have to align in the same moment.",
+    },
+  ];
+
   return (
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
         <RevealOnScroll delay={0} offset={40}>
-          <p className="text-label text-[var(--color-fg-subtle)] max-w-2xl">
-            Before you read the prices, know what you&rsquo;re comparing them to
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
+            Before the tiers — two promises
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={100} offset={40}>
-        <div className="mt-6 grid gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden md:grid-cols-3">
-          {COMPARISON_ANCHOR.map((item) => (
-            <div
-              key={item.name}
-              className={
-                "bg-[var(--color-surface)] p-6 md:p-8 flex flex-col gap-2 " +
-                (item.highlight
-                  ? "ring-1 ring-inset ring-[var(--color-primary)]"
-                  : "")
-              }
-            >
-              <p className="text-label text-[var(--color-fg-subtle)]">
-                {item.name}
-              </p>
-              <p
-                className={
-                  "font-mono text-h3 font-medium tabular-nums tracking-[-0.02em] " +
-                  (item.highlight
-                    ? "text-[var(--color-primary)]"
-                    : "text-[var(--color-fg)]")
-                }
+          <div className="mt-8 grid gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden md:grid-cols-2">
+            {cards.map((c) => (
+              <div
+                key={c.headline}
+                className="bg-[var(--color-surface)] p-6 md:p-8 flex flex-col gap-3"
               >
-                {item.cost}
-              </p>
-              <p className="text-body-sm leading-[1.55] text-[var(--color-fg-muted)] mt-1">
-                {item.detail}
-              </p>
-            </div>
-          ))}
-        </div>
+                <h3
+                  className="text-[var(--color-fg)]"
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "var(--text-h3)",
+                    lineHeight: "var(--text-h3--line-height)",
+                    letterSpacing: "var(--text-h3--letter-spacing)",
+                    fontWeight: 500,
+                  }}
+                >
+                  {c.headline}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">
+                  {c.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </RevealOnScroll>
       </div>
     </section>
@@ -371,17 +402,30 @@ function TiersSection() {
   return (
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-[92rem] px-6 py-14 md:py-20">
-        <RevealOnScroll delay={0} offset={40}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 items-stretch">
+        <RevealOnScroll delay={0} offset={32}>
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
+            Pick a tier · change anytime
+          </p>
+          <h2
+            className="mt-4 text-[var(--color-fg)] text-balance max-w-3xl"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "var(--text-h1)",
+              lineHeight: "var(--text-h1--line-height)",
+              letterSpacing: "var(--text-h1--letter-spacing)",
+              fontWeight: 500,
+            }}
+          >
+            Four tiers. Built around the size of your team.
+          </h2>
+        </RevealOnScroll>
+
+        <RevealOnScroll delay={120} offset={40}>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4 items-stretch">
             {TIERS.map((tier) => (
               <TierCard key={tier.name} tier={tier} />
             ))}
           </div>
-          <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-2xl">
-            Agentic actions: +$25/action over 50 on Growth, +$15/action over 200 on
-            Pro. Additional seats: +$100/seat after the included quota. Discovery
-            + Blueprint are bundled into your first month on Growth and Pro.
-          </p>
         </RevealOnScroll>
       </div>
     </section>
@@ -397,7 +441,7 @@ function TierCard({ tier }: { tier: Tier }) {
       className={
         "flex flex-col rounded-[var(--radius-md)] bg-[var(--color-surface)] " +
         (isHighlight
-          ? "shadow-[var(--shadow-md)] ring-1 ring-inset ring-[var(--color-primary)]/20"
+          ? "shadow-[var(--shadow-md)] ring-1 ring-inset ring-[var(--color-primary)]/30"
           : isPartner
             ? "border border-dashed border-[var(--color-border-strong)]"
             : "border border-[var(--color-border)]")
@@ -409,9 +453,16 @@ function TierCard({ tier }: { tier: Tier }) {
           <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em]">
             — {tier.name}
           </p>
-          {isPartner && (
-            <span className="font-mono text-caption uppercase tracking-[0.1em] px-2 py-0.5 rounded-full bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)]">
-              For partners
+          {tier.badge && (
+            <span
+              className={
+                "font-mono text-caption uppercase tracking-[0.1em] px-2 py-0.5 rounded-full " +
+                (isHighlight
+                  ? "bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]"
+                  : "bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)]")
+              }
+            >
+              {tier.badge}
             </span>
           )}
         </div>
@@ -443,12 +494,12 @@ function TierCard({ tier }: { tier: Tier }) {
             </span>
           </p>
           <p className="mt-1 text-caption text-[var(--color-fg-subtle)]">
-            {tier.annualPrice} · {tier.annualNote}
+            {tier.billingNote}
           </p>
         </div>
 
         <p className="mt-3 text-body-sm leading-[1.5] text-[var(--color-primary)] font-medium">
-          {tier.cooAnchor}
+          {tier.pitchLine}
         </p>
       </div>
 
@@ -469,25 +520,40 @@ function TierCard({ tier }: { tier: Tier }) {
           ))}
         </ul>
 
-        <div className="mt-4 pt-3 border-t border-[var(--color-border)] space-y-2">
-          <div>
-            <p className="text-label text-[var(--color-fg-subtle)] mb-1">Who this is for</p>
-            <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">{tier.audience}</p>
+        {(tier.outcomeMeter || tier.notIncluded) && (
+          <div className="mt-4 pt-3 border-t border-[var(--color-border)] space-y-2">
+            {tier.outcomeMeter && (
+              <div>
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">Outcome meter</p>
+                <p className="text-body-sm leading-[1.5] text-[var(--color-fg)] font-mono tabular-nums">
+                  {tier.outcomeMeter}
+                </p>
+              </div>
+            )}
+            {tier.notIncluded && (
+              <div>
+                <p className="text-label text-[var(--color-fg-subtle)] mb-1">Not in {tier.name}</p>
+                <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">{tier.notIncluded}</p>
+              </div>
+            )}
           </div>
-          <div>
-            <p className="text-label text-[var(--color-fg-subtle)] mb-1">You&rsquo;ll outgrow this when</p>
-            <p className="text-body-sm leading-[1.5] text-[var(--color-fg-muted)]">{tier.outgrow}</p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* CTA */}
       <div className="px-5 pb-5">
         <Button asChild variant={isHighlight ? "default" : "outline"} className="w-full">
-          <a href={tier.cta.href} target="_blank" rel="noopener noreferrer">
-            {tier.cta.label}
-            <ArrowRight className="size-4" />
-          </a>
+          {tier.cta.href.startsWith("http") ? (
+            <a href={tier.cta.href} target="_blank" rel="noopener noreferrer">
+              {tier.cta.label}
+              <ArrowRight className="size-4" />
+            </a>
+          ) : (
+            <Link href={tier.cta.href}>
+              {tier.cta.label}
+              <ArrowRight className="size-4" />
+            </Link>
+          )}
         </Button>
       </div>
     </div>
@@ -495,145 +561,60 @@ function TierCard({ tier }: { tier: Tier }) {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Risk reversal                                                              */
+/*  Anti-Lindy four rules                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function RiskReversalSection() {
-  return (
-    <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
-        <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12">
-          <RevealOnScroll delay={0} offset={40}>
-          <div>
-            <p className="text-label text-[var(--color-fg-subtle)]">
-              Risk reversal
-            </p>
-            <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              30-day money-back. No questions asked.
-            </h2>
-          </div>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100} offset={40}>
-          <div className="space-y-6">
-            <p className="text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-2xl">
-              If OpsRadar isn&rsquo;t earning its keep in the first month, we
-              send the money back the same day. Pro tier gets 60 days, because
-              agentic actions take 2 to 4 weeks of trust before you turn them on
-              for real clients.
-            </p>
-            <p className="text-body leading-[1.6] text-[var(--color-fg-muted)] max-w-2xl">
-              <span className="text-[var(--color-fg)] font-medium">
-                We don&rsquo;t promise &ldquo;we&rsquo;ll find $X or it&rsquo;s
-                free&rdquo;
-              </span>{" "}
-              because the moment you put a dollar guarantee on it, the audit
-              becomes a contract you litigate every month. We&rsquo;d rather
-              refund and learn why than argue about whether $4,800 of utilization
-              recovery counts.
-            </p>
-            <ol className="space-y-3 text-body-sm leading-[1.55] text-[var(--color-fg-muted)] max-w-2xl">
-              <li className="flex gap-3">
-                <span className="font-mono text-caption text-[var(--color-fg-subtle)] mt-0.5">
-                  01
-                </span>
-                <span>
-                  <Link
-                    href="/audit"
-                    className="text-[var(--color-fg)] underline-offset-4 hover:underline"
-                  >
-                    Free audit
-                  </Link>{" "}
-                  — get a real dollar number on what you&rsquo;re leaking in 3
-                  minutes.
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-mono text-caption text-[var(--color-fg-subtle)] mt-0.5">
-                  02
-                </span>
-                <span>
-                  30-minute call with the founder — no pitch, no slides. We tell
-                  you if we&rsquo;re not a fit.
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-mono text-caption text-[var(--color-fg-subtle)] mt-0.5">
-                  03
-                </span>
-                <span>
-                  30-day money-back (60-day on Pro) after you sign on.
-                </span>
-              </li>
-            </ol>
-          </div>
-          </RevealOnScroll>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/*  Founder pricing                                                            */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-function FounderPricingSection() {
+function AntiLindySection() {
   return (
     <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-sunken)]">
-      <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
         <RevealOnScroll delay={0} offset={40}>
-          <p className="text-label text-[var(--color-fg-subtle)]">
-            Founder pricing
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
+            Four rules we&rsquo;ll never break
           </p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance max-w-3xl">
-            First 10 agencies pay 50% off for the first 3 months.
+          <h2
+            className="mt-4 text-[var(--color-fg)] text-balance max-w-3xl"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "var(--text-h1)",
+              lineHeight: "var(--text-h1--line-height)",
+              letterSpacing: "var(--text-h1--letter-spacing)",
+              fontWeight: 500,
+            }}
+          >
+            Why your bill from us looks the same way every month — and why
+            your agents never go rogue.
           </h2>
-          <p className="mt-5 max-w-2xl text-body leading-[1.6] text-[var(--color-fg-muted)]">
-            Then full price. No lifetime discounts. Three months is enough to
-            see the value and build the case study together. Full price at
-            month 4 is on us, not on you.
-          </p>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={100} offset={40}>
-          <div className="mt-10 grid gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden md:grid-cols-3">
-            {[
-              { name: "Starter", was: "$750", now: "$375" },
-              { name: "Growth", was: "$1,500", now: "$750" },
-              { name: "Pro", was: "$3,000", now: "$1,500" },
-            ].map((row) => (
+        <RevealOnScroll delay={120} offset={40}>
+          <div className="mt-12 grid gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden md:grid-cols-2">
+            {ANTI_LINDY_RULES.map((rule) => (
               <div
-                key={row.name}
-                className="bg-[var(--color-surface)] p-6 md:p-8"
+                key={rule.n}
+                className="bg-[var(--color-surface)] p-6 md:p-8 flex flex-col gap-3"
               >
-                <p className="text-label text-[var(--color-fg-subtle)]">
-                  {row.name}
+                <p className="font-mono text-caption text-[var(--color-fg-subtle)] tracking-[0.08em]">
+                  Rule {rule.n}
                 </p>
-                <p className="mt-3 font-mono text-body text-[var(--color-fg-muted)] tabular-nums">
-                  <span className="line-through">{row.was}/mo</span>
-                </p>
-                <p className="font-mono text-h2 font-medium tabular-nums text-[var(--color-primary)] tracking-[-0.02em]">
-                  {row.now}/mo
-                </p>
-                <p className="mt-2 text-caption text-[var(--color-fg-subtle)]">
-                  for 3 months, then list price
+                <h3
+                  className="text-[var(--color-fg)]"
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "var(--text-h3)",
+                    lineHeight: "var(--text-h3--line-height)",
+                    letterSpacing: "var(--text-h3--letter-spacing)",
+                    fontWeight: 500,
+                  }}
+                >
+                  {rule.title}
+                </h3>
+                <p className="text-body leading-[1.6] text-[var(--color-fg-muted)]">
+                  {rule.body}
                 </p>
               </div>
             ))}
           </div>
-
-          <div className="mt-10">
-            <Button asChild size="lg">
-              <a
-                href={CALENDLY_STRATEGY_CALL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Claim a founder slot
-                <ArrowRight className="size-4" />
-              </a>
-            </Button>
-          </div>
         </RevealOnScroll>
       </div>
     </section>
@@ -641,24 +622,66 @@ function FounderPricingSection() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  What we are not                                                             */
+/*  $5,200 wedge comparison table                                              */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function NotAPSASection() {
+function WedgeTableSection() {
   return (
     <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-3xl px-6 py-20 md:py-24">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
         <RevealOnScroll delay={0} offset={40}>
-          <p className="text-label text-[var(--color-fg-subtle)]">What we are not</p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-            OpsRadar is not a PSA.
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
+            What you replace
+          </p>
+          <h2
+            className="mt-4 text-[var(--color-fg)] text-balance max-w-3xl"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "var(--text-h1)",
+              lineHeight: "var(--text-h1--line-height)",
+              letterSpacing: "var(--text-h1--letter-spacing)",
+              fontWeight: 500,
+            }}
+          >
+            A 15-person agency pays $5,200/mo for these 10 tools. OpsRadar
+            Growth costs $499.
           </h2>
-          <p className="mt-6 text-body leading-[1.6] text-[var(--color-fg-muted)]">
-            It doesn&apos;t replace ClickUp, Harvest, or HubSpot. It sits on top of
-            them and tells you what&apos;s going wrong before you find out the hard
-            way. If you need a system of record, buy a PSA. If you need someone
-            watching the numbers 24/7 and telling you what to do about them,
-            that&apos;s us.
+        </RevealOnScroll>
+
+        <RevealOnScroll delay={120} offset={40}>
+          <div className="mt-12 rounded-[var(--radius-md)] border border-[var(--color-border)] overflow-hidden">
+            <div className="grid grid-cols-[1.1fr_0.9fr_2fr] bg-[var(--color-surface-sunken)] border-b border-[var(--color-border)]">
+              <div className="px-5 py-3 text-label text-[var(--color-fg-subtle)] uppercase">
+                Tool you cancel
+              </div>
+              <div className="px-5 py-3 text-label text-[var(--color-fg-subtle)] uppercase border-l border-[var(--color-border)]">
+                Monthly cost
+              </div>
+              <div className="px-5 py-3 text-label text-[var(--color-primary)] uppercase border-l border-[var(--color-border)]">
+                OpsRadar replaces it because
+              </div>
+            </div>
+            {WEDGE_ROWS.map((row, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1.1fr_0.9fr_2fr] border-b last:border-b-0 border-[var(--color-border)]"
+              >
+                <div className="px-5 py-4 text-body-sm text-[var(--color-fg)] leading-[1.55] font-medium">
+                  {row.tool}
+                </div>
+                <div className="px-5 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55] font-mono tabular-nums border-l border-[var(--color-border)]">
+                  {row.cost}
+                </div>
+                <div className="px-5 py-4 text-body-sm text-[var(--color-fg-muted)] leading-[1.55] border-l border-[var(--color-border)] bg-[var(--color-surface)]">
+                  {row.why}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-caption text-[var(--color-fg-subtle)] max-w-3xl">
+            Total replaced: ~$3,500–$5,200/mo (varies by team size). OpsRadar
+            Growth: $499/mo. The 7–9× difference is the math customers usually
+            run themselves in their first meeting.
           </p>
         </RevealOnScroll>
       </div>
@@ -675,23 +698,32 @@ function FaqSection() {
     <section className="border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
         <RevealOnScroll delay={0} offset={40}>
-          <p className="text-label text-[var(--color-fg-subtle)]">
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
             Questions about pricing
           </p>
-          <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance mb-12">
-            The objections we hear most.
+          <h2
+            className="mt-4 text-[var(--color-fg)] text-balance mb-12"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "var(--text-h1)",
+              lineHeight: "var(--text-h1--line-height)",
+              letterSpacing: "var(--text-h1--letter-spacing)",
+              fontWeight: 500,
+            }}
+          >
+            Five questions, five honest answers.
           </h2>
         </RevealOnScroll>
 
         <RevealOnScroll delay={100} offset={40}>
-        <Accordion type="multiple">
-          {FAQS.map((faq) => (
-            <AccordionItem key={faq.q} value={faq.q}>
-              <AccordionTrigger>{faq.q}</AccordionTrigger>
-              <AccordionContent>{faq.a}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+          <Accordion type="multiple">
+            {FAQS.map((faq) => (
+              <AccordionItem key={faq.q} value={faq.q}>
+                <AccordionTrigger>{faq.q}</AccordionTrigger>
+                <AccordionContent>{faq.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </RevealOnScroll>
       </div>
     </section>
@@ -707,33 +739,46 @@ function FinalCTA() {
     <section>
       <div className="mx-auto max-w-3xl px-6 py-28 md:py-36 text-center">
         <RevealOnScroll delay={0} offset={40}>
-          <p className="text-label text-[var(--color-fg-subtle)]">Two ways to start</p>
-          <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Both free.
+          <p className="text-label text-[var(--color-fg-subtle)] uppercase">
+            Replace 10 AI tools with one
+          </p>
+          <h2
+            className="mt-5 text-[var(--color-fg)] text-balance mx-auto"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "clamp(2.25rem, 3.6vw + 0.5rem, 3.75rem)",
+              lineHeight: 1.05,
+              letterSpacing: "-0.025em",
+              fontWeight: 500,
+            }}
+          >
+            Starts today.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-            Thirty minutes with the founder. No pitch, no slides. If we&rsquo;re
-            not a fit, we tell you on the call.
+            Connect Stripe or HubSpot. Open the Hire chat. Describe your first
+            AI employee. We do the rest. Two-week trial. No credit card.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
+              <Link href="/pricing">
+                Start free trial
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <a
                 href={CALENDLY_STRATEGY_CALL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Book a 30-min call with the founder
-                <ArrowRight className="size-4" />
+                See it in action — 20 min with the founder
               </a>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/audit">Run the 3-minute audit first</Link>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            30 minutes · No pitch · We tell you if it&rsquo;s not a fit.
+            14 days free &middot; No credit card &middot; Brain stays in your Notion
           </p>
         </RevealOnScroll>
       </div>
