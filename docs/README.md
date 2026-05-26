@@ -61,6 +61,7 @@ Short, numbered, decided. Open these to answer "why is the system shaped this wa
 | Document | What it is | When to read |
 |----------|------------|--------------|
 | [`positioning/path-a-strategy.md`](./positioning/path-a-strategy.md) | The master strategy. 27-competitor gap, 4-tier pricing, YC #15 fit, 90-day execution plan | Always. The working document |
+| [`positioning/inversions.md`](./positioning/inversions.md) | **The 3 out-of-box inversions tested 2026-05-26** — drove narrative reframes (brain-led hero, earned autonomy, fractional-COO leverage layer) + flagged the tier-enforcement code gap | After any positioning conversation; before any "should we pivot" decision |
 | [`positioning/pricing-depth.md`](./positioning/pricing-depth.md) | Van Westendorp + WTP + competitive anchor. Current tiers + their reasoning | Before any pricing conversation or tier change |
 | [`positioning/moats.md`](./positioning/moats.md) | Razorpay's 6 provocations on moats applied to OpsRadar | Before YC interview, before any "let's add an easy feature" decision |
 | [`positioning/vs-pages.md`](./positioning/vs-pages.md) | 3 launch-ready SEO landing pages: `/vs/productive`, `/vs/scoro`, `/vs/float` | When ready for SEO landing pages |
@@ -89,6 +90,9 @@ Evidence snapshots — every claim cited, no decisions inside. Read these to bac
 | [`research/2026-05-26-engineering-brain.md`](./research/2026-05-26-engineering-brain.md) | **Engineering stress-test 3/4 — Brain / memory** (Postgres, embeddings, Mem0/Letta/Zep). 90% aligned — highest |
 | [`research/2026-05-26-engineering-tools.md`](./research/2026-05-26-engineering-tools.md) | **Engineering stress-test 4/4 — Tools + integrations** (Composio vs Pica/Arcade, MCP, OAuth, saga). 70% aligned — lowest |
 | [`research/2026-05-26-shared-knowledge-layer.md`](./research/2026-05-26-shared-knowledge-layer.md) | **Shared multi-agent knowledge layer** — shared brain is table stakes in 2026; what IS defensible is the stacking. Drove the moat sharpening in `positioning/identity.md` |
+| [`research/2026-05-26-inversion-1-brain-as-product.md`](./research/2026-05-26-inversion-1-brain-as-product.md) | **Inversion 1** — is brain the actual product? Verdict: invert the narrative, not the pricing. Anchor on agency-exit math (8-12× vs 5-9× EBITDA multiples) |
+| [`research/2026-05-26-inversion-2-approval-gate-long-term.md`](./research/2026-05-26-inversion-2-approval-gate-long-term.md) | **Inversion 2** — approval-gate forever? Verdict: it's a phase. Evolve to confidence-gated "earned autonomy" within 12 months |
+| [`research/2026-05-26-inversion-3-wrong-buyer.md`](./research/2026-05-26-inversion-3-wrong-buyer.md) | **Inversion 3** — wrong buyer? Verdict: no pivot. Add fractional-COO as multi-tenant leverage on existing agency wedge |
 
 **Older snapshots:**
 

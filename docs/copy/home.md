@@ -178,9 +178,9 @@
 
 **Three customer-shaped use-cases (research-backed):**
 
-- **Revenue health** — `Revenue Agent watches your MRR, paid-MTD, overdue invoices, and customer churn. Catches a low-margin client in week 2, not at quarter close.`
-- **Scope creep detection** — `Scope Agent watches Harvest logged hours against ClickUp scope per client. Flags retainer overruns before you've eaten the cost.`
-- **Daily briefing** — `Briefing Agent reads every other agent's finding overnight and writes you a one-page brief at 6 AM. The one thing you read before standup.`
+- **Revenue health** — `💰 Riley, your Revenue Analyst, watches MRR, paid-MTD, overdue invoices, and customer churn. Catches a low-margin client in week 2, not at quarter close.`
+- **Scope creep detection** — `📐 Scott, your Scope Watchdog, reads Harvest logged hours against ClickUp scope per client. Flags retainer overruns before you've eaten the cost.`
+- **Daily briefing** — `📰 Brian, your Daily Briefer, reads every other agent's finding overnight and writes you a one-page brief at 6 AM. The one thing you read before standup.`
 
 **Footer link:** `Expanding to home services (HVAC, plumbing, electrical) in Q3 2026 — built on the same architecture. [Get on the waitlist →]`
 

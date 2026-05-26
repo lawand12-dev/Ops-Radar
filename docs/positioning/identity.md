@@ -1,10 +1,37 @@
-# OpsRadar Identity — Triangulated Verdict (2026-05-25)
+# OpsRadar Identity — Triangulated Verdict (2026-05-25, updated 2026-05-26)
 
 > **Status**: working positioning document. Replaces fragments scattered across
 > `path-a-strategy.md`, `moats.md`, and the marketing site copy. Built from
-> 13 research reports run on 2026-05-25 — see `docs/research/2026-05-25-*.md`.
+> 14 research reports run on 2026-05-25 + 3 inversion research reports run
+> on 2026-05-26 — see `docs/research/2026-05-*.md`.
+> **Companion doc**: `docs/positioning/inversions.md` (the three out-of-box
+> tests that drove the 2026-05-26 narrative updates).
 > Re-open this doc before any positioning, pricing, ICP, or YC application
 > change.
+
+---
+
+## 2026-05-26 update — three narrative changes from the inversions research
+
+Three corrections were locked from the inversions research (`docs/positioning/inversions.md`):
+
+1. **The hero leads with the brain, not the workforce.**
+   - Old: *"Hire your AI workforce. Build a company brain in your Notion."*
+   - New: ***"The agency you can sell. Your AI workforce writes the SOPs into Notion you keep."***
+   - Why: 2026 essays (SaaStr "prompts are portable" / Cen "AI killed the feature moat" / Ardent "data your product generates doesn't commoditize") converge — the workforce commoditizes, the accumulated brain doesn't. Anchor on agency-exit math: documented agencies sell at **8-12× EBITDA vs 5-9× for undocumented** (First Page Sage / Wayfront).
+
+2. **"Earned autonomy" replaces "every action approved by you, always."**
+   - Old: *"Every action approved by you. Always."*
+   - New: ***"Every high-risk action approved by you. Routine actions auto-fire after you've approved them 30 times — earned autonomy, not blind autonomy."***
+   - Why: 2026 winners (Sierra $150M ARR, Decagon $35M, Cresta $100M) are all human-on-the-loop, not human-in-the-loop. "Approval fatigue" is now a named industry problem. Architecture is already 70% built (CP-14 gate + CP-18 confidence + CP-19 outcome tracking).
+
+3. **Fractional COOs as a multi-tenant leverage layer.**
+   - Add `/for/fractional-coo` marketing page positioning OpsRadar's existing `/dashboard/fo` surface as the multi-client engine.
+   - Why: each fractional COO is a 5-10× leveraged buyer (manages 5-10 agency clients). The Iraq-founder constraint kills every higher-ACV pivot (law firms / family offices / RIAs all need US-domiciled vendor trust signals). Fractional COOs are the **only candidate where the Iraq constraint is a non-issue** because they're remote-first solo operators. ~15-20% probability of $10M ARR in 18 months vs ~10-12% for agencies-only.
+
+What did NOT change after inversions: two-pillar identity, pricing structure ($99 / $499 / $1499 / $2999 + $0.05 overage), the approval gate itself, the 28 specialists, Composio, Notion mirror, ADR 0009 engineering stack.
+
+---
 
 ---
 
@@ -233,6 +260,32 @@ That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x po
 
 ---
 
+## Tier enforcement gap (flagged 2026-05-26)
+
+The marketing copy in `docs/copy/pricing.md` (v3, shipped) **promises tier limits that are not enforced in code today.** This is an honest architectural gap, not a doctrine question.
+
+| Tier promise (marketing) | Enforced today? |
+|---|---|
+| Starter: "up to 5 integrations" | ❌ |
+| Starter: "1 seat" | ❌ |
+| Starter: "500 approved actions/mo" | ❌ |
+| Growth: "5 seats" / "5000 approved actions/mo" | ❌ |
+| Growth: "custom employee hiring" | partial (gated by `hire_chat` feature, no count cap) |
+| Pro: "20 seats / 25K actions / priority models" | ❌ |
+| Pro/Growth: "$0.05 per approved action over cap" | ❌ overage billing logic doesn't exist |
+| FO: "100K actions pooled across clients" | ❌ no pooling logic |
+| FO: "white-label branding" | partial (`fo_branding` row exists, customer renders) |
+
+**The honest scope**: 1-2 weeks of engineering. Sequence:
+1. New `tier_limits` migration (per-tier integration cap, seat cap, action cap)
+2. Enforcement points: Composio OAuth flow, team invite, hire chat count
+3. Customer-facing usage UI (extends `/dashboard/settings/usage` — CP-23 base exists)
+4. Stripe metered usage component for overage billing
+
+**Call this CP-44 (Tier Enforcement)** when prioritized. Belongs after CP-39 (charters) + CP-40a (the easy-win engineering pack from ADR 0009). **The marketing copy promises this**, so it must ship before any high-volume customer acquisition push.
+
+---
+
 ## What's still open (honest)
 
 1. **Agencies vs home services as Tier 1 wedge.** Both defensible. Decision should be made with founder gut + Iraq-based-founder constraints (sales motion you can actually run from Iraq + your network). Research can't answer this — only you can.
@@ -258,6 +311,10 @@ Every claim above traces to:
 - `docs/research/2026-05-25-horizontal-workforce-comps.md`
 - `docs/research/2026-05-25-subsection-demand-validation.md` ← **drove the 3 headline differentiators**
 - `docs/research/2026-05-26-shared-knowledge-layer.md` ← **drove the moat sharpening (shared brain = table stakes; stacking = moat)**
+- `docs/research/2026-05-26-inversion-1-brain-as-product.md` ← drove the brain-led hero reframe
+- `docs/research/2026-05-26-inversion-2-approval-gate-long-term.md` ← drove the earned-autonomy reframe
+- `docs/research/2026-05-26-inversion-3-wrong-buyer.md` ← drove the fractional-COO leverage layer add
+- `docs/positioning/inversions.md` ← **the synthesis doc for the 3 inversions above**
 
 Plus the architecture decisions in `docs/adr/0001-0008-*.md`.
 
