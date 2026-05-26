@@ -886,9 +886,9 @@ function FinalCTA() {
             Starts at $99.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-            Connect Stripe or HubSpot. Open the Hire chat. Describe your
-            first AI employee. We do the rest. Two-week trial. No credit
-            card.
+            OpsRadar is in private beta. Join the waitlist for when the front
+            door opens &mdash; or talk to the founder if you&rsquo;d rather
+            see it run on your stack first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">

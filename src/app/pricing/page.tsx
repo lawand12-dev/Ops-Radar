@@ -75,7 +75,7 @@ const TIERS: Tier[] = [
     ],
     notIncluded:
       "Custom AI employees · automations · org-chart delegation · multi-client view",
-    cta: { label: "Start free trial", href: "/pricing" },
+    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
   },
   {
     name: "Growth",
@@ -97,7 +97,7 @@ const TIERS: Tier[] = [
       "Apprentice Mode — workforce learns from every rejection",
     ],
     outcomeMeter: "$0.05 per approved action over 5,000/mo",
-    cta: { label: "Start free trial", href: "/pricing" },
+    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
   },
   {
     name: "Pro",
@@ -118,7 +118,7 @@ const TIERS: Tier[] = [
       "Everything from Growth",
     ],
     outcomeMeter: "$0.05 per approved action over 25,000/mo",
-    cta: { label: "Start free trial", href: "/pricing" },
+    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
   },
   {
     name: "Fractional Operator",
@@ -313,8 +313,8 @@ function PageHeader() {
         <RevealOnScroll delay={460} offset={40}>
           <div className="mt-10 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="/pricing">
-                Start free trial
+              <Link href="/waitlist">
+                Coming soon — join waitlist
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -331,7 +331,7 @@ function PageHeader() {
         </RevealOnScroll>
         <RevealOnScroll delay={580} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            14 days free &middot; No credit card &middot; Brain stays in your Notion &middot; Exportable any time
+            Private beta &middot; Limited spots &middot; Brain stays in your Notion &middot; Exportable any time
           </p>
         </RevealOnScroll>
       </div>
@@ -752,17 +752,18 @@ function FinalCTA() {
               fontWeight: 500,
             }}
           >
-            Starts today.
+            Get on the list.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-            Connect Stripe or HubSpot. Open the Hire chat. Describe your first
-            AI employee. We do the rest. Two-week trial. No credit card.
+            OpsRadar is in private beta. Self-serve signup ships next. Talk to
+            the founder to get a spot in the first batch &mdash; or join the
+            waitlist for when the front door opens.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/pricing">
-                Start free trial
+              <Link href="/waitlist">
+                Coming soon — join waitlist
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -778,7 +779,7 @@ function FinalCTA() {
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            14 days free &middot; No credit card &middot; Brain stays in your Notion
+            Private beta &middot; Limited spots &middot; Brain stays in your Notion
           </p>
         </RevealOnScroll>
       </div>

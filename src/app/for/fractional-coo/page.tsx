@@ -215,14 +215,14 @@ function Hero() {
               </a>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/pricing">Start free trial &rarr;</Link>
+              <Link href="/waitlist">Coming soon &mdash; join waitlist &rarr;</Link>
             </Button>
           </div>
         </RevealOnScroll>
 
         <RevealOnScroll delay={580} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            White-label &middot; Multi-tenant &middot; Per-client brain stays in their Notion &middot; 14-day free trial
+            White-label &middot; Multi-tenant &middot; Per-client brain stays in their Notion &middot; Private beta
           </p>
         </RevealOnScroll>
       </div>
@@ -627,8 +627,8 @@ function FinalCTA() {
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/pricing">
-                Start free trial
+              <Link href="/waitlist">
+                Coming soon &mdash; join waitlist
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -644,7 +644,7 @@ function FinalCTA() {
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            14-day free trial &middot; White-label &middot; Per-client brain stays in their Notion
+            Private beta &middot; White-label &middot; Per-client brain stays in their Notion
           </p>
         </RevealOnScroll>
       </div>

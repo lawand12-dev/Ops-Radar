@@ -121,8 +121,8 @@ function Hero() {
         <RevealOnScroll delay={520} offset={40}>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/pricing">
-                Start free trial — hire in 4 minutes
+              <Link href="/waitlist">
+                Coming soon — join waitlist
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -136,7 +136,7 @@ function Hero() {
 
         <RevealOnScroll delay={640} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            $499/mo &middot; 14-day free trial &middot; Brain stays in your Notion &middot; Exportable any time
+            $499/mo Growth tier &middot; Private beta &middot; Brain stays in your Notion &middot; Exportable any time
           </p>
         </RevealOnScroll>
 
@@ -727,16 +727,16 @@ function FinalCTA() {
         <RevealOnScroll delay={0} offset={40}>
           <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
           <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Hire your first AI employee.
+            Get on the list.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-            Connect Stripe. Open the Hire chat. Describe a teammate you wish you had. We compile the spec, you click Hire, they start tomorrow at 8 AM. Or book a 20-minute call with the founder if you&rsquo;d rather see it run first.
+            OpsRadar is in private beta. Join the waitlist for when the front door opens &mdash; or book a 20-minute call with the founder if you&rsquo;d rather see it run on your stack first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/pricing">
-                Start free trial &mdash; hire in 4 minutes
+              <Link href="/waitlist">
+                Coming soon &mdash; join waitlist
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -748,7 +748,7 @@ function FinalCTA() {
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            $499/mo &middot; 14-day free trial &middot; No credit card &middot; Brain stays in your Notion
+            $499/mo Growth tier &middot; Private beta &middot; Brain stays in your Notion
           </p>
         </RevealOnScroll>
       </div>
