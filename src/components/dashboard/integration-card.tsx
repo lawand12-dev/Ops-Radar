@@ -70,7 +70,13 @@ export function IntegrationCard(props: IntegrationCardProps) {
 
       <div className="shrink-0">
         {!enabled ? (
-          <span className="text-[12px] text-[var(--color-fg-subtle)]">Coming soon</span>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--color-warn)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-warn)_10%,transparent)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--color-warn)]"
+            title="This integration is on the roadmap. Gmail and Notion are live today."
+          >
+            <span className="size-1.5 rounded-full bg-[var(--color-warn)]" />
+            Coming soon
+          </span>
         ) : isConnected ? (
           <button
             type="button"
