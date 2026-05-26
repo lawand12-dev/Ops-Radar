@@ -14,19 +14,19 @@ import { Button } from "<npm>/components/ui/button";
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
-  title: "The AI COO for marketing agencies — OpsRadar",
+  title: "Hire an AI workforce. Keep the brain it builds — OpsRadar",
   description:
-    "21.5% of agencies are losing money in 2026. OpsRadar watches your margin, scope, and utilization in real time — at under 8% of a fractional COO's retainer. From $750/month.",
+    "28 named AI employees run your agency across Stripe, HubSpot, ClickUp, Gmail. They write everything they learn into a Notion you own. $499/mo.",
   openGraph: {
-    title: "Your AI COO. Watching your margin while you're on the call.",
+    title: "Hire an AI workforce. Keep the brain it builds.",
     description:
-      "Real-time margin, scope, and utilization for marketing agencies. $750–$3,000/mo, not $10K. Plugs into the stack you already pay for.",
+      "28 named AI employees that run your agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar" }],
   },
   twitter: {
-    title: "Your AI COO. Watching your margin while you're on the call.",
+    title: "Hire an AI workforce. Keep the brain it builds.",
     description:
-      "Real-time margin, scope, and utilization for marketing agencies. $750–$3,000/mo, not $10K. Plugs into the stack you already pay for.",
+      "28 named AI employees that run your agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.",
     images: ["/og-image.png"],
   },
 };
@@ -69,14 +69,14 @@ function Hero() {
               <span className="absolute inline-flex h-2 w-2 rounded-full bg-[var(--color-success)] opacity-60 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
             </span>
-            <span>AI COO · for marketing agencies $1M&ndash;$5M</span>
+            <span>The AI Operating System &middot; One workforce, one brain, your stack</span>
           </div>
         </RevealOnScroll>
 
         {/* H1 — massive, no clamp ceiling */}
         <RevealOnScroll delay={120} offset={48}>
           <h1
-            className="mt-8 text-[var(--color-fg)] text-balance max-w-[18ch]"
+            className="mt-8 text-[var(--color-fg)] text-balance max-w-[22ch]"
             style={{
               fontFamily: "var(--font-sans)",
               fontSize: "var(--text-hero)",
@@ -85,46 +85,58 @@ function Hero() {
               fontWeight: 500,
             }}
           >
-            The fractional COO that costs{" "}
-            <span className="text-[var(--color-primary)]">$750</span>,
-            not&nbsp;$10,000.
+            Hire an AI workforce.{" "}
+            <span className="text-[var(--color-primary)]">Keep the brain</span>{" "}
+            it&nbsp;builds.
           </h1>
         </RevealOnScroll>
 
-        {/* Lead — 21px Mercury spec */}
+        {/* Lead — 21px Mercury spec — what / who-for / what-you-keep in 29 words */}
         <RevealOnScroll delay={280} offset={48}>
           <p
-            className="mt-8 max-w-[42rem] text-[var(--color-fg-muted)]"
+            className="mt-8 max-w-[44rem] text-[var(--color-fg-muted)]"
             style={{
               fontSize: "var(--text-lead)",
               lineHeight: "var(--text-lead--line-height)",
               fontWeight: 400,
             }}
           >
-            OpsRadar is the AI COO for marketing agencies. We watch margin, scope, and utilization across your stack &mdash; and catch the unprofitable client in week 2, not month 3.
+            OpsRadar gives every agency 28 named AI employees that run your operations across Stripe, HubSpot, Harvest, ClickUp, Gmail and 20 more &mdash; and writes everything they learn into a Notion you own forever.
+          </p>
+        </RevealOnScroll>
+
+        {/* Sub-subhead — the named-agent curiosity hook */}
+        <RevealOnScroll delay={400} offset={40}>
+          <p
+            className="mt-5 max-w-[44rem] text-body text-[var(--color-fg-muted)] leading-[1.65]"
+          >
+            <span className="text-[var(--color-fg)]">Riley</span> watches your revenue.{" "}
+            <span className="text-[var(--color-fg)]">Cole</span> drafts collections.{" "}
+            <span className="text-[var(--color-fg)]">Scott</span> catches scope creep.{" "}
+            <span className="text-[var(--color-fg)]">Brian</span> writes your morning brief. The other 24 are listed below.
           </p>
         </RevealOnScroll>
 
         {/* CTAs */}
-        <RevealOnScroll delay={460} offset={40}>
+        <RevealOnScroll delay={520} offset={40}>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a 30-min call with the founder
+              <Link href="/pricing">
+                Start free trial — hire in 4 minutes
                 <ArrowRight className="size-4" />
-              </a>
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/audit">
-                Or get a free 3-minute audit &rarr;
+              <Link href="/how-it-works">
+                See how the workforce + brain works &rarr;
               </Link>
             </Button>
           </div>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={600} offset={32}>
+        <RevealOnScroll delay={640} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            30 minutes &middot; No pitch &middot; We tell you if it&rsquo;s not a fit
+            $499/mo &middot; 14-day free trial &middot; Brain stays in your Notion &middot; Exportable any time
           </p>
         </RevealOnScroll>
 
@@ -193,9 +205,9 @@ function ThesisBillboard() {
               maxWidth: "22ch",
             }}
           >
-            Agencies grow revenue and lose money at the same time.{" "}
+            Agencies pay $5,200/month for 10 AI tools that don&rsquo;t talk.{" "}
             <span style={{ color: "var(--color-fg-subtle)" }}>
-              Nobody sees it until it&rsquo;s too expensive to fix.
+              We replace them with one workforce that builds the brain you exit on.
             </span>
           </h2>
         </RevealOnScroll>
@@ -211,22 +223,22 @@ function ThesisBillboard() {
 function StatBillboard() {
   const stats = [
     {
-      number: "21.5%",
-      label: "of marketing agencies are losing money in 2026.",
-      caption: "Up from 13% the year before.",
-      source: "Planable, 2026",
+      number: "$5,200",
+      label: "is what a 15-person agency pays for 10 separate AI tools every month.",
+      caption: "More than two full-time salaries — for tools that don't talk to each other.",
+      source: "BizTech Magazine, 2025",
     },
     {
-      number: "$500K",
-      label: "per year is what 47% of agencies lose to untracked billable hours.",
-      caption: "OpsRadar surfaces them in the next health digest.",
-      source: "Mosaic, 2026",
+      number: "8–12×",
+      label: "EBITDA is the exit multiple for agencies with documented operations.",
+      caption: "Undocumented peers exit at 5–9×. On a $2M-EBITDA agency, that's $6M extra.",
+      source: "First Page Sage + Wayfront M&A data",
     },
     {
-      number: "$10K/mo",
-      label: "is what a fractional COO charges to do this quarterly.",
-      caption: "OpsRadar does it 24/7, starting at $750.",
-      source: "Industry benchmark",
+      number: "$499/mo",
+      label: "is OpsRadar Growth. Replaces all 10 tools, builds the brain you exit on.",
+      caption: "Flat tiers. No tokens billed. Outcome meter bounded by your approval.",
+      source: "OpsRadar pricing",
     },
   ];
 
@@ -287,32 +299,32 @@ function StatBillboard() {
 function PillarsSection() {
   const pillars = [
     {
-      name: "OPERATE",
-      headline: "The COO takes the next action.",
-      body: "Drafts the invoice for unbilled scope. Sends the PM nudge. Queues the pacing alert. Every action has a 30-minute undo and a 5-evaluator safety net.",
-      stat: "~$4K",
-      statLabel: "recovered per agency / month",
-    },
-    {
-      name: "OBSERVE",
-      headline: "Every client, every day.",
-      body: "Margin, utilization, scope, cash flow — read live from the tools you already pay for. Health-scored 0–100 per client every Monday morning.",
-      stat: "Week 2",
-      statLabel: "unprofitable client caught — not month 3",
-    },
-    {
       name: "BRAIN",
-      headline: "Ask anything about your business.",
-      body: "A frontier LLM grounded in your live data. “Which client lost margin this quarter and why?” — answered in 4 seconds with named clients and dollar deltas.",
-      stat: "39.75 hrs",
-      statLabel: "saved per strategist / month",
+      headline: "The asset you exit on.",
+      body: "Every AI employee writes findings — Pattern Cards, Decision Log, Risk Register, Real P&L — into a versioned brain mirrored to your Notion. Signed by the agent that wrote it. Diffable. Exportable. Yours.",
+      stat: "8–12×",
+      statLabel: "EBITDA multiple for documented agencies",
     },
     {
-      name: "GUARD",
-      headline: "Watches it while you sleep.",
-      body: "Pacing alerts catch overshooting media spend Sunday night. Silent connector failures flagged before Monday's digest fails. Your weekend stays yours.",
-      stat: "71%",
-      statLabel: "of campaigns at risk — caught",
+      name: "WORKFORCE",
+      headline: "28 named specialists. Hire more in plain English.",
+      body: "Riley (Revenue), Cole (Collections), Scott (Scope), Brian (Briefing), Penny (Profitability), and 23 more ship the moment you sign in. Hire custom ones from the Hire chat: “I want a Bookkeeper named Sarah, every morning at 8.”",
+      stat: "28",
+      statLabel: "specialists running on day one",
+    },
+    {
+      name: "AUTONOMY",
+      headline: "Earned, not blind.",
+      body: "High-risk actions (firing a client, sending invoices) stay Ask forever. Routine actions auto-fire after you've approved them 30+ times at 90%+ rate. The anti-11x by structure — agents earn autonomy, they don't get it free.",
+      stat: "30",
+      statLabel: "approvals before an action graduates to auto",
+    },
+    {
+      name: "APPRENTICE",
+      headline: "Every “no” becomes a rule forever.",
+      body: "Reject an action and OpsRadar derives a generalizable rule from your reason, writes it to that employee's learned-rules memory. Next run, they read it. They don't make the same mistake twice.",
+      stat: "100%",
+      statLabel: "of rejections become permanent rules",
     },
   ];
 
@@ -322,7 +334,7 @@ function PillarsSection() {
         <RevealOnScroll delay={0} offset={40}>
           <div className="max-w-3xl mb-16 md:mb-20">
             <p className="text-label uppercase text-[var(--color-fg-subtle)]">
-              What the AI COO actually does
+              The four things OpsRadar builds for you
             </p>
             <h2
               className="mt-5 text-[var(--color-fg)] text-balance"
@@ -334,7 +346,7 @@ function PillarsSection() {
                 fontWeight: 500,
               }}
             >
-              Four jobs a COO runs. Done by software. On your stack.
+              A brain, a workforce, earned autonomy, and an apprentice that never forgets.
             </h2>
           </div>
         </RevealOnScroll>
@@ -410,10 +422,10 @@ function HowItWorksSection() {
               HOW IT WORKS
             </p>
             <h2 className="mt-4 font-serif text-h1 leading-[1.06] tracking-[-0.02em] text-[var(--color-fg)] text-balance">
-              Live in the time it takes to onboard a new client.
+              Hire your first AI employee in 4 minutes.
             </h2>
             <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
-              No rip-and-replace. No 6-month implementation. The AI COO plugs into the stack you already pay for and starts watching the same week. Two entry points: take the 3-minute audit for an instant dollar figure, or skip ahead to a 30-minute call.
+              Connect Stripe. Open the Hire chat. Describe who you want — &ldquo;Bookkeeper named Sarah, every morning at 8, watching Stripe.&rdquo; We compile the spec. You click Hire. She starts tomorrow at 8 AM. No setup calls. No implementation team. The product is the demo.
             </p>
           </div>
         </RevealOnScroll>
@@ -452,7 +464,7 @@ function SegmentSection() {
                 fontWeight: 500,
               }}
             >
-              Paid media. SEO. Full-service.
+              Built first for agencies. Doubled for fractional operators.
             </h2>
             <p
               className="mt-5 text-[var(--color-fg-muted)] max-w-xl"
@@ -461,13 +473,44 @@ function SegmentSection() {
                 lineHeight: "var(--text-body-lg--line-height)",
               }}
             >
-              Same AI COO, calibrated to the margin patterns, tool stacks, and scope creep shapes specific to each. The first weekly Health Score lands the Monday after you connect.
+              10&ndash;50 person agencies running on retainers. If you&rsquo;re a fractional COO running 5&ndash;10 client agencies, there&rsquo;s a multi-tenant version of the same product designed for exactly that.
             </p>
           </div>
         </RevealOnScroll>
 
         <RevealOnScroll delay={100} offset={40}>
           <SegmentsBento />
+        </RevealOnScroll>
+
+        {/* Fractional Operator callout — the multi-tenant leverage layer */}
+        <RevealOnScroll delay={200} offset={40}>
+          <div className="mt-16 md:mt-20 rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-8 md:p-10">
+            <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--radar-500)]">
+              &mdash; FOR FRACTIONAL OPERATORS
+            </p>
+            <h3
+              className="mt-4 text-[var(--color-fg)] text-balance max-w-2xl"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "var(--text-h2)",
+                lineHeight: "var(--text-h2--line-height)",
+                letterSpacing: "var(--text-h2--letter-spacing)",
+                fontWeight: 500,
+              }}
+            >
+              Running multiple agencies? Run them from one workspace.
+            </h3>
+            <p className="mt-5 max-w-2xl text-body text-[var(--color-fg-muted)] leading-[1.65]">
+              If you&rsquo;re a fractional COO managing 5&ndash;10 client agencies, OpsRadar runs as a multi-tenant workspace. White-label your brand. Aggregate dashboard. Per-client brain. $2,999/mo for unlimited clients.
+            </p>
+            <div className="mt-7">
+              <Button asChild variant="ghost">
+                <Link href="/for/fractional-coo">
+                  See the Fractional Operator workspace &rarr;
+                </Link>
+              </Button>
+            </div>
+          </div>
         </RevealOnScroll>
       </div>
     </section>
@@ -481,19 +524,19 @@ function SegmentSection() {
 function WhySection() {
   const quotes = [
     {
-      kind: "On detection lag",
-      quote: "The unprofitable client should be caught in week 2, not month 3.",
-      body: "The benchmark detection lag is 30–90 days. Most agencies discover a money-losing account at quarter-end — when the quarter is already gone. The AI COO reads margin live every day and flags the leak before the second invoice goes out.",
+      kind: "On the brain",
+      quote: "The brain you build is the asset you exit on.",
+      body: "Agencies with documented operations sell at 8–12× EBITDA. Undocumented peers exit at 5–9× (First Page Sage, Wayfront). Every AI employee writes findings into a versioned Notion brain you own. Signed, dated, exportable. When you sell the agency, the brain goes with it as exit-value IP.",
     },
     {
-      kind: "On ownership",
-      quote: "Your data stays in your tools. We never store it.",
-      body: "OpsRadar never writes your client business data to its own database. The AI COO reads live from HubSpot, ClickUp, Harvest, Stripe through OAuth and encrypted API keys you control. Revoke access in one click any time.",
+      kind: "On earned autonomy",
+      quote: "Earned autonomy. Not blind autonomy.",
+      body: "High-risk actions (firing a client, sending invoices, mass email) stay Ask forever. Routine actions auto-fire only after you've approved them 30+ times at a 90%+ rate. The anti-11x by structure — agents earn autonomy through the proof of their own track record.",
     },
     {
-      kind: "On the price gap",
-      quote: "A fractional COO is $10K. OpsRadar starts at $750.",
-      body: "The market floor for a real fractional COO is $7,000/month. A full-time COO is $25,000. Sub-$5M agencies have neither — and 60% of them don't have any COO at all. The AI COO is the layer that closes the gap.",
+      kind: "On pricing",
+      quote: "No tokens billed. No premium-model multipliers. No surprise invoices.",
+      body: "Flat tiers $99–$2,999/mo. The only thing that runs the meter past your cap is an action you literally clicked Approve on. Reject it and the meter doesn't move. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made that structurally impossible.",
     },
   ];
 
@@ -616,9 +659,9 @@ function CloserSection() {
               maxWidth: "22ch",
             }}
           >
-            The COO sub-$5M agencies could never afford.{" "}
+            The workforce builds the brain.{" "}
             <span style={{ color: "rgba(255,255,255,0.5)" }}>
-              Built for the segment the fractional market priced out.
+              The brain is the asset you keep, exit on, and never lose to a vendor.
             </span>
           </h2>
         </RevealOnScroll>
@@ -628,16 +671,16 @@ function CloserSection() {
         <div className="mt-20 md:mt-24 grid md:grid-cols-3 gap-12 md:gap-16 max-w-4xl mx-auto">
           {[
             {
-              n: "60%",
-              l: "of sub-$5M agencies have no COO at all.",
+              n: "28",
+              l: "named AI specialists run on day one. Hire custom ones in plain English.",
             },
             {
-              n: "$10K",
-              l: "per month — the floor for a real fractional COO.",
+              n: "8–12×",
+              l: "EBITDA exit multiple for documented agencies (vs 5–9× undocumented).",
             },
             {
-              n: "$750",
-              l: "per month for OpsRadar Starter. Less than 1/10th the cost.",
+              n: "$99",
+              l: "per month for OpsRadar Starter. The asset compounds. The bill doesn't surprise you.",
             },
           ].map((s) => (
             <div key={s.n} className="text-center">
@@ -684,30 +727,28 @@ function FinalCTA() {
         <RevealOnScroll delay={0} offset={40}>
           <p className="text-label text-[var(--color-fg-subtle)]">Start here</p>
           <h2 className="mt-5 font-serif text-[clamp(2.25rem,3.6vw+0.5rem,3.75rem)] leading-[1.05] tracking-[-0.025em] text-balance">
-            Talk to the founder.
+            Hire your first AI employee.
           </h2>
           <p className="mt-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)] max-w-xl mx-auto">
-            A 30-minute call. We listen to how your agency runs, ask the questions
-            only operators would ask, and tell you on the call whether the AI COO
-            belongs at your agency.
+            Connect Stripe. Open the Hire chat. Describe a teammate you wish you had. We compile the spec, you click Hire, they start tomorrow at 8 AM. Or book a 20-minute call with the founder if you&rsquo;d rather see it run first.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center items-center gap-3">
             <Button asChild size="lg">
-              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
-                Book a 30-min call
+              <Link href="/pricing">
+                Start free trial &mdash; hire in 4 minutes
                 <ArrowRight className="size-4" />
-              </a>
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/audit">
-                Or try the 3-minute audit
-              </Link>
+              <a href={CALENDLY_STRATEGY_CALL_URL} target="_blank" rel="noopener noreferrer">
+                Or talk to the founder
+              </a>
             </Button>
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            30 minutes · No pitch · We tell you if it&apos;s not a fit.
+            $499/mo &middot; 14-day free trial &middot; No credit card &middot; Brain stays in your Notion
           </p>
         </RevealOnScroll>
       </div>
