@@ -1,13 +1,13 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Rebuild on Nango per CP-45 plan.
+ * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
  */
 
 import { z } from 'zod'
 import type { Employee } from './types'
 
-// ─── Local ToolSlug stub (was imported from deleted <npm>/lib/composio) ──
+// ─── Local ToolSlug stub (was imported from deleted <npm>/lib/nango) ──
 // Kept as a permissive string alias so downstream type checks still pass.
 type ToolSlug = string
 
@@ -46,7 +46,7 @@ export const CustomEmployeeDraftSchema = z.object({
     .min(0)
     .max(10)
     .describe(
-      'Composio toolkit slugs this employee can call. Empty = chat/brain only. Choose from the AVAILABLE TOOLKITS list.',
+      'Nango toolkit slugs this employee can call. Empty = chat/brain only. Choose from the AVAILABLE TOOLKITS list.',
     ),
   scoped_brain_prefixes: z
     .array(z.string())
@@ -106,14 +106,14 @@ export async function compileCustomEmployee(
   input: CompileEmployeeInput,
 ): Promise<CustomEmployeeDraft> {
   void input
-  console.warn('[STUB] compileCustomEmployee — composio-to-nango migration in progress')
+  console.warn('[STUB] compileCustomEmployee — nango wire-up pending')
   return {
     slug: 'stub-employee',
     name: 'Stub',
     role: 'Placeholder',
     emoji: '🛠️',
     persona_summary:
-      'Stubbed employee returned during the Composio-to-Nango migration. Real compilation is offline.',
+      'Stubbed employee returned during the Nango wire-up rebuild. Real compilation is offline.',
     schedule_human: 'Chat-only (no schedule)',
     schedule_cron: null,
     scoped_toolkits: [],
@@ -121,16 +121,16 @@ export async function compileCustomEmployee(
     model_slug: 'gpt-5.4',
     max_steps: 20,
     system_prompt:
-      'You are a stub employee created during the Composio-to-Nango migration. Real compilation is offline; this is a placeholder so the codebase compiles.',
+      'You are a stub employee created during the Nango wire-up rebuild. Real compilation is offline; this is a placeholder so the codebase compiles.',
     first_task: 'Wait for the Nango migration to complete.',
     unsupported: {
-      reason: 'Employee compilation is temporarily disabled during the Composio-to-Nango migration.',
+      reason: 'Employee compilation is temporarily disabled during the Nango wire-up rebuild.',
     },
   }
 }
 
 export function buildEmployeeCompilationPrompt(input: CompileEmployeeInput): string {
   void input
-  console.warn('[STUB] buildEmployeeCompilationPrompt — composio-to-nango migration in progress')
+  console.warn('[STUB] buildEmployeeCompilationPrompt — nango wire-up pending')
   return ''
 }

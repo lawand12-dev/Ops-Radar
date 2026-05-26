@@ -5,7 +5,7 @@
  * `vercel.json`. For each request we:
  *   1. Verify the bearer token against `CRON_SECRET` (if set).
  *   2. Resolve the agent slug against the central registry.
- *   3. Find every user who currently has at least one active Composio
+ *   3. Find every user who currently has at least one active Nango
  *      connection — those are the only users who can actually run an agent.
  *   4. Filter out users who explicitly disabled this agent in `agent_config`
  *      (missing rows are treated as enabled by default).
@@ -23,6 +23,7 @@ import {
   hasServerSupabaseClient,
 } from '<npm>/lib/supabase-server'
 import { serverErrorResponse } from '<npm>/lib/security'
+import { listAllConnections } from '<npm>/lib/nango/connections'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -61,21 +62,12 @@ export async function GET(
   if (!hasServerSupabaseClient()) return serverErrorResponse()
   const supabase = getServerSupabaseClient()
 
-  // 3. Find every user with at least one active Composio connection. Without a
+  // 3. Find every user with at least one active Nango connection. Without a
   // connection, the agent has no tools to call — skip those users entirely.
-  const { data: connRows, error: connErr } = await supabase
-    .from('composio_connections')
-    .select('user_id')
-    .eq('is_active', true)
-
-  if (connErr) {
-    console.error('[agents cron] composio_connections query failed', connErr)
-    return serverErrorResponse()
-  }
-
+  const allConnections = await listAllConnections()
   const candidateUserIds = [
-    ...new Set((connRows ?? []).map((r) => r.user_id).filter(Boolean)),
-  ] as string[]
+    ...new Set(allConnections.map((r) => r.user_id)),
+  ]
 
   // 4. Filter by agent_config.is_enabled. Missing rows default to enabled.
   const { data: configRows, error: configErr } = await supabase

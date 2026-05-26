@@ -217,3 +217,26 @@ export const gmailToolkitEnabled = flag<boolean>({
     'Whether the Gmail toolkit is available to employees. Flip OFF in Statsig to halt all Gmail tool calls (sends, drafts, modifies) without redeploying.',
   identify: identifyUser,
 })
+
+/**
+ * Generic resolver — look up any boolean flag by Statsig gate key.
+ *
+ * Used by the toolkit registry's `killSwitchFlag` field so adding a new
+ * integration doesn't require editing this file. Defaults to TRUE
+ * (allow) on lookup miss so a typo in a toolkit's flag name doesn't
+ * silently disable it — the typo would surface as "this flag should
+ * have been gating something" instead of "this toolkit is dead".
+ */
+const TOOLKIT_FLAG_REGISTRY: Record<string, () => Promise<boolean>> = {
+  'gmail-toolkit-enabled': gmailToolkitEnabled,
+}
+
+export async function resolveToolkitFlag(flagKey: string | undefined): Promise<boolean> {
+  if (!flagKey) return true
+  const fn = TOOLKIT_FLAG_REGISTRY[flagKey]
+  if (!fn) {
+    console.warn(`[flags] Unknown toolkit kill-switch "${flagKey}" — defaulting to allow.`)
+    return true
+  }
+  return fn()
+}

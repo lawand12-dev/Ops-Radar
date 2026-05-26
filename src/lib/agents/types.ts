@@ -1,8 +1,10 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
- * Type-only module. The full 28-agent system was Composio-coupled and was
- * deleted. Types that downstream code imports are kept here as `string`
- * aliases so the codebase still compiles. Rebuild on Nango per CP-45.
+ * Agent + employee type surface.
+ *
+ * Kept intentionally narrow — string aliases for slugs/models so adding a
+ * new built-in employee or model is one literal change without ripple TS
+ * edits across the codebase. The runtime registry enforces shape; the
+ * type-level checks catch the easy class of typos at the call site.
  */
 
 export type AgentSlug = string
@@ -10,6 +12,15 @@ export type AgentSpecSlug = string
 export type AgentModel = string
 export type AgentTier = 'starter' | 'growth' | 'pro'
 
+/**
+ * Runtime spec for one employee (built-in or restored from custom_employees).
+ *
+ *   - `requiredIntegrations`: hard requirement — fail the run if any are
+ *     missing from the customer's Nango connections.
+ *   - `nangoApps`: the toolkit slugs the runAgent loop will load tools for.
+ *     Usually a superset of (or equal to) `requiredIntegrations`. Optional
+ *     so chat-only employees with no toolkits still satisfy the type.
+ */
 export type AgentSpec = {
   slug: AgentSpecSlug
   displayName: string
@@ -20,10 +31,7 @@ export type AgentSpec = {
   cronSchedule: string
   maxSteps: number
   systemPrompt: string
-  // Kept optional so legacy spec literals that include this field still
-  // typecheck during the migration. Will be removed when the Nango layer
-  // replaces the per-toolkit composioApps list with Nango provider keys.
-  composioApps?: string[]
+  nangoApps?: string[]
 }
 
 export type AgentRunResult = {

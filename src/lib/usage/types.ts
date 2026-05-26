@@ -8,7 +8,7 @@
 
 import type { Plan } from '<npm>/lib/tier'
 
-export type Provider = 'openai' | 'composio' | 'tavily' | 'anthropic'
+export type Provider = 'openai' | 'nango' | 'tavily' | 'anthropic'
 
 /** Operation names — keep this loose, free-form. Used as the `operation` tag. */
 export type Operation =
@@ -21,7 +21,7 @@ export type Operation =
   | 'document_analysis'
   | 'competitor_research_extract'
   | 'automation_compile'
-  // Composio
+  // Nango-brokered tool calls
   | 'tool_execute'
   | 'tool_fetch'
   | 'trigger_register'
@@ -41,7 +41,7 @@ export type Operation =
  * Tavily: count = credits (basic search = 1, advanced search = 2)
  * OpenAI: count = total tokens (input + output)
  * Anthropic: same as OpenAI
- * Composio: count = tool executions
+ * Nango: count = tool executions (one per nangoProxy call)
  */
 export type TierCaps = Record<Provider, number>
 
@@ -50,26 +50,26 @@ export const TIER_CAPS: Record<Plan, TierCaps> = {
     tavily: 100,             // ~50 advanced searches / ~10 competitor briefs
     openai: 5_000_000,       // ~5M tokens/month — covers daily briefings + light chat
     anthropic: 5_000_000,
-    composio: 2_000,         // 2k tool executions/month
+    nango: 2_000,            // 2k tool executions/month
   },
   growth: {
     tavily: 500,
     openai: 25_000_000,
     anthropic: 25_000_000,
-    composio: 10_000,
+    nango: 10_000,
   },
   pro: {
     tavily: 2_500,
     openai: 100_000_000,
     anthropic: 100_000_000,
-    composio: 50_000,
+    nango: 50_000,
   },
   fo: {
     // Fractional Operator tier — multi-client; needs higher caps
     tavily: 5_000,
     openai: 200_000_000,
     anthropic: 200_000_000,
-    composio: 100_000,
+    nango: 100_000,
   },
 }
 

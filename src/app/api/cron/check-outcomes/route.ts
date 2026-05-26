@@ -1,7 +1,7 @@
 /**
  * Hourly outcome detection cron.
  *
- * For each user with at least one active Composio connection, run
+ * For each user with at least one active Nango connection, run
  * `checkOutcomes(userId)` — which re-fetches every pending tracked entity, sees
  * whether the expected outcome has materialized (invoice paid, deal closed,
  * contract renewed, etc.), and flips `action_tracking.outcome_detected` for
@@ -12,11 +12,9 @@
  */
 
 import { checkOutcomes } from '<npm>/lib/actions/outcome-tracker'
-import {
-  getServerSupabaseClient,
-  hasServerSupabaseClient,
-} from '<npm>/lib/supabase-server'
+import { hasServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { serverErrorResponse } from '<npm>/lib/security'
+import { listAllConnections } from '<npm>/lib/nango/connections'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -44,23 +42,13 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   if (!hasServerSupabaseClient()) return serverErrorResponse()
-  const supabase = getServerSupabaseClient()
 
-  // Only users with at least one live Composio connection are eligible — others
+  // Only users with at least one live Nango connection are eligible — others
   // have nothing we can re-fetch.
-  const { data: rows, error } = await supabase
-    .from('composio_connections')
-    .select('user_id')
-    .eq('is_active', true)
-
-  if (error) {
-    console.error('[check-outcomes cron] composio_connections query failed', error)
-    return serverErrorResponse()
-  }
-
+  const allConnections = await listAllConnections()
   const userIds = [
-    ...new Set((rows ?? []).map((r) => r.user_id).filter(Boolean)),
-  ] as string[]
+    ...new Set(allConnections.map((r) => r.user_id)),
+  ]
 
   const results: PerUserResult[] = []
   let totalChecked = 0

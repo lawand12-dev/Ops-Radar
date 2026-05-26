@@ -2,7 +2,7 @@
 //
 // CP-15: stripped of all n8n / client_n8n_config provisioning.
 // Customer onboarding is now: invite the user via Supabase, send the
-// magic-link email. Tool credentials live in Composio (OAuth), not in
+// magic-link email. Tool credentials live in Nango (OAuth), not in
 // our DB — the customer connects them themselves at /dashboard/integrations.
 
 import { NextRequest, NextResponse } from 'next/server';

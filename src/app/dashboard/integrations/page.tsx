@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Nango from '@nangohq/frontend';
 import { IntegrationCard } from '<npm>/components/dashboard/integration-card';
 import { NotionConnectModal } from './_components/notion-connect-modal';
 
@@ -13,11 +14,10 @@ type Connection = {
   last_synced_at: string | null;
 };
 
-type ComposioConnection = {
+type NangoConnection = {
   tool_slug: string;
-  connected_at: string;
+  connected_at: string | null;
   is_active: boolean;
-  last_used_at: string | null;
 };
 
 type ToolDef = {
@@ -95,18 +95,16 @@ const CATEGORY_ORDER = [
 export default function IntegrationsSettingsPage() {
   const searchParams = useSearchParams();
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [composioConnections, setComposioConnections] = useState<ComposioConnection[]>([]);
-  const [composioAvailable, setComposioAvailable] = useState<Set<string>>(new Set());
+  const [nangoConnections, setNangoConnections] = useState<NangoConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banner, setBanner] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [legacyRes, composioConnsRes, composioAvailRes] = await Promise.all([
+      const [legacyRes, nangoRes] = await Promise.all([
         fetch('/api/integrations', { cache: 'no-store' }),
-        fetch('/api/composio/connections', { cache: 'no-store' }),
-        fetch('/api/composio/available', { cache: 'no-store' }),
+        fetch('/api/nango/connections', { cache: 'no-store' }),
       ]);
       const legacyData = await legacyRes.json();
       if (!legacyRes.ok) {
@@ -115,13 +113,9 @@ export default function IntegrationsSettingsPage() {
       }
       setConnections(legacyData.connected ?? []);
 
-      if (composioConnsRes.ok) {
-        const d = await composioConnsRes.json();
-        setComposioConnections(d.connections ?? []);
-      }
-      if (composioAvailRes.ok) {
-        const d = await composioAvailRes.json();
-        setComposioAvailable(new Set(d.available ?? []));
+      if (nangoRes.ok) {
+        const d = await nangoRes.json();
+        setNangoConnections(d.connections ?? []);
       }
       setError(null);
     } catch (err) {
@@ -133,22 +127,15 @@ export default function IntegrationsSettingsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Surface OAuth callback result and verify activation with Composio directly.
-  // The webhook-based activation is unreliable, so we call /api/composio/activate
-  // immediately when the user lands back from OAuth. This flips is_active=true in
-  // the DB without waiting for Composio's webhook delivery.
+  // Surface legacy OAuth callback result. Nango OAuth doesn't redirect —
+  // it pops a popup and fires onEvent('connect') in startNangoOAuth — so
+  // we only handle ?failed= (manual-link override) and ?connected= (a few
+  // legacy bookmarks). After Nango migration, this becomes vestigial.
   useEffect(() => {
     const connected = searchParams.get('connected');
     const failed = searchParams.get('failed');
-    // Composio appends the final connected_account_id (ca_xxx) to the callback URL.
-    // This may differ from the connectionRequest.id stored at connect-time, so we
-    // pass it explicitly to activate so the DB row is corrected to the real ID.
-    const connectedAccountId = searchParams.get('connected_account_id') ?? undefined;
-
     if (connected) {
       const label = connected.charAt(0).toUpperCase() + connected.slice(1);
-      // Notion gets a dedicated callout because the Brain is now provisioning
-      // in the background — direct the customer to the setup progress page.
       if (connected === 'notion') {
         setBanner({
           kind: 'ok',
@@ -157,59 +144,45 @@ export default function IntegrationsSettingsPage() {
       } else {
         setBanner({ kind: 'ok', text: `${label} connected via OAuth.` });
       }
-
-      const activateBody = connectedAccountId
-        ? { tool_slug: connected, connected_account_id: connectedAccountId }
-        : { tool_slug: connected };
-
-      // Verify + activate in the background, then reload so the card turns green.
-      fetch('/api/composio/activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(activateBody),
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.activated) {
-            load();
-          } else if (data.status && data.status !== 'already_active') {
-            // Connection not yet active on Composio side — retry once after 3s.
-            setTimeout(() => {
-              fetch('/api/composio/activate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(activateBody),
-              })
-                .then((r) => r.json())
-                .then((d) => { if (d.activated) load(); })
-                .catch(() => null);
-            }, 3000);
-          }
-        })
-        .catch(() => null);
+      void load();
     } else if (failed) {
       setBanner({ kind: 'err', text: `${failed} OAuth failed. Please try again.` });
     }
   }, [searchParams, load]);
 
-  async function startComposioOAuth(toolSlug: string, label: string) {
+  async function startNangoOAuth(toolSlug: string, label: string) {
     try {
-      const res = await fetch('/api/composio/connect', {
+      // 1) Ask the backend for a short-lived Connect Session token bound
+      //    to the current user + this one integration.
+      const res = await fetch('/api/nango/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tool_slug: toolSlug }),
       });
       const data = await res.json();
-      if (!res.ok) {
+      if (!res.ok || !data.sessionToken) {
         setBanner({
           kind: 'err',
           text: data.message ?? `Could not start ${label} OAuth.`,
         });
         return;
       }
-      if (data.oauth_url) {
-        window.location.href = data.oauth_url;
-      }
+
+      // 2) Open Nango's hosted Connect UI in a popup. The frontend SDK
+      //    handles the OAuth dance and fires events back to us.
+      const nango = new Nango({ connectSessionToken: data.sessionToken });
+      const connect = nango.openConnectUI({
+        sessionToken: data.sessionToken,
+        onEvent: (event) => {
+          if (event.type === 'connect') {
+            setBanner({ kind: 'ok', text: `${label} connected.` });
+            void load();
+          } else if (event.type === 'close') {
+            // User closed the popup. No-op — they may have completed or bailed.
+          }
+        },
+      });
+      void connect;
     } catch (err) {
       setBanner({
         kind: 'err',
@@ -221,7 +194,7 @@ export default function IntegrationsSettingsPage() {
   async function disconnect(tool: string) {
     if (!confirm(`Disconnect ${tool}? Your dashboard will stop reading from ${tool}.`)) return;
 
-    const res = await fetch('/api/composio/disconnect', {
+    const res = await fetch('/api/nango/disconnect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tool_slug: tool }),
@@ -236,18 +209,18 @@ export default function IntegrationsSettingsPage() {
   }
 
   function connectionFor(tool: string): Connection | undefined {
-    // Surface Composio connections under the same Connection shape so the card stays simple.
-    const oauth = composioConnections.find((c) => c.tool_slug === tool && c.is_active);
+    // Surface Nango connections under the shared Connection shape so the card stays simple.
+    const oauth = nangoConnections.find((c) => c.tool_slug === tool && c.is_active);
     if (oauth) {
       return {
         tool,
-        connected_at: oauth.connected_at,
+        connected_at: oauth.connected_at ?? new Date().toISOString(),
         status: 'connected',
         external_account_id: null,
-        last_synced_at: oauth.last_used_at,
+        last_synced_at: null,
       };
     }
-    // Legacy integrations table connections (pre-Composio customers) — read-only.
+    // Legacy integrations table connections (pre-Nango customers) — read-only.
     return connections.find((c) => c.tool === tool);
   }
 
@@ -263,13 +236,13 @@ export default function IntegrationsSettingsPage() {
       setNotionModalOpen(true);
       return;
     }
-    void startComposioOAuth(tool.key, tool.label);
+    void startNangoOAuth(tool.key, tool.label);
   }
 
   function handleNotionContinue() {
     setNotionModalOpen(false);
     if (pendingNotionTool) {
-      void startComposioOAuth(pendingNotionTool.key, pendingNotionTool.label);
+      void startNangoOAuth(pendingNotionTool.key, pendingNotionTool.label);
       setPendingNotionTool(null);
     }
   }

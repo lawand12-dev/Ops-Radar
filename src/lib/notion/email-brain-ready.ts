@@ -1,7 +1,7 @@
 /**
  * Sends a one-time email to the customer when their Notion Brain is fully
  * provisioned (CP-24). Called fire-and-forget from
- * provisionBrainFromComposio() AFTER all 20 DBs + the Brain Home page exist.
+ * provisionBrain() AFTER all 20 DBs + the Brain Home page exist.
  *
  * No-op if RESEND_API_KEY isn't set — local dev shouldn't blow up trying
  * to send mail.

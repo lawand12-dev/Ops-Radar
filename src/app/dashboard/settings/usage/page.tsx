@@ -1,7 +1,7 @@
 // src/app/dashboard/settings/usage/page.tsx
 //
 // CP-23 — customer-facing view of their external API usage this month
-// across OpenAI, Composio, Tavily, and Anthropic. Renders client-side
+// across OpenAI, Nango, Tavily, and Anthropic. Renders client-side
 // from the GET /api/dashboard/usage endpoint so we can refresh + show
 // a live progress bar per provider.
 

@@ -1,5 +1,5 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
  * The durable executor is being rebuilt against Nango — webhook ingress will
  * change shape so the executor will too.
  */
@@ -27,6 +27,6 @@ export type AutomationExecuteResult = {
 export async function executeAutomation(
   _input: AutomationExecuteInput,
 ): Promise<AutomationExecuteResult> {
-  console.warn('[STUB] executeAutomation — composio-to-nango migration in progress')
+  console.warn('[STUB] executeAutomation — nango wire-up pending')
   return { ok: false, reason: 'migration_in_progress' }
 }

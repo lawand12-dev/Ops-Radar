@@ -19,7 +19,7 @@
 import type { AgentAction } from './types'
 import { TOOLKITS } from '<npm>/lib/nango/registry'
 
-type ComposioActionPayload = {
+type ToolActionPayload = {
   toolkit?: string
   action_slug?: string
   arguments?: Record<string, unknown>
@@ -51,14 +51,14 @@ function findDispatch(toolName: string, userId: string): ToolDispatch | null {
 }
 
 export async function executeAction(action: AgentAction): Promise<void> {
-  if (action.action_type !== 'composio_action') {
+  if (action.action_type !== 'tool_action') {
     console.warn(
-      `[executeAction] Unsupported action_type "${action.action_type}". Only composio_action is wired on Nango today.`,
+      `[executeAction] Unsupported action_type "${action.action_type}". Only tool_action is wired on Nango today.`,
     )
     return
   }
 
-  const payload = action.payload as unknown as ComposioActionPayload
+  const payload = action.payload as unknown as ToolActionPayload
   const toolName = payload.action_slug
   const args = payload.arguments ?? {}
   const userId = action.user_id

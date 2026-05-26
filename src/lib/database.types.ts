@@ -309,7 +309,7 @@ export type Database = {
       automation_trigger_instances: {
         Row: {
           automation_id: string
-          composio_trigger_id: string
+          trigger_id: string
           connected_account_id: string
           created_at: string
           id: string
@@ -319,7 +319,7 @@ export type Database = {
         }
         Insert: {
           automation_id: string
-          composio_trigger_id: string
+          trigger_id: string
           connected_account_id: string
           created_at?: string
           id?: string
@@ -329,7 +329,7 @@ export type Database = {
         }
         Update: {
           automation_id?: string
-          composio_trigger_id?: string
+          trigger_id?: string
           connected_account_id?: string
           created_at?: string
           id?: string
@@ -596,7 +596,7 @@ export type Database = {
       }
       composio_connections: {
         Row: {
-          composio_connection_id: string
+          connection_id: string
           connected_at: string
           id: string
           is_active: boolean
@@ -606,7 +606,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          composio_connection_id: string
+          connection_id: string
           connected_at?: string
           id?: string
           is_active?: boolean
@@ -616,7 +616,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          composio_connection_id?: string
+          connection_id?: string
           connected_at?: string
           id?: string
           is_active?: boolean

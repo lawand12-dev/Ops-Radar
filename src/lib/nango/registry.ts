@@ -1,18 +1,15 @@
 /**
- * Toolkit registry — central dispatcher that maps a toolkit slug
- * (e.g. 'gmail', 'hubspot') to its factory functions.
+ * Toolkit registry — central dispatcher mapping toolkit slug → its module.
  *
- * Each toolkit module (src/lib/nango/tools/<name>.ts) exports:
- *   - buildCore(userId)      → tools always loaded for any employee with this toolkit
- *   - buildAdvanced(userId)  → tools loaded only via `load_tool` on demand
- *   - advancedCatalog        → name + description list shown to the model so
- *                              it knows what advanced tools exist
+ * Adding a new integration is intentionally a TWO-line change:
+ *   1. Author `src/lib/nango/tools/<slug>.ts` exporting a `ToolkitEntry`.
+ *   2. Add one line to the TOOLKITS map below.
  *
- * runAgent calls `buildToolsForEmployee(employee, userId)` to get the final
- * tool object that Vercel AI SDK's generateText needs. The model never sees
- * userId — it's bound by closure in each factory.
- *
- * New integrations slot in one new file + one entry in TOOLKITS below.
+ * Each ToolkitEntry carries everything the engine needs to know about
+ * the toolkit so we don't sprinkle hard-coded slug checks across the
+ * codebase (hooks.ts, confidence.ts, loop.ts, flags). Once added here,
+ * the engine's loop, approval gate, confidence scorer, and kill-switch
+ * resolver all pick it up automatically.
  */
 
 import type { Tool } from 'ai'
@@ -20,18 +17,26 @@ import {
   buildGmailToolsCore,
   buildGmailToolsAdvanced,
   GMAIL_TOOLS_ADVANCED_CATALOG,
+  GMAIL_DESTRUCTIVE_TOOLS,
 } from './tools/gmail'
 
 type ToolMap = Record<string, Tool>
 
-type ToolkitEntry = {
+export type ToolkitEntry = {
+  /** Tools always loaded for any employee that has this toolkit. */
   buildCore: (userId: string) => ToolMap
+  /** Tools loaded on-demand via the `load_tool` meta-tool. */
   buildAdvanced: (userId: string) => ToolMap
+  /** Name + description for catalog injection — no schemas. */
   advancedCatalog: ReadonlyArray<{ name: string; description: string }>
+  /** Tool names that write to the customer's tool. Gate goes through these. */
+  destructiveTools: ReadonlySet<string>
+  /** Optional Statsig flag name to kill this toolkit globally. */
+  killSwitchFlag?: string
 }
 
 /**
- * Add one entry per Nango integration as it's wired. Today: gmail only.
+ * Add one entry per Nango integration as it ships. Today: gmail only.
  * As HubSpot, Stripe, ClickUp, etc. get built, append them here.
  */
 export const TOOLKITS: Record<string, ToolkitEntry> = {
@@ -39,10 +44,29 @@ export const TOOLKITS: Record<string, ToolkitEntry> = {
     buildCore: buildGmailToolsCore as (userId: string) => ToolMap,
     buildAdvanced: buildGmailToolsAdvanced as (userId: string) => ToolMap,
     advancedCatalog: GMAIL_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: GMAIL_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'gmail-toolkit-enabled',
   },
 }
 
 export type ToolkitSlug = keyof typeof TOOLKITS
+
+/**
+ * Union of every destructive tool name across all registered toolkits.
+ * Built lazily so adding a toolkit Just Works. The result is cached
+ * after first build because TOOLKITS is module-level + frozen at
+ * import time.
+ */
+let _destructiveTools: Set<string> | null = null
+export function allDestructiveTools(): ReadonlySet<string> {
+  if (_destructiveTools) return _destructiveTools
+  const set = new Set<string>()
+  for (const entry of Object.values(TOOLKITS)) {
+    for (const t of entry.destructiveTools) set.add(t)
+  }
+  _destructiveTools = set
+  return set
+}
 
 /**
  * Build the tool object passed to generateText for an employee.

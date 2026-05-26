@@ -1,6 +1,6 @@
 // /dashboard/integrations/setup — the post-Notion-OAuth progress page (CP-24).
 //
-// When the customer completes the Notion OAuth flow, Composio redirects them
+// When the customer completes the Notion OAuth flow, Nango redirects them
 // back to /dashboard/integrations?connected=notion. From there a "View setup
 // progress" link brings them here, where we poll /api/dashboard/brain-status
 // every 3 seconds and render a 4-checkpoint progress display.

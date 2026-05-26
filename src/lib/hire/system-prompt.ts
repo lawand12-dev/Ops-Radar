@@ -27,7 +27,7 @@ export const PROMPT_VERSION = 'hire-system-v1'
 
 export function buildHireSystemPrompt(input: {
   companyName: string
-  /** List of toolkits the customer has connected via Composio. Lets us narrow the proposed scoped_toolkits. */
+  /** List of toolkits the customer has connected via Nango. Lets us narrow the proposed scoped_toolkits. */
   connectedToolkits: string[]
   /** Existing roster — name + role + slug — so we don't propose duplicates. */
   existingTeam: Array<{ slug: string; name: string; role: string; status: string }>

@@ -1,7 +1,7 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Rebuild on Nango per CP-45 plan.
+ * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
  */
 
 import type { EventSource } from './types'
@@ -28,7 +28,7 @@ export type BackfillSummary = {
 
 export async function backfillHistory(userId: string): Promise<BackfillSummary> {
   void userId
-  console.warn('[STUB] backfillHistory — composio-to-nango migration in progress')
+  console.warn('[STUB] backfillHistory — nango wire-up pending')
   const now = new Date().toISOString()
   return {
     userId,

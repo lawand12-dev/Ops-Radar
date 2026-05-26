@@ -427,3 +427,24 @@ export const GMAIL_TOOLS_ADVANCED_CATALOG = [
 
 export type GmailCoreToolName = keyof ReturnType<typeof buildGmailToolsCore>
 export type GmailAdvancedToolName = keyof ReturnType<typeof buildGmailToolsAdvanced>
+
+/**
+ * Gmail tools that write to the customer's mailbox (send/draft/modify/trash).
+ * Read-only tools (list/get/search) are omitted — they're always 'auto' in
+ * the approval gate. Future toolkits export a parallel _DESTRUCTIVE_TOOLS
+ * set so the engine doesn't need a central hard-coded list.
+ */
+export const GMAIL_DESTRUCTIVE_TOOLS: ReadonlySet<string> = new Set([
+  'gmail_send',
+  'gmail_reply',
+  'gmail_create_draft',
+  'gmail_send_draft',
+  'gmail_update_draft',
+  'gmail_modify_message',
+  'gmail_trash_message',
+  'gmail_create_label',
+  'gmail_untrash_message',
+  'gmail_modify_thread',
+  'gmail_trash_thread',
+  'gmail_update_vacation_settings',
+])

@@ -1,19 +1,19 @@
 /**
  * `executeAutomationTask` — Trigger.dev task that runs ONE customer
- * automation in response to a Composio webhook event (CP-TRIGGER-DEV step 3).
+ * automation in response to a broker webhook event (CP-TRIGGER-DEV step 3).
  *
  * Replaces the in-process `Promise.allSettled(...executeAutomation)` call
- * that used to live inside the Composio webhook handler. Moving execution
+ * that used to live inside the broker webhook handler. Moving execution
  * here gives us:
  *
  *   - Durable retries with exponential backoff (5 attempts) — a transient
- *     Composio outage no longer eats the customer's event
+ *     A broker outage no longer eats the customer's event
  *   - Per-automation observability in the Trigger.dev dashboard
  *   - Failures isolated to one automation (the others still fire)
- *   - The webhook can ack Composio in < 200ms regardless of automation
- *     duration, eliminating Composio's own retry storms
+ *   - The webhook can ack the broker in < 200ms regardless of automation
+ *     duration, eliminating the broker's own retry storms
  *
- * See: docs/specs/trigger-composio-integration.md §Pattern 2.
+ * See: docs/specs/trigger-broker-integration.md §Pattern 2.
  */
 
 import { task, logger } from "@trigger.dev/sdk/v3"

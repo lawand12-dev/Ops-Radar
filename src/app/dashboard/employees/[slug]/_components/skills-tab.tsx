@@ -1,7 +1,7 @@
 // Skills tab — read-only display of an employee's runtime surface.
 //
 // Server component. Shows:
-//   - Scoped Composio toolkits (pill list with check icons)
+//   - Scoped toolkits (pill list with check icons)
 //   - Scoped brain prefixes (path-styled chips)
 //   - Model + Max steps + Schedule
 //
@@ -12,7 +12,7 @@ import { Check, FolderTree, Cpu, Workflow, Clock } from 'lucide-react'
 import type { Employee } from '<npm>/lib/employees/types'
 
 export function SkillsTab({ employee }: { employee: Employee }) {
-  const toolkits = employee.runtime.composioApps ?? []
+  const toolkits = employee.runtime.nangoApps ?? []
   const prefixes = employee.runtime.scopedBrainPrefixes ?? []
   const isBuiltIn = employee.origin === 'built_in'
 

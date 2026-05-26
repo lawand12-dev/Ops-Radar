@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 type Quota = {
-  provider: 'openai' | 'composio' | 'tavily' | 'anthropic';
+  provider: 'openai' | 'nango' | 'tavily' | 'anthropic';
   used: number;
   cap: number;
   remaining: number;
@@ -21,12 +21,12 @@ const PROVIDER_LABELS: Record<Quota['provider'], { name: string; unit: string; d
   openai: {
     name: 'AI compute (OpenAI)',
     unit: 'tokens',
-    description: 'Used by the AI COO chat, the daily briefing, every cron agent run, and the document / research tools.',
+    description: 'Used by every AI employee chat, the daily briefing, every cron agent run, and the document / research tools.',
   },
-  composio: {
-    name: 'Integration actions (Composio)',
+  nango: {
+    name: 'Integration actions (Nango)',
     unit: 'executions',
-    description: 'Every write your AI COO performs on a connected tool — Gmail send, Stripe refund, HubSpot deal update, etc.',
+    description: 'Every write your AI employees perform on a connected tool — Gmail send, Stripe refund, HubSpot deal update, etc.',
   },
   tavily: {
     name: 'Web research (Tavily)',

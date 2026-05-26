@@ -15,7 +15,7 @@
  *   - search_brain / query_historical / write_brain_document
  *   - queue_action / record_decision / run_agent_now
  *   - analyze_document / research_competitor
- *   - all Composio tools (Hire never takes real-world action)
+ *   - all live tools (Hire never takes real-world action)
  */
 
 import { tool, type Tool } from 'ai'
@@ -49,7 +49,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
         const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
           '<npm>/lib/employees/registry'
         )
-        // getConnectedToolSlugs lived in the deleted <npm>/lib/composio module.
+        // getConnectedToolSlugs lived in the deleted <npm>/lib/nango module.
         // During migration we have no live integration broker, so return an
         // empty list — the hire chat can still draft specs against zero
         // connected tools and the customer reconnects via the Nango Connect UI
@@ -143,7 +143,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
             status: e.status,
             autonomy: e.autonomy,
             schedule_cron: e.runtime.cronSchedule,
-            scoped_toolkits: e.runtime.composioApps,
+            scoped_toolkits: e.runtime.nangoApps,
             url: `/dashboard/employees/${e.slug}`,
           })),
         }
@@ -181,7 +181,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
             status: emp.status,
             autonomy: emp.autonomy,
             schedule_cron: emp.runtime.cronSchedule,
-            scoped_toolkits: emp.runtime.composioApps,
+            scoped_toolkits: emp.runtime.nangoApps,
             scoped_brain_prefixes: emp.runtime.scopedBrainPrefixes,
             model: emp.runtime.model,
             max_steps: emp.runtime.maxSteps,

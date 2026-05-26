@@ -10,7 +10,7 @@ export type ActionType =
   | 'cash_flow_alert'
   | 'capacity_drift'
   | 'pattern_alert'
-  | 'composio_action'
+  | 'tool_action'
   | 'integration_expired'
   | 'automation_disabled'
 
@@ -35,7 +35,7 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   cash_flow_alert:       'approval',
   capacity_drift:        'approval',
   pattern_alert:         'approval',
-  composio_action:       'approval',
+  tool_action:       'approval',
   integration_expired:   'approval',
   automation_disabled:   'approval',
 }
@@ -52,9 +52,9 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   cash_flow_alert:       'Cash flow risk — advisory ready',
   capacity_drift:        'Capacity drift — staffing advisory ready',
   pattern_alert:         'New pattern detected — recommendation ready',
-  composio_action:       'Agent wants to act on a connected tool',
+  tool_action:       'Agent wants to act on a connected tool',
   integration_expired:   'Integration needs reconnecting',
-  automation_disabled:   'Automation auto-disabled by Composio',
+  automation_disabled:   'Automation auto-auto-disabled by the broker',
 }
 
 // ─── Payload types ────────────────────────────────────────────────────────────
@@ -176,10 +176,10 @@ export type PatternAlertPayload = {
   draft_body: string
 }
 
-// Generic Composio tool call queued by the approval gate. The agent (cron or
+// Generic tool call queued by the approval gate. The agent (cron or
 // COO sub-agent) wanted to fire `action_slug` with `arguments` against the
 // customer's connected tool. The executor runs it on approval.
-export type ComposioActionPayload = {
+export type ToolActionPayload = {
   toolkit: string                     // e.g. 'gmail'
   action_slug: string                 // e.g. 'GMAIL_SEND_EMAIL'
   arguments: Record<string, unknown>  // shape varies per action
@@ -189,23 +189,23 @@ export type ComposioActionPayload = {
   result?: unknown                    // populated after execute
 }
 
-// Composio told us a customer's connected account expired (OAuth lapsed, refresh
-// failed, etc.). We mark it inactive in `composio_connections` and queue this so
+// The broker told us a customer's connected account expired (OAuth lapsed, refresh
+// failed, etc.). We mark it inactive in the legacy OAuth-connections table and queue this so
 // the customer sees it in /dashboard/actions with a re-auth link.
 export type IntegrationExpiredPayload = {
   tool_slug: string                           // 'hubspot', 'stripe', 'gmail', etc.
-  composio_connection_id: string
-  reason?: string                             // whatever Composio supplied
+  connection_id: string
+  reason?: string                             // whatever the broker supplied
   reconnect_url: string                       // '/dashboard/integrations'
 }
 
-// Composio platform-disabled a trigger (auth dead, repeated webhook failures, etc.).
+// The broker platform-disabled a trigger (auth dead, repeated webhook failures, etc.).
 // We pause the matching automation(s) and queue this so the customer knows.
 export type AutomationDisabledPayload = {
   automation_id: string
   automation_slug: string
   trigger_slug: string                        // e.g. 'HUBSPOT_DEAL_STAGE_UPDATED'
-  composio_connection_id: string
+  connection_id: string
   disabled_reason?: string                    // platform-supplied reason
   detail_url: string                          // '/dashboard/employees/[slug]'
 }
@@ -222,7 +222,7 @@ export type ActionPayload =
   | CashFlowAlertPayload
   | CapacityDriftPayload
   | PatternAlertPayload
-  | ComposioActionPayload
+  | ToolActionPayload
   | IntegrationExpiredPayload
   | AutomationDisabledPayload
 

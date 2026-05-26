@@ -1,6 +1,6 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
- * Lindy-style automations were Composio-trigger-coupled and will be rebuilt
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * Lindy-style automations were trigger-coupled and will be rebuilt
  * on Nango per CP-45. Types preserved as loose aliases so consumers compile.
  */
 

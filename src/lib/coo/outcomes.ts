@@ -1,5 +1,5 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
  */
 
 export type Outcome = {
@@ -25,5 +25,5 @@ export async function enrichWithRecentWins(): Promise<string> {
 // Legacy export used by /api/dashboard/actions to record approve/reject/edit
 // feedback. No-op during migration; rebuild on Nango.
 export async function logOutcome(_input: Record<string, unknown>): Promise<void> {
-  console.warn('[STUB] logOutcome — composio-to-nango migration in progress')
+  console.warn('[STUB] logOutcome — nango wire-up pending')
 }

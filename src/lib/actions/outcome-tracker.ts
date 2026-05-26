@@ -1,12 +1,12 @@
 /**
- * STUB — Composio dependency removed 2026-05-26 during Nango migration.
+ * STUB — Nango wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Rebuild on Nango per CP-45 plan.
+ * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
  */
 
 // ─── Local type stubs (were imported from deleted modules) ──────────────
 // AgentSlug previously lived in <npm>/lib/agents/types (folder deleted).
-// ToolSlug previously lived in <npm>/lib/composio (file deleted).
+// ToolSlug previously lived in the previous broker module (now nango).
 // Both stay as permissive string aliases so consumer call sites still type-check.
 type AgentSlug = string
 type ToolSlug = string
@@ -46,13 +46,13 @@ export type RecentWin = {
 
 export async function trackAction(input: TrackActionInput): Promise<{ id: string }> {
   void input
-  console.warn('[STUB] trackAction — composio-to-nango migration in progress')
+  console.warn('[STUB] trackAction — nango wire-up pending')
   return { id: '' }
 }
 
 export async function checkOutcomes(userId: string): Promise<CheckOutcomesResult> {
   void userId
-  console.warn('[STUB] checkOutcomes — composio-to-nango migration in progress')
+  console.warn('[STUB] checkOutcomes — nango wire-up pending')
   return { checked: 0, detected: 0, totalValueUsd: 0 }
 }
 
@@ -62,6 +62,6 @@ export async function getRecentWins(
 ): Promise<RecentWin[]> {
   void userId
   void sinceDays
-  console.warn('[STUB] getRecentWins — composio-to-nango migration in progress')
+  console.warn('[STUB] getRecentWins — nango wire-up pending')
   return []
 }

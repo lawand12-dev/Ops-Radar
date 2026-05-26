@@ -21,6 +21,7 @@
 
 import { openai } from '@ai-sdk/openai'
 import { generateText, streamText, stepCountIs, type ToolSet } from 'ai'
+import * as Sentry from '@sentry/nextjs'
 
 import type { AgentSpec, AgentRunResult } from './types'
 import {
@@ -45,7 +46,9 @@ import { loadToolPolicies, type ToolPolicyMap } from './tool-policies'
 import { loadSkillCatalog, buildSkillsSystemBlock } from '<npm>/lib/skills'
 import { buildLoadSkillMeta } from './load-skill'
 import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse'
-import { agentLoopEnabled, gmailToolkitEnabled } from '<npm>/lib/flags'
+import { agentLoopEnabled, resolveToolkitFlag } from '<npm>/lib/flags'
+import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
+import type { Provider } from '<npm>/lib/usage/types'
 
 export type RunAgentOptions = {
   /** Fallback when no per-toolkit row exists in tool_policies. */
@@ -65,6 +68,25 @@ export async function runAgent(
     console.warn(`[runAgent] ${spec.slug} skipped — agent-loop-enabled flag is OFF`)
     return { status: 'skipped', reason: 'agent-loop-disabled-by-flag' }
   }
+
+  // Pre-flight quota check: if the customer is over their monthly LLM cap,
+  // skip the run entirely. Recording the eventual usage after the run is
+  // too late — we'd have already burned the tokens. Fails open if the
+  // quota check itself errors so we don't accidentally pause a paying
+  // customer because of a Supabase blip.
+  const provider = inferLlmProvider(spec.model)
+  const preflight = await checkQuota({ userId, provider })
+  if (!preflight.allowed) {
+    console.warn(
+      `[runAgent] ${spec.slug} skipped — ${provider} quota exhausted (${preflight.used}/${preflight.cap}, resets ${preflight.resetsAt.toISOString()})`,
+    )
+    return {
+      status: 'skipped',
+      reason: `${provider}-quota-exhausted`,
+      summary: `Monthly ${provider} cap reached (${preflight.used.toLocaleString()}/${preflight.cap.toLocaleString()}). Resets ${preflight.resetsAt.toISOString().slice(0, 10)}.`,
+    }
+  }
+
   const ctx = await prepareRunContext(spec, userId, options)
   const startedAt = Date.now()
   const telemetry = makeTelemetry({
@@ -92,9 +114,20 @@ export async function runAgent(
     )
 
     const { queued, blocked } = countGateOutcomes(result.steps)
+    const tokensUsed = result.usage?.totalTokens ?? 0
+
+    // Record LLM token usage against the per-customer monthly cap.
+    // Fire-and-forget — same fail-open semantics as Nango usage tracking.
+    void recordUsage({
+      userId,
+      provider,
+      operation: 'agent_cron_run',
+      tokens: tokensUsed,
+      metadata: { agent_slug: spec.slug, run_id: ctx.runId, actions_taken: actionsTaken },
+    }).catch(() => {})
 
     console.info(
-      `[runAgent] ${spec.slug} ok — ${actionsTaken} calls (${queued} queued, ${blocked} blocked), ${result.usage?.totalTokens ?? 0} tokens, ${elapsedMs}ms`,
+      `[runAgent] ${spec.slug} ok — ${actionsTaken} calls (${queued} queued, ${blocked} blocked), ${tokensUsed} tokens, ${elapsedMs}ms`,
     )
 
     const summary = result.text || `(no narrative — ${actionsTaken} tool calls)`
@@ -104,7 +137,7 @@ export async function runAgent(
       status: 'success',
       summary,
       actionsTaken,
-      tokensUsed: result.usage?.totalTokens ?? 0,
+      tokensUsed,
     })
 
     await writeBrainSummary({
@@ -121,11 +154,27 @@ export async function runAgent(
       status: 'success',
       summary,
       actionsTaken,
-      tokensUsed: result.usage?.totalTokens ?? 0,
+      tokensUsed,
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`[runAgent] ${spec.slug} failed:`, message)
+    // Capture in Sentry with rich agent context so production failures
+    // are visible without log-spelunking. Tags let us slice errors by
+    // agent + customer in the Sentry dashboard.
+    Sentry.captureException(err, {
+      tags: {
+        agent_slug: spec.slug,
+        run_source: 'cron-agent',
+      },
+      contexts: {
+        agent: {
+          user_id: userId,
+          run_id: ctx.runId ?? 'unknown',
+          model: spec.model,
+        },
+      },
+    })
     await finishRun({ runId: ctx.runId, status: 'failed', errorMessage: message })
     await flushLangfuse()
     return { status: 'failed', errorMessage: message }
@@ -150,6 +199,20 @@ export async function runAgentStream(
   if (!(await agentLoopEnabled())) {
     throw new Error('Agent loop is disabled by the agent-loop-enabled flag. Re-enable in Statsig to resume.')
   }
+
+  // Same pre-flight quota check as runAgent. We throw here instead of
+  // returning a {status: 'skipped'} object because streamText expects to
+  // produce a stream — the caller (employee chat route, run-now button)
+  // catches and surfaces the error to the UI as a clear "out of quota"
+  // message.
+  const provider = inferLlmProvider(spec.model)
+  const preflight = await checkQuota({ userId, provider })
+  if (!preflight.allowed) {
+    throw new Error(
+      `Monthly ${provider} cap reached (${preflight.used.toLocaleString()}/${preflight.cap.toLocaleString()} tokens). Resets ${preflight.resetsAt.toISOString().slice(0, 10)}.`,
+    )
+  }
+
   const ctx = await prepareRunContext(spec, userId, options)
   const telemetry = makeTelemetry({
     userId,
@@ -166,18 +229,47 @@ export async function runAgentStream(
     stopWhen: stepCountIs(spec.maxSteps ?? 12),
     prepareStep: ctx.prepareStep,
     experimental_telemetry: telemetry,
+    onError: ({ error }) => {
+      // Stream errors don't bubble to a try/catch — they arrive via the
+      // onError callback. Capture in Sentry with the same agent context
+      // so chat failures are visible alongside cron failures.
+      const err = error instanceof Error ? error : new Error(String(error))
+      console.error(`[runAgentStream] ${spec.slug} stream error:`, err.message)
+      Sentry.captureException(err, {
+        tags: { agent_slug: spec.slug, run_source: 'employee-chat' },
+        contexts: {
+          agent: {
+            user_id: userId,
+            run_id: ctx.runId ?? 'unknown',
+            model: spec.model,
+          },
+        },
+      })
+    },
     onFinish: async ({ text, steps, usage }) => {
       const actionsTaken = steps.reduce(
         (n, step) => n + (step.toolCalls?.length ?? 0),
         0,
       )
+      const tokensUsed = usage?.totalTokens ?? 0
       const summary = text || `(no narrative — ${actionsTaken} tool calls)`
+
+      // Record LLM token usage so chat sessions count against the cap too,
+      // not just cron runs.
+      void recordUsage({
+        userId,
+        provider,
+        operation: 'agent_chat',
+        tokens: tokensUsed,
+        metadata: { agent_slug: spec.slug, run_id: ctx.runId, actions_taken: actionsTaken },
+      }).catch(() => {})
+
       await finishRun({
         runId: ctx.runId,
         status: 'success',
         summary,
         actionsTaken,
-        tokensUsed: usage?.totalTokens ?? 0,
+        tokensUsed,
       })
       await writeBrainSummary({
         userId,
@@ -199,15 +291,15 @@ async function prepareRunContext(
   options: RunAgentOptions,
 ) {
   const globalDefault = options.globalDefault ?? 'ask'
-  let toolkitSlugs = spec.composioApps ?? spec.requiredIntegrations ?? []
+  const requestedToolkits = spec.nangoApps ?? spec.requiredIntegrations ?? []
 
-  // Per-toolkit kill switches (Statsig flags). Today: Gmail.
-  // Pattern: as new integrations land, add their gate here so a single flip
-  // in Statsig can pause a toolkit globally without a deploy.
-  if (toolkitSlugs.includes('gmail') && !(await gmailToolkitEnabled())) {
-    console.warn(`[runAgent] ${spec.slug} — gmail toolkit disabled by flag, stripped from toolset`)
-    toolkitSlugs = toolkitSlugs.filter((s) => s !== 'gmail')
-  }
+  // Per-toolkit kill switches sourced from the registry. Each toolkit
+  // entry may declare a `killSwitchFlag` (Statsig gate key); if it's
+  // OFF the toolkit gets stripped before tools are built. Resolves
+  // every flag in parallel so an N-toolkit employee adds N flag-checks
+  // worth of latency, not N sequential round-trips.
+  const allowedToolkits = await filterByKillSwitch(requestedToolkits, spec.slug)
+  const toolkitSlugs = allowedToolkits
 
   // Tier 1: log run start
   const runId = await startRun({ userId, agentSlug: spec.slug })
@@ -410,4 +502,43 @@ function summarizeArgs(toolName: string, args: Record<string, unknown>): string 
     return `Trash message ${String(args.messageId ?? '')}`
   }
   return `${toolName} (${Object.keys(args).join(', ')})`
+}
+
+/**
+ * Apply per-toolkit kill-switch flags. Reads each toolkit's declared
+ * `killSwitchFlag` from the registry and resolves them in parallel.
+ * Stripped toolkits are logged so an operator can confirm a flip took
+ * effect.
+ */
+async function filterByKillSwitch(
+  requested: ReadonlyArray<string>,
+  agentSlug: string,
+): Promise<string[]> {
+  const checks = requested.map(async (slug) => {
+    const entry = TOOLKITS[slug]
+    if (!entry?.killSwitchFlag) return { slug, allowed: true }
+    const allowed = await resolveToolkitFlag(entry.killSwitchFlag)
+    return { slug, allowed }
+  })
+  const results = await Promise.all(checks)
+  const out: string[] = []
+  for (const r of results) {
+    if (r.allowed) {
+      out.push(r.slug)
+    } else {
+      console.warn(`[runAgent] ${agentSlug} — toolkit "${r.slug}" disabled by kill-switch flag, stripped`)
+    }
+  }
+  return out
+}
+
+/**
+ * Map a model slug to the Provider key in our quota table. Today every
+ * built-in employee runs on OpenAI; Anthropic support lands when we wire
+ * Claude models. Defaults to 'openai' since the loop's default model is
+ * gpt-5.5.
+ */
+function inferLlmProvider(model: string | undefined): Provider {
+  if (model && model.startsWith('claude')) return 'anthropic'
+  return 'openai'
 }

@@ -321,8 +321,8 @@ export function RunsTable() {
                 ) : (
                   <ul className="space-y-2">
                     {detail.actions.map((a) => {
-                      const composioSummary =
-                        a.action_type === 'composio_action' && a.payload && typeof a.payload === 'object'
+                      const toolSummary =
+                        a.action_type === 'tool_action' && a.payload && typeof a.payload === 'object'
                           ? ((a.payload as { summary?: string }).summary ?? null)
                           : null;
                       return (
@@ -332,8 +332,8 @@ export function RunsTable() {
                         >
                           <div className="mb-1 flex items-center justify-between gap-2 text-[12px]">
                             <span className="font-medium text-[var(--color-fg)]">
-                              {a.action_type === 'composio_action'
-                                ? (composioSummary ?? 'Composio action')
+                              {a.action_type === 'tool_action'
+                                ? (toolSummary ?? 'Tool action')
                                 : a.action_type}
                             </span>
                             <span

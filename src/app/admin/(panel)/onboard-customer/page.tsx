@@ -1,7 +1,7 @@
 'use client';
 
 // CP-15: simplified to a plain magic-link invite. Tool credentials now
-// live in Composio (OAuth) — the customer connects them themselves at
+// live in Nango (OAuth) — the customer connects them themselves at
 // /dashboard/integrations after sign-in. No more n8n config provisioning.
 
 import { useState } from 'react';
@@ -114,7 +114,7 @@ export default function OnboardCustomerPage() {
           <ol className="list-decimal pl-4 space-y-1.5">
             <li>Creates a Supabase <code className="font-mono">auth.users</code> row for the email.</li>
             <li>Sends a magic-link email so the customer can set a password.</li>
-            <li>On first sign-in, they land on <code className="font-mono">/dashboard/integrations</code> to connect their tools via Composio OAuth.</li>
+            <li>On first sign-in, they land on <code className="font-mono">/dashboard/integrations</code> to connect their tools via Nango OAuth.</li>
           </ol>
         </div>
       </div>

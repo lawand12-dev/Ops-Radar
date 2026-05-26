@@ -15,7 +15,7 @@ type ToolRow = {
 type Connection = { tool_slug: string; is_active: boolean };
 type StoredPolicy = { tool_slug: string; policy: string };
 
-// Display labels — mirrors COMPOSIO_TOOLS keys in src/lib/composio.ts.
+// Display labels — mirrors the NANGO_TOOLS map in src/lib/nango.ts.
 const TOOLKITS: Array<{ slug: string; display: string }> = [
   { slug: 'stripe',            display: 'Stripe' },
   { slug: 'quickbooks',        display: 'QuickBooks' },
@@ -60,7 +60,7 @@ export function AutomationSettings() {
     void (async () => {
       try {
         const [connRes, polRes] = await Promise.all([
-          fetch('/api/composio/connections'),
+          fetch('/api/nango/connections'),
           fetch('/api/dashboard/tool-policies'),
         ]);
         const connectionsResp = connRes.ok

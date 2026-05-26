@@ -1,4 +1,5 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
+import { listAllConnections } from '<npm>/lib/nango/connections'
 import { bucketForServiceMix, bucketForTeamSize } from './buckets'
 import { collectUserMetrics, type UserMetrics } from './collect'
 import { p25, p50, p75 } from './percentile'
@@ -30,15 +31,11 @@ const key = (team: TeamSizeBucket, mix: ServiceMixBucket): SampleKey => `${team}
 export async function runBenchmarkAggregation(): Promise<AggregateStats> {
   const supabase = getServerSupabaseClient()
 
-  // Find users with any active Composio connection — these are the
+  // Find users with any active Nango connection — these are the
   // candidates whose metrics can be sampled into benchmark cohorts.
-  const { data: connectionRows } = await supabase
-    .from('composio_connections')
-    .select('user_id, tool_slug')
-    .eq('is_active', true)
-
+  const allConnections = await listAllConnections()
   const connectionsByUser = new Map<string, Set<string>>()
-  for (const row of connectionRows ?? []) {
+  for (const row of allConnections) {
     const set = connectionsByUser.get(row.user_id) ?? new Set<string>()
     set.add(row.tool_slug)
     connectionsByUser.set(row.user_id, set)

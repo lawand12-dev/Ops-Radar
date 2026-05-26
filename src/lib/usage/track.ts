@@ -43,7 +43,7 @@ function monthResetAt(now: Date = new Date()): Date {
 }
 
 /**
- * Provider-specific count column. Tavily counts credits, Composio counts
+ * Provider-specific count column. Tavily counts credits, Nango counts
  * one-execution-per-row, OpenAI/Anthropic count tokens.
  */
 function countColumnFor(provider: Provider): 'credits_used' | 'tokens_used' {

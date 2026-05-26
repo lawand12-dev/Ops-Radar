@@ -24,7 +24,7 @@ import type { NotionDatabaseSlug } from './schema-keys'
 /**
  * Wraps a Notion read so callers can use it as the dashboard's primary source.
  * Returns null in the "Notion isn't connected yet" case (rather than throwing) so
- * widgets can transparently fall back to Composio live data.
+ * widgets can transparently fall back to live broker data.
  *
  * NOT a generic try/catch — re-throws genuine errors (e.g. transient Notion 500s,
  * malformed token) so the caller can surface "requires_reconnect" etc.

@@ -25,6 +25,7 @@ import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { loadBrainDocuments, commitBrainChanges } from '<npm>/lib/brain/store'
 import { resolvePolicyForTool, type ToolPolicyMap } from './tool-policies'
 import { scoreActionConfidence } from './confidence'
+import { allDestructiveTools } from '<npm>/lib/nango/registry'
 
 // ─── Tier 1: run history ───────────────────────────────────────────────────
 
@@ -146,28 +147,15 @@ export async function loadBrainContext({
 // ─── Tier 2: approval gate + action queue ──────────────────────────────────
 
 /**
- * Destructive Gmail tool names — these write/send/delete. They need approval
- * unless the customer's autonomy is 'auto'. Read-only tools (list, get, search)
- * are always 'auto'.
- *
- * Engine-level: as new toolkits are added, append their destructive tool
- * names here. Goal is one flat list, not one switch per toolkit.
+ * Destructive tool names come from the toolkit registry — each toolkit
+ * module owns its own list (see e.g. GMAIL_DESTRUCTIVE_TOOLS in
+ * src/lib/nango/tools/gmail.ts). The registry takes the union across
+ * every registered toolkit so this file doesn't need touching when a
+ * new toolkit ships.
  */
-const DESTRUCTIVE_TOOLS: ReadonlySet<string> = new Set([
-  // Gmail writes / sends / deletes
-  'gmail_send',
-  'gmail_reply',
-  'gmail_create_draft',
-  'gmail_send_draft',
-  'gmail_update_draft',
-  'gmail_modify_message',
-  'gmail_trash_message',
-  'gmail_create_label',
-  'gmail_untrash_message',
-  'gmail_modify_thread',
-  'gmail_trash_thread',
-  'gmail_update_vacation_settings',
-])
+function isDestructive(toolName: string): boolean {
+  return allDestructiveTools().has(toolName)
+}
 
 export type ToolGateDecision =
   | { kind: 'auto' }                                    // execute immediately
@@ -194,10 +182,10 @@ export function classifyToolCall(input: ToolGateInput): ToolGateDecision {
   const { toolName, policies, globalDefault = 'ask' } = input
   const policy = resolvePolicyForTool({ toolName, policies, globalDefault })
 
-  if (policy === 'off' && DESTRUCTIVE_TOOLS.has(toolName)) {
+  if (policy === 'off' && isDestructive(toolName)) {
     return { kind: 'blocked', reason: 'Tool autonomy is OFF for this toolkit — destructive call blocked.' }
   }
-  if (!DESTRUCTIVE_TOOLS.has(toolName)) {
+  if (!isDestructive(toolName)) {
     return { kind: 'auto' }  // read-only — always allowed
   }
   if (policy === 'auto') {
@@ -211,7 +199,7 @@ export function classifyToolCall(input: ToolGateInput): ToolGateDecision {
 
 /**
  * Insert a pending row in agent_actions so the customer can approve/reject
- * in /dashboard/actions. The 'composio_action' action_type is reused — name
+ * in /dashboard/actions. The 'tool_action' action_type is reused — name
  * is historical, payload shape (toolkit + action + arguments) is generic.
  */
 export async function enqueueAction({
@@ -236,7 +224,7 @@ export async function enqueueAction({
       .from('agent_actions')
       .insert({
         user_id: userId,
-        action_type: 'composio_action',
+        action_type: 'tool_action',
         status: 'pending',
         payload: {
           toolkit: toolkit ?? 'unknown',

@@ -23,19 +23,11 @@
  * (approval-patterns.ts already aggregates approve/reject ratios).
  */
 
-const DESTRUCTIVE_TOOLS: ReadonlySet<string> = new Set([
-  'gmail_send',
-  'gmail_reply',
-  'gmail_send_draft',
-  'gmail_update_draft',
-  'gmail_trash_message',
-  'gmail_modify_message',
-  'gmail_create_label',
-  'gmail_untrash_message',
-  'gmail_modify_thread',
-  'gmail_trash_thread',
-  'gmail_update_vacation_settings',
-])
+import { allDestructiveTools } from '<npm>/lib/nango/registry'
+
+// Sourced from the toolkit registry so a new integration doesn't need
+// edits to confidence.ts — adding the destructive tool names to the
+// new toolkit module is enough.
 
 export type ConfidenceInput = {
   toolName: string
@@ -56,7 +48,7 @@ export function scoreActionConfidence(input: ConfidenceInput): ConfidenceResult 
   let score = 60
   factors.push({ delta: 60, reason: 'base' })
 
-  const destructive = DESTRUCTIVE_TOOLS.has(input.toolName)
+  const destructive = allDestructiveTools().has(input.toolName)
   if (destructive) {
     score -= 10
     factors.push({ delta: -10, reason: 'destructive tool' })

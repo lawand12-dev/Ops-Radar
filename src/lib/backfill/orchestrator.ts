@@ -4,7 +4,7 @@
  * Why durable: full historical pull can take 30 min – 2 hr per customer and must survive
  * function timeouts. Either Inngest or Vercel Queues works; this scaffold targets Inngest.
  *
- * Spec: docs/dev/specs/2026-05-23-agents-notion-composio-design.md §8
+ * Spec: docs/dev/specs/2026-05-23-agents-notion-broker-design.md §8
  *
  * Flow:
  *   Phase 1 — current state (<30s) — fastest possible signal so the dashboard isn't empty
@@ -46,7 +46,7 @@
 // )
 
 export async function backfillCurrentState(_userId: string): Promise<void> {
-  // TODO(scaffold): for each connected Composio tool, pull "current" view
+  // TODO(scaffold): for each connected tool, pull "current" view
   //   (open invoices, open deals, active projects, this-week hours) and write summaries to Notion.
   throw new Error('backfillCurrentState not implemented')
 }

@@ -21,14 +21,14 @@
  *      escalation all just work
  *   4. Marks last_run_at on success so the UI shows "ran Nm ago"
  *
- * See: docs/specs/trigger-composio-integration.md §Pattern 1.
+ * See: docs/specs/trigger-broker-integration.md §Pattern 1.
  */
 
 import { task, logger, metadata } from "@trigger.dev/sdk/v3"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { AgentSpec } from "<npm>/lib/agents/types"
-// ToolSlug was sourced from <npm>/lib/composio (deleted 2026-05-26). Aliased
+// ToolSlug was sourced from <npm>/lib/nango (deleted 2026-05-26). Aliased
 // to string during migration; reconstruct as a narrower union once the Nango
 // toolkit map stabilizes.
 type ToolSlug = string
@@ -83,7 +83,7 @@ function specFromCustomEmployee(
     displayName: `${row.name} · ${row.role}`,
     description: row.persona_summary?.slice(0, 200) ?? `${row.role} (custom employee)`,
     model: (row.model_slug ?? "gpt-5.4") as AgentSpec["model"],
-    composioApps: row.scoped_toolkits as ToolSlug[],
+    nangoApps: row.scoped_toolkits as ToolSlug[],
     requiredTier: "starter",
     requiredIntegrations: [],
     cronSchedule: row.schedule_cron ?? "0 0 * * *",
