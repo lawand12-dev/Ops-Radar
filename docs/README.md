@@ -88,6 +88,7 @@ Evidence snapshots — every claim cited, no decisions inside. Read these to bac
 | [`research/2026-05-26-engineering-agent-arch.md`](./research/2026-05-26-engineering-agent-arch.md) | **Engineering stress-test 2/4 — Agent architecture** (orchestrator-worker, charters, HITL, GEPA). 80% aligned |
 | [`research/2026-05-26-engineering-brain.md`](./research/2026-05-26-engineering-brain.md) | **Engineering stress-test 3/4 — Brain / memory** (Postgres, embeddings, Mem0/Letta/Zep). 90% aligned — highest |
 | [`research/2026-05-26-engineering-tools.md`](./research/2026-05-26-engineering-tools.md) | **Engineering stress-test 4/4 — Tools + integrations** (Composio vs Pica/Arcade, MCP, OAuth, saga). 70% aligned — lowest |
+| [`research/2026-05-26-shared-knowledge-layer.md`](./research/2026-05-26-shared-knowledge-layer.md) | **Shared multi-agent knowledge layer** — shared brain is table stakes in 2026; what IS defensible is the stacking. Drove the moat sharpening in `positioning/identity.md` |
 
 **Older snapshots:**
 

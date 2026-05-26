@@ -25,6 +25,41 @@ Two artifacts, two homes. The **workforce** lives at OpsRadar — it's our runti
 
 ---
 
+## The honest moat — sharpened after the shared-knowledge-layer research (2026-05-26)
+
+> **What we used to claim**: *"Every agent knows the company through the shared brain — that's our moat."*
+>
+> **What the 2026 research says** (`docs/research/2026-05-26-shared-knowledge-layer.md`): shared cross-agent knowledge is **table stakes in 2026, not a moat**. Notion 3.0 Custom Agents, Glean ($200M ARR), CrewAI, LangGraph, OpenAI Agents SDK, and Anthropic's Multi-Agent Research system all ship it.
+>
+> **The honest, defensible moat**: it's not the shared brain. It's the **stacking** of four properties together that no competitor currently combines:
+>
+> 1. **28 vertical-specialist agents** with agency-COO operator judgment baked into prompts (CP-21)
+> 2. **Signed-by-author-agent provenance** — every brain fact carries `author_type` + `agent_run_id` + timestamp (CP-27/28). Most competitors don't ship this.
+> 3. **Git-style commit-graph versioning** — diff, blame, rollback on agent-written knowledge (CP-27). No workspace-shaped competitor ships this.
+> 4. **Customer-owned in their Notion** — exportable markdown zip, no vendor lock-in (CP-24).
+>
+> **Verifiable marketing line** (replaces "every agent knows the company"):
+>
+> > *"Penny (profitability) cites Cole's (collections) payment-history entries when projecting Acme's cash — and you can click through to see the citation."*
+>
+> That sentence describes a thing **no competitor currently does in production** because they don't have (a) 28 named specialists, (b) signed-author provenance, and (c) a vertical schema all at once. **Use this phrasing** on homepage / pricing / product / about / YC application.
+
+### The three patterns to steal from production winners
+
+The research explicitly named these three. **Sequence them after Move 1 (surface character names) but before Move 4 (GEPA):**
+
+1. **Lightweight references, not full payloads** (Anthropic Multi-Agent Research) — tool agents write findings to the brain and return `{page_id, summary}` not inline JSON. Saves tokens, prevents context blowouts at scale.
+2. **Consolidation threshold + LLM-arbitrated dedup** (CrewAI `consolidation_threshold=0.85`) — before any brain write, check semantic similarity to existing entries; if >0.85, LLM decides merge/supersede/new. Prevents the documented 1.4M-interaction "definition conflict" failure mode.
+3. **GEPA-style reflective evolution** (ICLR 2026 Oral, arXiv 2507.19457) — already in ADR 0009 item #7. The "agents structurally get smarter" upgrade.
+
+### The discipline that makes the moat real (not just stated)
+
+Cognition's "Don't Build Multi-Agents" warning is the real risk: *"sub-agents have no context of each other's work."* OpsRadar's pattern (every agent reads brain before acting) is the prescribed fix — **provided** the receiving agent actually queries the brain on every meaningful turn.
+
+Action: every visible agent's system prompt (CP-39 charter spec) must require a `search_brain` call before any `queue_action` or any composed write. Not a suggestion. A required step.
+
+---
+
 ## The three differentiators that should headline marketing (demand-validated)
 
 OpsRadar already ships 5 capabilities inside its category that **no major competitor has shipped** (BOND / Lindy / Notion AI / Glean / Devin / Copilot Studio / Cresta / Decagon / Sierra). The sub-section demand audit (`docs/research/2026-05-25-subsection-demand-validation.md`) rates customer-demand strength 1-10 for each:
@@ -192,7 +227,7 @@ Public-by-default on `/dashboard`. Totals: approved automations × estimated tim
 
 ## The YC application paragraph (ready to use)
 
-> *"OpsRadar gives every business an AI workforce and a company brain. The 15-person agency we sell to is paying $5,200/month for ten separate AI tools — Notion AI, Lindy, Zapier, ChatGPT, an AI SDR, a writing assistant — none of which talk to each other. We replace all ten with one workforce of named AI employees (Bookkeeper, SDR, Project Coordinator, Account Manager) that read across 25→500+ Composio integrations, take action only with the owner's approval, and write everything they learn into a versioned brain mirrored to the customer's Notion. Three things make us defensible inside the category: (1) Apprentice Mode — the workforce learns from every rejection so it gets smarter the longer you use it, (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters today, (3) approval-history personalization — after 30 approvals the drafts sound like you. We're the anti-11x: control-first, labor-priced ($0.05 per approved action), wedge-in via marketing agencies then expanding to home services on the proven Avoca/ServiceTitan paid-demand precedent. YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
+> *"OpsRadar gives every business an AI workforce and a company brain. The 15-person agency we sell to is paying $5,200/month for ten separate AI tools — Notion AI, Lindy, Zapier, ChatGPT, an AI SDR, a writing assistant — none of which talk to each other. We replace all ten with 28 named specialist AI employees (Riley, Cole, Scott, Brian, Penny — Revenue, Collections, Scope, Briefing, Profitability — and 23 more) that read across 25→500+ Composio integrations, take action only with the owner's approval, and write everything they learn into a git-style versioned brain mirrored to the customer's Notion. **The defensible moat is the stacking**: vertical-specialist agents, signed-by-author-agent provenance on every brain fact, commit-graph versioning with diff/blame/rollback, and customer ownership in their own Notion — no competitor today combines all four. Penny cites Cole's payment-history entries by name when projecting Acme's cash, and you can click through to see the citation. Three demand-validated differentiators close the trust loop: (1) Apprentice Mode — the workforce learns from every rejection so it gets smarter the longer you use it, (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters today, (3) approval-history personalization — after 30 approvals the drafts sound like you. We're the anti-11x: control-first, labor-priced ($0.05 per approved action), wedge-in via marketing agencies then expanding to home services on the proven Avoca/ServiceTitan paid-demand precedent. YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
 
 That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x positioning + concrete pricing model + named wedge + three demand-validated moats + integration breadth as moat.** Every clause cites an evidence anchor in `docs/research/2026-05-25-*.md`.
 
@@ -222,6 +257,7 @@ Every claim above traces to:
 - `docs/research/2026-05-25-horizontal-pricing.md`
 - `docs/research/2026-05-25-horizontal-workforce-comps.md`
 - `docs/research/2026-05-25-subsection-demand-validation.md` ← **drove the 3 headline differentiators**
+- `docs/research/2026-05-26-shared-knowledge-layer.md` ← **drove the moat sharpening (shared brain = table stakes; stacking = moat)**
 
 Plus the architecture decisions in `docs/adr/0001-0008-*.md`.
 
