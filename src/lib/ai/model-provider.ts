@@ -53,20 +53,35 @@ let _groqProvider: ReturnType<typeof createOpenAI> | null = null
 let _doProvider: ReturnType<typeof createOpenAI> | null = null
 
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
-// gpt-oss-120b is an open-weight GPT model on Groq that supports json_schema
-// structured outputs — REQUIRED for the employee compiler's generateObject
-// call. Llama-3.3 does NOT support json_schema and would break hiring at the
-// draft step, so don't switch the default without re-checking structured-output
-// support. Override with GROQ_MODEL if needed.
-const GROQ_DEFAULT_MODEL = 'openai/gpt-oss-120b'
 
-function getGroqModel(): LanguageModel | null {
+// Groq has NO single model that does both jobs the hire flow needs, so we use
+// two — verified live against the Groq API (May 2026):
+//
+//   - CHAT / tool-calling (streamText, generateText): llama-3.3-70b-versatile.
+//     Calls tools cleanly. gpt-oss models throw a Harmony renderer error
+//     ("Tools should have a name!") when tools are passed — a known, broken
+//     gpt-oss tool-calling path, so it CANNOT serve the chat.
+//   - STRUCTURED output (generateObject): openai/gpt-oss-120b. The only Groq
+//     family that supports json_schema strict mode — REQUIRED by the employee
+//     compiler. But it does NOT support tool calling, so it can't do the chat.
+//
+// Override either via env: GROQ_CHAT_MODEL / GROQ_OBJECT_MODEL.
+const GROQ_CHAT_MODEL = 'llama-3.3-70b-versatile'
+const GROQ_OBJECT_MODEL = 'openai/gpt-oss-120b'
+
+/** 'chat' = tool-calling/streaming model; 'object' = json_schema model. */
+type BackupKind = 'chat' | 'object'
+
+function getGroqModel(kind: BackupKind): LanguageModel | null {
   const key = (process.env.GROQ_API_KEY ?? '').trim()
   if (!key) return null
   if (!_groqProvider) {
     _groqProvider = createOpenAI({ apiKey: key, baseURL: GROQ_BASE_URL })
   }
-  const modelId = (process.env.GROQ_MODEL ?? GROQ_DEFAULT_MODEL).trim()
+  const modelId =
+    kind === 'object'
+      ? (process.env.GROQ_OBJECT_MODEL ?? GROQ_OBJECT_MODEL).trim()
+      : (process.env.GROQ_CHAT_MODEL ?? GROQ_CHAT_MODEL).trim()
   return _groqProvider(modelId)
 }
 
@@ -82,12 +97,13 @@ function getDigitalOceanModel(): LanguageModel | null {
 }
 
 /**
- * The backup model, or null if none is configured. Groq first (free, no card),
- * then DigitalOcean Gradient. Never passes an OpenAI slug to the backup — each
- * provider uses its own model id from its own env var.
+ * The backup model for a given call kind, or null if none is configured. Groq
+ * first (free, no card), then DigitalOcean Gradient. `kind` selects the right
+ * Groq model — 'chat' for tool-calling/streaming, 'object' for json_schema —
+ * because no single Groq model does both (see above).
  */
-export function backupModel(): LanguageModel | null {
-  return getGroqModel() ?? getDigitalOceanModel()
+export function backupModel(kind: BackupKind = 'chat'): LanguageModel | null {
+  return getGroqModel(kind) ?? getDigitalOceanModel()
 }
 
 export function hasBackup(): boolean {
@@ -143,7 +159,7 @@ export async function generateTextWithFallback(
   try {
     return await generateText({ ...(rest as GenTextArgs), model: openaiModel(primaryId) })
   } catch (err) {
-    const backup = backupModel()
+    const backup = backupModel('chat')
     if (!backup || !isFallbackWorthy(err)) throw err
     console.warn('[model-provider] OpenAI failed, falling back to backup provider:', describe(err))
     return await generateText({ ...(rest as GenTextArgs), model: backup })
@@ -157,7 +173,7 @@ export async function generateObjectWithFallback(args: GenObjArgs & { model: str
   try {
     return await generateObject({ ...(rest as GenObjArgs), model: openaiModel(primaryId) })
   } catch (err) {
-    const backup = backupModel()
+    const backup = backupModel('object')
     if (!backup || !isFallbackWorthy(err)) throw err
     console.warn('[model-provider] OpenAI generateObject failed, falling back to backup provider:', describe(err))
     return await generateObject({ ...(rest as GenObjArgs), model: backup })
@@ -186,7 +202,8 @@ export async function streamTextWithFallback(
   args: Omit<StreamArgs, 'model'> & { model: string },
 ) {
   const { model: primaryId, ...rest } = args
-  const backup = backupModel()
+  // The hire/agent chat passes tools, so use the tool-calling backup model.
+  const backup = backupModel('chat')
 
   // No backup configured → behave exactly as before.
   if (!backup) {
