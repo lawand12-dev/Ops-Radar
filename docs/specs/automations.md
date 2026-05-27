@@ -1,5 +1,7 @@
 # Automations layer — Lindy-style, agent-aware, approval-gated (May 2026)
 
+> **⚠️ Broker note (2026-05-27).** This spec and the shipped `20260524_customer_automations.sql` migration were built on **Composio** — the `composio_trigger_id` column, `trigger_kind = 'composio_event'`, and the `/api/automations/webhook/composio` route below all still exist in code *as written here*. Composio was removed on 2026-05-26 (broker is now **Nango** — see [`../adr/0010-nango-broker.md`](../adr/0010-nango-broker.md)), so **this surface is offline pending its Nango rebuild**. The spec is left intact (it matches the current schema) — when the automations layer is rebuilt on Nango, the `composio_*` trigger plumbing becomes the Nango equivalent (`nango_trigger_id`, Nango webhook ingress). Treat the *design* as current and the *broker specifics* as the rebuild target.
+
 **Status**: research complete, NOT yet implemented.
 **Trigger**: post-CP-19, customer needs a way to say "every time HubSpot deal closes won, Slack the PM and create a Notion page" — and have the AI COO build it, run it, and every other agent be aware of it.
 

@@ -31,12 +31,12 @@
 **H2:** `Connect the tools you already use.`
 
 **Body (44 words):**
-`Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Composio handles the OAuth. We never see your API keys.`
+`Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. A dedicated OAuth layer handles the connection. We never see your API keys.`
 
 **Receipt bullets:**
-- `25 integrations live today, growing toward Composio's full 500+ catalog`
+- `20+ integrations live today, growing toward a 500+ catalog`
 - `Common stack: Stripe + HubSpot + ClickUp + Harvest + Gmail + Notion + Slack`
-- `Composio holds the OAuth tokens; OpsRadar never stores customer business data — every request live-fetches from source`
+- `OAuth tokens are held by the broker, never on our servers; OpsRadar never stores customer business data — every request live-fetches from source`
 
 ---
 
@@ -140,7 +140,7 @@ You ──→ COO chat / Hire chat / per-employee chat
                     streamText loop
                            │
                            ▼
-                  Composio tool call
+                  Brokered tool call
                            │
                            ▼
                    Approval gate

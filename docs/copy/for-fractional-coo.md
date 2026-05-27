@@ -98,7 +98,7 @@ This page is the front door for that motion.
 **Section H2:** `Per-client OAuth. Per-client brain. One operator dashboard above all of them.`
 
 **Section body (84 words):**
-`Each client agency you onboard gets their own OAuth connections (their Stripe, their HubSpot, their ClickUp). Composio handles every credential — you never see the API keys. Each client gets their own company brain mirrored to their own Notion workspace. The 28 built-in agents run independently per client. If you add a custom AI employee (say, a "Bookkeeper named Sarah") you can deploy her to one client or to all six — your call. You see everything from /dashboard/fo, but each client only ever sees their own data.`
+`Each client you onboard gets their own OAuth connections (their Stripe, their HubSpot, their ClickUp). A dedicated OAuth broker handles every credential — you never see the API keys, and they never touch our servers. Each client gets their own company brain mirrored to their own Notion workspace. The 28 built-in agents run independently per client. If you add a custom AI employee (say, a "Bookkeeper named Sarah") you can deploy her to one client or to all six — your call. You see everything from /dashboard/fo, but each client only ever sees their own data.`
 
 **The trust story:**
 
@@ -145,7 +145,7 @@ This page is the front door for that motion.
 
 ### Q: "I'm not technical. Is this hard to set up?"
 
-`Onboarding a new client takes about 15 minutes: invite the client to your FO org, get them through Composio OAuth on their tools, choose which of the 28 agents to enable, set autonomy defaults. We have a 5-min Loom walking through it.`
+`Onboarding a new client takes about 15 minutes: invite the client to your FO org, get them through OAuth on their tools, choose which agents to enable, set autonomy defaults. We have a 5-min Loom walking through it.`
 
 ### Q: "What about pricing for my clients — do I bake OpsRadar into my retainer or charge separately?"
 

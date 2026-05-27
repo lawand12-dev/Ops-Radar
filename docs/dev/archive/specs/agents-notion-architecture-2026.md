@@ -1,5 +1,7 @@
 # OpsRadar Agents + Notion Brain — Full Architecture (May 2026)
 
+> **📦 Archived (2026-05-27).** Describes the pre-pivot architecture: the 28-agent stack on **Composio**. After the 2026-05-21 breach, Composio was removed and the broker is now Nango; the agent stack is rebuilding one at a time (`src/lib/agents/registry.ts` holds one agent today). For current truth see `docs/adr/0010-nango-broker.md` + `docs/adr/0011-hire-surface-collapse.md`. The Notion-brain design below largely survives the pivot; the broker/agent-count details do not.
+
 ## The Big Picture
 
 ```

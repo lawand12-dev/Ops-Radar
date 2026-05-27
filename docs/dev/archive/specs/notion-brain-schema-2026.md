@@ -1,5 +1,7 @@
 # OpsRadar Brain — Full Notion Schema (May 2026)
 
+> **📦 Archived (2026-05-27)** for housekeeping (was an orphan at `docs/dev/` root). The Notion-brain schema itself **survives the 2026-05-26 pivot** — only the broker that feeds it changed (Composio → Nango; see `docs/adr/0010-nango-broker.md`) and the agent fleet writing to it is mid-rebuild. Treat the schema below as still-accurate reference; treat any agent-count / broker mentions as pre-pivot.
+
 The customer-owned intelligence layer. Agents write here. Customers read, edit, own it forever.
 If they leave — it stays in their Notion. Nothing exported. Nothing lost.
 

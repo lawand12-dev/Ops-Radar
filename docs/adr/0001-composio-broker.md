@@ -1,5 +1,7 @@
 # Composio vs n8n / chatv2 — The Architecture Decision
 
+> **⚠️ SUPERSEDED by [`0010-nango-broker.md`](./0010-nango-broker.md) (2026-05-27).** Composio was removed wholesale after the 2026-05-21 breach (5,024 OAuth tokens compromised) plus repeated outages; the broker is now **Nango**. The *chatv2/n8n* half of this decision (kill the second backend, no visual workflow builder, agent + history + approval gate) still holds and was NOT reversed — only the choice of broker changed. This document is preserved unedited as the original decision record; do not act on its Composio-specific claims.
+
 > Compiled: 2026-05-23 · Purpose: capture the research that led to deprecating chatv2 and committing fully to Composio + Vercel AI SDK as the agent infrastructure. Decision artifact, not a roadmap.
 
 ---

@@ -48,7 +48,7 @@ In his own words: *"The hack was realizing the bottleneck was not demand or food
 
 Late 2025 onward (after leaving the restaurant): Lawand committed full-time to teaching himself the modern agentic stack. The progression matters because it maps perfectly onto Karpathy's Software 1.0 → 2.0 → 3.0 framework documented in [`../software-3-engineering-2026.md`](../software-3-engineering-2026.md):
 
-1. **Automation** (the Software 1.0 layer) — Vercel, GitHub, deployment pipelines, n8n-style workflow tooling
+1. **Automation** (the Software 1.0 layer) — Vercel, GitHub, deployment pipelines, workflow automation tooling
 2. **LLMs** (Software 2.0) — understanding what models are, what they do, where they fail
 3. **AI agents** (Software 3.0 — the new computer) — agent loops, tool use, orchestration
 4. **Coding** — directing agents to ship production code (vs writing it by hand)
@@ -87,7 +87,7 @@ Paul Graham's "determination" trait: scored at maximum.
 - Personal site: [atta.codes](https://atta.codes)
 - GitHub: [BDXBB](https://github.com/BDXBB)
 - Twitter: [@DevloperSelver](https://x.com/DevloperSelver)
-- Owns: chatv2 backend (Hono + Bun + MySQL, 14 migrations, multi-tenant auth, n8n workflow deployment, knowledge-base RAG, AI interactions audit log, admin console)
+- Owns: the multi-tenant agent compute layer — agent loop (Vercel AI SDK), approval gate, Nango integration broker, knowledge layer (Anthropic Agent Skills), AI interactions audit log, admin console. *(He originally built much of this as a separate "chatv2" backend — Hono + Bun + MySQL, multi-tenant auth, the agent compute layer; it was severed in CP-15 and its function folded into the one Next.js app. The infra work was real; it just doesn't run as a second backend anymore.)*
 
 ### Atta's shipping track record (why this is an unusual profile)
 
@@ -218,11 +218,11 @@ Pull these into the application narrative:
 |-------------|--------------|
 | 7 days (May 15-22) | 30+ docs reorganized; Wave 1 + partial Wave 2 enrichment across strategy/competitive/copy/design/GTM/fundraising/operations; 4-doc Software 3.0 theory stack; YC application track docs; 3 new strategy/design docs |
 | May 21 | 6 dashboard reliability fixes shipped to production in one day |
-| Past 30 days | 10 integration adapters (Stripe, HubSpot, ClickUp, Harvest, Pipedrive, Apollo, Asana, Monday, Toggl, Calendly); customer auth flow; tier enforcement; FO multi-client dashboard; chatv2 backend integration |
+| Past 30 days | 20+ integrations brokered via Nango (Stripe, HubSpot, ClickUp, Harvest, Pipedrive, Apollo, Asana, Monday, Toggl, Calendly, and more); customer auth flow; tier enforcement; FO multi-client dashboard; agent loop + approval gate |
 | Past 90 days | Full Next.js 16 + React 19 + Supabase application; audit funnel; AI COO chat prototype; agentic actions framework |
 
 **The velocity narrative for Q4 of the application** (something impressive):
-> *I shipped X production features in the last 90 days as a solo technical founder, operating from Iraq with constrained access to standard founder infrastructure. Built the full Next.js 16 + React 19 + Supabase application, 10 integration adapters with AES-256-GCM encryption, the multi-tenant dashboard, audit funnel, and AI COO chat. In parallel built a complete chatv2 backend (Hono + Bun + MySQL, 14 migrations, multi-tenant auth, n8n deployment, RAG layer) deployed independently. Last 7 days: shipped 6 reliability fixes, reorganized and research-enriched 30+ strategy docs, drafted the chatv2 strengthening plan. Velocity is the moat.*
+> *I shipped X production features in the last 90 days as a solo technical founder, operating from Iraq with constrained access to standard founder infrastructure. Built the full Next.js 16 + React 19 + Supabase application, 20+ integrations brokered via Nango, the multi-tenant dashboard, the agent loop + approval gate, and the AI COO chat. In parallel built the multi-tenant agent compute layer (Hono + Bun, multi-tenant auth, the agent loop) deployed independently. Last 7 days: shipped 6 reliability fixes, reorganized and research-enriched 30+ strategy docs. Velocity is the moat.*
 
 ---
 
@@ -236,7 +236,7 @@ What makes this configuration unusual in a *good* way:
 
 1. **Both technical.** Most YC teams have a "business" cofounder who can't ship code. OpsRadar's team is both shipping. No translation overhead between founders.
 2. **Clean ownership split.** Lawand owns the customer-facing application + strategy + GTM. Atta owns the backend / infrastructure / agentic compute layer. Two independent surfaces, two cofounders, zero ambiguity.
-3. **Real working separation already proven.** OpsRadar and chatv2 are already deployed as separate systems with a clean service-key API contract. The cofounder workflow isn't theoretical — it's been operating for months.
+3. **Real working separation already proven.** Lawand owns the customer-facing surface; Atta owns the agent compute layer (agent loop, approval gate, broker). The ownership split has been operating cleanly for months — originally as two deployed systems, and after CP-15 collapsed them into one Next.js app, as two clearly-owned halves of the same codebase. The cofounder workflow isn't theoretical.
 4. **Geographic alignment** (both Iraq) — eliminates the cross-time-zone friction that breaks distributed teams.
 5. **Age + experience asymmetry** as a feature — Atta brings 7 years of independent shipping (since age 14) and current technical-school depth; Lawand brings the operator/product/strategy lens. Different angles, same vector.
 
@@ -267,7 +267,7 @@ Removing the solo-founder concern doesn't remove the geographic one. Even with a
 2. **Get 1 named advisor** — ideally a US-based agency operator or YC alumnus who can sponsor the application
 3. **Publish 1 public artifact** — the agency benchmarks page, a public audit URL, OR a 2-min Loom showing the product working
 4. **Include explicit SF commitment for BOTH founders** in the application
-5. **Show velocity proof** — the 6 reliability fixes May 21, the 30+ docs reorganized in 7 days, the chatv2 backend's 14 migrations — these are the team's shared shipping evidence
+5. **Show velocity proof** — the 6 reliability fixes May 21, the 30+ docs reorganized in 7 days, the agent compute layer Atta built (14 migrations' worth of multi-tenant backend, since folded into the main app in CP-15) — these are the team's shared shipping evidence
 
 ---
 
@@ -427,10 +427,10 @@ When a YC partner says "tell me about yourselves" in the 10-minute interview, yo
 > *"I'm Lawand, I'm 18, from Halabja, Iraq. I spent five years from age 13 to 17 running operations at my uncle's wholesale and retail store, then three months as supervisor at a restaurant where I created a motorcycle delivery channel that didn't exist. Both jobs taught me the same thing: businesses don't fail from lack of demand, they fail from missing workflow. After that I taught myself the agentic stack — automation, LLMs, AI agents, vibe-coding — because I could see exactly what software needed to do for an agency. That's the OpsRadar insight: agencies have all the data and all the work; the workflow between them is missing. A fractional COO at $10K/month fills that gap manually; we replace the function with software."*
 
 **Atta (CTO, follows):**
-> *"I'm Atta, 20, also from Halabja. I've been independently building, deploying, and monetising software since I was 14 — Telegram bots, browser extensions, backend infrastructure for paying clients. I'm top of my class at Halabja Technical Institute, graduating June 2026 — the month the YC batch starts. I own OpsRadar's chatv2 backend: the multi-tenant agentic compute layer that powers the AI COO. We've deployed it as a separate system from the customer surface; clean service-key contract between them. The cofounder separation is structural, not theoretical."*
+> *"I'm Atta, 20, also from Halabja. I've been independently building, deploying, and monetising software since I was 14 — Telegram bots, browser extensions, backend infrastructure for paying clients. I'm top of my class at Halabja Technical Institute, graduating June 2026 — the month the YC batch starts. I own OpsRadar's agent compute layer: the multi-tenant agent loop, approval gate, and integration broker that power the AI COO. I built it first as a standalone backend, then folded it into the main app so there's one system to reason about. The cofounder separation is structural, not theoretical."*
 
 **Lawand (closes):**
-> *"In the last 90 days we've shipped the full Next.js application with 10 integration adapters, the multi-tenant dashboard, the audit funnel, and the chatv2 backend with 14 migrations. We have [N pilot agencies] on weekly feedback. Both of us are moving to SF in July for the batch."*
+> *"In the last 90 days we've shipped the full Next.js application with 20+ integrations brokered through Nango, the multi-tenant dashboard, the agent loop, and the approval gate — all in one app. We have [N pilot agencies] on weekly feedback. Both of us are moving to SF in July for the batch."*
 
 **Total: ~60-75 seconds across the two cofounders. Calm conviction, not pitch energy. Each cofounder speaks. No buzzwords.**
 
@@ -466,7 +466,7 @@ With the team composition resolved (2 cofounders, clean roles, 60/40 split, both
 | Record a 2-min Loom of the product working end-to-end | 30 min | High — YC partners will watch it if linked from the application | 🟡 Priority 3 |
 | Include explicit "BOTH cofounders will be in SF July 1" statement | 5 min | Critical — preempts the #1 location concern | ⚪ Easy |
 | State visa path (B-1 / O-1 / J-1) if known | 5 min | Medium — preempts logistics concern | ⚪ Easy |
-| State the lawand@opsradar.co domain ownership + the chatv2 backend's separate deployment | 5 min | Medium — proves operational maturity beyond the founders' ages | ⚪ Easy |
+| State the lawand@opsradar.co domain ownership + the multi-tenant agent compute layer Atta built and shipped to production | 5 min | Medium — proves operational maturity beyond the founders' ages | ⚪ Easy |
 
 **The single highest-leverage move:** **the 2-3 day pilot onboarding push.** Use Lawand's existing GitHub/Twitter/LinkedIn + Atta's developer network + the Fractionals United community (`docs/go-to-market/community-90-day-plan.md`) to land 1-3 design-partner agencies before submission.
 
@@ -477,7 +477,6 @@ With the team composition resolved (2 cofounders, clean roles, 60/40 split, both
 - [`what-yc-wants.md`](./what-yc-wants.md) — what YC wants from the application generally (this doc is the founder-profile zoom-in)
 - [`research-addendum.md`](./research-addendum.md) — market data and YC category alignment
 - [`build-architecture.md`](./build-architecture.md) — what you'll demo if invited to interview
-- [`../strategy/moats-and-friction-2026.md`](../strategy/moats-and-friction-2026.md) — Razorpay-grade moats narrative, 110-second YC interview script, 5-objection bank
 - [`../fundraising/vc-guide.md`](../fundraising/vc-guide.md) — broader VC outreach guide; updated YC S26 cycle reality
 
 ---

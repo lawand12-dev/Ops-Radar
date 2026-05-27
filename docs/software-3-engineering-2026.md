@@ -1,6 +1,6 @@
-<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/adr/0001-composio-broker.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+# Software 3.0 — The Engineering Theory (OpsRadar)
 
-# Software 3.0 — The Engineering Theory for chatv2 + OpsRadar
+> **📜 Read as theory, not architecture (banner updated 2026-05-27).** This doc was authored (2026-05-22) when OpsRadar had a separate **chatv2** backend and used **n8n** for execution. **Both were severed in CP-15**, and the integration broker (then Composio) was later replaced by **Nango** (2026-05-26, see [`adr/0010-nango-broker.md`](./adr/0010-nango-broker.md)). Every `chatv2` / `n8n` reference below is **historical illustration** — mentally substitute: chatv2 → the single Next.js app; "n8n execution" → the agent loop + approval gate executing through the Nango broker; the MCP server is real and lives at `/dashboard/settings/mcp`. **The Karpathy Software-3.0 theory itself is timeless and still governs** — that's why this doc is kept. For current architecture see [`README.md`](./README.md) "Architecture (current truth)" + the ADRs.
 
 *Written 2026-05-22. The canonical Karpathy-grade framework for how engineering itself has changed. Synthesised from two YC May 2026 briefings — "Engineering Transformation Strategy: The Shift to Agentic Software 3.0" and "Engineering the Agentic Era: A Strategic Roadmap for Macro-Action Workflows." This is the theory; [`build-methodology-2026.md`](./build-methodology-2026.md) is the tactical playbook; [`ai-native-company-2026.md`](./ai-native-company-2026.md) is the cultural blueprint.*
 
@@ -328,22 +328,22 @@ Per the briefing: *"Dobby the Elf — Karpathy's home-automation agent — didn'
 
 For OpsRadar, the long-term picture: agencies don't need to learn OpsRadar's UI. Their agent does. Their agent queries OpsRadar via MCP, gets data, surfaces it in whatever interface the user already prefers (Slack message, ChatGPT thread, Cursor sidebar).
 
-This is why the MCP server (Priority 5 in `architecture-2026.md`) is the most strategic surface of chatv2 — it's how OpsRadar participates in the Agentic Web. The dashboard is short-term necessary, long-term obsolete.
+This is why the MCP server (live at `/dashboard/settings/mcp`) is the most strategic surface — it's how OpsRadar participates in the Agentic Web. The dashboard is short-term necessary, long-term obsolete.
 
 ---
 
 # Part 10 — What This Means for the OpsRadar/chatv2 Roadmap
 
-The three philosophy docs on this branch ([this doc] + [`ai-native-company-2026.md`](./ai-native-company-2026.md) + [`build-methodology-2026.md`](./build-methodology-2026.md)) plus the technical plan ([`architecture-2026.md`](./architecture-2026.md)) form a coherent stack:
+The three philosophy docs on this branch ([this doc] + [`ai-native-company-2026.md`](./ai-native-company-2026.md) + [`build-methodology-2026.md`](./build-methodology-2026.md)) plus the current-architecture truth ([`README.md`](./README.md) + ADRs 0005–0012) form a coherent stack:
 
 | Doc | Question it answers |
 |-----|---------------------|
 | `software-3-engineering-2026.md` (this) | What is the *theory* of how engineering itself has changed? |
 | `build-methodology-2026.md` | How does *one engineer* actually work day-to-day under that theory? |
 | `ai-native-company-2026.md` | How does the *company* compound under that theory? |
-| `architecture-2026.md` | What *modules and migrations* implement all of the above in chatv2? |
+| current architecture (`README.md` + ADRs 0005-0012) | What *modules and migrations* implement all of the above in the live app? *(the old `architecture-2026.md`, a chatv2 sprint plan, was deleted with the CP-15 sever)* |
 
-The mapping to chatv2's 4-sprint roadmap (from `architecture-2026.md`):
+The mapping to the historical chatv2 4-sprint roadmap (preserved as illustration; the live equivalents are the agent loop + approval gate + Notion brain + MCP server):
 
 - **Sprint 1** (multi-pass agent + Langfuse) = the foundational *verifiable rails* the Auto-Research loop needs
 - **Sprint 2** (envelope encryption + vector RAG) = the tenant + memory primitives the Program MD layer requires
@@ -377,7 +377,7 @@ The Software 3.0 framing isn't compatible with several common patterns. Reject t
 - YC May 2026 "Engineering Transformation Strategy: The Shift to Agentic Software 3.0" — Parts 1-4, 8 of this doc
 - YC May 2026 "Engineering the Agentic Era: Macro-Action Workflows Roadmap" — Parts 2, 5, 6, 7, 9 of this doc
 - Companion docs on this branch:
-  - [`architecture-2026.md`](./architecture-2026.md)
+  - [`README.md`](./README.md) + ADRs 0005–0012 — current architecture *(replaced the deleted `architecture-2026.md`)*
   - [`build-methodology-2026.md`](./build-methodology-2026.md)
   - [`ai-native-company-2026.md`](./ai-native-company-2026.md)
 

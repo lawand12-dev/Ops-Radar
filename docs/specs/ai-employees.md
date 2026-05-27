@@ -1,5 +1,7 @@
 # AI Employees architecture — named, persona-bearing, per-chat AI teammates (May 2026)
 
+> **⚠️ Reconcile with current reality (2026-05-27).** This design predates the 2026-05-26 pivot. Two things changed under it: (1) the broker is now **Nango**, not Composio — every "scoped Composio tools" reference means scoped *broker* tools via `nangoProxy()` (see ADR 0010); (2) the "28 built-in agents" this spec builds on were torn down with Composio and are rebuilding one at a time (`src/lib/agents/registry.ts` holds one — Gmail — today; see ADR 0011). The AI-Employees *architecture* below is still the intended design; read the broker/agent-count specifics as pre-pivot.
+
 **Status**: research complete, NOT yet implemented.
 **Trigger**: post-CP-33, customer needs the ability to create custom AI employees — each with their own name, role, persona, dedicated chat thread, scoped tools, and persistent memory — going beyond the 28 pre-built agents and the event-triggered automations layer (CP-20).
 
@@ -474,10 +476,10 @@ Three commits, mirroring how CP-20 shipped:
 - [Notion Custom Agents — 21,000 built in beta (Y Build)](https://ybuild.ai/en/blog/notion-custom-agents-autonomous-ai-teammates-2026)
 
 ### Internal docs cross-referenced
-- [`./automations-architecture-2026.md`](./automations-architecture-2026.md) — Lindy 2.0 lessons applied to CP-20
-- [`./control-surface-research-2026.md`](./control-surface-research-2026.md) — approval gates and autonomy patterns
-- [`./three-tier-memory-architecture-2026.md`](./three-tier-memory-architecture-2026.md) — brain storage (employees inherit this)
-- [`./domain-agent-orchestration-2026.md`](./domain-agent-orchestration-2026.md) — supervisor-worker pattern, COO as orchestrator
-- [`./senior-coo-playbook-2026.md`](./senior-coo-playbook-2026.md) — playbook each employee can be templated from
-- [`./moats-and-friction-2026.md`](./moats-and-friction-2026.md) — moat construction; AI-employee surface is the YC #15 "AI OS" delivery vehicle
-- [`./path-a-strategy-2026.md`](./path-a-strategy-2026.md) — YC category map (#2, #4, #12, #15)
+- [`./automations.md`](./automations.md) — Lindy 2.0 lessons applied to CP-20
+- [`../adr/0005-control-first-approval-gate.md`](../adr/0005-control-first-approval-gate.md) — approval gates and autonomy patterns
+- [`../adr/0004-three-tier-memory.md`](../adr/0004-three-tier-memory.md) — brain storage (employees inherit this)
+- [`../adr/0006-orchestrator-worker-pattern.md`](../adr/0006-orchestrator-worker-pattern.md) — supervisor-worker pattern, COO as orchestrator
+- [`../adr/0007-senior-coo-playbook.md`](../adr/0007-senior-coo-playbook.md) — playbook each employee can be templated from
+- [`../positioning/moats.md`](../positioning/moats.md) — moat construction; AI-employee surface is the YC #15 "AI OS" delivery vehicle
+- [`../positioning/path-a-strategy.md`](../positioning/path-a-strategy.md) — YC category map (#2, #4, #12, #15)

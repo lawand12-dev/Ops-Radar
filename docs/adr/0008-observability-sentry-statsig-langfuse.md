@@ -1,6 +1,6 @@
 # Observability + production-safety stack decision (May 2026)
 
-> Compiled: 2026-05-25 · Purpose: capture the verified picks for OpsRadar's pre-launch observability and risk-mitigation stack — agent traces, error tracking, feature flags, and the pgvector / brain-search question (Karpathy-way vs hybrid). These are the items flagged in the architecture audit ([`./architecture-audit-2026.md`](./architecture-audit-2026.md)) as "ship before CP-34 hits production."
+> Compiled: 2026-05-25 · Purpose: capture the verified picks for OpsRadar's pre-launch observability and risk-mitigation stack — agent traces, error tracking, feature flags, and the pgvector / brain-search question (Karpathy-way vs hybrid). These are the items flagged in the architecture audit ([`../specs/architecture-audit.md`](../specs/architecture-audit.md)) as "ship before CP-34 hits production."
 
 ---
 
@@ -49,7 +49,7 @@ We are NOT making an either/or choice. We're sequencing:
 | **CP-35 Apprentice Mode** | **Add pgvector on selected paths** (Pattern Cards, Decision Log, learned-rules.md per employee) | When employees need "find similar past rejections" |
 | **Post-PMF (50+ customers)** | Consider hybrid BM25 + vector + LLM re-rank (qmd-style) | If customers' brains grow past ~200 docs and path-based gets slow |
 
-**Our own [`three-tier-memory-architecture-2026.md`](./three-tier-memory-architecture-2026.md) §Adjustment 2 already documented this exact sequencing:**
+**Our own [`0004-three-tier-memory.md`](./0004-three-tier-memory.md) §Adjustment 2 already documented this exact sequencing:**
 
 > *"pgvector ONLY on Notion-curated content (Pattern Cards, Decision Log, How We Work, Quarterly Memory pages) — NOT on raw events. Mem0 2026: pure vector is obsolete. 90% of agent queries are time-range filters, not semantic search."*
 
@@ -335,7 +335,7 @@ Recommend shipping in this order **before CP-34 hits production**:
 - [Flagsmith — Statsig Alternatives 2026](https://www.flagsmith.com/blog/statsig-alternatives)
 
 ### Internal cross-references
-- [`./architecture-audit-2026.md`](./architecture-audit-2026.md) — flagged these gaps
-- [`./moats-and-friction-2026.md`](./moats-and-friction-2026.md) — Langfuse named as moat
-- [`./three-tier-memory-architecture-2026.md`](./three-tier-memory-architecture-2026.md) — pgvector sequencing already documented
-- [`./scheduler-decision-2026.md`](./scheduler-decision-2026.md) — same open-source-escape philosophy applied here
+- [`../specs/architecture-audit.md`](../specs/architecture-audit.md) — flagged these gaps
+- [`../positioning/moats.md`](../positioning/moats.md) — Langfuse named as moat
+- [`./0004-three-tier-memory.md`](./0004-three-tier-memory.md) — pgvector sequencing already documented
+- [`./0002-scheduler-trigger-dev.md`](./0002-scheduler-trigger-dev.md) — same open-source-escape philosophy applied here

@@ -69,6 +69,7 @@ The pattern across SOC 2, PCI-DSS, GDPR, AES-256-GCM, and "no client data persis
 
 | Filter | When it must be ready | Triggers it gates |
 |---|---|---|
+| Nango broker: OAuth held off our servers, short-lived session tokens | Shipped 2026-05-26 | Any security questionnaire mentioning token custody |
 | AES-256-GCM customer keys + no client data rule | Already shipped | Any security questionnaire mentioning data-at-rest |
 | Public `/security` page documenting both | June 2026 | Inbound RFP responses; YC partner self-research |
 | GDPR DPA template + sub-processor list | July 2026 | First EU agency customer |
@@ -78,6 +79,20 @@ The pattern across SOC 2, PCI-DSS, GDPR, AES-256-GCM, and "no client data persis
 | EU AI Act Article 16 deployer registration | Q4 2026 | Any EU agency processing payment data via OpsRadar agents |
 
 Every row on this ladder is friction we are choosing on purpose. Every row makes the next row easier and the competitor's parallel attempt harder.
+
+### The token-custody moat — became real and marketable post-breach
+
+The newest row on the ladder above is the one the market handed us. As of late May 2026, **integration-token custody moved from a compliance footnote to a front-of-pitch buying criterion in under 30 days** — triggered by the Composio breach disclosure, where an attacker reached arbitrary code execution in the tool-execution sandbox and ~5,242 connections were exposed (5,001 GitHub tokens the largest). "Where do my OAuth tokens live and who can reach them" is now a primary selection question, with every serious player (Nango, BOND, Jootle) leading on a security-posture line ([competitive-refresh 2026-05-27](../research/2026-05-27-competitive-refresh.md) §2). MarkTechPost's May 25 buyer's guide explicitly frames the Composio incident as a vendor-selection criterion.
+
+OpsRadar migrated its broker **from Composio to Nango on 2026-05-26**, and the research is unambiguous that this was a **net security upgrade, not a lateral move** ([nango-broker-best-practices 2026-05-27](../research/2026-05-27-nango-broker-best-practices.md) §1–2):
+
+- **OAuth lives off our servers, behind short-lived session tokens.** Nango's Connect Sessions are the secure-by-default primary pattern — a backend-minted session token with a **~30-minute lifetime**, with credentials delivered to OpsRadar via webhook, never through the frontend. OpsRadar's own database only ever stored a `userId → connectionId` map — never tokens, never customer business data — so the breach surface in this class of incident is the broker's, not ours.
+- **White-label consent.** Nango shows OpsRadar's brand on the OAuth screen; Composio showed "Composio" — the right posture for a customer-facing product, and one a horizontal company-brain competitor that bolts on a generic broker cannot match without owning the OAuth app registrations.
+- **Self-host escape hatch.** Nango can run entirely in OpsRadar's own infra with OpsRadar-supplied encryption keys, so **no customer credential ever transits a third-party cloud** — the regulated-procurement answer Composio never had. This is the lever to pull the day a regulated buyer appears.
+
+Why this is a durable moat and not just a security checkbox: it is exactly the *defensive, friction-priced* advantage this document argues for. A competitor shipping an agency-COO MVP in a weekend on a managed broker inherits that broker's token-custody blast radius and the "broker brand on the consent screen" problem — and discovers both only when an enterprise procurement team or a post-breach buyer asks. We absorbed the migration friction first, so the answer is already on the shelf. The same Razorpay logic applies: the trust posture an AI cannot shortcut is now part of the moat, and the breach made it marketable.
+
+**Concrete action:** retire the stale "Composio holds OAuth tokens; we never store customer API keys" line from CLAUDE.md and every positioning surface — Composio is now the breach vendor we left. Replace it with the Nango posture (pass-through auth, no payload storage, short-lived scoped session tokens, customer can self-host the broker) on the public `/security` page, made citable in RFPs.
 
 ---
 
@@ -93,7 +108,7 @@ The agencies who *need* us are the ones in fierce competitive markets where ever
 
 **Concrete actions:**
 
-1. **Add an explicit anti-ICP section to the sales playbook.** Update [icp-customer-research.md](./icp-customer-research.md) with disqualifiers: (a) agencies whose client base is dominated by regulated industries with captive sourcing (e.g., default insurance carriers, exclusive pharma reps, government-mandated vendors), (b) GoHighLevel-style white-label resellers where the underlying SMBs cannot easily switch agency, (c) one-client agencies where 60%+ of revenue is a single procurement-bound enterprise account. These look like good logos and are bad customers.
+1. **Add an explicit anti-ICP section to the sales playbook.** Update [icp-customer-research.md](../research/2026-05-icp-customer.md) with disqualifiers: (a) agencies whose client base is dominated by regulated industries with captive sourcing (e.g., default insurance carriers, exclusive pharma reps, government-mandated vendors), (b) GoHighLevel-style white-label resellers where the underlying SMBs cannot easily switch agency, (c) one-client agencies where 60%+ of revenue is a single procurement-bound enterprise account. These look like good logos and are bad customers.
 
 2. **Target the segment where churn risk is the buyer's daily anxiety.** Mid-market digital agencies serving DTC e-commerce, SaaS marketing, and venture-backed startups — segments where the agency's clients have unlimited alternatives and switch every 18 months on average. These owners *feel* the cost of one unprofitable client because they know the next one is harder to win. The cold-email opening ("when was the last time you discovered a client had been losing you money for more than a month?") only lands with founders whose answer comes with a winced timeline.
 
@@ -101,7 +116,7 @@ The agencies who *need* us are the ones in fierce competitive markets where ever
 
 ### The qualifying question, rewritten through this lens
 
-The current 15-minute qualifier in [path-a-strategy-2026.md](./path-a-strategy-2026.md) Part 3.1 is:
+The current 15-minute qualifier in [path-a-strategy-2026.md](./path-a-strategy.md) Part 3.1 is:
 
 > *"When was the last time you discovered a client had been losing you money for more than a month — and what did it cost you?"*
 
@@ -218,7 +233,7 @@ Every dashboard request currently live-fetches synchronously, which means cold-c
 The current chat is REST-style. Vercel AI SDK v6 with generative UI primitives ([build architecture](../yc/build-architecture.md)) makes streamed tool calls + inline action confirmation cards a native pattern, not a port. The token-cost difference between batch and streaming is roughly zero; the UX difference is roughly everything. Anyone starting today goes streaming-first or loses to whoever does.
 
 **5. I would have launched with a public anonymised benchmark, not "benchmarks coming soon."**
-The benchmark dataset is the long-term moat (per [path-a-strategy-2026.md](./path-a-strategy-2026.md) Part 5.3). The current product gates it behind sign-up. A Day Zero version would launch a public page at `/benchmarks/agency-margin-2026` with 5-10 anonymised data points scraped from public agency Twitter, ProfitWell reports, and Parakeeto's open data — even before we have customers. That page is a permanent inbound channel that compounds; we delayed it for no good reason.
+The benchmark dataset is the long-term moat (per [path-a-strategy-2026.md](./path-a-strategy.md) Part 5.3). The current product gates it behind sign-up. A Day Zero version would launch a public page at `/benchmarks/agency-margin-2026` with 5-10 anonymised data points scraped from public agency Twitter, ProfitWell reports, and Parakeeto's open data — even before we have customers. That page is a permanent inbound channel that compounds; we delayed it for no good reason.
 
 **6. I would have used OAuth 2.1 with scoped tokens for *every* internal API call, not just the future MCP server.**
 This is a security-as-moat move. Today's internal API routes use Supabase session cookies. From a Day Zero, every route would be OAuth-scoped — meaning the same auth model that secures the MCP server also secures the dashboard. This means SOC 2 auditors see one auth flow, not two; it means we can demo "external Claude Desktop and internal dashboard use the same security primitives" which is a real differentiator.
@@ -249,7 +264,7 @@ A founder who is going to spend ten years on this needs to find the work itself 
 
 The ten-year question for OpsRadar is not "will the market be there?" — Toast, ServiceTitan, Clio, Veeva, GoHighLevel are the existence proofs at the vertical level, and the AI-OS category sized at $107B by 2033 ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report)) is the existence proof at the horizontal level. The question is whether the founder is willing to be the person who knows agency margin patterns better than anyone alive ten years from now.
 
-The honest answer right now: **yes, but only if the work compounds.** If year three looks like year one (same dashboard, more agencies), the answer flips to no. If year three looks like "we run an annual OpsRadar Index that the industry quotes, we are the default for fractional COOs, the MCP server is the way agency data flows into every agent in the ecosystem" — then the answer holds. The architecture in [build-architecture.md](../yc/build-architecture.md) is structured for the compounding case. The strategy in [path-a-strategy-2026.md](./path-a-strategy-2026.md) Section 6.3 (Embedded Fintech long game) is structured for the compounding case. The 10-year test passes — conditionally on the founder enforcing the compounding-case roadmap and refusing the easy SKU expansions that flatten it.
+The honest answer right now: **yes, but only if the work compounds.** If year three looks like year one (same dashboard, more agencies), the answer flips to no. If year three looks like "we run an annual OpsRadar Index that the industry quotes, we are the default for fractional COOs, the MCP server is the way agency data flows into every agent in the ecosystem" — then the answer holds. The architecture in [build-architecture.md](../yc/build-architecture.md) is structured for the compounding case. The strategy in [path-a-strategy-2026.md](./path-a-strategy.md) Section 6.3 (Embedded Fintech long game) is structured for the compounding case. The 10-year test passes — conditionally on the founder enforcing the compounding-case roadmap and refusing the easy SKU expansions that flatten it.
 
 **Concrete actions:**
 
@@ -291,7 +306,7 @@ The supporting deck slides:
 | Slide | Headline | Evidence |
 |---|---|---|
 | Compliance moat | "SOC 2 Type II AI-extended scope by Q3 2026 — competitors haven't started" | Vanta / Drata gap on AI-specific evidence ([Knowlee 2026](https://www.knowlee.ai/blog/soc-2-type-2-for-ai-companies-2026)); 35% faster enterprise close on certified vendors ([Bright Defense 2026](https://www.brightdefense.com/resources/soc-2-for-ai-startups/)) |
-| ICP discipline | "We refuse the agencies whose clients can't leave" | Anti-ICP section in [icp-customer-research.md](./icp-customer-research.md); Razorpay-Indian-education parallel |
+| ICP discipline | "We refuse the agencies whose clients can't leave" | Anti-ICP section in [icp-customer-research.md](../research/2026-05-icp-customer.md); Razorpay-Indian-education parallel |
 | Trust as product | "Founder takes every escalation call, customers 1-50" | Pricing page commitment; Gartner amplification framing ([Gartner May 2026](https://www.gartner.com/en/newsroom/press-releases/2026-05-05-gartner-says-autonomous-business-and-artificial-intelligence-layoffs-may-create-budget-room-but-do-not-deliver-returns)) |
 | MCP-native | "First agency operations layer in Claude Desktop" | 9,400 MCP servers, 78% enterprise teams in production ([DigitalApplied 2026](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol)); no agency-PSA competitor listed |
 | Day Zero Audit | "We re-architect from scratch every 6 months" | This document; founder commitment |
@@ -312,7 +327,7 @@ They will build a horizontal agency-AI tool that handles three of our ten integr
 Nothing — at the surface level. They can ship an agency-COO MVP in three months. They cannot in three months ship: AES-256-GCM customer key encryption with a public-documented threat model, a SOC 2 Type II report with AI-extended scope, the first MCP server in the agency category listed in Claude Desktop's discovery surface, an outcome-learning feedback loop trained on real owner confirmations, and a fractional COO channel with a 25%-lifetime-rev-share program already seeded into Fractionals United. The competitive game in 2026 is no longer about getting to MVP. It's about getting through the next nine months of stacked friction that everyone else postpones. (See Provocation 4 and Provocation 5.)
 
 **"Aren't agencies a small market?"**
-US agency market is $192B; global is $474B. The fractional-executive market the COO product replaces is $9.4B → $24.7B by 2034. The AI OS category is $107B by 2033 ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report)). The right comp set is Toast (restaurants, $2B+ ARR) and ServiceTitan (home services, $8.9B IPO). Vertical SaaS valuation premium is 25-30% over horizontal ([path-a-strategy-2026.md](./path-a-strategy-2026.md) Part 6.1). The market is large enough to support a category-defining outcome. The question is not market size; the question is the moat — which is what this document is about. (See Provocation 6.)
+US agency market is $192B; global is $474B. The fractional-executive market the COO product replaces is $9.4B → $24.7B by 2034. The AI OS category is $107B by 2033 ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report)). The right comp set is Toast (restaurants, $2B+ ARR) and ServiceTitan (home services, $8.9B IPO). Vertical SaaS valuation premium is 25-30% over horizontal ([path-a-strategy-2026.md](./path-a-strategy.md) Part 6.1). The market is large enough to support a category-defining outcome. The question is not market size; the question is the moat — which is what this document is about. (See Provocation 6.)
 
 **"Why now? Why hasn't an incumbent shipped this?"**
 The agency-PSA incumbents (Kantata, Productive.io, Scoro) have data models built for billing, not agent tool-use. Retrofitting them is a two-year refactor each is unwilling to commit to until customer demand becomes undeniable — which is exactly the demonetisation-equivalent moment OpsRadar is moving into ahead of. The horizontal company-brain plays (Hyper, Glean) have no agency data sources and no per-vertical benchmarks. The window is roughly 18 months wide before one of them ships a meaningful response; that is the asymmetric bet. (See Provocation 4.)
@@ -374,7 +389,7 @@ Each item below is traceable to a specific provocation. None is invented; all fo
 |---|---|---|---|
 | Day 1 (today) | Start SOC 2 Type II observation window via Vanta/Drata | 1 | Founder |
 | Day 1 | Publish `/security` page with AES-256-GCM, no-data-persistence specifics | 1 | Founder |
-| Day 3 | Add disqualifier section to [icp-customer-research.md](./icp-customer-research.md) | 2 | Founder |
+| Day 3 | Add disqualifier section to [icp-customer-research.md](../research/2026-05-icp-customer.md) | 2 | Founder |
 | Day 5 | Rewrite cold-email second-question to "if your three biggest clients each got a 20%-lower pitch tomorrow…" | 2 | Founder |
 | Day 7 | Pricing page: "Founder takes every escalation call, customers 1-50" | 3 | Founder |
 | Day 10 | Public `status.opsradar.com` page live with per-integration health | 3 | Founder |
@@ -402,7 +417,9 @@ A doc this confident invites pushback. Three explicit non-claims, to sharpen wha
 
 **It does not claim OpsRadar will win on technology.** The technology stack — Vercel AI SDK v6, Inngest, pgvector, OAuth 2.1 MCP, GPT-4o, Anthropic computer-use — is available to every well-resourced 2026 startup. None of it is OpsRadar's moat. The moat is the combination of friction the technology gets wrapped in.
 
-**It does not claim regulation is OpsRadar's only moat.** The strategy doc ([path-a-strategy-2026.md](./path-a-strategy-2026.md) Part 5.3) is correct that the compounding agency-benchmark dataset is also a moat, of the *generative* variety (per [Menlo Ventures](https://menlovc.com/perspective/software-finally-gets-to-work-the-opportunity-in-vertical-ai/)). This document focuses on the *defensive* moats because those are the ones the AI-commoditisation objection ignores. Both matter; the Menlo framing argues that companies with both win.
+**It does not claim regulation is OpsRadar's only moat.** The strategy doc ([path-a-strategy-2026.md](./path-a-strategy.md) Part 5.3) is correct that the compounding agency-benchmark dataset is also a moat, of the *generative* variety (per [Menlo Ventures](https://menlovc.com/perspective/software-finally-gets-to-work-the-opportunity-in-vertical-ai/)). This document focuses on the *defensive* moats because those are the ones the AI-commoditisation objection ignores. Both matter; the Menlo framing argues that companies with both win.
+
+The strongest *generative* moat is the **customer-owned brain**, and OpsRadar's own engineering stress-test scores it accordingly. The brain/memory layer is the **highest-aligned pillar at 90%** — the architecture review calls its git-style commit-graph + `author_type` + `agent_run_id` versioning "real moat, not ceremony," and names the brain pillar "your strongest engineering moat" ([ADR 0009 — engineering stack 2026-05](../adr/0009-engineering-stack-2026-05.md)). The competitive read confirms the demand side: the AI-COO-for-services whitespace is now defined precisely as *services-operator judgment + a customer-owned brain + SMB-mid pricing* — none of the surfaced competitors (Jootle, Glean, BOND, Notion AI) have a customer-owned brain, and Notion AI specifically still cannot act across the customer's other tools as of April 2026 ([competitive-refresh 2026-05-27](../research/2026-05-27-competitive-refresh.md) §4). The brain travels even though the wedge is narrow — it is the asset the customer owns forever, and the one a horizontal company-brain play has no vertical context to fill.
 
 **It does not claim the six provocations apply to every startup.** A consumer-AI app, an infrastructure layer for AI, a horizontal productivity tool — these have different moat shapes. The Razorpay analogy is specifically apt for vertical AI products selling into competitive markets with structural compliance gradients. That is exactly OpsRadar's shape. Founders building anything else should read this with calibration.
 
@@ -415,9 +432,9 @@ A doc this confident invites pushback. Three explicit non-claims, to sharpen wha
 
 Reading this document carefully implies specific edits to seven other documents in the strategy folder. The list, with the one-line edit each needs, in priority order:
 
-1. **[path-a-strategy-2026.md](./path-a-strategy-2026.md) Part 3.3 ("What NOT to Chase").** Add the explicit captive-channel section from this document's Provocation 2 table. Frame as anti-ICP, not nice-to-have screening.
+1. **[path-a-strategy-2026.md](./path-a-strategy.md) Part 3.3 ("What NOT to Chase").** Add the explicit captive-channel section from this document's Provocation 2 table. Frame as anti-ICP, not nice-to-have screening.
 
-2. **[icp-customer-research.md](./icp-customer-research.md).** Add the second qualifying question ("if your three biggest clients each got a 20%-lower pitch tomorrow…"). Update SDR briefing to score the answer.
+2. **[icp-customer-research.md](../research/2026-05-icp-customer.md).** Add the second qualifying question ("if your three biggest clients each got a 20%-lower pitch tomorrow…"). Update SDR briefing to score the answer.
 
 3. **[../go-to-market/cold-email-playbook.md](../go-to-market/cold-email-playbook.md).** Add a sixth subject-line template variant for technical agency founders: *"First agency operations layer that works in Claude Desktop"* — the MCP-native asymmetric bet (Provocation 4) needs an outreach surface.
 
@@ -484,6 +501,6 @@ Total runtime: ~110 seconds. Six provocations referenced; zero feature monologue
 - [Menlo Ventures — Software Finally Gets to Work: The Opportunity in Vertical AI, May 2026](https://menlovc.com/perspective/software-finally-gets-to-work-the-opportunity-in-vertical-ai/)
 - [Beancount.io — The Vertical SaaS Survival Guide: How to Compete Against OpenAI, Claude, and Gemini's AI Agents, Feb 2026](https://beancount.io/blog/2026/02/02/vertical-saas-survival-guide-competing-against-ai-giants)
 - [Razorpay Statistics 2026 — CoinLaw](https://coinlaw.io/razorpay-statistics/) (also surfaced founding-team context)
-- Internal: [path-a-strategy-2026.md](./path-a-strategy-2026.md) · [build-architecture.md](../yc/build-architecture.md) · [research-addendum.md](../yc/research-addendum.md) · [icp-customer-research.md](./icp-customer-research.md) · [cold-email-playbook.md](../go-to-market/cold-email-playbook.md)
+- Internal: [path-a-strategy-2026.md](./path-a-strategy.md) · [build-architecture.md](../yc/build-architecture.md) · [research-addendum.md](../yc/research-addendum.md) · [icp-customer-research.md](../research/2026-05-icp-customer.md) · [cold-email-playbook.md](../go-to-market/cold-email-playbook.md)
 
 *Compiled 2026-05-22. Living document — re-read at every fundraising milestone and after every Day Zero Audit.*

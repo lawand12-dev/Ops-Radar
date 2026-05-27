@@ -95,7 +95,7 @@
 
 ### Where are my OAuth tokens stored?
 
-`At Composio, not at OpsRadar. We never see your Stripe/HubSpot/Notion API keys. Composio brokers every tool call — they hold the OAuth, we hold the agent logic.`
+`Never on our servers. A dedicated OAuth broker holds your tokens and brokers every tool call — we hold the agent logic, not your Stripe/HubSpot/Notion credentials. Connections use short-lived session tokens, so a vendor incident can't expose your long-lived keys.`
 
 ### Is my data multi-tenant?
 

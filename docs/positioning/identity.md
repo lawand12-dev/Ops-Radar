@@ -29,7 +29,7 @@ Three corrections were locked from the inversions research (`docs/positioning/in
    - Add `/for/fractional-coo` marketing page positioning OpsRadar's existing `/dashboard/fo` surface as the multi-client engine.
    - Why: each fractional COO is a 5-10× leveraged buyer (manages 5-10 agency clients). The Iraq-founder constraint kills every higher-ACV pivot (law firms / family offices / RIAs all need US-domiciled vendor trust signals). Fractional COOs are the **only candidate where the Iraq constraint is a non-issue** because they're remote-first solo operators. ~15-20% probability of $10M ARR in 18 months vs ~10-12% for agencies-only.
 
-What did NOT change after inversions: two-pillar identity, pricing structure ($99 / $499 / $1499 / $2999 + $0.05 overage), the approval gate itself, the 28 specialists, Composio, Notion mirror, ADR 0009 engineering stack.
+What did NOT change after inversions: two-pillar identity, pricing structure ($99 / $499 / $1499 / $2999 + $0.05 overage), the approval gate itself, the specialist-agent model, the OAuth-broker layer, Notion mirror, ADR 0009 engineering stack. *(Note 2026-05-27: the broker is now Nango, not Composio — capability unchanged, security posture improved; see ADR 0010. The "28 specialists" are mid-rebuild on Nango — see ADR 0011.)*
 
 ---
 
@@ -151,8 +151,8 @@ From the competitor-review research (`docs/research/2026-05-25-competitor-pain-p
 |---|---|
 | Unpredictable credit/usage pricing (Lindy: $50 quietly becomes $100+) | Flat tier + ONE visible meter ($0.05/approved action over cap) — the only thing that bills above the floor is something the customer literally clicked Approve on |
 | Hallucinations / confidently wrong outputs | Brain stores **citable** facts; agents must reference brain paths in queue_action; approval gate makes consequence of any hallucination zero |
-| Agents that can only read, not act | Composio gives writes across 25→500+ tools; approval gate makes writes safe |
-| Missing / shallow integrations | Composio breadth is our durable moat (Lindy bolted on Pipedream to fight this — we have it natively from day one) |
+| Agents that can only read, not act | Broker (Nango) gives writes across 20→500+ tools; approval gate makes writes safe |
+| Missing / shallow integrations | Broker breadth is our durable moat — and post-2026-05-21-breach, holding tokens off our servers behind short-lived session tokens is now also a *trust* moat (Lindy bolted on Pipedream to fight breadth — we have it natively) |
 | Autonomous agents go off the rails (Devin's "spent days pursuing impossible solutions") | Per-tool autonomy (Ask/Auto/Off) + approval gate + step caps |
 
 **Every top-5 pain has a structural OpsRadar answer.** Not a feature claim — a structural answer.
@@ -176,7 +176,7 @@ The investor-thesis report was unambiguous (`docs/research/2026-05-25-investor-2
 
 **Empirical conclusion**: horizontal-at-SMB has a 3-8% probability of reaching $10M ARR in 18 months (`docs/research/2026-05-25-horizontal-workforce-comps.md` Q4). Vertical-at-SMB has a 30-50% probability based on the funded comparables.
 
-This is the hardest finding to absorb because it contradicts the "Composio breadth" instinct. The honest read: **Composio breadth is the moat, not the wedge.** You wedge in with one vertical, you keep customers forever because the brain travels with them as they expand.
+This is the hardest finding to absorb because it contradicts the "broker breadth" instinct. The honest read: **broker breadth is the moat, not the wedge.** You wedge in with one vertical, you keep customers forever because the brain travels with them as they expand.
 
 ---
 
@@ -193,7 +193,7 @@ That's the homepage hero. Two pillars in 12 words. No "Chief of Staff" (BOND own
 Two candidates from the research, both defensible:
 
 **Option A — Marketing & creative agencies, $2-10M revenue, retainer-shaped.**
-- **Pros**: zero education tax (they already buy AI tools), pre-built integrations (every Composio tool we wire matches their stack), fractional-COO spend is $3-10K/mo (confirmed Upwork demand), substitution-readiness highest of any vertical (`docs/research/2026-05-25-fractional-coo-labor-gap.md`).
+- **Pros**: zero education tax (they already buy AI tools), pre-built integrations (every broker tool we wire matches their stack), fractional-COO spend is $3-10K/mo (confirmed Upwork demand), substitution-readiness highest of any vertical (`docs/research/2026-05-25-fractional-coo-labor-gap.md`).
 - **Cons**: smaller ceiling, no $1B+ pure-play AI-COO-for-agencies comp exists (signal of weak demand at scale, or unattacked wedge — unclear).
 - **YC fit**: matches the "AI [role] for [vertical]" template; Rankai (X25) is closest precedent.
 
@@ -254,7 +254,7 @@ Public-by-default on `/dashboard`. Totals: approved automations × estimated tim
 
 ## The YC application paragraph (ready to use)
 
-> *"OpsRadar gives every business an AI workforce and a company brain. The 15-person agency we sell to is paying $5,200/month for ten separate AI tools — Notion AI, Lindy, Zapier, ChatGPT, an AI SDR, a writing assistant — none of which talk to each other. We replace all ten with 28 named specialist AI employees (Riley, Cole, Scott, Brian, Penny — Revenue, Collections, Scope, Briefing, Profitability — and 23 more) that read across 25→500+ Composio integrations, take action only with the owner's approval, and write everything they learn into a git-style versioned brain mirrored to the customer's Notion. **The defensible moat is the stacking**: vertical-specialist agents, signed-by-author-agent provenance on every brain fact, commit-graph versioning with diff/blame/rollback, and customer ownership in their own Notion — no competitor today combines all four. Penny cites Cole's payment-history entries by name when projecting Acme's cash, and you can click through to see the citation. Three demand-validated differentiators close the trust loop: (1) Apprentice Mode — the workforce learns from every rejection so it gets smarter the longer you use it, (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters today, (3) approval-history personalization — after 30 approvals the drafts sound like you. We're the anti-11x: control-first, labor-priced ($0.05 per approved action), wedge-in via marketing agencies then expanding to home services on the proven Avoca/ServiceTitan paid-demand precedent. YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
+> *"OpsRadar gives every business an AI workforce and a company brain. The 15-person agency we sell to is paying $5,200/month for ten separate AI tools — Notion AI, Lindy, Zapier, ChatGPT, an AI SDR, a writing assistant — none of which talk to each other. We replace all ten with 28 named specialist AI employees (Riley, Cole, Scott, Brian, Penny — Revenue, Collections, Scope, Briefing, Profitability — and 23 more) that read across 25→500+ integrations through the OAuth broker, take action only with the owner's approval, and write everything they learn into a git-style versioned brain mirrored to the customer's Notion. **The defensible moat is the stacking**: vertical-specialist agents, signed-by-author-agent provenance on every brain fact, commit-graph versioning with diff/blame/rollback, and customer ownership in their own Notion — no competitor today combines all four. Penny cites Cole's payment-history entries by name when projecting Acme's cash, and you can click through to see the citation. Three demand-validated differentiators close the trust loop: (1) Apprentice Mode — the workforce learns from every rejection so it gets smarter the longer you use it, (2) cross-agent synthesis — one COO that reads 17 specialist agents and surfaces the one thing that matters today, (3) approval-history personalization — after 30 approvals the drafts sound like you. We're the anti-11x: control-first, labor-priced ($0.05 per approved action). We build broad and sell narrow — the product serves any service business that bills for client time (agencies, dev shops, recruiting firms, consultancies, accounting firms), and we wedge in through one sharp beachhead at a time (marketing agencies first, then adjacent service businesses on the proven Avoca/ServiceTitan paid-demand precedent). YC RFS #4 ('every company will need a company brain') matches our second pillar verbatim. Bessemer's 'Year of the Agent Employee' thesis matches our first."*
 
 That paragraph triangulates: **Bessemer Agent Employee + YC RFS #4 + anti-11x positioning + concrete pricing model + named wedge + three demand-validated moats + integration breadth as moat.** Every clause cites an evidence anchor in `docs/research/2026-05-25-*.md`.
 
@@ -278,7 +278,7 @@ The marketing copy in `docs/copy/pricing.md` (v3, shipped) **promises tier limit
 
 **The honest scope**: 1-2 weeks of engineering. Sequence:
 1. New `tier_limits` migration (per-tier integration cap, seat cap, action cap)
-2. Enforcement points: Composio OAuth flow, team invite, hire chat count
+2. Enforcement points: broker (Nango) OAuth flow, team invite, hire chat count
 3. Customer-facing usage UI (extends `/dashboard/settings/usage` — CP-23 base exists)
 4. Stripe metered usage component for overage billing
 
@@ -291,7 +291,7 @@ The marketing copy in `docs/copy/pricing.md` (v3, shipped) **promises tier limit
 1. **Agencies vs home services as Tier 1 wedge.** Both defensible. Decision should be made with founder gut + Iraq-based-founder constraints (sales motion you can actually run from Iraq + your network). Research can't answer this — only you can.
 2. **Whether Notion Brain mirror should become OPTIONAL or REMAIN mandatory.** Today it's tightly coupled. Some customers may not want Notion. Worth exploring "brain in our Postgres only, no Notion" tier.
 3. **Should the customer-visible "AI workforce" sidebar entry rename from `YOUR TEAM` → `YOUR WORKFORCE`?** Wording question; matters for marketing alignment.
-4. **Marketing copy migration to the new identity.** Homepage hero, `/pricing`, `/product`, `/about`, `/how-it-works` all still carry "AI Chief of Staff for marketing agencies" framing. Migration is ~10 pages of `docs/copy/*.md` updates. Hold until Tier 1 vertical wedge is locked.
+4. **Marketing copy migration to the new identity.** Homepage hero, `/pricing`, `/product`, `/about`, `/how-it-works` all still carry the old "AI Chief of Staff for marketing agencies" framing. New framing (2026-05-27): AI COO for service businesses that bill for client time — build broad, but keep a sharp beachhead persona in the hero so it still converts. Migration is ~10 pages of `docs/copy/*.md` updates. Hold until Tier 1 vertical wedge is locked.
 
 ---
 

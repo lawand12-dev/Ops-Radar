@@ -1,257 +1,141 @@
-# How We Build the 4 YC Categories — With Automation/n8n as the Execution Thread
+# How One System Earns 4 YC Categories — The Brain, the Fleet, the Gate, the Fabric
 
-*Written 2026-05-22. The unified engineering plan that simultaneously delivers all four YC RFS categories OpsRadar targets (#2 AI-Native Service Companies, #4 Company Brain, #12 Software for Agents, #15 AI OS for Companies). Companion to [`build-architecture.md`](./build-architecture.md) — that doc is the chatv2 technical plan; this doc is the YC-category mapping with n8n surfaced as the execution thread.*
+*Written 2026-05-22. Rewritten 2026-05-27 — the original "n8n is the body, chatv2 is the spinal cord" execution-thread framing was severed in CP-15 (chatv2 + n8n killed; see [`../adr/0001-composio-broker.md`](../adr/0001-composio-broker.md)), and the broker was swapped Composio→Nango on 2026-05-26 ([`../adr/0010-nango-broker.md`](../adr/0010-nango-broker.md)). This version maps the four YC RFS categories onto the architecture that actually exists now: a Nango tool-fabric, the agent loop + approval gate, a customer-owned Notion brain backed by `SKILL.md` files, the Hire surface, and a customer-facing MCP server. Companion to [`build-architecture.md`](./build-architecture.md) and the ADR set.*
 
-> **The unifying insight:** the same 8-sprint engineering sequence delivers all 4 YC categories. We don't pick categories — we build one coherent system that simultaneously satisfies all four. **n8n is the body. The COO agent is the brain. chatv2's chat-to-workflow generation is the spinal cord. OpsRadar is the entire nervous system for an agency.**
+> **The unifying insight survives the pivot:** we do not pick a YC category. The *same* system earns all four — because the four categories are four views of one nervous system. The **customer-owned Notion brain + `SKILL.md` files** are the executable Company Brain (#4). The **agent fleet + approval gate** are the service company that does the work (#2). The **MCP server** makes that system a first-class citizen for other agents (#12). The **Nango tool-fabric + agent loop** are the closed-loop OS that observes, decides, and acts (#15). Build the system; the categories fall out by construction.
 
 ---
 
-## Why n8n is central, not incidental
+## What changed, and why the old framing is dead
 
-The COO agent **observes and reasons** (the brain). Automation **acts** (the limbs). Without an execution layer, OpsRadar is a smart dashboard that tells you what's wrong. With n8n, it's a fractional COO that actually executes — sends the invoice reminder, updates the deal stage, adjusts the retainer, fires the margin alert email.
+The first version of this doc routed every category through n8n ("the body") and chatv2's chat-to-workflow generator ("the spinal cord"). **Both are gone.** CP-15 severed chatv2 and ruled out a workflow generator entirely; the durable-primitive answer, if ever needed, is Trigger.dev / Vercel cron, not a generator. The 2026-05-21 Composio breach then forced a wholesale broker swap to Nango on 2026-05-26.
 
-This is the entire point of replacing a $10K/month fractional COO. A human COO doesn't just *notice* problems — they *act on them*. The automation layer is what makes OpsRadar's "AI COO" claim defensible vs every dashboard product on the market.
+So the execution story is no longer "the COO proposes → chatv2 generates an n8n workflow → it runs on the customer's n8n." It is now, end to end:
 
-**Architectural rule:** each customer runs their own n8n instance (per-user encrypted API key). chatv2 generates + deploys workflows to it. The customer **owns their workflows forever**, even if they leave OpsRadar. This is a moat and a trust differentiator vs ClickUp Super Agents (locked to ClickUp's workspace).
+```
+agent loop (Vercel AI SDK) proposes an action, with reasoning + confidence
+        ↓
+approval gate (Ask / Auto / Off, per-tool autonomy)   src/lib/agents/approval-gate.ts
+        ↓
+broker (Nango) executes the action AS the customer      src/lib/nango.ts  (nangoProxy)
+        ↓
+outcome recorded → /dashboard/actions + outcome tracking → the brain learns
+```
+
+No generator. No second backend. No customer-run n8n instance. The customer owns their **brain** (the Notion workspace + the skills that describe how their business runs), not a pile of workflow JSON.
 
 ### Internal language vs external language
 
-| Internal (this doc, eng, architecture) | External (customer copy, marketing, application) |
-|----------------------------------------|-------------------------------------------------|
-| n8n | "your workflow engine" or just "actions" |
-| automation | "what to do next" or "agentic actions" |
-| chatv2 | nothing — never surfaced |
-| chat-to-automation generation | "describe what you need; OpsRadar builds it" |
-| workflow JSON | "a custom workflow we built for your agency" |
+| Internal (eng, architecture) | External (customer copy, application) |
+|---|---|
+| Nango | "OAuth-secured connections; tokens never touch our servers" |
+| `nangoProxy` / agent loop | "the AI does the work" / "agentic actions" |
+| approval gate (Ask/Auto/Off) | "you approve before anything happens" |
+| `SKILL.md` files + Notion brain | "your company brain — an executable record of how you run" |
+| MCP server | "OpsRadar is usable by your other AI tools too" |
 
-Per [CLAUDE.md](../../CLAUDE.md) voice rules: **never surface n8n in customer copy.** The implementation detail is invisible — exactly like Stripe is invisible behind your checkout flow. YC partners are sophisticated enough to ask "what's your execution layer?" — the credible answer is *"n8n on each customer's own infrastructure; we generate and deploy workflows to it; they own them forever."*
+Per [CLAUDE.md](../../CLAUDE.md) voice rules: keep the vendor name out of customer copy (decided in [`../adr/0010-nango-broker.md`](../adr/0010-nango-broker.md) — copy describes the *capability*, not the broker, so it survives the next swap). A YC partner who asks "what's your execution layer?" gets the credible answer: *"the agent loop proposes, the approval gate enforces who-can-do-what, and a broker executes the action as the customer over short-lived OAuth session tokens — the customer never hands us a key, and we never store one."*
 
 ---
 
-# #2 — AI-Native Service Companies
+# #2 — AI-Native Service Companies (Gustaf Alströmer)
 
-**YC framing:** *"Replace an entire professional service with software + AI."*
+**YC framing:** *"Services at software margins"* — don't sell software, do the work; target already-outsourced functions.
 
 ## What we replace
-The $10K/month fractional COO function — 4 hours/week of pattern recognition over Stripe + HubSpot + Harvest + ClickUp data, surfacing 3-5 decisions per week. OpsRadar does the same thing 24/7 at $750-$3,000/month with strictly tighter cycle time **and** actually executes the decisions through n8n.
+The fractional-COO function — hours a week of pattern recognition across Stripe + HubSpot + Harvest + ClickUp, surfacing a handful of decisions and then *acting on them*. OpsRadar runs that loop continuously and, on approval, executes the decision. The difference from every dashboard product is the last clause: it acts.
 
 ## The code that delivers it
+- `src/app/dashboard/hire/` — **the** surface. One chat where the customer hires and directs AI workers (the COO chat, the agent fleet, and standing automations all collapsed here — [`../adr/0011-hire-surface-collapse.md`](../adr/0011-hire-surface-collapse.md)).
+- `src/lib/agents/loop.ts` — the agent loop (Vercel AI SDK `generateText`/`streamText`).
+- `src/lib/agents/approval-gate.ts` — write classifier + per-tool autonomy (Ask/Auto/Off); the control-first layer that makes "the AI does the work" safe ([`../adr/0005-control-first-approval-gate.md`](../adr/0005-control-first-approval-gate.md)).
+- `src/lib/nango.ts` — `nangoProxy` executes the approved action as the customer.
+- `/dashboard/actions` — the approval-gate landing; every proposed write queues here.
 
-- `src/lib/coo/tools.ts` — 5 read tools (`get_finance`, `get_sales`, `get_profitability`, `get_capacity`, `get_scope`) + `queue_action` (the bridge to n8n)
-- `src/lib/coo/executor.ts` — multi-pass agent loop (PLAN → CRITIQUE → GENERATE → VALIDATE → REPAIR)
-- `src/app/api/dashboard/coo/route.ts` — SSE streaming, max 5 tool iterations, temperature 0.2
-- `src/app/dashboard/coo/_components/coo-chat.tsx` — streaming UI + inline action confirmation cards
-- HITL escalation rules in **typed code** (per Loop 5) — never in prompts
-
-## The automation thread
-
-When the COO agent surfaces an action like *"Send invoice reminder to Client B for $4,200 overdue (35 days)"*:
-
-```
-Agent proposes (with reasoning + confidence)
-        ↓
-Owner clicks Confirm in the inline card
-        ↓
-chatv2 dispatches to the customer's own n8n instance
-(per-user encrypted API key, no cross-tenant access)
-        ↓
-n8n workflow executes (Stripe API call + email send via the customer's
-own configured provider)
-        ↓
-Outcome event posted back to chatv2 → workflow_events table
-        ↓
-COO Brain learns: "Owner confirmed, action took 4s, invoice paid 3 days later"
-```
-
-Without the n8n leg, the agent is advisory. With it, OpsRadar replaces the fractional COO function end-to-end.
-
-## Sprint
-**Sprint 1** — already specced in `docs/dev/specs/2026-05-21-coo-agent-design.md`
+## The execution thread (no generator)
+When a worker surfaces *"Send invoice reminder to Client B — $4,200, 35 days overdue"*: the agent loop proposes it with reasoning and a confidence score → the approval gate resolves autonomy (the owner clicks Confirm, or it auto-fires if that tool is set to Auto) → `nangoProxy` calls Stripe + sends the email **as the customer**, over a short-lived Nango session token → the outcome is recorded and feeds outcome tracking. Advisory without that last leg; a service company with it.
 
 ## Demo-day proof
-Sean Horton (Swish Advertising) paying $750-$3K/month for what was previously a fractional COO function. Live screen-share of the COO agent surfacing a margin alert, the owner confirming, the n8n workflow executing on Swish Ad's own infrastructure, the outcome logged in the OpsRadar brain.
+Live screen-share in Hire: a worker surfaces a margin/overdue-cash alert, the owner approves inline, the action executes through Nango on the customer's connected tools, the outcome logs back. The control-first approval gate is also the antidote to the "remove-the-human" 11x backlash — lean into it on camera.
 
 ---
 
-# #4 — Company Brain
+# #4 — Company Brain (Tom Blomfield)
 
-**YC framing:** *"A persistent knowledge layer that pulls from every tool and keeps itself current."*
+**YC framing:** not search, not a chatbot over docs — an **"executable skills file,"** a living map of how a company actually works. *"The biggest blocker to AI automation isn't the models — it's the domain knowledge."* Build it **vertical first**.
 
-## What we build — the 3-tier hybrid GraphRAG
+## What we build — the brain is literal here
+Two pieces, and they are exactly the thing Blomfield's RFS asks for:
 
-```
-Tier 1 — STATIC KNOWLEDGE (Supabase pgvector)
-   Playbooks, benchmarks, frameworks, agency-vertical patterns
-   → "What does a typical scope-creep playbook look like?"
-   → Refreshed when knowledge-base/ changes (rare)
+1. **`SKILL.md` files** — 47 of them across 9 domains in `knowledge-base/skills/`, progressively disclosed via the `load_skill` tool (three-tier disclosure: catalog at boot, full body on demand). This *is* the executable skills file. See [`../adr/0003-skills-over-rag.md`](../adr/0003-skills-over-rag.md) — we migrated off RAG to land on exactly the canonical post-RAG pattern.
+2. **The customer-owned Notion brain** — 20 databases + strategic pages per customer, provisioned via `src/lib/notion/*`. The customer owns it forever; it is standalone-useful even with our agents switched off. The agents *enrich* the brain; they don't gate it.
 
-Tier 2 — LIVE KNOWLEDGE GRAPH (in-memory, per request)
-   Built from live integration fetches every request
-   Nodes: clients, projects, deals, invoices, retainers, team members
-   Edges: "client X has retainer Y", "project Z over budget Y%"
-   NEVER persisted — respects the no-client-data architectural rule
-   → "Which clients share an account manager who's over capacity?"
+## Garry Tan's pattern, productized for the customer
+This maps near-exactly onto the build pattern the YC president has published (deep-dive §7.1): **SOUL.md / USER.md / AGENTS.md** ("who the agent is / who you are / operational rules"). OpsRadar ships that triad *for the customer*: the `SKILL.md` catalog is the operational rulebook, the Notion brain is the deep model of the business, and the per-agent prompts carry the operator judgment. Tan's *"do it, skillify it, add to cron, evals"* loop is literally our loop — skills + cron agents + outcome tracking. We're not echoing his words; we shipped the thing.
 
-Tier 3 — OUTCOME + DIORIZATION MEMORY (Supabase, per-tenant)
-   - Every confirmed/rejected action logged with reasoning + n8n outcome
-   - Diorized breadcrumbs from Slack/email/meeting ingestion
-   - Pattern cards extracted from breadcrumbs (refreshed monthly)
-   - Living brief — the agency's queryable state-of-knowledge
-   → "Last time owner X considered firing client Y, what happened?"
-```
-
-## The automation thread
-
-The Brain isn't just data — it's **outcomes**. Outcomes come from n8n executions that actually fired. Every n8n run posts an event back to chatv2, which feeds into the per-tenant memory tier. That's how the Brain *learns* vs just storing.
-
-Additionally: **diorization runs ON n8n** — the Slack/email/meeting ingestion workflows are scheduled n8n jobs on the customer's own infrastructure. Customer data is processed on customer-controlled compute; only the synthesized breadcrumbs come back to OpsRadar.
-
-## The code that delivers it
-
-- `src/lib/knowledge-retrieval.ts` — vector retrieval replacing today's file walker
-- `src/lib/coo/graph-builder.ts` — NEW, builds live KG per request
-- `chatv2/src/modules/diorization/{slack,gmail,zoom-transcript}.ts` — ingestion adapters (deployed as n8n workflows on customer infra)
-- `chatv2/src/modules/diorization/synthesizer.ts` — LLM-based breadcrumbs + dedup
-- Migrations: `015_kb_embeddings`, `016_coo_outcomes`, `017_breadcrumbs`, `018_pattern_cards`, `019_living_brief`
-
-## Sprint
-**Sprints 2-3 + 6** (vector tier, outcome memory tier, diorization tier in that order)
+## How the brain *learns* (not just stores)
+The agent fleet writes findings back to the brain (Notion rows), and confirmed/rejected actions feed outcome tracking — so the brain reflects what actually happened, not just what was fetched. The orchestrator-worker pattern ([`../adr/0006-orchestrator-worker-pattern.md`](../adr/0006-orchestrator-worker-pattern.md)) has domain agents read the brain *first*, then fill gaps with live tool calls, then write higher-level synthesis back.
 
 ## Demo-day proof
-A customer agency's **living brief** rendered in their dashboard, showing patterns the system extracted from their actual operational data: *"Client B has a pattern of Q4 scope expansion (3 of last 3 years); current Q4 trajectory matches; flag now."* Generic company brains can't produce this — they have no agency context. Plus: every pattern card cites the n8n executions and Slack breadcrumbs it was derived from (full provenance, customer-auditable).
+A customer's brain showing a pattern the system extracted from their own operations — *"Client B expands scope every Q4; current trajectory matches; flag now"* — with provenance back to the agent runs and the skills that produced it. Horizontal brains (e.g. Memory Store, the closest funded comp) can't produce this: they're a wiki; ours is a byproduct of agents doing real vertical ops work.
 
 ---
 
-# #12 — Software for Agents
+# #12 — Software for Agents (Aaron Epstein)
 
-**YC framing:** *"Infrastructure for AI agents: MCP servers, tool registries, orchestration."*
+**YC framing:** *"Make Something Agents Want"* — machine-readable interfaces; agents as first-class users.
 
 ## What we ship
+A customer-facing **MCP server** — token + install snippet live at `/dashboard/settings/mcp`. The customer's *other* AI tools (Claude Desktop, ChatGPT, partner agents) can query and act on their OpsRadar instance directly. OpsRadar isn't just a surface a human opens; it's a system another agent can use.
 
-A **separately-deployed, OAuth 2.1-secured MCP server** at `mcp.opsradar.com` that exposes OpsRadar's capabilities to external agents (Claude Desktop, ChatGPT, partner agency agents).
+## What the MCP server exposes
+The same capabilities the Hire chat uses, exposed machine-readably: read the brain, query finance/profitability/capacity/scope, and **propose actions** — which still route through the *same approval gate*. An external agent can ask OpsRadar to do something; it cannot bypass the human-in-the-loop control surface. (There is deliberately **no** "generate a workflow" tool — that was the dead chatv2 capability; the agent-loop + approval-gate path replaces it.)
 
-## The MCP tools — including the killer feature
-
-| Tool | Scope | What it does |
-|------|-------|--------------|
-| `opsradar.get_finance` | `finance:read` | Live Stripe fetch |
-| `opsradar.get_profitability` | `profitability:read` | Per-client margins |
-| `opsradar.get_capacity` | `capacity:read` | Utilization % |
-| `opsradar.get_scope` | `scope:read` | Scope creep signals |
-| `opsradar.search_kb` | `kb:read` | Query the Company Brain |
-| `opsradar.propose_action` | `actions:write` | HITL-gated; never auto-executes; triggers an n8n workflow on owner confirmation |
-| **`opsradar.generate_workflow`** | **`workflows:write`** | **External agents DESCRIBE a workflow in natural language; chatv2 generates the n8n JSON, validates, and deploys to the customer's own n8n on owner confirmation** |
-
-**The killer tool is the last one.** chatv2 already has chat-to-automation generation (Atta built it; Sean Horton has the "Noise-Cancelling Recruitment Supply Chain" workflow live in his n8n right now). When that's MCP-exposed, **OpsRadar isn't just queryable by external agents — it's programmable by external agents.**
-
-No PSA tool in 2026 can do this. ClickUp Super Agents is closest, but locked to ClickUp's workspace. OpsRadar deploys to the **customer's own n8n** — they own the workflows forever.
-
-## Security architecture (the 41% gap)
-
-41% of MCP servers in 2026 ship with NO authentication. OpsRadar leads on this:
-- **OAuth 2.1**, per-tenant scoped tokens, 1h expiry, refresh rotation
-- Zero-trust: re-validate JWT signature + scope on every tool call
-- Audit log: every invocation → `mcp_invocations` table with caller + scope + tenant + result
-- Per-tool scopes (not blanket access)
-- Rate limits per-tenant per-tool in Upstash Redis
-- **`generate_workflow` includes the existing workflow validator** — blocks unsafe node types (command execution / file write / ssh / code nodes) even when initiated by an external agent
-
-## The code that delivers it
-
-- **Separate Vercel deployment** (`apps/mcp-server/`) — Hono on Fluid Compute
-- Supabase Auth (GoTrue) as the OAuth 2.1 issuer
-- chatv2 backend reused as the `generate_workflow` engine
-- Migrations: `020_mcp_oauth_clients`, `021_mcp_invocations`
-
-## Sprint
-**Sprint 4** — after the multi-pass agent (Sprint 1), tenant isolation (Sprint 2), and event bus (Sprint 3) are proven
+## Security posture
+Per-tenant scoped tokens, audit-logged invocations, per-tenant rate limits (Upstash Redis), and the approval gate as the hard backstop on every write. The credible claim to a partner: most MCP servers in 2026 ship with no auth and no gate; ours treats an external agent exactly like an internal one — scoped, logged, and approval-gated.
 
 ## Demo-day proof
-**Live Claude Desktop session** during the YC interview:
-1. Install OpsRadar from the public MCP registry
-2. Ask Claude *"What's my profitability on Client B this month?"* → Claude queries OpsRadar via MCP, returns the answer with reasoning
-3. Ask Claude *"Build me a workflow that posts to #revenue when any Stripe invoice goes overdue 14+ days"* → Claude calls `opsradar.generate_workflow`, OpsRadar shows the proposed n8n workflow JSON in the dashboard, owner confirms, workflow deploys to their own n8n
-
-**No competitor in 2026 can demonstrate this end-to-end flow.**
+A live Claude Desktop session during the interview: install OpsRadar from the customer's MCP snippet → ask *"What's my profitability on Client B this month?"* → Claude queries OpsRadar via MCP and answers with reasoning → ask it to draft an overdue-invoice nudge → the proposal lands in `/dashboard/actions` for approval. Same gate, different caller. No PSA tool demonstrates this.
 
 ---
 
-# #15 — AI OS for Companies
+# #15 — AI OS for Companies (Diana Hu)
 
-**YC framing:** *"Continuously updated intelligence layer that recommends and acts."*
+**YC framing:** *"Closed-loop intelligence"* across operations; the connective layer that makes a company legible to AI by default. **Explicitly "Not another dashboard."**
 
-## What we build — event-driven supervisor/worker architecture
+## Heed the warning: lead with brain + agent, not the dashboard
+Hu's "not another dashboard" is a direct instruction. So in the application and the demo, the dashboard is plumbing, not the pitch. The pitch is: a brain that knows how the business runs + a fleet that acts on it. The `/dashboard/*` routes are where a human peeks in; they are not the product.
 
-```
-               INNGEST EVENT BUS
-       events: integration.synced,
-               metric.threshold-crossed,
-               action.confirmed,
-               n8n.execution.completed,
-               kb.gap-detected
-                      ↓
-       ┌──────────────┼──────────────┬───────────────┐
-       ▼              ▼              ▼               ▼
- [Supervisor]   [Margin Watcher] [Scope Watcher] [Cash Flow Watcher]
- (chat input)   (cron + events)  (cron + events) (cron + events)
-       │              │              │               │
-       └──────────────┴──────────────┴───────────────┘
-                            ↓
-              Action Queue (Supabase agent_actions)
-                            ↓
-                    HITL confirmation
-                            ↓
-              n8n workflow execution on customer infra
-                            ↓
-                    Outcome event posted back
-                            ↓
-                  COO Brain learns (Loop 3 feedback)
-```
+## What the OS actually is
+- **The tool-fabric** — Nango brokers ~20 integrations (Stripe, HubSpot, ClickUp, Harvest, Gmail, Notion, …) behind one interface (`src/lib/nango.ts`). This is the "connective layer" Hu describes: the thing that makes the company legible to AI.
+- **The agent loop + cron fleet** — observe (read tools + brain) → decide (orchestrator-worker) → act (approval gate → Nango) → learn (outcome tracking → brain). That's the closed loop.
+- **Durable scheduling** — Trigger.dev / Vercel cron ([`../adr/0002-scheduler-trigger-dev.md`](../adr/0002-scheduler-trigger-dev.md)). The cron fleet is what runs the boring stuff on a clock.
+- **Resilience** — the model-fallback chain (OpenAI → Groq → DigitalOcean Gradient, [`../adr/0012-model-fallback-stack.md`](../adr/0012-model-fallback-stack.md)) and the broker swap itself are the OS staying up when a dependency fails.
 
-## The 5 recursive loops on top
-
-Per [`../ai-native-company-2026.md`](../ai-native-company-2026.md), 5 loops make the AI OS *compound* rather than *plateau*:
-
-1. **Autonomous engineering** — diagnose/author/reviewer agents that ship PRs to the KB **and to the n8n workflow template library** (never the kernel)
-2. **Diorization** — feeds the Company Brain (#4) via n8n scheduled ingestion workflows on customer infra
-3. **Disposable software, permanent data** — regenerate n8n workflows when models improve; preserve the original natural-language prompt forever
-4. **Token-maxing metrics** — revenue per token, cost per repair, n8n executions per outcome
-5. **Human at the edge** — typed escalation rules; routine n8n executions → AI auto-fires, novel → AI + review, high-stakes → human only
-
-## The automation thread (this is where n8n is most load-bearing)
-
-Every recursive loop in the AI OS terminates in an n8n execution. The Brain proposes; n8n acts; outcomes feed back; the Brain learns.
-
-**The disposable software loop is the most interesting application of n8n.** When Claude Sonnet 5 ships in (e.g.) August 2026, OpsRadar can regenerate every customer's deployed n8n workflows from the original natural-language prompts — better generated JSON, same intent, no engineering effort. Each customer gets a "Your margin alert workflow has a smarter version. Replace? [Compare] [Yes] [No]" notification. **The customer's value compounds with model progress, not engineering effort.** No PSA tool offers this.
-
-## The code that delivers it
-- `src/inngest/*.ts` — supervisor + worker functions
-- `src/lib/escalation-rules.ts` — typed escalation thresholds (not prompts!)
-- Langfuse middleware on every agent call
-- Migrations for `agent_runs`, `escalation_log`, `autonomous_actions`
-
-## Sprint
-**Sprint 1 foundation (Langfuse + Inngest) → Sprints 5-8 (the 5 loops layered on)**
+## The cron fleet is the cerebellum (Tan's frame)
+Garry Tan, May 2026 (deep-dive §7.1): *"Everyone building AI agents is focusing on the prefrontal cortex — planning, reasoning. There's value in building the cerebellum: offloading boring tasks into reflex… The winners will nail the boring stuff first."* That is exactly what the cron fleet is — collections, scope, delivery, briefing: the boring, must-be-done ops that run on a schedule without a committee. **Frame the fleet this way in the application: we built the cerebellum, not just the chat.** (The fleet is mid-rebuild on Nango — 1 agent live today, was 28 pre-pivot, restored one at a time. That's a velocity story, not a gap: "one `git restore` of the spec + one registry line" per agent.)
 
 ## Demo-day proof
-A **24-hour timelapse** showing OpsRadar autonomously: detecting a margin alert at 3am → proposing the reprice action with reasoning → owner confirms at 9am → n8n workflow on the customer's infra executes the reprice → outcome logged → the Brain learns. Plus: the autonomous engineering loop having shipped 3 new n8n workflow templates to the pattern library overnight without human intervention.
+A timelapse of one closed loop: a cron worker detects a margin alert overnight → proposes a reprice with reasoning → owner approves in the morning → Nango executes on the customer's tools → outcome logs → the brain updates. One loop, no human in the boring middle, human at the decision edge.
 
 ---
 
-# The unified 8-sprint sequence — earning all 4 categories with n8n threaded through
+# The unified sequence — earning all 4 categories on the real architecture
 
-| Sprint | Ship | YC category earned | n8n element |
-|--------|------|---------------------|-------------|
-| **1** | Multi-pass COO agent (PLAN→CRITIQUE→GENERATE→VALIDATE→REPAIR) + Langfuse | **#2** ✓ | `queue_action()` fires n8n workflows on owner confirmation |
-| **2** | KB embeddings (pgvector) + envelope encryption + tenant isolation tests in CI | **#4** (tier 1) | Per-tenant n8n API keys upgraded to envelope encryption (KEK/DEK pattern) |
-| **3** | Outcome memory tier + golden-set regression suite + Inngest event bus | **#15** (foundation) | n8n execution events fed back into outcome memory loop |
-| **4** | OpsRadar MCP server + OAuth 2.1 + `generate_workflow` tool | **#12** ✓ | **External agents can deploy n8n workflows via OpsRadar through MCP** |
-| **5** | Margin/Scope/Cash Flow watcher Inngest workers + typed escalation rules | **#15** (workers) | Workers trigger pre-built n8n templates (no LLM call for known patterns) |
-| **6** | Diorization pipeline (Slack + email + meeting ingestion → breadcrumbs → living brief) | **#4** ✓ | Diorization runs ON n8n on customer infra (data never leaves customer compute) |
-| **7** | Prompt versioning + model tracker + regeneration offer flow (disposable software loop) | **#15** (loop 3) | **When models improve, regenerate the customer's n8n workflows from the original NL prompt** |
-| **8** | Autonomous engineering loop — diagnose/author/reviewer agents shipping PRs to KB | **#15** ✓ (full) | Diagnose agent generates new n8n workflow templates for the pattern library |
+The column that used to read "n8n element" now reads **real architecture**: which of the four load-bearing pieces (broker action / brain write / MCP surface / approval gate) each step exercises. The eight-step shape from the original holds; the mechanics are current.
 
-**By Sprint 4 we have evidence for all 4 categories. By Sprint 8 we have all 4 fully delivered + the 5 compounding loops running in production.**
+| Step | Ship | YC category | Real-architecture element |
+|---|---|---|---|
+| **1** | Agent loop + approval gate proven on one live integration (Gmail on Nango) | **#2** ✓ | approval gate → `nangoProxy` executes the action |
+| **2** | `SKILL.md` catalog + `load_skill` wired into Hire + cron agents | **#4** (skills file) | brain write — the executable skills layer |
+| **3** | Notion brain provisioning + agents writing findings back | **#4** ✓ | brain write — customer-owned, agent-enriched |
+| **4** | Customer MCP server (`/dashboard/settings/mcp`), scoped + audit-logged | **#12** ✓ | MCP surface — external agents propose through the same gate |
+| **5** | Cron fleet rebuilt on Nango (collections / scope / delivery / briefing) | **#15** (cerebellum) | broker action on a schedule — the boring stuff, automated |
+| **6** | Orchestrator-worker: domain agents read brain → fill gaps → synthesize | **#4** + **#15** | brain write + broker action — closed loop |
+| **7** | Outcome tracking → brain learning loop across all agents | **#15** (closed loop) | brain write — the loop compounds, not plateaus |
+| **8** | Model-fallback + resilience hardening across the whole fleet | **#15** ✓ (full) | the OS stays up when a dependency fails |
+
+**By step 4 there's evidence for all four categories. By step 8 the closed loop is running across a rebuilt fleet.**
 
 ---
 
@@ -259,33 +143,37 @@ A **24-hour timelapse** showing OpsRadar autonomously: detecting a margin alert 
 
 > Every shipped feature must serve **more than one YC category** or it doesn't ship.
 
-The MCP server isn't just for #12 — it's the API surface the Brain (#4) exposes to external agents and the way external agents trigger n8n workflows (#2 + #15). The diorization pipeline isn't just for #4 — it's n8n schedules on customer infra (#15 actuator) and the data substrate the autonomous engineering loop (#15 loop 1) trains on. The COO agent isn't just for #2 — it's the demo consumer for #4 (Brain query), #12 (MCP target), and #15 (event-bus supervisor).
+The MCP server isn't only #12 — it's how the brain (#4) is reachable by external agents and how those agents trigger approval-gated actions (#2 + #15). The `SKILL.md` layer isn't only #4 — it's the operator judgment the agent loop (#2) loads mid-task and the reflex library the cron fleet (#15) runs on. The Hire chat isn't only #2 — it's the brain's query surface (#4), an MCP consumer's mirror (#12), and the human-at-the-edge control point for the closed loop (#15).
 
-**One coherent system. Four YC categories. n8n as the execution thread. Eight sprints.**
+**One coherent system. Four YC categories. The brain + fleet + gate + fabric — not an execution thread bolted on.**
 
 ---
 
 # The single sentence that ties it together
 
-> **n8n is the body. The COO agent is the brain. chatv2's chat-to-workflow generation is the spinal cord. OpsRadar is the entire nervous system for an agency — observing, reasoning, acting, and learning from every action it takes.**
+> **The Notion brain + `SKILL.md` files are how the company is legible to AI; the agent fleet + approval gate are how the work gets done; the MCP server is how other agents use it; the Nango fabric + agent loop close the loop. OpsRadar is the nervous system for a service business — observing, reasoning, acting on approval, and learning from every action.**
 
-That's what we're building. That's why the 4 YC categories converge instead of conflicting. The execution layer (n8n) is what makes every other category land.
+That's what we're building. The four YC categories converge instead of conflicting because they're four views of one system — and the part that makes every category land is the closed loop (observe → decide → approve → act → learn), not any single tool behind it.
 
 ---
 
 # Cross-references
 
-- [`build-architecture.md`](./build-architecture.md) — chatv2 technical strengthening plan
+- [`build-architecture.md`](./build-architecture.md) — technical build plan
 - [`research-addendum.md`](./research-addendum.md) — market validation for the 4 categories
 - [`what-yc-wants.md`](./what-yc-wants.md) — application drafting guide
 - [`founder-profile.md`](./founder-profile.md) — team profile
-- [`traction-evidence.md`](./traction-evidence.md) — real customer + investor pipeline
-- [`../architecture-2026.md`](../architecture-2026.md) — full chatv2 sprint plan
-- [`../ai-native-company-2026.md`](../ai-native-company-2026.md) — the 5 recursive loops
-- [`../software-3-engineering-2026.md`](../software-3-engineering-2026.md) — Karpathy framework + Program MD
-- [`../build-methodology-2026.md`](../build-methodology-2026.md) — GStack for OpsRadar
-- [`../strategy/path-a-strategy-2026.md`](../strategy/path-a-strategy-2026.md) — master strategy
+- [`traction-evidence.md`](./traction-evidence.md) — customer + investor pipeline
+- [`mcp-registry-submission.md`](./mcp-registry-submission.md) — the #12 MCP surface, submission detail
+- [`../research/2026-05-27-yc-deep-dive-application.md`](../research/2026-05-27-yc-deep-dive-application.md) — RFS categories + authors, partner-thesis echoes (§3, §7)
+- [`../adr/0010-nango-broker.md`](../adr/0010-nango-broker.md) — broker = Nango
+- [`../adr/0011-hire-surface-collapse.md`](../adr/0011-hire-surface-collapse.md) — surfaces collapsed into `/dashboard/hire`
+- [`../adr/0012-model-fallback-stack.md`](../adr/0012-model-fallback-stack.md) — model resilience
+- [`../adr/0003-skills-over-rag.md`](../adr/0003-skills-over-rag.md) — the executable skills layer
+- [`../adr/0005-control-first-approval-gate.md`](../adr/0005-control-first-approval-gate.md) — the approval gate
+- [`../ai-native-company-2026.md`](../ai-native-company-2026.md) — the recursive loops
+- [`../software-3-engineering-2026.md`](../software-3-engineering-2026.md) — Karpathy framework
 
 ---
 
-*Locked 2026-05-22. The build plan. n8n threaded through every category.*
+*Rewritten 2026-05-27. The build plan, mapped onto the current Nango + Hire + Skills + MCP architecture. No n8n. No chatv2. One closed loop.*

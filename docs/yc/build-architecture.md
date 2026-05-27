@@ -9,7 +9,7 @@
 The [YC research addendum](./research-addendum.md) proves the market is there. This document answers the harder question: **how do we build each of the 4 categories at the sophistication level that wins a YC Summer 2026 batch slot?**
 
 Every recommendation here is grounded in:
-- **OpsRadar's current stack** — Next.js 16 / React 19 / Supabase / Vercel Fluid Compute / GPT-4o / chatv2 (CTO-managed)
+- **OpsRadar's current stack** — single Next.js 16 / React 19 app on Vercel + Supabase, agent loop (Vercel AI SDK) + approval gate, Nango as the integration broker (`src/lib/nango.ts`). *(Historical note: an earlier draft referenced a separate "chatv2" backend; it was severed in CP-15 and its function now lives in this one app — there is no second backend.)*
 - **2026 production patterns** — what Klarna, Uber, LinkedIn, Bravi, and the YC W26/S25 batch are actually shipping
 - **The hard architectural constraint** — no client data persisted in Supabase (live-fetch only). This rules out some patterns and demands cleverness in others.
 

@@ -1,7 +1,7 @@
 # Pricing Depth: OpsRadar Stress-Test
 
 *Last updated: 2026-05-19*
-*Companion to: [path-a-strategy-2026.md §10.4](./path-a-strategy-2026.md)*
+*Companion to: [path-a-strategy.md §10.4](./path-a-strategy.md)*
 *Settled prices: $750 / $1,500 / $3,000 / $1,200+$300 (FO). Starter raised from $500 on 2026-05-19.*
 
 ---

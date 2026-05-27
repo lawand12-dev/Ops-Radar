@@ -1,6 +1,8 @@
 # Trigger.dev + Composio integration patterns (May 2026)
 
-> Compiled: 2026-05-25 · Purpose: capture the verified integration patterns between Trigger.dev (our scheduler — see [`./scheduler-decision-2026.md`](./scheduler-decision-2026.md)) and Composio (our SaaS API broker). They are complementary, not competing. This doc shows the exact code patterns OpsRadar uses to combine them in CP-34+ (AI Employees).
+> **⚠️ SUPERSEDED for the broker half by [`./nango-broker.md`](./nango-broker.md) (2026-05-27).** Composio was removed after the 2026-05-21 breach; the SaaS broker is now **Nango**. The **Trigger.dev** half of this doc (durable scheduling, webhook handling, the durable-execution patterns) is still accurate — only swap "Composio broker call" for `nangoProxy()` from `src/lib/nango.ts`. Read this for the Trigger.dev patterns; read `nango-broker.md` for the current broker.
+
+> Compiled: 2026-05-25 · Purpose: capture the verified integration patterns between Trigger.dev (our scheduler — see [`../adr/0002-scheduler-trigger-dev.md`](../adr/0002-scheduler-trigger-dev.md)) and Composio (our SaaS API broker). They are complementary, not competing. This doc shows the exact code patterns OpsRadar uses to combine them in CP-34+ (AI Employees).
 
 ---
 
@@ -413,7 +415,7 @@ Both stay cheap at our scale. Composio's free tier is the more generous of the t
 - [Trigger.dev as the n8n replacement for code-first teams](https://www.mindstudio.ai/blog/what-is-trigger-dev-agentic-workflow-platform)
 
 ### Internal cross-references
-- [`./scheduler-decision-2026.md`](./scheduler-decision-2026.md) — why we picked Trigger.dev over Inngest
-- [`./composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md) — why Composio replaced n8n
-- [`./automations-architecture-2026.md`](./automations-architecture-2026.md) — CP-20 webhook handler that becomes a Trigger.dev task
-- [`./ai-employees-architecture-2026.md`](./ai-employees-architecture-2026.md) — CP-34 employees that use the patterns above
+- [`../adr/0002-scheduler-trigger-dev.md`](../adr/0002-scheduler-trigger-dev.md) — why we picked Trigger.dev over Inngest
+- [`../adr/0010-nango-broker.md`](../adr/0010-nango-broker.md) — the broker (Nango replaced Composio, which replaced n8n)
+- [`./automations.md`](./automations.md) — CP-20 webhook handler that becomes a Trigger.dev task
+- [`./ai-employees.md`](./ai-employees.md) — CP-34 employees that use the patterns above

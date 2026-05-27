@@ -1,6 +1,6 @@
-<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/adr/0001-composio-broker.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+# The AI-Native Company — Blueprint (OpsRadar)
 
-# The AI-Native Company — Blueprint for chatv2 + OpsRadar
+> **📜 Read as theory, not architecture (banner updated 2026-05-27).** Authored when OpsRadar had a separate **chatv2** backend + **n8n** execution. Both were severed in CP-15; the broker (then Composio) is now **Nango** (2026-05-26, see [`adr/0010-nango-broker.md`](./adr/0010-nango-broker.md)). Every `chatv2` / `n8n` mention below is **historical illustration** — substitute chatv2 → the single Next.js app, "n8n execution" → agent loop + approval gate via Nango. **The 5 recursive loops themselves are timeless** and still describe how OpsRadar compounds — that's why this is kept. Current architecture: [`README.md`](./README.md) + the ADRs.
 
 *Written 2026-05-22. Synthesised from the YC "How to build an AI-native company" guidance (May 2026) and translated into concrete patterns chatv2 must implement for OpsRadar to be a true AI-native product — and to enable agencies running on top of it to become AI-native themselves.*
 
@@ -403,7 +403,7 @@ This is the YC RFS #4 (Company Brain) + #15 (AI OS) pitch in a single sentence.
 | 4 | Loop 3 (Disposable Software) | Prompt versioning + regeneration scheduler | Pays off once you have 1+ model upgrade cycle |
 | 5 | Loop 1 (Autonomous Engineering) | Diagnose → author → reviewer agents + PR pipeline | Highest reward, highest risk; ship last when guardrails proven |
 
-This is a 6-12 month roadmap. The technical primitives for each loop are detailed in [`architecture-2026.md`](./architecture-2026.md) — that doc is the engineering plan; this doc is the strategic north star.
+This is a 6-12 month roadmap. The technical primitives now live in the current-architecture truth ([`README.md`](./README.md) + ADRs 0005–0012) — this doc is the strategic north star. *(The old `architecture-2026.md` chatv2 engineering plan was deleted with the CP-15 sever.)*
 
 ---
 
@@ -428,5 +428,5 @@ This blueprint synthesises:
 - [Awssome — Multi-Tenant SaaS Encryption FAQs](https://www.awssome.io/blog/multi-tenant-saas-security-encryption-faqs) — envelope encryption for Loop 2's tenant brain isolation
 - [Laminar — Top 6 Agent Observability Platforms 2026](https://laminar.sh/article/2026-04-23-top-6-agent-observability-platforms) — Loop 4 cost tracking + drift detection
 - [n8n Blog — Best practices for deploying AI agents](https://blog.n8n.io/best-practices-for-deploying-ai-agents-in-production/) — Loop 1's deployment + rollback boundaries
-- Companion technical spec: [`architecture-2026.md`](./architecture-2026.md)
+- Companion technical truth: [`README.md`](./README.md) "Architecture (current truth)" + ADRs 0005–0012 *(the old `architecture-2026.md` was deleted in CP-15)*
 - OpsRadar main-branch references: `docs/yc/research-addendum.md`, `docs/yc/build-architecture.md`, `docs/positioning/path-a-strategy.md`

@@ -1,6 +1,6 @@
 # Scheduler & background-job platform decision — Trigger.dev (May 2026)
 
-> Compiled: 2026-05-25 · Purpose: capture the research that picked the durable-workflow platform for CP-34+ (AI Employees). Updates the prior guidance in [`composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md) and [`automations-architecture-2026.md`](./automations-architecture-2026.md) which listed *"Inngest or Trigger.dev"* as both viable. The May 2026 verified data picks Trigger.dev.
+> Compiled: 2026-05-25 · Purpose: capture the research that picked the durable-workflow platform for CP-34+ (AI Employees). Updates the prior guidance in [`composio-vs-n8n-decision-2026.md`](./0001-composio-broker.md) and [`automations-architecture-2026.md`](../specs/automations.md) which listed *"Inngest or Trigger.dev"* as both viable. The May 2026 verified data picks Trigger.dev.
 
 ---
 
@@ -147,7 +147,7 @@ We've been using Vercel Cron for all 45 cron rows today (28 agents + 7 system jo
 
 ## Why we DIDN'T pick n8n / Make / Zapier / Temporal
 
-- **n8n** — severed in CP-15, see [`composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md). Self-hosted JavaScript runtime fork, brittle at scale.
+- **n8n** — severed in CP-15, see [`composio-vs-n8n-decision-2026.md`](./0001-composio-broker.md). Self-hosted JavaScript runtime fork, brittle at scale.
 - **Make / Zapier** — visual workflow builders aimed at end-users, not the substrate for a multi-tenant SaaS backend.
 - **Temporal** — enterprise-grade but heavyweight. Requires running Temporal Server. Overkill for our scale. (Could become relevant if we reach 1000+ customers.)
 - **Hatchet** — fine-grained parallelism for high-concurrency AI workloads. We're not concurrency-bound; the Trigger.dev pricing wins matters more.
@@ -225,9 +225,9 @@ This decision supersedes the *"Inngest or Trigger.dev"* coupling in:
 
 | Doc | Update |
 |---|---|
-| [`composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md) | Note that the May 2026 follow-up research picked Trigger.dev specifically. |
-| [`automations-architecture-2026.md`](./automations-architecture-2026.md) §11 "What NOT to build" → mentions deferring to Inngest/Trigger.dev for Phase 7. | Should say "Trigger.dev" specifically. |
-| [`ai-employees-architecture-2026.md`](./ai-employees-architecture-2026.md) | Add Trigger.dev as the scheduler substrate in the Architecture section. |
+| [`composio-vs-n8n-decision-2026.md`](./0001-composio-broker.md) | Note that the May 2026 follow-up research picked Trigger.dev specifically. |
+| [`automations-architecture-2026.md`](../specs/automations.md) §11 "What NOT to build" → mentions deferring to Inngest/Trigger.dev for Phase 7. | Should say "Trigger.dev" specifically. |
+| [`ai-employees-architecture-2026.md`](../specs/ai-employees.md) | Add Trigger.dev as the scheduler substrate in the Architecture section. |
 | [`CLAUDE.md`](../../CLAUDE.md) §CP-15 mention | Update *"Inngest or Trigger.dev"* → *"Trigger.dev (verified pick, see scheduler-decision-2026.md)"*. |
 
 ---
@@ -243,4 +243,4 @@ This decision supersedes the *"Inngest or Trigger.dev"* coupling in:
 - [MindStudio — What Is Trigger.dev](https://www.mindstudio.ai/blog/what-is-trigger-dev-agentic-workflow-platform)
 - [Trigger.dev open-source repo (Apache 2.0)](https://github.com/triggerdotdev/trigger.dev)
 - [Trigger.dev self-hosting guide](https://trigger.dev/docs/open-source-self-hosting)
-- Internal: [`composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md), [`automations-architecture-2026.md`](./automations-architecture-2026.md), [`ai-employees-architecture-2026.md`](./ai-employees-architecture-2026.md)
+- Internal: [`composio-vs-n8n-decision-2026.md`](./0001-composio-broker.md), [`automations-architecture-2026.md`](../specs/automations.md), [`ai-employees-architecture-2026.md`](../specs/ai-employees.md)

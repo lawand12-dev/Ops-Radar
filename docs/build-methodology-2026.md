@@ -1,6 +1,6 @@
-<!-- DEPRECATION NOTICE (2026-05-23): this doc was authored when OpsRadar had a separate chatv2 backend. That backend was severed in CP-15 — see docs/adr/0001-composio-broker.md. References to chatv2 below are historical. The broader theory still applies to OpsRadar as a single-system app. -->
+# Build Methodology — GStack Adapted for OpsRadar
 
-# Build Methodology — GStack Adapted for OpsRadar + chatv2
+> **📜 Read as methodology, not architecture (banner updated 2026-05-27).** Authored when OpsRadar had a separate **chatv2** backend + **n8n** execution. Both were severed in CP-15; the broker (then Composio) is now **Nango** (2026-05-26, see [`adr/0010-nango-broker.md`](./adr/0010-nango-broker.md)). Every `chatv2` / `n8n` mention below is **historical illustration** — substitute chatv2 → the single Next.js app. **The GStack 4-phase methodology itself is timeless** and still governs day-to-day work — that's why this is kept. Current architecture: [`README.md`](./README.md) + the ADRs.
 
 *Written 2026-05-22. The personal operating system for how a 1-2 person team ships at the pace of a 50-person engineering org. Synthesised from the GStack methodology (YC May 2026) and adapted to OpsRadar's reality.*
 
@@ -245,7 +245,7 @@ The 4-sprint plan in `architecture-2026.md` should be ~80 PRs total at this cade
 - YC "GStack Methodology" talk (May 2026) — Phase I-IV structure, ASCII art mandate, Markdown-as-code, Tokenmaxxing, 90% coverage rule, "Ferrari with wrench" framing
 - Brian Chesky 10-star framework — Phase I 5⭐→10⭐ ladder
 - Companion docs:
-  - [`architecture-2026.md`](./architecture-2026.md) — what to build with this methodology
+  - [`README.md`](./README.md) + ADRs 0005–0012 — what to build with this methodology *(the old `architecture-2026.md` was deleted in CP-15)*
   - [`ai-native-company-2026.md`](./ai-native-company-2026.md) — why the loops you build with this methodology compound
 
 ---

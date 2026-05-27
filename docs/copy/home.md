@@ -160,7 +160,7 @@
 **Section H2:** `Twenty-five tools today. Five hundred by the end of next year.`
 
 **Section intro (40 words):**
-`OpsRadar runs on Composio — the SaaS broker behind every modern AI agent product. You connect your tools once, with OAuth, in their own dashboards. We never see your API keys. We never store your business data. Live-fetched, every request.`
+`You connect your tools once, with OAuth, in their own dashboards. Your credentials never touch our servers — a dedicated OAuth layer brokers every connection, so we never see your API keys and never store your business data. Live-fetched, every request.`
 
 **Tool grid (group by category — show logos in actual page):**
 
@@ -174,7 +174,7 @@
 - **People:** BambooHR · Gusto
 
 **Footer line (under the grid):**
-`Don't see your tool? It's probably on the roadmap. We're growing toward Composio's full catalog of 500+ integrations — ask in the Hire chat and we'll show you what's connected today.`
+`Don't see your tool? It's probably on the roadmap. We're growing toward a catalog of 500+ integrations — ask in the Hire chat and we'll show you what's connected today.`
 
 ---
 

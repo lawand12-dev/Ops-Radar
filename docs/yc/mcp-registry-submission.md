@@ -161,9 +161,9 @@ Publishing to the registry is the act that completes #12. Everything else is in 
 
 ## Cross-references
 
-- `src/app/api/mcp/route.ts` — the live server
+- `src/app/api/mcp/route.ts` — the live server (MCP token + install snippet at `/dashboard/settings/mcp`)
 - `docs/yc/four-categories-build.md` §"#12 Software for Agents" — strategic context
-- `docs/architecture-2026.md` — chatv2 strengthening plan
+- `docs/yc/build-architecture.md` — current build blueprint (single Next.js app, Nango broker, agent loop + approval gate)
 - `docs/yc/research-addendum.md` — the MCP adoption data this play is based on
 
 ---

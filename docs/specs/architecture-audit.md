@@ -136,9 +136,9 @@ OpsRadar will have **real-time ops floor**: *"Sarah is on step 3 of 5 right now,
 - [Cognition Devin 2.2](https://cognition.ai/blog/introducing-devin-2-2)
 
 ### Internal cross-references
-- [`./ai-employees-architecture-2026.md`](./ai-employees-architecture-2026.md)
-- [`./scheduler-decision-2026.md`](./scheduler-decision-2026.md)
-- [`./trigger-composio-integration-2026.md`](./trigger-composio-integration-2026.md)
-- [`./three-tier-memory-architecture-2026.md`](./three-tier-memory-architecture-2026.md)
-- [`./moats-and-friction-2026.md`](./moats-and-friction-2026.md)
-- [`./senior-coo-playbook-2026.md`](./senior-coo-playbook-2026.md)
+- [`./ai-employees.md`](./ai-employees.md)
+- [`../adr/0002-scheduler-trigger-dev.md`](../adr/0002-scheduler-trigger-dev.md)
+- [`./trigger-composio-integration.md`](./trigger-composio-integration.md)
+- [`../adr/0004-three-tier-memory.md`](../adr/0004-three-tier-memory.md)
+- [`../positioning/moats.md`](../positioning/moats.md)
+- [`../adr/0007-senior-coo-playbook.md`](../adr/0007-senior-coo-playbook.md)

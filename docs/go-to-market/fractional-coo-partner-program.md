@@ -640,4 +640,4 @@ The single decision: **commit to lifetime, commit to 25%, and never walk it back
   - [Vendux — AI and the Fractional Executive: A New Operating Model](https://www.vendux.org/blog/ai-and-the-fractional-executive-a-new-operating-model) — direct validation of the OpsRadar+fractional thesis
   - [Optifai 2026 (939 companies)](https://optif.ai/learn/questions/cold-call-to-meeting-conversion-rate/) — warm intro 15–25% vs cold 1.5–2% conversion (10–15x lift)
   - [MicroEmpires — Karina Mikhli, Fractionals United](https://www.microempires.cc/p/karina-mikhli-fractionals-united) — community size & operating model
-- Internal: [path-a-strategy-2026.md §10.3](./path-a-strategy-2026.md), [product-marketing.md](../.agents/product-marketing.md), [referrals skill](/home/lawand/.agents/skills/referrals/SKILL.md), [affiliate-programs reference](/home/lawand/.agents/skills/referrals/references/affiliate-programs.md)
+- Internal: [path-a-strategy.md §10.3](../positioning/path-a-strategy.md), [referrals skill](/home/lawand/.agents/skills/referrals/SKILL.md), [affiliate-programs reference](/home/lawand/.agents/skills/referrals/references/affiliate-programs.md)

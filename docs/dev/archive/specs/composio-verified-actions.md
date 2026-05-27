@@ -1,6 +1,9 @@
 # Composio Verified Action Catalog
+
+> **⚠️ ARCHIVED / DEAD (2026-05-27).** Composio was removed on 2026-05-26 after the 2026-05-21 breach; the broker is now Nango (see `docs/adr/0010-nango-broker.md`). These Composio action names are obsolete and are kept only as a historical reference. Do NOT use this as a source of truth.
+
 > Generated: 2026-05-24T11:30:30.332Z
-> Source of truth for all action names. Never guess — reference this file.
+> ~~Source of truth for all action names. Never guess — reference this file.~~ (no longer authoritative — see banner)
 
 ## Notion `notion` — 20 actions
 

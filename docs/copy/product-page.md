@@ -157,7 +157,7 @@
 `"When a HubSpot deal moves to closed-won, post in #ops Slack and create a Notion kickoff page" — that's an automation. You describe it to the COO chat in plain English. We compile it to a typed spec, show it to you as a card, you click Install. It runs forever.`
 
 **Receipts:**
-- `Built on Composio Triggers — 20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more`
+- `20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more`
 - `Executed durably on Trigger.dev — retries 5 times with exponential backoff if something fails`
 - `Every action still routes through the approval gate by default — automation doesn't mean autonomy`
 
@@ -192,9 +192,9 @@
 - **Durable workflows:** Trigger.dev v3 (per-employee execution, delegation, automation runner)
 - **Scheduled cron:** Vercel Cron (28 built-in agents)
 - **AI models:** OpenAI GPT-5.5 / 5.4 / 4o / 4.1-nano · text-embedding-3-small · Anthropic Claude (scaffolded)
-- **Tool brokerage:** Composio (25 live integrations, growing to 500+)
+- **Tool brokerage:** dedicated OAuth broker — your credentials never touch our servers (20+ live integrations, growing to 500+)
 - **Web search:** Tavily
-- **Knowledge layer:** Anthropic Agent Skills (46 SKILL.md files across 9 domains)
+- **Knowledge layer:** Anthropic Agent Skills (47 SKILL.md files across 9 domains)
 - **Observability:** Sentry · Statsig · Langfuse
 - **Rate limiting + cache:** Upstash Redis
 - **Email:** Resend

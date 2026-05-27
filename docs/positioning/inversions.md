@@ -178,7 +178,7 @@ Fractional COOs are the **only candidate where the Iraq constraint is a non-issu
 ### What doesn't change
 
 - Agencies remain the primary wedge
-- Product itself doesn't change — same code, same demo, same Composio integrations
+- Product itself doesn't change — same code, same demo, same broker integrations
 - Pricing stays — Fractional Operator tier ($2,999/mo) is already designed for this
 
 ### Files to update later
@@ -198,7 +198,7 @@ This is a real architectural gap the inversions research didn't address but is c
 
 - `coo_chat` and `hire_chat` features gated by `canAccess(plan, feature)` in `src/lib/tier.ts`
 - `ACTION_QUOTAS` per plan (starter: 0, growth: 50, pro: 200, fo: -1) for "agentic_actions"
-- Multi-tenant quota gates for OpenAI / Composio / Tavily / Anthropic via `src/lib/usage/track.ts`
+- Multi-tenant quota gates for OpenAI / broker / Tavily / Anthropic via `src/lib/usage/track.ts`
 
 ### What's NOT enforced today (in code)
 
@@ -222,7 +222,7 @@ This is **a 1-2 week engineering project**, not a doctrine question. Sequence:
 
 1. **Migration**: add `tier_limits` table (per-tier integration cap, seat cap, action cap, agent autonomy levels)
 2. **Enforcement points**:
-   - Composio OAuth flow: check integration count against tier cap before adding
+   - Broker (Nango) OAuth flow: check integration count against tier cap before adding
    - Team invite flow: check seat count against tier cap before sending invite
    - Hire chat: gate custom-employee count per tier
    - Approval gate: increment a "billable action" counter on every approve; bill overage at month close
@@ -241,7 +241,7 @@ The inversions research **reinforced** these:
 - ✅ Pricing structure ($99 / $499 / $1499 / $2999 + $0.05 overage)
 - ✅ Approval gate as a mechanism (just not as a permanent ceiling)
 - ✅ Agencies as the primary wedge (with fractional-COO leverage added)
-- ✅ Composio breadth, 28 named specialists, Notion mirror, git-style versioning
+- ✅ Broker breadth (now Nango — see ADR 0010), specialist agents, Notion mirror, git-style versioning
 - ✅ Three demand-validated differentiators (Apprentice / cross-synthesis / personalization)
 - ✅ ADR 0009 engineering stack (81% aligned, the 8 upgrades stand)
 

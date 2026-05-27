@@ -42,7 +42,10 @@ Tier 2 — Internal event warehouse (raw episodic, invisible to customer)
   Migration trigger: ClickHouse + PeerDB CDC when aggregate rows > 100M
 
 Tier 3 — Live API (real-time, source of truth)
-  Storage: none — direct Composio calls
+  Storage: none — direct broker calls via nangoProxy() (src/lib/nango.ts)
+    [2026-05-27 correction: originally "direct Composio calls". Composio was
+     removed after the 2026-05-21 breach; live reads now go through Nango.
+     See adr/0010-nango-broker.md. The three-tier model itself is unchanged.]
   Use: only when "right now" matters
   Quota-tracked via CP-23
 
@@ -57,7 +60,7 @@ Cross-cutting: sleep-time consolidation
 
 | Question the AI gets | Where it looks |
 |---|---|
-| "What's our MRR right now?" | **Tier 3 (Composio live)** — Stripe API call |
+| "What's our MRR right now?" | **Tier 3 (broker live, Nango)** — Stripe API call |
 | "How does this compare to 3 months ago?" | **Tier 1 (Notion)** — Weekly KPI Snapshots |
 | "Show me every late-paying client in Q3 2024" | **Tier 2 (warehouse)** — TimescaleDB time-range query |
 | "What patterns have we seen with Client X over 4 years?" | **Tier 2 + Tier 1** — raw events + AI synthesis → write new Pattern Card |

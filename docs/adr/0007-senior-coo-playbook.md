@@ -1,5 +1,7 @@
 # Senior fractional COO operating playbook — agencies + services businesses
 
+> Note 2026-05-27: category framing broadened from "marketing agencies" to "service businesses broadly" — see positioning/identity.md. The operator-judgment playbook below applies unchanged across service-business types.
+
 > Source-of-truth research for rewriting the 10 OpsRadar domain agents. May 2026.
 >
 > **Important framing**: OpsRadar serves **all agency-type and services businesses** — design agencies, dev shops, marketing agencies, recruiting agencies, consulting firms, accounting/bookkeeping firms, PR firms, content studios, and the broader services market. ~85% of the signals + thresholds below apply universally; vertical-specific bits live in skill packs (`knowledge-base/skills/agency-types/`).

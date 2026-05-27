@@ -45,8 +45,8 @@ The CRM also tracks per-prospect fields that most YC applicants don't capture: `
 | 2026-04-29 18:39 | Sean Horton books "Ops Radar Strategy call" via Calendly (Tue May 5, 10:00 ET) |
 | 2026-04-29 18:58 | Sean accepts Google Meet invite (meet.google.com/ffz-jzih-zbh) |
 | **2026-05-05 ~14:00** | **Discovery call held with Sean Horton** |
-| 2026-05-05 15:02 | Lawand sends "Demo Workflow – Quick Access" with n8n invite to demo workflow **"Noise-Cancelling Recruitment Supply Chain"** |
-| 2026-05-05 16:47 | Sean replies (positive sentiment): *"Thank you sir!! With the login from n8n, do other members of my team need that invite in order to view the demo as well? I am thinking of how I would share with Bill and Lisa as that is who I would need..."* — **inbound-reply, demo-workflow-thread, team-access-question, final-signoff-signal** |
+| 2026-05-05 15:02 | Lawand sends "Demo Workflow – Quick Access" with an invite to the demo automation **"Noise-Cancelling Recruitment Supply Chain"** |
+| 2026-05-05 16:47 | Sean replies (positive sentiment): *"Thank you sir!! With the login from n8n, do other members of my team need that invite in order to view the demo as well? I am thinking of how I would share with Bill and Lisa as that is who I would need..."* — **inbound-reply, demo-workflow-thread, team-access-question, final-signoff-signal** *(Sean's verbatim quote — kept as sent. The May 2026 demo predated CP-15; today the same automation runs as an agent-loop + approval-gate flow brokered by Nango, no n8n.)* |
 | 2026-05-05 16:54 | Lawand: "Happy to invite Bill, Lisa, or anyone else — just send me their emails" |
 | 2026-05-05 17:03 | Sean replies (positive): *"Perfect and thank you! bill@swishad.com lisamarie@swishad.com"* — team emails shared |
 | 2026-05-05 17:17 | Lawand confirms access for both team members |
@@ -56,12 +56,12 @@ The CRM also tracks per-prospect fields that most YC applicants don't capture: `
 
 1. **A real qualified deal in motion** — not a hypothetical. A buyer-side champion (Sean Horton), team members invited (Bill + Lisa Marie), an active demo workflow running.
 2. **The sales model is documented** in the CRM notes: *"discovery call → 1-week system mapping → close at $5K mapping engagement."* This is professional sales discipline, not vibe-selling.
-3. **The pain is named precisely**: *"Recruitment marketing agency. GEO/LMFAO post on AI search disruption. Active engagement: discovery call held, demo workflow shared in n8n (Noise-Cancelling Recruitment Supply Chain), team members Bill and Lisa invited."*
+3. **The pain is named precisely**: *"Recruitment marketing agency. GEO/LMFAO post on AI search disruption. Active engagement: discovery call held, demo automation shared (Noise-Cancelling Recruitment Supply Chain), team members Bill and Lisa invited."*
 4. **The honest "ghost" is itself a maturity signal** — naming the silence and re-engaging properly (working hypothesis: internal budget pressure at Swish Ad) is what a real operator does, not what a wannabe founder does.
 
 ### Drop-in language for the YC application Q5
 
-> *"Active qualified deal: Sean Horton (CEO) at Swish Advertising, a recruitment marketing agency. Discovery call held 5 May 2026. Demo workflow (a 'Noise-Cancelling Recruitment Supply Chain') deployed to their n8n environment, with team access granted to two additional decision-makers (Bill and Lisa Marie). Sales model: discovery → one-week system mapping → close at $5K. Thread quiet for two weeks; our hypothesis is internal budget pressure at the customer, not a pitch problem. Re-engaging this week with a low-friction follow-up (free pilot, no upfront)."*
+> *"Active qualified deal: Sean Horton (CEO) at Swish Advertising, a recruitment marketing agency. Discovery call held 5 May 2026. Demo automation (a 'Noise-Cancelling Recruitment Supply Chain') shared with their team, with access granted to two additional decision-makers (Bill and Lisa Marie). Sales model: discovery → one-week system mapping → close at $5K. Thread quiet for two weeks; our hypothesis is internal budget pressure at the customer, not a pitch problem. Re-engaging this week with a low-friction follow-up (free pilot, no upfront)."*
 
 ### Re-engagement tactic for the Swish Ad ghost (send this week)
 
@@ -73,7 +73,7 @@ The CRM also tracks per-prospect fields that most YC applicants don't capture: `
 >
 > Two specific things I can do at zero cost to you this week:
 >
-> 1. A 30-min walk-through of the Noise-Cancelling Recruitment Supply Chain workflow in your n8n with Bill and Lisa, and a one-page diagnostic of where Swish is currently bleeding time/margin. No deck. No close attempt.
+> 1. A 30-min walk-through of the Noise-Cancelling Recruitment Supply Chain automation with Bill and Lisa, and a one-page diagnostic of where Swish is currently bleeding time/margin. No deck. No close attempt.
 > 2. A 60-day Pro tier (worth $3K/month, $0 to you), in exchange for one 30-min feedback call at the end. Cancel anytime if it isn't useful.
 >
 > Either of these — or neither — works. Just want a clear yes / no / not-now so I'm not guessing.
@@ -131,7 +131,7 @@ A YC partner sees this and reads: *"Founder has the craft of personalised outrea
 
 This is not "stranger on Reddit liked our idea." This is:
 
-1. **An informal advisor relationship.** Ala's critique directly drove an architectural change — the *validation layer* he identified is what became the HITL escalation pattern documented in [`architecture-2026.md`](../architecture-2026.md) Loop 5 and [`ai-native-company-2026.md`](../ai-native-company-2026.md). The product is materially better because of his input.
+1. **An informal advisor relationship.** Ala's critique directly drove an architectural change — the *validation layer* he identified is what became the human-in-the-loop approval gate (the agent proposes, never executes without operator confirmation; every write routed to `/dashboard/actions`). The product is materially better because of his input.
 
 2. **A public partnership offer in writing on Reddit** (as Creative-Letter-4902): *"I build these systems. Flat fee per audit. I map where the agency bleeds time. You build the AI brain on top. If you want to partner on the execution layer, let me know."* — channel separation in the conversation; same person making the same offer in a different surface.
 
@@ -153,11 +153,11 @@ This is not "stranger on Reddit liked our idea." This is:
 >
 > *Quick update on what's shipped since you said "come back when you've tested on a real agency":*
 >
-> *1. Architecture: the validation layer you flagged is now the HITL escalation system. The AI proposes, never executes without operator confirmation on anything that touches a customer / invoice / payment. Documented in our internal architecture-2026.md as Loop 5.*
+> *1. Architecture: the validation layer you flagged is now the HITL approval gate. The AI proposes, never executes without operator confirmation on anything that touches a customer / invoice / payment. Every write routes through an approval queue at /dashboard/actions before the broker runs it.*
 >
-> *2. First qualified deal in active demo: Swish Advertising (Sean Horton, recruitment marketing agency). We deployed a 'Noise-Cancelling Recruitment Supply Chain' workflow to their n8n; team has access; pacing toward a $5K mapping engagement close.*
+> *2. First qualified deal in active demo: Swish Advertising (Sean Horton, recruitment marketing agency). We shared a 'Noise-Cancelling Recruitment Supply Chain' automation; team has access; pacing toward a $5K mapping engagement close.*
 >
-> *3. CTO Atta (the technical cofounder I mentioned the night you reviewed the doc) has shipped the chatv2 backend separately — 14 migrations, multi-tenant, the agent compute layer.*
+> *3. CTO Atta (the technical cofounder I mentioned the night you reviewed the doc) owns the multi-tenant agent compute layer — the agent loop, approval gate, and integration broker that power the AI COO.*
 >
 > *I saw your Reddit comment — the partnership offer on the execution layer means a lot. I'd love to compare notes on what you see when you map agency time-bleed vs what the OpsRadar agent surfaces today. 30 minutes whenever works. We are also submitting to YC S26 by May 25 and I'd be honoured to cite our conversation as part of how the architecture got to where it is.*
 >
@@ -288,11 +288,11 @@ Use Creative-Letter-4902's verbatim quote as third-party answer:
 
 ### For Q5 ("What's your traction? Numbers.")
 
-> *"370 prospects in our Supabase-backed CRM, 233 hyper-personalised cold emails sent, 3.4% reply rate (8 inbound — at the median for B2B SaaS at this stage and trending up). 138 active engaged contacts. 1 qualified deal in motion: Sean Horton (CEO, Swish Advertising) booked a discovery call via Calendly, we ran the call 5 May 2026, deployed a custom 'Noise-Cancelling Recruitment Supply Chain' demo workflow to their n8n with team access granted to two additional decision-makers. Documented sales model: discovery → 1-week mapping → close at $5K. 1 high-signal nurture: Anthony Nichols (collystring) replied 2 minutes after our cold send, complimenting the craft, calendared for re-engagement when his GTM hire is 3 months in. Inbound from independent operators on Reddit (one unsolicited partnership offer in writing) and verified-account X engagement. Investor side: meeting with Iraq Venture Partners scheduled 25 May 2026."*
+> *"370 prospects in our Supabase-backed CRM, 233 hyper-personalised cold emails sent, 3.4% reply rate (8 inbound — at the median for B2B SaaS at this stage and trending up). 138 active engaged contacts. 1 qualified deal in motion: Sean Horton (CEO, Swish Advertising) booked a discovery call via Calendly, we ran the call 5 May 2026, shared a custom 'Noise-Cancelling Recruitment Supply Chain' demo automation with team access granted to two additional decision-makers. Documented sales model: discovery → 1-week mapping → close at $5K. 1 high-signal nurture: Anthony Nichols (collystring) replied 2 minutes after our cold send, complimenting the craft, calendared for re-engagement when his GTM hire is 3 months in. Inbound from independent operators on Reddit (one unsolicited partnership offer in writing) and verified-account X engagement. Investor side: meeting with Iraq Venture Partners scheduled 25 May 2026."*
 
 ### For Q8 ("Biggest risk?")
 
-> *"The risk identified by an independent agency operator on Reddit (Creative-Letter-4902): 'if the AI reasons wrong, it breaks things faster than manual work.' We took the warning seriously and architected the product around HITL escalation — the agent proposes, never executes without confirmation on high-stakes actions, every write gated by typed safety rules. That architecture is documented in `architecture-2026.md` Loop 5 + `ai-native-company-2026.md`. The real risk for OpsRadar is the location concern (Iraq-based team) which we mitigate with US LLC structure (Wyoming + Wise), full SF commitment for the batch, and an active institutional investor relationship in MENA (IVP)."*
+> *"The risk identified by an independent agency operator on Reddit (Creative-Letter-4902): 'if the AI reasons wrong, it breaks things faster than manual work.' We took the warning seriously and architected the product around a human-in-the-loop approval gate — the agent proposes, never executes without confirmation on high-stakes actions, every write classified and queued at /dashboard/actions before the broker runs it. The real risk for OpsRadar is the location concern (Iraq-based team) which we mitigate with US LLC structure (Wyoming + Wise), full SF commitment for the batch, and an active institutional investor relationship in MENA (IVP)."*
 
 ---
 
@@ -313,7 +313,7 @@ Use Creative-Letter-4902's verbatim quote as third-party answer:
 
 - **Supabase CRM dashboard** — project `nbdcrmepvwbfbcjqfubr` (Ops radar_1). Keep a screenshot of the stage breakdown for the interview.
 - **Sean Horton thread in Gmail** — searchable as `from:sean@swishad.com OR to:sean@swishad.com`
-- **n8n demo workflow** — "Noise-Cancelling Recruitment Supply Chain" — keep accessible for screen-share
+- **Demo automation** — "Noise-Cancelling Recruitment Supply Chain" — keep accessible for screen-share
 - **Calendly admin** — the Sean Horton booking on May 5 is a citeable artifact
 - **IVP meeting Microsoft Teams link** — keep the meeting record + any artifacts produced
 - **Reddit thread permalink** — keep the URL of the post containing Creative-Letter-4902's reply
@@ -328,7 +328,7 @@ Save screenshots of each to a private folder. YC partners may ask for any of the
 
 - [`founder-profile.md`](./founder-profile.md) — both cofounders' profiles (the team this traction was built by)
 - [`what-yc-wants.md`](./what-yc-wants.md) — application question drafts; this doc plugs into Q3, Q5, Q8
-- [`../strategy/moats-and-friction-2026.md`](../strategy/moats-and-friction-2026.md) — the "trust-as-human-touchpoint" provocation is being lived in real time via Lawand's personal replies to Sean Horton + Anthony + the Reddit threads
+- The "trust-as-human-touchpoint" provocation is being lived in real time via Lawand's personal replies to Sean Horton + Anthony + the Reddit threads
 - [`../go-to-market/cold-email-playbook.md`](../go-to-market/cold-email-playbook.md) — playbook for sharpening the next batch of outreach
 
 ---

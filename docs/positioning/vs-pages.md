@@ -150,7 +150,7 @@ Scoro is the system of record. OpsRadar is the brain on top of whatever you alre
 | Pricing model | Flat tier — independent of headcount | Per-seat — every hire raises your bill |
 | AI-native (built AI-first) | Yes | No — ELI is an AI Assistant added on top of an existing PSA [2] |
 | Recommends the next action | Yes — alerts with a specific next step | Partial — ELI surfaces insights, you decide and act [2] |
-| Vertical: built for marketing agencies | Yes — every benchmark is agency-shaped | No — built for consultancies, agencies, IT firms, architecture [3] |
+| Built for your shape | Yes — every benchmark is shaped for sub-$5M service businesses that bill for client time (agencies, dev shops, consultancies, accounting firms) | Built for larger pro-services firms — consultancies, agencies, IT firms, architecture [3] |
 | Implementation time | Same-week signal | 2–4 weeks for a full implementation [4] |
 | Scope creep alerts in days | Yes | Possible to configure inside the PSA reports |
 | Multi-client health view | Yes — weekly score per client | Available through dashboards you build |
@@ -171,7 +171,7 @@ Sources: [1] [scoro.com/pricing](https://www.scoro.com/pricing/) — Core $23.90
 
 ### WHEN OPSRADAR IS THE RIGHT CHOICE
 
-- **You are a 5–30 person marketing agency, not a 200-person consultancy.** Scoro's depth is your tax. Agency-vertical software is built around your actual shape — retainer plus project, scope creep, utilization at 75%.
+- **You are a 5–30 person service business that bills for client time — a marketing agency, dev shop, recruiting firm, or consultancy — not a 200-person enterprise.** Scoro's depth is your tax. OpsRadar is built around your actual shape — retainer plus project, scope creep, utilization at 75%.
 - **You cannot afford to lose a quarter to a multi-week rollout.** OpsRadar starts producing signal in the first week against the tools you already run.
 - **You hire and your software bill should not punish that.** Scoro's per-seat model compounds. OpsRadar is one flat number per tier.
 - **You want recommendations, not another reporting surface.** Scoro tells you the data. OpsRadar tells you the next move and increasingly takes it.
@@ -218,7 +218,7 @@ None required. OpsRadar reads from your existing stack with read-only credential
 
 ### THE BOTTOM LINE
 
-Scoro is the right call if you are a 50+ person professional services firm consolidating onto one spine. For everyone smaller — 5 to 30-person marketing agencies who already have the tools and need the COO layer — Scoro is overbuilt and overpriced. OpsRadar is the AI COO designed for your shape and your budget. **Book a 20-minute demo** and we will show you exactly what a flat-tier AI COO looks like on top of your existing stack.
+Scoro is the right call if you are a 50+ person professional services firm consolidating onto one spine. For everyone smaller — 5 to 30-person service businesses that bill for client time (agencies, dev shops, consultancies) who already have the tools and need the COO layer — Scoro is overbuilt and overpriced. OpsRadar is the AI COO designed for your shape and your budget. **Book a 20-minute demo** and we will show you exactly what a flat-tier AI COO looks like on top of your existing stack.
 
 ---
 

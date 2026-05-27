@@ -1,19 +1,26 @@
-# Path A: The AI COO for Marketing Agencies
+# Path A: The AI COO for Service Businesses That Bill for Client Time
 ## Strategy Document — May 2026
+
+> **Category framing (broadened 2026-05-27):** OpsRadar serves service businesses that bill for client time — design studios, marketing agencies, dev shops, recruiting firms, consulting firms, accounting/bookkeeping firms, PR agencies, content studios. The ops pain (project profitability, utilization, scope creep, cash collection, retainer health) is identical across them; the SPI/Deltek Professional Services benchmark measures all of them on the same metrics. We **build broad, sell narrow**: the product generalizes, but we wedge in through one sharp beachhead persona at a time. Marketing agencies are one strong beachhead (where the founder lives); accounting and consulting firms have the same pain with lower AI adoption — more unmet demand. Numbers below cite agency-specific benchmarks because that's the best-instrumented slice; the pattern holds across the broader market.
 
 > **Research base:** 15+ parallel research agents, 80+ primary sources, IBM IBV, McKinsey, Gartner,
 > Deloitte, PwC, BCG, MIT, OECD, Federal Reserve, Fluency, Basis, Planable, SaaS Capital,
 > Fractionus, GoHighLevel public data, Federal Reserve FEDS Notes, AgentMarketCap, and 30+ agency-specific benchmarks.
+
+> **2026-05-27 research update.** Three new research files refresh this doc and are woven into the sections below:
+> [`post-pivot-positioning-validation`](../research/2026-05-27-post-pivot-positioning-validation.md) — verdict **HYBRID: build broad, sell narrow**, with the SPI/Deltek Professional Services benchmark proving the ops pain is shared across all service-business types, and consulting/accounting flagged as possibly-stronger beachheads than the saturated marketing-agency slice (folded into Part 1.4, Part 3, Part 6.1).
+> [`competitive-refresh`](../research/2026-05-27-competitive-refresh.md) — integration-token custody became a front-of-pitch buying criterion after the Composio breach, and the defensible whitespace sharpened to *services-operator judgment + customer-owned brain + SMB-mid pricing* (folded into Part 1.1, Part 5.1).
+> [`nango-broker-best-practices`](../research/2026-05-27-nango-broker-best-practices.md) — the Composio→Nango broker migration (2026-05-26) is a net **security upgrade**: white-label consent, short-lived session tokens, self-host escape hatch (folded into Part 5.1 and Part 5.5). Full moat treatment in [`moats.md`](./moats.md).
 
 ---
 
 ## THE ONE-PAGE PITCH
 
 **The problem:**
-21.5% of marketing agencies are losing money — up from 13% in one year. 99% can't fully track scope creep. They're bleeding 15–30% of potential profit to operational inefficiency every month. The solution — a Chief AI Officer — costs $400K/year. They can't afford it.
+Service businesses that bill for client time are bleeding 15–30% of potential profit to operational inefficiency every month — 21.5% of agencies are now losing money, up from 13% in one year, and 99% can't fully track scope creep. The same wound runs through dev shops, recruiting firms, consultancies, and accounting firms. The solution — a Chief AI Officer — costs $400K/year. They can't afford it.
 
 **The solution:**
-OpsRadar is the AI COO for marketing agencies. Connect your HubSpot, ClickUp, Harvest, and Stripe — we watch everything in real time and tell you, before it costs you, when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver from $750/month, 24/7.
+OpsRadar is the AI COO for service businesses that bill for client time. Connect your HubSpot, ClickUp, Harvest, and Stripe — we watch everything in real time and tell you, before it costs you, when a client is going unprofitable, when your team is about to burn out, when cash flow is about to hit a wall. What a fractional COO charges $10K/month for, we deliver from $750/month, 24/7.
 
 **Why now:**
 76% of large enterprises now have a Chief AI Officer. Small agencies have nothing. The fractional COO market is $9.4B and growing. The AI COO product layer doesn't exist yet. Workflow redesign is the #1 driver of AI ROI — and 84% of agencies haven't done it.
@@ -22,7 +29,7 @@ OpsRadar is the AI COO for marketing agencies. Connect your HubSpot, ClickUp, Ha
 We already have the 10 integrations, the health score, the audit engine, and the COO chat. We didn't start from scratch — we started from a working foundation. We're claiming the category before anyone else names it.
 
 **The comp set:**
-Toast (restaurants). ServiceTitan (home services). Veeva (pharma). Clio (legal). OpsRadar (marketing agencies).
+Toast (restaurants). ServiceTitan (home services). Veeva (pharma). Clio (legal). OpsRadar (service businesses that bill for client time — wedging in through agencies first).
 
 ---
 
@@ -32,7 +39,7 @@ Toast (restaurants). ServiceTitan (home services). Veeva (pharma). Clio (legal).
 
 After mapping 27+ competitors across 7 tiers of the agency software market, the finding is unambiguous:
 
-**No funded, scaled product exists positioned as an AI-native operations brain for marketing agencies.**
+**No funded, scaled product exists positioned as an AI-native operations brain for service businesses that bill for client time.**
 
 | Tier | Who | What They Do | Why They're Not You |
 |------|-----|-------------|-------------------|
@@ -46,6 +53,8 @@ After mapping 27+ competitors across 7 tiers of the agency software market, the 
 
 **The gap no one fills:**
 > An AI-native system that monitors an agency's full operations across their existing tools, surfaces what's going wrong before it becomes a crisis, recommends specific actions, and acts as an always-on strategic operator — without requiring the agency to replace their current stack.
+
+**The whitespace, re-sharpened (2026-05-27).** The late-May competitive refresh found two structural lookalikes have appeared — **Jootle** (horizontal AI-native ops platform: 60+ playbooks, approval gate, per-customer VPS) and **Glean** (now selling governed autonomous agents to enterprises at $100K–$500K ACV). So the whitespace is no longer "nobody does cross-tool governed agents." It is now precisely: **nobody does cross-tool governed agents WITH services-operator judgment + a customer-owned brain, priced for SMB-to-mid service businesses.** Demand-side validation strengthened in the same window — Emergence Capital's "AI-Native Services" playbook names services disruption "a defining business model of the AI era," and the human "AI Chief of Staff" role is a $200K–$350K hire concentrated in professional-services firms — while the supply side is still empty at the vertical ([competitive-refresh 2026-05-27](../research/2026-05-27-competitive-refresh.md) §1, §4). A second 2026 buyer reflex hardened to OpsRadar's benefit: the AI-SDR collapse (50–70% annual churn, survivors retreating to "human copilot") is now external, citable proof that **control-first beats autonomous** — lead with the approval gate, not autonomy.
 
 **Three underestimated threats to watch (updated May 2026):**
 
@@ -109,14 +118,16 @@ And 84% of organizations haven't done it. OpsRadar does it for them.
 
 | Market | Size |
 |--------|------|
-| US marketing agencies (2026) | **$192.45 billion** |
-| Global marketing agencies (2026) | **$473.57 billion** |
+| US marketing agencies (2026) — beachhead slice | **$192.45 billion** |
+| Global marketing agencies (2026) — beachhead slice | **$473.57 billion** |
 | Fractional executive market (2025) | **$9.4 billion** → $24.7B by 2034 |
 | Vertical AI investment (2025) | **$3.5 billion** — nearly 3x from 2024 |
 | Agentic AI sector funding (2025) | **$6.42 billion** |
 | Agentic AI enterprise software by 2035 | **$450 billion** (30% of enterprise software) |
 
-**OpsRadar's addressable slice:** ~12,000–18,000 US/Canada agencies fit the Tier 1 ICP. ~4,000–6,000 are reachable through our current channels (see Part 6). At a $1,500/month average contract, the beachhead TAM is **$72M–$108M ARR**.
+**OpsRadar's addressable slice:** ~12,000–18,000 US/Canada agencies fit the Tier 1 ICP. ~4,000–6,000 are reachable through our current channels (see Part 6). At a $1,500/month average contract, the beachhead TAM is **$72M–$108M ARR**. Agencies are the wedge, not the ceiling — the same product expands to adjacent service businesses that bill for client time (dev shops, recruiting, consulting, accounting), each with the same ops pain and several with lower AI adoption (more unmet demand).
+
+**The shared-pain proof (2026-05-27).** The strongest single piece of evidence that the capability genuinely generalizes is that one benchmark report treats the whole universe as the same operating model. The **SPI / Service Performance Insight Professional Services Maturity Benchmark** (18th annual, 2025) measures **403 firms across IT Consulting, Management Consulting, Software & SaaS, Accounting, Marketing & Advertising, and Architecture & Engineering** against the *same* 165+ metrics — and the numbers it reports are exactly OpsRadar's agents: billable utilization fell to **68.9%** (below the 75% optimal), EBITDA to a 5-year-low **9.8%**, scope creep affects **32% of projects**, on-time delivery dropped to **73.4%**, and **~56% of firms** report frequent payment delays ([post-pivot-positioning-validation 2026-05-27](../research/2026-05-27-post-pivot-positioning-validation.md) §2, citing Deltek/Rework). The broad universe is also one-to-two orders of magnitude larger than the agency slice — management consulting alone is **1.17M US businesses**, accounting **~85K firms** — though bigger TAM ≠ easier sale, so this argues for *eventual* breadth, not broad messaging now.
 
 **The category market itself is now sized:** Global AI Operating System market: **$12.85B (2025) → $107.60B by 2033 at 30.5% CAGR** ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/artificial-intelligence-ai-operating-system-market-report), 2026). The vertical AI slice is growing faster than the horizontal one — industry-specific AI solutions at **36.5% CAGR vs 18.9%** for general-purpose AI tools ([ACTGSYS 2026](https://actgsys.com/en/blog/vertical-ai-agents-industry-specific-2026)).
 
@@ -203,6 +214,10 @@ The gap between 68% "using AI" and 8.8% "AI embedded in operations" is OpsRadar'
 
 ## PART 3: THE CUSTOMER
 
+> **Hybrid framing (2026-05-27): build broad, sell narrow.** The positioning-validation research lands on a clear verdict — **broaden the product and category language, keep ONE sharp beachhead persona in the hero and outbound.** The pain is professional-services-generic (one SPI benchmark, six verticals, same 165 metrics — see Part 1.4), so a consulting firm or accounting practice gets value out of the box; but every 2026 vertical-AI thesis and OpsRadar's own Lindy cautionary tale say a "for everyone" message converts no one. The honest edge-case: "all service businesses" over-claims — pure-project and commission-only shops (video/design/dev studios) don't share the retainer-scope-creep/utilization JTBD, so the defensible category sentence is **"service businesses that bill for client time,"** not literally all of them ([post-pivot-positioning-validation 2026-05-27](../research/2026-05-27-post-pivot-positioning-validation.md) §3, "the verdict").
+>
+> **The beachhead may not be marketing agencies.** The intent data flags that **agencies are the most-saturated, least-under-served slice** of an otherwise-hot professional-services market (71% of marketing already uses GenAI; agencies are AI-native; the field is noisy). On a four-factor score (shared-pain fit · under-served · owner-led density · stack match), **management/boutique consulting (34) and accounting/bookkeeping firms (32) outscore marketing agencies (31)** — same shared pain, much lower AI saturation (more unmet demand), and OpsRadar's existing Stripe/QuickBooks/time-tracking integrations already fit. Marketing agencies win only on stack-match (the 10 integrations were built for them). **Action: keep Persona A valid as a hero, but seriously test a consulting-or-accounting-firm hero where unmet pain is higher** ([post-pivot-positioning-validation 2026-05-27](../research/2026-05-27-post-pivot-positioning-validation.md) §4, beachhead ranking).
+
 ### 3.1 The Beachhead ICP (First 50 Customers)
 
 > **One-sentence definition:** A US/Canada-based, $1M–$3M-revenue retainer-heavy digital agency (paid media, SEO, social, or full-service) with 10–25 employees, a founder-CEO still running ops herself, at least 4 of OpsRadar's 10 stack integrations already in place, and one acute moment of margin pain.
@@ -220,7 +235,7 @@ The gap between 68% "using AI" and 8.8% "AI embedded in operations" is OpsRadar'
 **The 15-minute qualifier question (one question, told to all SDRs):**
 > "When was the last time you discovered a client had been losing you money for more than a month — and what did it cost you?"
 
-If they have an answer and a dollar figure, they qualify. Full persona research, disqualifiers, and sourcing playbook are in [`docs/research/2026-05-icp-customer.md`](./icp-customer-research.md).
+If they have an answer and a dollar figure, they qualify. Full persona research, disqualifiers, and sourcing playbook are in [`docs/research/2026-05-icp-customer.md`](../research/2026-05-icp-customer.md).
 
 ### 3.2 Expansion ICP (Customers 50–200)
 
@@ -278,6 +293,9 @@ $3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in 
 | **COO chat feature already live** | The "AI COO" product already exists in prototype form |
 | **Vertical focus from day 1** | No horizontal tech debt; no generalist UX debt |
 | **First mover in unoccupied category** | No incumbent with brand recognition to fight |
+| **Token-custody trust posture (Nango broker)** | OAuth held off our servers behind short-lived session tokens — now a front-of-pitch buying criterion (see below) |
+
+**The token-custody advantage became real and marketable post-breach (2026-05-27).** Integration-token custody moved from a compliance footnote to a **front-of-pitch buying criterion in under 30 days**, triggered by the Composio breach (arbitrary code execution in the tool-execution sandbox; ~5,242 connections exposed). "Where do my OAuth tokens live and who can reach them" is now a primary vendor-selection question, with every serious player leading on a security-posture line ([competitive-refresh 2026-05-27](../research/2026-05-27-competitive-refresh.md) §2). OpsRadar migrated its broker **from Composio to Nango on 2026-05-26**, and the research is unambiguous that this was a **net security upgrade, not a lateral move**: Nango's Connect Sessions are short-lived (~30-min) backend-minted tokens, OAuth is held off OpsRadar's servers, consent is **white-labelled to OpsRadar's brand** (Composio showed "Composio"), and there is a **self-host escape hatch** so no customer credential need ever transit a third-party cloud — the regulated-procurement answer Composio never had ([nango-broker-best-practices 2026-05-27](../research/2026-05-27-nango-broker-best-practices.md) §1–2). OpsRadar's own database only ever stored a `userId → connectionId` map — never tokens, never business data — so in this class of incident the blast radius is the broker's, not ours. Full moat treatment in [`moats.md`](./moats.md). **Do not reintroduce the stale "Composio holds your tokens" line anywhere** — Composio is now the breach vendor we left.
 
 ### 5.2 The 6-Phase Product Arc
 
@@ -290,7 +308,7 @@ $3M–$8M agencies, 25–50 employees, Head of Ops or fractional COO already in 
 | 5 | **E** | Benchmark Network | Network effect — better with every new agency |
 | 6 | **F** | White-Label Platform | Distribution multiplier — agencies become sales team |
 
-Full spec for each phase: [`docs/dev/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/specs/2026-05-17-opsradar-product-strategy-design.md)
+Full spec for each phase: [`docs/dev/archive/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/archive/specs/2026-05-17-opsradar-product-strategy-design.md)
 
 ### 5.3 The Data Moat — How It Compounds
 
@@ -322,6 +340,8 @@ Full spec for each phase: [`docs/dev/specs/2026-05-17-opsradar-product-strategy-
 
 ### 5.5 The Execution Layer — Chat-to-Workflow Generation on Customer-Owned Infrastructure
 
+> **Stale-architecture flag (2026-05-27):** this section describes the original chatv2/n8n execution model, which has since been severed. The execution layer now lives in-app (the COO/Hire surface + approval gate), and the integration broker is **Nango, not Composio** (migrated 2026-05-26). The *strategic argument* below — customer-owned execution, model-progress compounding, agentic-not-advisory, MCP-as-strategic — still holds; only the implementation nouns changed. Read the moat logic, not the chatv2/n8n specifics.
+
 OpsRadar's hardest-to-replicate technical asset is the **chat-to-workflow generation pipeline** in the chatv2 backend, paired with the **customer-owned execution model** (each agency runs their own self-hosted n8n instance, OpsRadar deploys generated workflows to it via per-user encrypted API keys).
 
 **The flow that no PSA tool can replicate:**
@@ -339,7 +359,7 @@ OpsRadar's hardest-to-replicate technical asset is the **chat-to-workflow genera
 - **It makes the COO agent agentic, not advisory.** Without an execution layer, the agent is a smart dashboard that tells you what's wrong. With it, the agent replaces the fractional COO function end-to-end: observe → reason → propose → act on confirmation → learn from outcome.
 - **It is what makes the OpsRadar MCP server (YC RFS #12) genuinely strategic.** External agents calling OpsRadar via MCP don't just query data — they can `generate_workflow` and have it deployed to the customer's n8n on owner approval. This is "programmable by external agents," not just "queryable by external agents."
 
-This execution layer is the thread that runs through all four YC categories. The product surface remains "actions" and "what to do next" (per voice rules); the implementation detail is invisible to customers — exactly like Stripe is invisible behind a checkout flow. Internal architecture detail in [`docs/yc/four-categories-build.md`](../yc/four-categories-build.md) and the chatv2 strengthening plan in [`docs/architecture-2026.md`](../architecture-2026.md).
+This execution layer is the thread that runs through all four YC categories. The product surface remains "actions" and "what to do next" (per voice rules); the implementation detail is invisible to customers — exactly like Stripe is invisible behind a checkout flow. Internal architecture detail in [`docs/yc/four-categories-build.md`](../yc/four-categories-build.md) and the current-architecture truth in [`README.md`](../README.md) + the ADRs (0005–0012). *(The old chatv2 `architecture-2026.md` plan was deleted with the CP-15 sever.)*
 
 ---
 
@@ -372,6 +392,8 @@ Every major vertical SaaS winner followed the same path:
 - Vertical AI captured **$3.5 billion in investment in 2025** — nearly 3x from 2024
 - Sector-specific AI delivers **500% ROI vs. horizontal AI** (McKinsey)
 - Industry-specific SaaS growing at **28% YoY** — 3x the pace of horizontal software (Euclid Ventures, 2026)
+
+**Why "build broad, sell narrow" is the right vertical-SaaS execution (2026-05-27).** Bessemer's vertical-AI founder playbook prescribes exactly this sequence — find a narrow beachhead, land "lighthouse customers," *then* extend to adjacent products for the same buyers (the Procore/Toast/ServiceTitan "layer-cake / second act" pattern). The 2026 investor consensus reinforces it: enterprises are about to "rationalize overlapping tools" onto fewer vendors, rewarding the clear category leader in a niche and punishing the generalist. Notion is the cleanest product-shape proof — one horizontal product, grown through tightly-segmented per-use-case communities and templates, never a single "for everyone" message ([post-pivot-positioning-validation 2026-05-27](../research/2026-05-27-post-pivot-positioning-validation.md) §3). The hybrid OpsRadar runs — broad latent capability, narrow entry story — is the pattern that wins, not the exception to it.
 
 ### 6.2 Win Conditions
 
@@ -642,16 +664,16 @@ OpsRadar is the company that rebuilds the operating model. For agencies. From $7
 
 | Document | What It Gives You | When to Use |
 |----------|-------------------|-------------|
-| [`icp-customer-research.md`](./icp-customer-research.md) | 3 personas, 10 ranked buying triggers, disqualifier list, JTBD map | Before any cold-prospecting batch |
-| [`ai-market-research-2026.md`](./ai-market-research-2026.md) | Full IBM/McKinsey/Gartner/Deloitte data for investor/customer narratives | Investor pitch, sales deck |
-| [`agency-tools-research-2026.md`](./agency-tools-research-2026.md) | Agency tech stacks, tool deep-dives, profitability benchmarks | Product decisions, positioning |
+| [`../research/2026-05-icp-customer.md`](../research/2026-05-icp-customer.md) | 3 personas, 10 ranked buying triggers, disqualifier list, JTBD map | Before any cold-prospecting batch |
+| [`../research/2026-05-ai-market.md`](../research/2026-05-ai-market.md) | Full IBM/McKinsey/Gartner/Deloitte data for investor/customer narratives | Investor pitch, sales deck |
+| [`../research/2026-05-agency-tools.md`](../research/2026-05-agency-tools.md) | Agency tech stacks, tool deep-dives, profitability benchmarks | Product decisions, positioning |
 | [`pricing-depth.md`](./pricing-depth.md) | Van Westendorp model, expansion triggers, objection bank | Pricing page revisions, tier conversations |
 | [`vs-pages.md`](./vs-pages.md) | `/vs/productive`, `/vs/scoro`, `/vs/float` — ready to ship | SEO landing pages — `/vs/productive` first |
 | [`../competitive/competitor-teardowns.md`](../competitive/competitor-teardowns.md) | 10 competitor profiles + battle card matrix | Before any sales call |
 | [`../go-to-market/cold-email-playbook.md`](../go-to-market/cold-email-playbook.md) | 5-touch sequence, 15 subject lines, reply handlers | This Monday — rewrite next 30 sends |
 | [`../go-to-market/fractional-coo-partner-program.md`](../go-to-market/fractional-coo-partner-program.md) | Partner program spec, 25% commission rationale, recruitment plan | Before posting in Fractionals United |
 | [`../go-to-market/community-90-day-plan.md`](../go-to-market/community-90-day-plan.md) | 8 communities, 30+ post drafts, 12 podcasts to pitch | This week — start with Online Geniuses |
-| [`../dev/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/specs/2026-05-17-opsradar-product-strategy-design.md) | Full 6-phase product arc with specs | Product planning |
+| [`../dev/archive/specs/2026-05-17-opsradar-product-strategy-design.md`](../dev/archive/specs/2026-05-17-opsradar-product-strategy-design.md) | Full 6-phase product arc with specs (archived) | Product planning |
 
 ---
 

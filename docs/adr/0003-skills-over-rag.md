@@ -1,6 +1,6 @@
 # Agent Skills Architecture — Why & How
 
-> Compiled: 2026-05-23 · Purpose: the architecture decision (and the research behind it) that took OpsRadar's knowledge base from RAG-shaped to Anthropic Agent Skills. Sibling to [`composio-vs-n8n-decision-2026.md`](./composio-vs-n8n-decision-2026.md) and [`control-surface-research-2026.md`](./control-surface-research-2026.md).
+> Compiled: 2026-05-23 · Purpose: the architecture decision (and the research behind it) that took OpsRadar's knowledge base from RAG-shaped to Anthropic Agent Skills. Sibling to [`0001-composio-broker.md`](./0001-composio-broker.md) and [`0005-control-first-approval-gate.md`](./0005-control-first-approval-gate.md).
 
 ---
 
@@ -72,7 +72,7 @@ Body structure (the standard OpsRadar skill template):
 - `sibling-skill-b` — when Y
 ```
 
-**Hard rules** (validated in the 5-skill validation batch + applied across all 46):
+**Hard rules** (validated in the 5-skill validation batch + applied across all skills — **47 as of 2026-05-27**):
 
 - Body ≤ 250 lines (Anthropic guideline 500 — we run tighter)
 - Open with the customer-anxious question in italics
@@ -83,7 +83,7 @@ Body structure (the standard OpsRadar skill template):
 
 ---
 
-## The 46 skills (CP-17 + 17b + 17c)
+## The skills (CP-17 + 17b + 17c — 47 as of 2026-05-27)
 
 ```
 knowledge-base/skills/

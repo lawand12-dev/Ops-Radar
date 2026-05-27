@@ -1,5 +1,7 @@
 # Domain agent orchestration — research + fix plan (May 2026)
 
+> **⚠️ Broker + fleet note (2026-05-27).** This ADR describes the 28-agent stack (10 domain + 17 tool + 1 evaluator) operating over **Composio**. Composio was removed 2026-05-26 (broker is now **Nango** — see [`0010-nango-broker.md`](./0010-nango-broker.md)) and the fleet was torn down with it: `src/lib/agents/registry.ts` currently holds one agent (Gmail), rebuilding one at a time (see [`0011-hire-surface-collapse.md`](./0011-hire-surface-collapse.md)). The **orchestrator-worker pattern below is still the intended design** for the rebuilt fleet; read the inline "hit Composio tools" / `bamboo_hr`-slug specifics as pre-pivot — the live equivalent is `nangoProxy()` against the `NANGO_TOOLS` map. The decided body is preserved unedited.
+
 **Status**: research complete, fix not yet applied.
 **Trigger**: post-CP-18 audit revealed the 10 domain agents (`revenue`, `collections`, `scope`, `delivery`, `briefing`, `profitability`, `team`, `growth`, `renewal`, `stack`) were written as **standalone synthesizers** — each one re-discovers data the new tool agents already pulled. That duplicates work, burns tokens, and (per Cognition's published failure mode) causes inconsistent decisions.
 

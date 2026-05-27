@@ -5,6 +5,8 @@
 > **Source research**: `docs/research/2026-05-26-engineering-{runtime,agent-arch,brain,tools}.md`
 > **Sibling**: `docs/positioning/identity.md` is the positioning verdict; this doc is the engineering verdict.
 
+> **📌 Post-script (2026-05-27) — the Tools-layer verdict resolved itself the hard way.** One day after this stress-test, the Composio breach forced the issue (5,024 OAuth tokens compromised). OpsRadar did not "harden Composio" (changes #7-9 below) — it **removed Composio entirely** and migrated the broker to **Nango**, which holds tokens in its own infra behind short-lived Connect Session tokens (contained blast radius). The "70% / lowest-aligned" Tools verdict and the resilience recommendations below are now **closed by the migration, not by hardening**. The broker decision is documented in [`0010-nango-broker.md`](./0010-nango-broker.md). The other three layers (runtime 85% / agent-arch 80% / brain 90%) are unaffected — re-read those as-is. This post-script is the only edit; the original stress-test body is preserved.
+
 ---
 
 ## TL;DR

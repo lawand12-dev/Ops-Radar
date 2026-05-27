@@ -320,7 +320,7 @@ Rationale:
 
 ### Screen 1 (replaces the rest of the funnel)
 
-**Eyebrow:** `OPSRADAR IS FOR MARKETING AGENCIES`
+**Eyebrow:** `OPSRADAR IS FOR SERVICE BUSINESSES THAT BILL FOR CLIENT TIME`
 
 **H2:**
 `Honest answer: OpsRadar's not built for you yet.`

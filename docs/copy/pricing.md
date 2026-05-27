@@ -148,7 +148,7 @@
 |---|---|---|
 | Notion AI | $20/user × 15 = $300 | Brain lives in your Notion, written by your AI workforce |
 | Lindy 3.0 (Business tier) | $300 + overages | Custom AI employees + automations native, no credit anxiety |
-| Zapier Pro | $73/mo + tasks | 25+ integrations native via Composio, growing to 500 |
+| Zapier Pro | $73/mo + tasks | 20+ integrations native (OAuth-brokered, keys never on our servers), growing to 500 |
 | AI SDR (11x or similar) | $1,000+/mo | Hire an SDR employee directly with the role you actually need |
 | ChatGPT Team | $50 + per-seat | COO chat answers any business question with your live data |
 | AI bookkeeper | $400/mo | Hire a Bookkeeper employee scoped to Stripe + QuickBooks |
