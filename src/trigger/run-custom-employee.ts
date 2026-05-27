@@ -24,7 +24,7 @@
  * See: docs/specs/trigger-broker-integration.md §Pattern 1.
  */
 
-import { task, logger, metadata } from "@trigger.dev/sdk/v3"
+import { task, logger, metadata } from "@trigger.dev/sdk"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { AgentSpec } from "<npm>/lib/agents/types"

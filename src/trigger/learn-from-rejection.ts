@@ -20,7 +20,7 @@
  * See: docs/dev/specs/2026-05-25-ai-employees-master-plan.md §CP-35.
  */
 
-import { task, logger } from '@trigger.dev/sdk/v3'
+import { task, logger } from '@trigger.dev/sdk'
 import { generateObject } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'

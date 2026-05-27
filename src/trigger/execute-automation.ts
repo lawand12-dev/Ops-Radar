@@ -16,7 +16,7 @@
  * See: docs/specs/trigger-broker-integration.md §Pattern 2.
  */
 
-import { task, logger } from "@trigger.dev/sdk/v3"
+import { task, logger } from "@trigger.dev/sdk"
 import { executeAutomation } from "<npm>/lib/automations/execute"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { CustomerAutomation } from "<npm>/lib/automations/types"

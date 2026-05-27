@@ -99,9 +99,6 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     '*': ['./knowledge-base/_archive/**/*'],
   },
-  images: {
-    domains: [],
-  },
   async redirects() {
     return [
       // ── Marketing URL consolidation (Phase C, 2026-05-18) ──────────────

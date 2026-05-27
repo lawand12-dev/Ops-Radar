@@ -21,7 +21,7 @@
  *     in a later CP.
  */
 
-import { logger, schedules, tasks } from "@trigger.dev/sdk/v3"
+import { logger, schedules, tasks } from "@trigger.dev/sdk"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import { runCustomEmployee } from "./run-custom-employee"
 
