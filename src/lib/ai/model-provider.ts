@@ -55,18 +55,22 @@ let _doProvider: ReturnType<typeof createOpenAI> | null = null
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
 
 // Groq has NO single model that does both jobs the hire flow needs, so we use
-// two — verified live against the Groq API (May 2026):
+// two — verified live against the Groq API + Vercel AI SDK (May 2026):
 //
-//   - CHAT / tool-calling (streamText, generateText): llama-3.3-70b-versatile.
-//     Calls tools cleanly. gpt-oss models throw a Harmony renderer error
-//     ("Tools should have a name!") when tools are passed — a known, broken
-//     gpt-oss tool-calling path, so it CANNOT serve the chat.
+//   - CHAT / tool-calling (streamText, generateText): llama-4-scout. It calls
+//     the tool EXACTLY ONCE then stops and summarizes — the orchestration the
+//     hire flow needs. Rejected alternatives (tested):
+//       · llama-3.3-70b-versatile → loops, re-calling the tool forever, never
+//         producing the draft card or final text (matched the prod "Drafting
+//         the spec" ×N + unsupported-fields error).
+//       · gpt-oss-120b → throws the Harmony "Tools should have a name!" error
+//         the moment tools are passed (broken gpt-oss tool-calling path).
 //   - STRUCTURED output (generateObject): openai/gpt-oss-120b. The only Groq
-//     family that supports json_schema strict mode — REQUIRED by the employee
-//     compiler. But it does NOT support tool calling, so it can't do the chat.
+//     family with json_schema STRICT mode — required by the employee compiler.
+//     It can't do tool calling, so it can't serve the chat.
 //
 // Override either via env: GROQ_CHAT_MODEL / GROQ_OBJECT_MODEL.
-const GROQ_CHAT_MODEL = 'llama-3.3-70b-versatile'
+const GROQ_CHAT_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
 const GROQ_OBJECT_MODEL = 'openai/gpt-oss-120b'
 
 /** 'chat' = tool-calling/streaming model; 'object' = json_schema model. */
