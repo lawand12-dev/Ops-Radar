@@ -35,16 +35,36 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
   out['propose_custom_employee'] = tool({
     description:
       "Compile the customer's described AI Employee (a NAMED, PERSISTENT teammate with persona, schedule, scoped tools) into a typed draft. Returns the draft for the customer to confirm — does NOT persist or run anything immediately. After this returns, the chat UI renders an inline 'Hire' / 'Edit' / 'Cancel' card from the draft.",
+    // `description` is typed loosely on purpose: weaker backup models (Groq
+    // Llama/Scout) sometimes pass an OBJECT or omit it instead of a plain
+    // string, and Groq REJECTS the whole tool call at the schema boundary
+    // ("parameters did not match schema: expected string, got object") before
+    // execute() ever runs. Accepting unknown + normalizing in execute() makes
+    // the tool robust to that model inconsistency. No `.min()` for the same
+    // reason — a length constraint is one more thing a flaky model trips on.
     inputSchema: z.object({
       description: z
-        .string()
-        .min(20)
+        .unknown()
         .describe(
-          "The customer's full request verbatim — what kind of employee, what name (if mentioned), what schedule, what tools they should use, what they should do. Pass the customer's words literally; the compiler reads them in full.",
+          "The customer's full request verbatim — what kind of employee, name, schedule, tools, what it should do. Pass the customer's words as a plain string.",
         ),
     }),
     execute: async ({ description }) => {
       try {
+        // Normalize whatever the model passed into a usable string.
+        const descText =
+          typeof description === 'string'
+            ? description
+            : description == null
+            ? ''
+            : JSON.stringify(description)
+        if (descText.trim().length < 10) {
+          return {
+            success: false as const,
+            error:
+              'I need a bit more detail about who to hire — what role, schedule, and tools should they use?',
+          }
+        }
         const { compileCustomEmployee } = await import('<npm>/lib/employees/compile')
         const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
           '<npm>/lib/employees/registry'
@@ -59,7 +79,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
         const existingTeam = await loadCustomEmployees(ctx.userId)
 
         const draft = await compileCustomEmployee({
-          description,
+          description: descText,
           connectedToolkits,
           existingTeam: existingTeam.map((e) => ({ slug: e.slug, display: e.display })),
           reservedSlugs: Object.keys(BUILT_IN_BY_SLUG),

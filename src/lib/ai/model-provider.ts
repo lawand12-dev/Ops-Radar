@@ -187,7 +187,17 @@ export async function generateObjectWithFallback(args: GenObjArgs & { model: str
     const backup = backupModel('object')
     if (!backup || !isFallbackWorthy(err)) throw err
     console.warn('[model-provider] OpenAI generateObject failed, falling back to backup provider:', describe(err))
-    return await generateObject({ ...(rest as GenObjArgs), model: backup })
+    try {
+      return await generateObject({ ...(rest as GenObjArgs), model: backup })
+    } catch (backupErr) {
+      // Keep the raw backup error in the log (Sentry), but throw a clean,
+      // non-leaky message — a backup schema-rejection ("unsupported content
+      // …") is developer-facing and useless to a customer.
+      console.error('[model-provider] backup generateObject also failed:', describe(backupErr))
+      throw new Error(
+        'AI compile is temporarily unavailable (primary and backup both failed). Please try again shortly.',
+      )
+    }
   }
 }
 
@@ -221,19 +231,25 @@ export async function streamTextWithFallback(
     return streamText({ ...(rest as StreamArgs), model: openaiModel(primaryId) })
   }
 
-  // Probe OpenAI authoritatively. Healthy ONLY if it returns without throwing
-  // AND actually produced output tokens — a quota/billing failure either
-  // throws or yields zero tokens, both of which we treat as "use the backup".
+  // Probe OpenAI authoritatively, but never let the probe hang the stream:
+  // race it against a short timeout. We only switch to the backup on a
+  // THROWN, fallback-worthy error (quota/billing/auth/etc.). A slow probe
+  // (timeout) or a transient/network error is NOT taken as "down" — we stream
+  // from OpenAI and let the real stream surface any genuine failure. This
+  // avoids punishing a slow-but-alive primary by forcing the weaker backup.
   let useBackup = false
+  const PROBE_TIMEOUT_MS = 3000
   try {
-    const probe = await generateText({
-      model: openaiModel(primaryId),
-      prompt: 'Reply with the single word: ok',
-      maxOutputTokens: 16,
-    })
-    if (!probe.text?.trim() && (probe.usage?.totalTokens ?? 0) === 0) {
-      useBackup = true
-      console.warn('[model-provider] OpenAI probe produced no output — streaming from backup.')
+    const probe = await Promise.race([
+      generateText({
+        model: openaiModel(primaryId),
+        prompt: 'Reply with the single word: ok',
+        maxOutputTokens: 16,
+      }).then(() => 'ok' as const),
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), PROBE_TIMEOUT_MS)),
+    ])
+    if (probe === 'timeout') {
+      console.warn('[model-provider] OpenAI probe timed out — streaming from primary anyway.')
     }
   } catch (err) {
     if (isFallbackWorthy(err)) {

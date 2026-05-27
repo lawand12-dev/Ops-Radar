@@ -80,17 +80,22 @@ export const CustomEmployeeDraftSchema = z.object({
     .describe(
       'Brain directory prefixes (with trailing slash) this employee can read/write. Include "employees/<slug>/" for their own private notes. Choose from the AVAILABLE BRAIN DIRECTORIES list.',
     ),
+  // NOTE: no `.default()` anywhere in this schema. Groq's strict json_schema
+  // mode (gpt-oss backup, used when OpenAI is down) requires EVERY property to
+  // be listed in `required`, and Zod's `.default()` marks a field optional —
+  // which Groq rejects with "`required` is required ... including every key in
+  // properties". So every field is required and the model must supply it; the
+  // .min/.max bounds still validate. Re-adding a `.default()` will break the
+  // backup compile path.
   model_slug: z
     .enum(ALLOWED_MODELS)
-    .default('gpt-5.4')
-    .describe('Which OpenAI model the employee should use. Default gpt-5.4 unless task is trivial (nano) or complex multi-step (o3/o4-mini).'),
+    .describe('Which OpenAI model the employee should use. Default to gpt-5.4 unless task is trivial (gpt-4.1-nano) or complex multi-step (o3/o4-mini).'),
   max_steps: z
     .number()
     .int()
     .min(5)
     .max(50)
-    .default(20)
-    .describe('Max tool-call steps per run. 20 is the default; raise for complex multi-step employees.'),
+    .describe('Max tool-call steps per run. Use 20 as a sensible default; raise for complex multi-step employees.'),
   system_prompt: z
     .string()
     .min(150)
@@ -108,9 +113,8 @@ export const CustomEmployeeDraftSchema = z.object({
       reason: z.string().describe('Why this employee cannot be hired given current constraints.'),
     })
     .nullable()
-    .default(null)
     .describe(
-      "Set to {reason: ...} if the customer's request can't be expressed (e.g. requires toolkits they haven't connected, needs sub-minute cron, references built-in slugs that would shadow). null otherwise.",
+      "Set to {reason: ...} if the customer's request can't be expressed (e.g. requires toolkits they haven't connected, needs sub-minute cron, references built-in slugs that would shadow). Otherwise set to null.",
     ),
 })
 

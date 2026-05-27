@@ -32,7 +32,7 @@
 
 import type { NextRequest } from 'next/server'
 import { stepCountIs, type ModelMessage } from 'ai'
-import { streamTextWithFallback } from '<npm>/lib/ai/model-provider'
+import { streamTextWithFallback, isFallbackWorthy } from '<npm>/lib/ai/model-provider'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
 import { applyRateLimit } from '<npm>/lib/rate-limit'
 import { buildHireTools } from '<npm>/lib/hire/ai-sdk-tools'
@@ -66,20 +66,32 @@ export async function GET(): Promise<Response> {
   if (!userId) return json({ error: 'unauthorized' }, 401)
 
   const supabase = await getSessionSupabaseClient()
-  const { data: latest } = await supabase
+  const { data: latest, error: latestErr } = await supabase
     .from('hire_chat_sessions')
     .select('id')
     .order('last_message_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
+  // Distinguish a real DB failure from "no sessions yet" — otherwise a
+  // transient/RLS error masquerades as an empty history and looks like the
+  // customer's chats vanished.
+  if (latestErr) {
+    console.error('[api/dashboard/hire GET] session lookup failed:', latestErr.message)
+    return json({ error: 'db_error', message: "Couldn't load your hire history — refresh in a moment." }, 500)
+  }
   if (!latest) return json({ sessions: [], messages: [] }, 200)
 
-  const { data: messages } = await supabase
+  const { data: messages, error: msgErr } = await supabase
     .from('hire_chat_messages')
     .select('id, role, content, tool_steps, draft_card, created_at')
     .eq('session_id', latest.id)
     .order('created_at', { ascending: true })
+
+  if (msgErr) {
+    console.error('[api/dashboard/hire GET] message load failed:', msgErr.message)
+    return json({ error: 'db_error', message: "Couldn't load this conversation — refresh in a moment." }, 500)
+  }
 
   return json({ session_id: latest.id, messages: messages ?? [] }, 200)
 }
@@ -302,9 +314,16 @@ export async function POST(request: NextRequest): Promise<Response> {
             ) {
               draftCard = out.draft
               send({ type: 'draft_proposed', draft: out.draft })
-              // If the model produced no prose, give the card a caption.
+              // If the compiler marked the draft un-installable, say so plainly
+              // instead of inviting the customer to click Hire on a dead-end.
+              // The draft card itself also self-disables its Hire button when
+              // `unsupported` is set, so this is belt-and-suspenders.
+              const unsupported = (out.draft as { unsupported?: { reason: string } | null })
+                ?.unsupported
               if (!assistantText.trim()) {
-                const caption = "Here's the draft — review it and click Hire when you're ready."
+                const caption = unsupported
+                  ? `I can't set this one up as described: ${unsupported.reason}`
+                  : "Here's the draft — review it and click Hire when you're ready."
                 assistantText = caption
                 send({ type: 'text_delta', delta: caption })
               }
@@ -324,12 +343,15 @@ export async function POST(request: NextRequest): Promise<Response> {
               break streamLoop
             }
           } else if (part.type === 'error') {
-            // Log the full error server-side — the SDK's error parts are often
-            // plain objects (API errors, not Error instances), so naive
-            // String(err) yields "[object Object]". extractErrorMessage digs
-            // out the real text; the raw object goes to the server log.
+            // Log the full error server-side (incl. raw provider/billing detail
+            // for Sentry), but NEVER forward raw provider/billing JSON to the
+            // customer. Send a sanitized, customer-safe message: a capacity note
+            // for quota/billing/rate-limit/auth failures, generic otherwise.
             console.error('[api/dashboard/hire] stream error part:', part.error)
-            send({ type: 'error', message: extractErrorMessage(part.error) })
+            const customerMessage = isFallbackWorthy(part.error)
+              ? 'The hiring assistant is temporarily at capacity. Please try again in a moment.'
+              : 'Something went wrong on our side. Try again in a moment.'
+            send({ type: 'error', message: customerMessage })
           }
         }
 
@@ -395,41 +417,6 @@ function json(payload: object, status: number): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
-}
-
-/**
- * Pull a human-readable message out of whatever the AI SDK / OpenAI threw.
- * The SDK's stream `error` parts and API errors are frequently plain objects
- * (`{ message }`, `{ error: { message } }`, `{ data: { error: { message } } }`)
- * rather than Error instances, so `String(err)` would give "[object Object]".
- */
-function extractErrorMessage(err: unknown): string {
-  if (typeof err === 'string') return err
-  if (err instanceof Error && err.message) return err.message
-  if (err && typeof err === 'object') {
-    const o = err as Record<string, unknown>
-    // OpenAI / AI Gateway error envelopes, in likelihood order.
-    const candidates: unknown[] = [
-      o.message,
-      (o.error as Record<string, unknown> | undefined)?.message,
-      ((o.data as Record<string, unknown> | undefined)?.error as Record<string, unknown> | undefined)
-        ?.message,
-      (o.cause as Record<string, unknown> | undefined)?.message,
-      o.responseBody,
-      o.statusText,
-    ]
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim()) return c
-    }
-    // Last resort: JSON so the user/log at least sees the shape, never "[object Object]".
-    try {
-      const s = JSON.stringify(err)
-      if (s && s !== '{}') return s
-    } catch {
-      /* noop */
-    }
-  }
-  return 'Something went wrong on our side. Try again in a moment.'
 }
 
 type SupabaseClient = Awaited<ReturnType<typeof getSessionSupabaseClient>>
