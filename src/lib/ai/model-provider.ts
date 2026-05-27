@@ -53,8 +53,12 @@ let _groqProvider: ReturnType<typeof createOpenAI> | null = null
 let _doProvider: ReturnType<typeof createOpenAI> | null = null
 
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
-// A solid, widely-available Groq model. Override with GROQ_MODEL if needed.
-const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+// gpt-oss-120b is an open-weight GPT model on Groq that supports json_schema
+// structured outputs — REQUIRED for the employee compiler's generateObject
+// call. Llama-3.3 does NOT support json_schema and would break hiring at the
+// draft step, so don't switch the default without re-checking structured-output
+// support. Override with GROQ_MODEL if needed.
+const GROQ_DEFAULT_MODEL = 'openai/gpt-oss-120b'
 
 function getGroqModel(): LanguageModel | null {
   const key = (process.env.GROQ_API_KEY ?? '').trim()
@@ -165,12 +169,18 @@ export async function generateObjectWithFallback(args: GenObjArgs & { model: str
 type StreamArgs = Parameters<typeof streamText>[0]
 
 /**
- * Stream with fallback. We can't retry a stream mid-flight, so:
- *   1. If no backup is configured → stream from OpenAI directly (today's path).
- *   2. If a backup exists → do a 1-token probe against OpenAI first. If it
- *      succeeds, stream from OpenAI. If it fails with a fallback-worthy error,
- *      stream from the backup. The probe cost is one token; worth it to avoid
- *      a dead stream that can't be recovered.
+ * Stream with fallback. You can't retry a stream once it has emitted bytes,
+ * so we decide WHICH provider to stream from BEFORE returning the stream:
+ *
+ *   1. No backup configured → stream from OpenAI directly (unchanged).
+ *   2. Backup exists → probe OpenAI's health with a real (non-streaming)
+ *      generateText call. The probe uses the SAME model + a small token
+ *      budget. If it THROWS or returns no usage (a silent quota/billing
+ *      failure), OpenAI is treated as down and we stream from the backup.
+ *      Only a clean, token-producing probe lets us stream from OpenAI.
+ *
+ * This is authoritative: a quota error surfaces on the probe's generateText
+ * exactly as it would on the stream, so we catch it before committing.
  */
 export async function streamTextWithFallback(
   args: Omit<StreamArgs, 'model'> & { model: string },
@@ -183,26 +193,34 @@ export async function streamTextWithFallback(
     return streamText({ ...(rest as StreamArgs), model: openaiModel(primaryId) })
   }
 
-  // Probe the primary cheaply before committing to a stream.
-  let primaryHealthy = true
+  // Probe OpenAI authoritatively. Healthy ONLY if it returns without throwing
+  // AND actually produced output tokens — a quota/billing failure either
+  // throws or yields zero tokens, both of which we treat as "use the backup".
+  let useBackup = false
   try {
-    await generateText({
+    const probe = await generateText({
       model: openaiModel(primaryId),
-      prompt: 'ok',
-      maxOutputTokens: 1,
+      prompt: 'Reply with the single word: ok',
+      maxOutputTokens: 16,
     })
+    if (!probe.text?.trim() && (probe.usage?.totalTokens ?? 0) === 0) {
+      useBackup = true
+      console.warn('[model-provider] OpenAI probe produced no output — streaming from backup.')
+    }
   } catch (err) {
     if (isFallbackWorthy(err)) {
-      primaryHealthy = false
-      console.warn('[model-provider] OpenAI probe failed, streaming from DigitalOcean:', describe(err))
+      useBackup = true
+      console.warn('[model-provider] OpenAI probe failed — streaming from backup:', describe(err))
+    } else {
+      // Non-fallback-worthy probe error (transient/network): try OpenAI for
+      // the real stream anyway; if it's truly broken the route surfaces it.
+      console.warn('[model-provider] OpenAI probe errored (non-fallback):', describe(err))
     }
-    // Non-fallback-worthy probe failure (e.g. transient) → still try primary
-    // for the real stream; if it's truly broken the stream emits an error part.
   }
 
   return streamText({
     ...(rest as StreamArgs),
-    model: primaryHealthy ? openaiModel(primaryId) : backup,
+    model: useBackup ? backup : openaiModel(primaryId),
   })
 }
 
