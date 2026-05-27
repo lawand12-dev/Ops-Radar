@@ -20,8 +20,7 @@
  */
 
 import { z } from 'zod'
-import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { generateObjectWithFallback } from '<npm>/lib/ai/model-provider'
 import { BRAIN_DIRECTORIES } from '<npm>/lib/brain/paths'
 import type { Employee } from './types'
 
@@ -136,13 +135,13 @@ export async function compileCustomEmployee(
   input: CompileEmployeeInput,
 ): Promise<CustomEmployeeDraft> {
   const prompt = buildEmployeeCompilationPrompt(input)
-  const { object } = await generateObject({
-    model: openai('gpt-5.4'),
+  const { object } = await generateObjectWithFallback({
+    model: 'gpt-5.4',
     schema: CustomEmployeeDraftSchema,
     system: EMPLOYEE_COMPILER_SYSTEM,
     prompt,
   })
-  return object
+  return object as CustomEmployeeDraft
 }
 
 // ─── System prompt: voice + non-negotiable rules ────────────────────────

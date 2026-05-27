@@ -349,6 +349,8 @@ export async function nangoProxy<T = unknown>(opts: {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   params?: Record<string, string | number | string[] | number[]>
   data?: unknown
+  /** Extra upstream headers (e.g. Notion-Version). Merged into the proxy request. */
+  headers?: Record<string, string>
 }): Promise<T> {
   const nango = getNango()
   const providerConfigKey = NANGO_TOOLS[opts.tool]
@@ -381,6 +383,7 @@ export async function nangoProxy<T = unknown>(opts: {
     connectionId,
     params: opts.params,
     data: opts.data,
+    ...(opts.headers ? { headers: opts.headers } : {}),
   }
 
   // Track usage in the background — fire-and-forget so a logging blip

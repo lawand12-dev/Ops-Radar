@@ -19,8 +19,11 @@
  *      memory.
  */
 
-import { openai } from '@ai-sdk/openai'
-import { generateText, streamText, stepCountIs, type ToolSet } from 'ai'
+import { streamText, stepCountIs, type ToolSet } from 'ai'
+import {
+  generateTextWithFallback,
+  streamTextWithFallback,
+} from '<npm>/lib/ai/model-provider'
 import * as Sentry from '@sentry/nextjs'
 
 import type { AgentSpec, AgentRunResult } from './types'
@@ -97,8 +100,8 @@ export async function runAgent(
   })
 
   try {
-    const result = await generateText({
-      model: openai(spec.model || 'gpt-5.5'),
+    const result = await generateTextWithFallback({
+      model: spec.model || 'gpt-5.5',
       system: ctx.systemPrompt,
       prompt: defaultRunPrompt(),
       tools: ctx.tools,
@@ -221,8 +224,8 @@ export async function runAgentStream(
     source: 'employee-chat',
   })
 
-  return streamText({
-    model: openai(spec.model || 'gpt-5.5'),
+  return await streamTextWithFallback({
+    model: spec.model || 'gpt-5.5',
     system: ctx.systemPrompt,
     prompt: defaultRunPrompt(),
     tools: ctx.tools,

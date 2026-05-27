@@ -31,8 +31,8 @@
  */
 
 import type { NextRequest } from 'next/server'
-import { streamText, stepCountIs, type ModelMessage } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { stepCountIs, type ModelMessage } from 'ai'
+import { streamTextWithFallback } from '<npm>/lib/ai/model-provider'
 import { getCurrentUserId, getSessionSupabaseClient } from '<npm>/lib/supabase-ssr'
 import { applyRateLimit } from '<npm>/lib/rate-limit'
 import { buildHireTools } from '<npm>/lib/hire/ai-sdk-tools'
@@ -255,8 +255,8 @@ export async function POST(request: NextRequest): Promise<Response> {
       }
 
       try {
-        const result = streamText({
-          model: openai(HIRE_MODEL),
+        const result = await streamTextWithFallback({
+          model: HIRE_MODEL,
           system: systemPrompt,
           messages: history,
           tools,
@@ -299,8 +299,12 @@ export async function POST(request: NextRequest): Promise<Response> {
               send({ type: 'employee_hired', slug: hired.slug, url: hired.url })
             }
           } else if (part.type === 'error') {
-            const msg = part.error instanceof Error ? part.error.message : String(part.error)
-            send({ type: 'error', message: msg })
+            // Log the full error server-side — the SDK's error parts are often
+            // plain objects (API errors, not Error instances), so naive
+            // String(err) yields "[object Object]". extractErrorMessage digs
+            // out the real text; the raw object goes to the server log.
+            console.error('[api/dashboard/hire] stream error part:', part.error)
+            send({ type: 'error', message: extractErrorMessage(part.error) })
           }
         }
 
@@ -359,6 +363,41 @@ function json(payload: object, status: number): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+/**
+ * Pull a human-readable message out of whatever the AI SDK / OpenAI threw.
+ * The SDK's stream `error` parts and API errors are frequently plain objects
+ * (`{ message }`, `{ error: { message } }`, `{ data: { error: { message } } }`)
+ * rather than Error instances, so `String(err)` would give "[object Object]".
+ */
+function extractErrorMessage(err: unknown): string {
+  if (typeof err === 'string') return err
+  if (err instanceof Error && err.message) return err.message
+  if (err && typeof err === 'object') {
+    const o = err as Record<string, unknown>
+    // OpenAI / AI Gateway error envelopes, in likelihood order.
+    const candidates: unknown[] = [
+      o.message,
+      (o.error as Record<string, unknown> | undefined)?.message,
+      ((o.data as Record<string, unknown> | undefined)?.error as Record<string, unknown> | undefined)
+        ?.message,
+      (o.cause as Record<string, unknown> | undefined)?.message,
+      o.responseBody,
+      o.statusText,
+    ]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim()) return c
+    }
+    // Last resort: JSON so the user/log at least sees the shape, never "[object Object]".
+    try {
+      const s = JSON.stringify(err)
+      if (s && s !== '{}') return s
+    } catch {
+      /* noop */
+    }
+  }
+  return 'Something went wrong on our side. Try again in a moment.'
 }
 
 type SupabaseClient = Awaited<ReturnType<typeof getSessionSupabaseClient>>

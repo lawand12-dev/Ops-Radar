@@ -19,6 +19,36 @@ import {
   GMAIL_TOOLS_ADVANCED_CATALOG,
   GMAIL_DESTRUCTIVE_TOOLS,
 } from './tools/gmail'
+import {
+  buildSlackToolsCore,
+  buildSlackToolsAdvanced,
+  SLACK_TOOLS_ADVANCED_CATALOG,
+  SLACK_DESTRUCTIVE_TOOLS,
+} from './tools/slack'
+import {
+  buildHubspotToolsCore,
+  buildHubspotToolsAdvanced,
+  HUBSPOT_TOOLS_ADVANCED_CATALOG,
+  HUBSPOT_DESTRUCTIVE_TOOLS,
+} from './tools/hubspot'
+import {
+  buildClickupToolsCore,
+  buildClickupToolsAdvanced,
+  CLICKUP_TOOLS_ADVANCED_CATALOG,
+  CLICKUP_DESTRUCTIVE_TOOLS,
+} from './tools/clickup'
+import {
+  buildStripeToolsCore,
+  buildStripeToolsAdvanced,
+  STRIPE_TOOLS_ADVANCED_CATALOG,
+  STRIPE_DESTRUCTIVE_TOOLS,
+} from './tools/stripe'
+import {
+  buildNotionToolsCore,
+  buildNotionToolsAdvanced,
+  NOTION_TOOLS_ADVANCED_CATALOG,
+  NOTION_DESTRUCTIVE_TOOLS,
+} from './tools/notion'
 
 type ToolMap = Record<string, Tool>
 
@@ -36,8 +66,10 @@ export type ToolkitEntry = {
 }
 
 /**
- * Add one entry per Nango integration as it ships. Today: gmail only.
- * As HubSpot, Stripe, ClickUp, etc. get built, append them here.
+ * Add one entry per Nango integration as it ships. Each toolkit module owns
+ * its own core/advanced builders, catalog, and destructive set — adding one
+ * here is the only registry change needed; the loop, approval gate,
+ * confidence scorer, and kill-switch resolver all pick it up automatically.
  */
 export const TOOLKITS: Record<string, ToolkitEntry> = {
   gmail: {
@@ -46,6 +78,41 @@ export const TOOLKITS: Record<string, ToolkitEntry> = {
     advancedCatalog: GMAIL_TOOLS_ADVANCED_CATALOG,
     destructiveTools: GMAIL_DESTRUCTIVE_TOOLS,
     killSwitchFlag: 'gmail-toolkit-enabled',
+  },
+  slack: {
+    buildCore: buildSlackToolsCore as (userId: string) => ToolMap,
+    buildAdvanced: buildSlackToolsAdvanced as (userId: string) => ToolMap,
+    advancedCatalog: SLACK_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: SLACK_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'slack-toolkit-enabled',
+  },
+  hubspot: {
+    buildCore: buildHubspotToolsCore as (userId: string) => ToolMap,
+    buildAdvanced: buildHubspotToolsAdvanced as (userId: string) => ToolMap,
+    advancedCatalog: HUBSPOT_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: HUBSPOT_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'hubspot-toolkit-enabled',
+  },
+  clickup: {
+    buildCore: buildClickupToolsCore as (userId: string) => ToolMap,
+    buildAdvanced: buildClickupToolsAdvanced as (userId: string) => ToolMap,
+    advancedCatalog: CLICKUP_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: CLICKUP_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'clickup-toolkit-enabled',
+  },
+  stripe: {
+    buildCore: buildStripeToolsCore as (userId: string) => ToolMap,
+    buildAdvanced: buildStripeToolsAdvanced as (userId: string) => ToolMap,
+    advancedCatalog: STRIPE_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: STRIPE_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'stripe-toolkit-enabled',
+  },
+  notion: {
+    buildCore: buildNotionToolsCore as (userId: string) => ToolMap,
+    buildAdvanced: buildNotionToolsAdvanced as (userId: string) => ToolMap,
+    advancedCatalog: NOTION_TOOLS_ADVANCED_CATALOG,
+    destructiveTools: NOTION_DESTRUCTIVE_TOOLS,
+    killSwitchFlag: 'notion-toolkit-enabled',
   },
 }
 

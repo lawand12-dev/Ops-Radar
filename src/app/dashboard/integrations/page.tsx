@@ -34,12 +34,12 @@ type ToolDef = {
 // pattern (see src/lib/nango/tools/gmail.ts as the reference).
 const TOOL_CATALOG: ToolDef[] = [
   // Finance & Accounting
-  { key: 'stripe',      label: 'Stripe',      blurb: 'Invoiced, paid, overdue',                          cardKey: 'Finance',    enabled: false },
+  { key: 'stripe',      label: 'Stripe',      blurb: 'Invoiced, paid, overdue',                          cardKey: 'Finance',    enabled: true },  // ✅ LIVE
   { key: 'quickbooks',  label: 'QuickBooks',  blurb: 'Real P&L, payroll, contractor costs',              cardKey: 'Finance',    enabled: false },
   { key: 'xero',        label: 'Xero',        blurb: 'Real P&L, payroll, contractor costs (alt to QB)',  cardKey: 'Finance',    enabled: false },
 
   // Sales / CRM
-  { key: 'hubspot',     label: 'HubSpot',     blurb: 'CRM — pipeline value, leads, won deals',           cardKey: 'Sales',      enabled: false },
+  { key: 'hubspot',     label: 'HubSpot',     blurb: 'CRM — pipeline value, leads, won deals',           cardKey: 'Sales',      enabled: true },  // ✅ LIVE
   { key: 'pipedrive',   label: 'Pipedrive',   blurb: 'CRM — pipeline, deals, stages',                    cardKey: 'Sales',      enabled: false },
 
   // Marketing / Outbound
@@ -53,7 +53,7 @@ const TOOL_CATALOG: ToolDef[] = [
   { key: 'linkedin',    label: 'LinkedIn',    blurb: 'Organic reach, content performance, ad ROAS',      cardKey: 'Ads',        enabled: false },
 
   // Delivery / PM
-  { key: 'clickup',     label: 'ClickUp',     blurb: 'Projects, tasks, deadlines',                       cardKey: 'Delivery',   enabled: false },
+  { key: 'clickup',     label: 'ClickUp',     blurb: 'Projects, tasks, deadlines',                       cardKey: 'Delivery',   enabled: true },  // ✅ LIVE
   { key: 'asana',       label: 'Asana',       blurb: 'Projects, tasks, deadlines',                       cardKey: 'Delivery',   enabled: false },
   { key: 'monday',      label: 'Monday.com',  blurb: 'Boards, items, deadlines',                         cardKey: 'Delivery',   enabled: false },
 
@@ -63,7 +63,7 @@ const TOOL_CATALOG: ToolDef[] = [
 
   // Comms & Calendar
   { key: 'gmail',       label: 'Gmail',       blurb: 'Send drafts, read threads, briefings inbox',       cardKey: 'Comms',      enabled: true },  // ✅ LIVE
-  { key: 'slack',       label: 'Slack',       blurb: 'Team comms, after-hours signals, burnout',         cardKey: 'Comms',      enabled: false },
+  { key: 'slack',       label: 'Slack',       blurb: 'Team comms, after-hours signals, burnout',         cardKey: 'Comms',      enabled: true },  // ✅ LIVE
   { key: 'google_calendar', label: 'Google Calendar', blurb: 'Meeting load, deep-work blocks',           cardKey: 'Comms',      enabled: false },
 
   // HR & Payroll

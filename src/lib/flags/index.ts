@@ -227,8 +227,59 @@ export const gmailToolkitEnabled = flag<boolean>({
  * silently disable it — the typo would surface as "this flag should
  * have been gating something" instead of "this toolkit is dead".
  */
+/**
+ * Per-toolkit kill switches for the CP-38 ICP-core integrations. Same shape
+ * as Gmail: default ON, flip OFF in Statsig to halt that toolkit's tool calls
+ * without a redeploy. Reads stay allowed regardless (handled in
+ * hooks/classifyToolCall); these gates stop the loop from loading the tools.
+ */
+export const slackToolkitEnabled = flag<boolean>({
+  key: 'slack-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description: 'Whether the Slack toolkit is available to employees.',
+  identify: identifyUser,
+})
+
+export const hubspotToolkitEnabled = flag<boolean>({
+  key: 'hubspot-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description: 'Whether the HubSpot toolkit is available to employees.',
+  identify: identifyUser,
+})
+
+export const clickupToolkitEnabled = flag<boolean>({
+  key: 'clickup-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description: 'Whether the ClickUp toolkit is available to employees.',
+  identify: identifyUser,
+})
+
+export const stripeToolkitEnabled = flag<boolean>({
+  key: 'stripe-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description: 'Whether the Stripe toolkit is available to employees.',
+  identify: identifyUser,
+})
+
+export const notionToolkitEnabled = flag<boolean>({
+  key: 'notion-toolkit-enabled',
+  adapter: statsigAdapter<boolean>(),
+  defaultValue: true,
+  description: 'Whether the Notion toolkit is available to employees.',
+  identify: identifyUser,
+})
+
 const TOOLKIT_FLAG_REGISTRY: Record<string, () => Promise<boolean>> = {
   'gmail-toolkit-enabled': gmailToolkitEnabled,
+  'slack-toolkit-enabled': slackToolkitEnabled,
+  'hubspot-toolkit-enabled': hubspotToolkitEnabled,
+  'clickup-toolkit-enabled': clickupToolkitEnabled,
+  'stripe-toolkit-enabled': stripeToolkitEnabled,
+  'notion-toolkit-enabled': notionToolkitEnabled,
 }
 
 export async function resolveToolkitFlag(flagKey: string | undefined): Promise<boolean> {
