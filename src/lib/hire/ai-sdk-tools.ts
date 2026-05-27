@@ -49,12 +49,13 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
         const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
           '<npm>/lib/employees/registry'
         )
-        // getConnectedToolSlugs lived in the deleted <npm>/lib/nango module.
-        // During migration we have no live integration broker, so return an
-        // empty list — the hire chat can still draft specs against zero
-        // connected tools and the customer reconnects via the Nango Connect UI
-        // before installing.
-        const connectedToolkits: string[] = []
+        const { listCustomerConnections } = await import('<npm>/lib/nango/connections')
+        // Live connected toolkits via Nango — drives which tools the compiler
+        // is allowed to scope the new employee to. If the lookup fails it
+        // returns [] (chat/brain-only draft), so a Nango blip never blocks
+        // hiring; the customer reconnects at /dashboard/integrations.
+        const connections = await listCustomerConnections(ctx.userId)
+        const connectedToolkits = connections.map((c) => c.tool_slug)
         const existingTeam = await loadCustomEmployees(ctx.userId)
 
         const draft = await compileCustomEmployee({

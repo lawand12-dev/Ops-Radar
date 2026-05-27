@@ -5,12 +5,31 @@ import { HireChat } from './hire-chat'
 import { SessionsSidebar, type ChatSession } from './sessions-sidebar'
 
 const ACTIVE_SESSION_KEY = 'opsradar:hire-chat:active-session'
+const COLLAPSED_KEY = 'opsradar:hire-chat:sidebar-collapsed'
 
 export function HireShell() {
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [hydrated, setHydrated] = useState(false)
+  // Restore sidebar collapse preference lazily (SSR-safe — window is
+  // undefined on the server, so default to expanded there).
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return localStorage.getItem(COLLAPSED_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((c) => {
+      const next = !c
+      try { localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0') } catch { /* noop */ }
+      return next
+    })
+  }, [])
 
   // On mount: load sessions, then restore last-active id from localStorage
   // if it still exists, otherwise activate the most recent.
@@ -124,8 +143,10 @@ export function HireShell() {
         onNew={handleNewChat}
         onDelete={handleDelete}
         loading={loading}
+        collapsed={collapsed}
+        onToggle={toggleCollapsed}
       />
-      <div className="flex min-w-0 flex-1 flex-col p-5">
+      <div className="flex min-w-0 flex-1 flex-col py-3">
         <HireChat
           sessionId={activeId}
           onSessionResolved={handleSessionResolved}

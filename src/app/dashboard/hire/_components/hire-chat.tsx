@@ -1,13 +1,15 @@
 'use client'
 
 /**
- * HireChat — the dedicated hiring chat UI (CP-38).
+ * HireChat — the dedicated hiring chat UI (CP-38, redesigned).
  *
- * Forked from /dashboard/coo/_components/coo-chat.tsx with two changes:
- *   1. Tool steps reflect hiring flow ("Drafting the spec…").
- *   2. Server events `draft_proposed` + `employee_hired` render the
- *      EmployeeDraftCard inline (instead of the COO's "action approval" card)
- *      and link to /dashboard/employees/<slug> on success.
+ * Centered, ChatGPT-style hiring surface. The presentation is a focused
+ * single column (max-w-3xl) with a glowing empty-state hero, staggered
+ * suggestion chips, streaming presence, inline draft + hired cards, and a
+ * docked composer with a soft scroll-fade.
+ *
+ * The logic is unchanged from the original: SSE parsing, session load,
+ * draft_proposed / employee_hired handling, error + retry, abort safety.
  *
  * Public contract with the server (matches /api/dashboard/hire SSE shape):
  *   session, tool_call, tool_done, text_delta, draft_proposed,
@@ -15,7 +17,20 @@
  */
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, CheckCircle, Sparkles, AlertCircle, UserPlus } from 'lucide-react'
+import {
+  ArrowUp,
+  Loader2,
+  CheckCircle2,
+  Sparkles,
+  AlertCircle,
+  UserPlus,
+  ExternalLink,
+  Mail,
+  Calculator,
+  Send as SendIcon,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { MarkdownContent } from '<npm>/components/dashboard/markdown-content'
 import {
@@ -57,22 +72,33 @@ type AgentEvent =
 
 type ChatError = { message: string } | null
 
-const SUGGESTION_GROUPS: Array<{ heading: string; items: string[] }> = [
+const SUGGESTIONS: Array<{ title: string; sub: string; prompt: string; icon: LucideIcon }> = [
   {
-    heading: 'Common first hires',
-    items: [
-      'I want a Bookkeeper named Sarah who pulls yesterday\'s Stripe charges every day at 8am and flags anything over $5,000.',
-      'Hire an SDR named Marcus that drafts personalized outreach to new HubSpot leads every weekday morning.',
-      'Build a Project Coordinator that checks ClickUp status every Monday at 9am and surfaces any overdue tasks.',
-    ],
+    title: 'A daily inbox watcher',
+    sub: 'Flags client emails that need a reply',
+    icon: Mail,
+    prompt:
+      'Hire a Gmail assistant named Ava who scans my inbox every morning at 8am, flags any client email that\'s gone unanswered for more than 12 hours, and drafts a reply for me to approve.',
   },
   {
-    heading: 'Manage your team',
-    items: [
-      'Who\'s on my team right now?',
-      'Pause Sarah for the rest of the week.',
-      'Show me Marcus\'s full spec.',
-    ],
+    title: 'A bookkeeper',
+    sub: 'Pulls Stripe activity and flags big charges',
+    icon: Calculator,
+    prompt:
+      'I want a Bookkeeper named Sarah who pulls yesterday\'s Stripe charges every day at 8am and flags anything over $5,000.',
+  },
+  {
+    title: 'An SDR',
+    sub: 'Drafts outreach to new leads',
+    icon: SendIcon,
+    prompt:
+      'Hire an SDR named Marcus that drafts personalized outreach to new HubSpot leads every weekday morning.',
+  },
+  {
+    title: 'Show me my team',
+    sub: 'See who you\'ve already hired',
+    icon: Users,
+    prompt: 'Who\'s on my team right now?',
   },
 ]
 
@@ -102,6 +128,7 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
   const [chatError, setChatError] = useState<ChatError>(null)
   const [lastUserText, setLastUserText] = useState<string>('')
   const bottomRef = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const displayedSessionRef = useRef<string | null>(null)
 
@@ -142,7 +169,16 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
 
   useEffect(() => () => abortRef.current?.abort(), [])
 
-  async function send(text: string) {
+  // Auto-grow the composer textarea.
+  function autoGrow() {
+    const ta = taRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`
+  }
+  useEffect(autoGrow, [input])
+
+  async function send(text: string, installDraft?: EmployeeDraftLike) {
     const trimmed = text.trim()
     if (!trimmed || loading) return
 
@@ -175,6 +211,7 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
         body: JSON.stringify({
           session_id: sessionId,
           messages: history.map((m) => ({ role: m.role, content: m.content })),
+          ...(installDraft ? { install_draft: installDraft } : {}),
         }),
         signal: ac.signal,
       })
@@ -299,19 +336,17 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
     }
   }
 
-  // The draft card's "Hire" button calls install_custom_employee directly
-  // via the chat tool layer — i.e. we just chat the install intent back.
-  // This matches CP-34c (no separate REST endpoint for install; the COO/Hire
-  // chat is the only path).
+  // The draft card's "Hire" button sends the EXACT draft object so the server
+  // installs it deterministically — the draft lives only in UI state, so the
+  // model couldn't reconstruct it from chat history. The text is just what the
+  // customer "said"; the install_draft payload is what actually persists.
   async function handleConfirmDraft(d: EmployeeDraftLike) {
-    const intent = `Yes, hire ${d.name} as configured — install the draft.`
-    await send(intent)
+    await send(`Hire ${d.name} as configured.`, d)
   }
 
   function handleEditDraft() {
-    setInput(
-      'Let\'s adjust the draft — ',
-    )
+    setInput("Let's adjust the draft — ")
+    taRef.current?.focus()
   }
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -331,15 +366,24 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
       !m.hired
 
     return (
-      <div key={index} className="flex justify-start coo-msg-enter">
-        <div className="max-w-[85%] space-y-2">
+      <div key={index} className="coo-msg-enter flex gap-3">
+        {/* Assistant avatar mark */}
+        <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[var(--color-primary)]">
+          <Sparkles size={14} />
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-2">
           {isThinking && (
             <div
-              className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12px] text-[var(--color-fg-muted)]"
+              className="flex w-fit items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-[12.5px] text-[var(--color-fg-muted)]"
               role="status"
               aria-label="Hiring assistant is thinking"
             >
-              <Loader2 size={12} className="shrink-0 animate-spin text-[var(--color-primary)]" />
+              <span className="coo-thinking-dots" aria-hidden>
+                <span className="coo-dot" />
+                <span className="coo-dot" />
+                <span className="coo-dot" />
+              </span>
               <span>Reading your request…</span>
             </div>
           )}
@@ -347,23 +391,23 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
           {m.toolSteps.map((step, si) => (
             <div
               key={si}
-              className="coo-step-enter flex items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px] text-[var(--color-primary)]"
+              className="coo-step-enter flex w-fit items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[12px]"
             >
               {step.done ? (
-                <CheckCircle size={12} className="shrink-0 text-emerald-400" />
+                <CheckCircle2 size={13} className="shrink-0 text-[var(--color-success)]" />
               ) : (
-                <Loader2 size={12} className="shrink-0 animate-spin" />
+                <Loader2 size={13} className="shrink-0 animate-spin text-[var(--color-primary)]" />
               )}
-              {step.label}
+              <span className={step.done ? 'text-[var(--color-fg-muted)]' : 'text-[var(--color-fg)]'}>
+                {step.label}
+              </span>
             </div>
           ))}
 
           {m.content && (
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+            <div className="text-[14px] leading-[1.7] text-[var(--color-fg)]">
               <MarkdownContent>{m.content}</MarkdownContent>
-              {isStreaming && (
-                <span className="coo-cursor" aria-hidden>▍</span>
-              )}
+              {isStreaming && <span className="coo-cursor" aria-hidden>▍</span>}
             </div>
           )}
 
@@ -376,13 +420,18 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
           )}
 
           {m.hired && (
-            <div className="rounded-[var(--radius-lg)] border border-emerald-500/30 bg-emerald-950/15 px-4 py-3">
-              <p className="mb-2 flex items-center gap-1.5 text-[12.5px] font-medium text-emerald-300">
-                <CheckCircle size={14} /> Hired
-              </p>
-              <p className="text-[12.5px] text-[var(--color-fg-muted)]">
-                Open <Link href={m.hired.url} className="text-[var(--color-primary)] underline-offset-2 hover:underline">{m.hired.slug}&rsquo;s page</Link> to start chatting with your new hire or trigger their first task.
-              </p>
+            <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[color-mix(in_srgb,var(--color-success)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)] px-4 py-3">
+              <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-[var(--color-success)]" />
+              <div className="text-[13px] leading-[1.5]">
+                <p className="font-semibold text-[var(--color-fg)]">{m.hired.slug} is hired.</p>
+                <Link
+                  href={m.hired.url}
+                  className="mt-0.5 inline-flex items-center gap-1 text-[var(--color-primary)] hover:underline"
+                >
+                  Open their page <ExternalLink size={12} />
+                </Link>
+                <span className="text-[var(--color-fg-muted)]"> to chat or trigger their first task.</span>
+              </div>
             </div>
           )}
         </div>
@@ -395,118 +444,148 @@ export function HireChat({ sessionId, onSessionResolved, onMessagePersisted }: P
     ...(streaming ? [{ msg: streaming as Message, index: messages.length }] : []),
   ]
 
+  const isEmpty = !loadingSession && messages.length === 0 && !streaming
+
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 px-1" role="log" aria-live="polite" aria-busy={loading}>
-        {loadingSession && (
-          <div className="flex items-center gap-2 pt-4 text-[12px] text-[var(--color-fg-muted)]">
-            <Loader2 size={12} className="animate-spin" />
-            Loading chat…
-          </div>
-        )}
-
-        {!loadingSession && messages.length === 0 && !streaming && (
-          <div className="pt-2">
-            <div className="mb-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
-              <div className="mb-1.5 flex items-center gap-2">
-                <UserPlus size={14} className="text-[var(--color-primary)]" />
-                <p className="text-[13px] font-medium text-[var(--color-fg)]">
-                  Hiring assistant
-                </p>
-              </div>
-              <p className="text-[12.5px] leading-[1.55] text-[var(--color-fg-muted)]">
-                I help you build your AI workforce — name, role, schedule, scoped tools, first task.
-                <span className="block mt-1 text-[11.5px] text-[var(--color-fg-subtle)]">
-                  Nothing locks in until you click <strong>Hire</strong> on the draft card.
-                </span>
-              </p>
-            </div>
-
-            {SUGGESTION_GROUPS.map((group) => (
-              <div key={group.heading} className="mb-4 last:mb-0">
-                <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-fg-subtle)]">
-                  {group.heading}
-                </p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {group.items.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => void send(q)}
-                      className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-left text-[12.5px] text-[var(--color-fg-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-fg)] transition-colors"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {allMessages.map(({ msg, index }) => {
-          if (msg.role === 'user') {
-            return (
-              <div key={index} className="flex justify-end coo-msg-enter">
-                <div className="max-w-[80%] rounded-[var(--radius-lg)] bg-[var(--color-primary)] px-4 py-3 text-[13px] leading-[1.6] text-white">
-                  {msg.content}
-                </div>
-              </div>
-            )
-          }
-          return renderAssistant(msg as AssistantMessage, index)
-        })}
-
-        {chatError && (
-          <div
-            role="alert"
-            className="flex items-start gap-2.5 rounded-[var(--radius-lg)] border border-red-500/30 bg-red-950/20 px-4 py-3"
-          >
-            <AlertCircle size={14} className="mt-0.5 shrink-0 text-red-400" />
-            <div className="flex-1">
-              <p className="text-[12.5px] leading-[1.5] text-red-200">{chatError.message}</p>
-              {lastUserText && (
-                <button
-                  onClick={() => {
-                    const text = lastUserText
-                    setChatError(null)
-                    void send(text)
-                  }}
-                  className="mt-1.5 text-[12px] font-medium text-red-300 underline-offset-2 hover:text-red-200 hover:underline"
-                >
-                  Retry last message
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div ref={bottomRef} />
+    <div className="relative flex h-full flex-col bg-[var(--color-bg)]">
+      {/* ── Chat header bar — identity + framing ────────────────────── */}
+      <div className="flex shrink-0 items-center gap-2.5 border-b border-[var(--color-border)] px-5 py-3">
+        <div className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-accent-500)] to-[var(--color-accent-700)] text-white">
+          <Sparkles size={14} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold leading-tight text-[var(--color-fg)]">Hiring assistant</p>
+          <p className="text-[11px] leading-tight text-[var(--color-fg-subtle)]">Builds your AI workforce — drafts a spec, you approve</p>
+        </div>
       </div>
 
-      <div className="border-t border-[var(--color-border)] pt-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Describe who you want to hire…"
-            rows={1}
-            disabled={loading}
-            className="flex-1 resize-none rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-[13px] text-[var(--color-fg)] outline-none focus:border-[var(--color-primary)] placeholder:text-[var(--color-fg-subtle)] disabled:opacity-50"
-            style={{ maxHeight: '120px', overflowY: 'auto' }}
-          />
-          <button
-            onClick={() => void send(input)}
-            disabled={loading || !input.trim()}
-            aria-label="Send message"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[var(--color-primary)] text-white hover:opacity-90 disabled:opacity-40"
-          >
-            <Send size={14} />
-          </button>
+      {/* ── Scrollable conversation ─────────────────────────────────── */}
+      <div
+        className="hire-scroll-fade flex-1 overflow-y-auto"
+        role="log"
+        aria-live="polite"
+        aria-busy={loading}
+      >
+        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4">
+          {loadingSession && (
+            <div className="flex items-center gap-2 pt-6 text-[12.5px] text-[var(--color-fg-muted)]">
+              <Loader2 size={13} className="animate-spin" />
+              Loading chat…
+            </div>
+          )}
+
+          {/* Empty-state hero */}
+          {isEmpty && (
+            <div className="hire-hero flex flex-1 flex-col items-center justify-center py-10 text-center">
+              <div className="hire-mark mb-5 flex size-14 items-center justify-center rounded-[var(--radius-xl)] text-white">
+                <UserPlus size={26} />
+              </div>
+              <h2 className="font-serif text-[26px] font-normal leading-[1.15] tracking-[-0.02em] text-[var(--color-fg)]">
+                Who do you want to hire?
+              </h2>
+              <p className="mt-2 max-w-md text-[13.5px] leading-[1.6] text-[var(--color-fg-muted)]">
+                Describe the role in plain English — a name, a schedule, the tools they touch.
+                I&rsquo;ll draft the spec. Nothing locks in until you click <strong className="font-semibold text-[var(--color-fg)]">Hire</strong>.
+              </p>
+
+              <div className="mt-8 grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s.title}
+                    onClick={() => void send(s.prompt)}
+                    className="hire-chip group flex items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 text-left shadow-[var(--shadow-xs)] transition-all hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:shadow-[var(--shadow)]"
+                  >
+                    <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[var(--color-accent-50)] text-[var(--color-primary)] transition-colors group-hover:bg-[var(--color-primary)] group-hover:text-white">
+                      <s.icon size={14} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-semibold text-[var(--color-fg)]">
+                        {s.title}
+                      </span>
+                      <span className="mt-0.5 block text-[11.5px] leading-[1.45] text-[var(--color-fg-muted)]">
+                        {s.sub}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Conversation */}
+          {!isEmpty && (
+            <div className="space-y-6 py-6">
+              {allMessages.map(({ msg, index }) => {
+                if (msg.role === 'user') {
+                  return (
+                    <div key={index} className="coo-msg-enter flex justify-end">
+                      <div className="max-w-[82%] rounded-[var(--radius-lg)] rounded-br-[var(--radius-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-[14px] leading-[1.6] text-white">
+                        {msg.content}
+                      </div>
+                    </div>
+                  )
+                }
+                return renderAssistant(msg as AssistantMessage, index)
+              })}
+
+              {chatError && (
+                <div
+                  role="alert"
+                  className="coo-msg-enter flex items-start gap-2.5 rounded-[var(--radius-lg)] border border-[color-mix(in_srgb,var(--color-danger)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] px-4 py-3"
+                >
+                  <AlertCircle size={15} className="mt-0.5 shrink-0 text-[var(--color-danger)]" />
+                  <div className="flex-1">
+                    <p className="text-[12.5px] leading-[1.5] text-[var(--color-fg)]">{chatError.message}</p>
+                    {lastUserText && (
+                      <button
+                        onClick={() => {
+                          const text = lastUserText
+                          setChatError(null)
+                          void send(text)
+                        }}
+                        className="mt-1.5 text-[12px] font-medium text-[var(--color-danger)] underline-offset-2 hover:underline"
+                      >
+                        Retry last message
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div ref={bottomRef} />
+            </div>
+          )}
         </div>
-        <p className="mt-1.5 text-[11px] text-[var(--color-fg-subtle)]">
-          <Sparkles size={10} className="inline align-text-bottom" /> Enter to send · Shift+Enter for new line
-        </p>
+      </div>
+
+      {/* ── Docked composer ─────────────────────────────────────────── */}
+      <div className="shrink-0 px-4 pb-1 pt-2">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="hire-composer flex items-end gap-2 rounded-[var(--radius-xl)] border border-[var(--color-border)] px-3 py-2.5">
+            <textarea
+              ref={taRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder="Describe who you want to hire…"
+              rows={1}
+              disabled={loading}
+              className="flex-1 resize-none bg-transparent px-1.5 py-1 text-[14px] leading-[1.5] text-[var(--color-fg)] outline-none placeholder:text-[var(--color-fg-subtle)] disabled:opacity-50"
+              style={{ maxHeight: '200px', overflowY: 'auto' }}
+            />
+            <button
+              onClick={() => void send(input)}
+              disabled={loading || !input.trim()}
+              aria-label="Send message"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white transition-all hover:bg-[var(--color-primary-hover)] disabled:scale-95 disabled:opacity-30"
+            >
+              {loading ? <Loader2 size={15} className="animate-spin" /> : <ArrowUp size={16} />}
+            </button>
+          </div>
+          <p className="mt-1.5 text-center text-[11px] text-[var(--color-fg-subtle)]">
+            Enter to send · Shift+Enter for a new line · nothing runs until you approve it
+          </p>
+        </div>
       </div>
     </div>
   )

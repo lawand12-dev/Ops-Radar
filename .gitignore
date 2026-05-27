@@ -57,3 +57,5 @@ n8n-workflows-main/
 .env.sentry-build-plugin
 
 .trigger
+# Playwright MCP screenshot/snapshot artifacts
+.playwright-mcp/

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, UserPlus } from 'lucide-react'
+import { Plus, Trash2, MessageSquarePlus, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
 export type ChatSession = {
   id: string
@@ -18,6 +18,8 @@ type Props = {
   onNew: () => void
   onDelete: (id: string) => void
   loading: boolean
+  collapsed: boolean
+  onToggle: () => void
 }
 
 function relativeTime(iso: string): string {
@@ -40,19 +42,57 @@ export function SessionsSidebar({
   onNew,
   onDelete,
   loading,
+  collapsed,
+  onToggle,
 }: Props) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
 
-  return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)]">
-      <div className="border-b border-[var(--color-border)] p-3">
+  // ── Collapsed: thin icon rail ───────────────────────────────────────────
+  if (collapsed) {
+    return (
+      <aside className="flex h-full w-[52px] shrink-0 flex-col items-center gap-1.5 border-r border-[var(--color-border)] bg-[var(--color-bg)] py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label="Show chat history"
+          title="Show chat history"
+          className="flex size-9 items-center justify-center rounded-[var(--radius)] text-[var(--color-fg-muted)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
+        >
+          <PanelLeftOpen size={17} />
+        </button>
         <button
           type="button"
           onClick={onNew}
-          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12.5px] font-medium text-[var(--color-fg)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+          aria-label="New hire"
+          title="New hire"
+          className="flex size-9 items-center justify-center rounded-[var(--radius)] bg-[var(--color-primary)] text-white transition-opacity hover:opacity-90"
         >
-          <Plus size={13} /> New hire
+          <Plus size={17} />
+        </button>
+      </aside>
+    )
+  }
+
+  // ── Expanded: full history rail ─────────────────────────────────────────
+  return (
+    <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)]">
+      <div className="flex items-center gap-2 border-b border-[var(--color-border)] p-2.5">
+        <button
+          type="button"
+          onClick={onNew}
+          className="flex flex-1 items-center justify-center gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[12.5px] font-medium text-[var(--color-fg)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+        >
+          <Plus size={14} /> New hire
+        </button>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label="Hide chat history"
+          title="Hide chat history"
+          className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius)] text-[var(--color-fg-subtle)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)]"
+        >
+          <PanelLeftClose size={16} />
         </button>
       </div>
 
@@ -62,9 +102,12 @@ export function SessionsSidebar({
         )}
 
         {!loading && sessions.length === 0 && (
-          <p className="px-3 py-2 text-[11.5px] text-[var(--color-fg-subtle)]">
-            No hires yet. Start your first one.
-          </p>
+          <div className="flex flex-col items-center gap-1.5 px-3 py-8 text-center">
+            <MessageSquarePlus size={18} className="text-[var(--color-fg-subtle)]" />
+            <p className="text-[11.5px] leading-[1.5] text-[var(--color-fg-subtle)]">
+              No hires yet.<br />Start your first one.
+            </p>
+          </div>
         )}
 
         <ul className="space-y-0.5">
@@ -87,7 +130,9 @@ export function SessionsSidebar({
                 }`}
                 onClick={() => onSelect(s.id)}
               >
-                <UserPlus size={13} className="mt-0.5 shrink-0 opacity-60" />
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[var(--color-primary)]" />
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12.5px] leading-tight">{s.title}</p>
                   <p className="mt-0.5 text-[10.5px] text-[var(--color-fg-subtle)]">
