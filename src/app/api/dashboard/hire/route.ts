@@ -260,7 +260,13 @@ export async function POST(request: NextRequest): Promise<Response> {
           system: systemPrompt,
           messages: history,
           tools,
-          stopWhen: stepCountIs(8),
+          // stepCountIs(3) is a hard ceiling on tool-call rounds: propose runs
+          // in step 1, the model summarizes in step 2 (3 leaves slack). Weaker
+          // backup models (Llama/Scout on Groq) tend to re-call propose in a
+          // loop; this caps it. The decisive guard is `draftDone` below — once
+          // a draft is produced we abort the stream immediately so no loop can
+          // form regardless of the model's discipline.
+          stopWhen: stepCountIs(3),
           experimental_telemetry: makeTelemetry({
             userId,
             sessionId: resolvedSessionId,
@@ -268,15 +274,24 @@ export async function POST(request: NextRequest): Promise<Response> {
           }),
         })
 
-        for await (const part of result.fullStream) {
+        // Once propose/install produces its card, the turn's job is done. We
+        // stop consuming the stream so a chatty/looping model can't re-call the
+        // tool. The draft card IS the deliverable — extra model chatter after
+        // it adds nothing and risks the loop the user hit in prod.
+        let terminalCardSent = false
+
+        streamLoop: for await (const part of result.fullStream) {
           if (part.type === 'text-delta') {
             assistantText += part.text
             send({ type: 'text_delta', delta: part.text })
           } else if (part.type === 'tool-call') {
+            // Suppress duplicate tool-call pills after we already have a card.
+            if (terminalCardSent) continue
             const label = humanizeHireTool(part.toolName)
             toolSteps.push({ name: part.toolName, label })
             send({ type: 'tool_call', name: part.toolName, label })
           } else if (part.type === 'tool-result') {
+            if (terminalCardSent) continue
             send({ type: 'tool_done', name: part.toolName })
             // Sniff results for the inline cards the UI renders.
             const out = part.output as Record<string, unknown> | undefined
@@ -287,6 +302,14 @@ export async function POST(request: NextRequest): Promise<Response> {
             ) {
               draftCard = out.draft
               send({ type: 'draft_proposed', draft: out.draft })
+              // If the model produced no prose, give the card a caption.
+              if (!assistantText.trim()) {
+                const caption = "Here's the draft — review it and click Hire when you're ready."
+                assistantText = caption
+                send({ type: 'text_delta', delta: caption })
+              }
+              terminalCardSent = true
+              break streamLoop
             } else if (
               part.toolName === 'install_custom_employee' &&
               out?.success === true &&
@@ -297,6 +320,8 @@ export async function POST(request: NextRequest): Promise<Response> {
                 url: typeof out.url === 'string' ? out.url : `/dashboard/employees/${out.slug}`,
               }
               send({ type: 'employee_hired', slug: hired.slug, url: hired.url })
+              terminalCardSent = true
+              break streamLoop
             }
           } else if (part.type === 'error') {
             // Log the full error server-side — the SDK's error parts are often
@@ -308,9 +333,16 @@ export async function POST(request: NextRequest): Promise<Response> {
           }
         }
 
-        // Record token usage against the customer's monthly quota.
+        // Record token usage against the customer's monthly quota. When we
+        // break out of the stream early (a draft was produced), result.usage
+        // may never resolve because the underlying generation was abandoned —
+        // so race it against a short timeout and skip recording if it doesn't
+        // settle. Better to under-count usage than to hang the `done` event.
         try {
-          const usage = await result.usage
+          const usage = await Promise.race([
+            result.usage,
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+          ])
           if (usage?.totalTokens) {
             await recordUsage({
               userId,
