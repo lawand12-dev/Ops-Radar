@@ -86,7 +86,12 @@ function getGroqModel(kind: BackupKind): LanguageModel | null {
     kind === 'object'
       ? (process.env.GROQ_OBJECT_MODEL ?? GROQ_OBJECT_MODEL).trim()
       : (process.env.GROQ_CHAT_MODEL ?? GROQ_CHAT_MODEL).trim()
-  return _groqProvider(modelId)
+  // .chat() forces the classic /chat/completions endpoint. The default
+  // provider(model) targets OpenAI's newer /responses API, which Groq does
+  // NOT fully support — it rejects multi-message tool conversations with
+  // "Input contains unsupported content types or unsupported content fields"
+  // (verified in prod). /chat/completions handles the tool flow correctly.
+  return _groqProvider.chat(modelId)
 }
 
 function getDigitalOceanModel(): LanguageModel | null {
@@ -97,7 +102,9 @@ function getDigitalOceanModel(): LanguageModel | null {
     _doProvider = createOpenAI({ apiKey: key, baseURL })
   }
   const modelId = (process.env.AI_DIGITALOCEAN_MODEL ?? 'llama3.3-70b-instruct').trim()
-  return _doProvider(modelId)
+  // .chat() — same reason as Groq: OpenAI-compatible providers reliably
+  // implement /chat/completions, not the newer /responses API.
+  return _doProvider.chat(modelId)
 }
 
 /**
