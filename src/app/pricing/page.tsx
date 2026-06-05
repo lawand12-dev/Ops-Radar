@@ -19,11 +19,11 @@ import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
 export const metadata: Metadata = {
   title: "Pricing — OpsRadar AI Operating System",
   description:
-    "Flat tiers from $99/mo. $0.05 per approved action over cap. No token surprises, no credit anxiety. Replaces $5,200/mo in scattered AI tools.",
+    "Hybrid model: $750–$3,000/month flat + $15–$25 per approved action. No token surprises. 30–60 day money-back guarantee.",
   openGraph: {
-    title: "One workforce. One brain. Starts at $99/mo.",
+    title: "Price a fractional COO by the action. $750–$3,000/month.",
     description:
-      "The 10 AI tools you're paying $5,200 a month for — replaced by one workspace. Flat tiers, outcome meter bounded by your approval. No surprises.",
+      "Approved actions, not API tokens. Company Brain limits. Your agents work like employees. 30–60 day risk-reversal guarantee.",
     url: "https://www.opsradar.co/pricing",
     siteName: "OpsRadar",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar — Pricing" }],
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "One workforce. One brain. Starts at $99/mo.",
+    title: "Price a fractional COO by the action. $750–$3,000/month.",
     description:
-      "Flat tiers from $99/mo. $0.05 per approved action over cap. No token surprises.",
+      "Flat + approved actions. 30–60 day guarantee. Agents earn autonomy. No blind automation.",
     images: ["/og-image.png"],
   },
 };
@@ -48,6 +48,7 @@ type Tier = {
   price: string;
   priceUnit: string;
   billingNote: string;
+  guarantee?: string;
   tagline: string;
   pitchLine: string;
   includesHeader: string;
@@ -60,86 +61,114 @@ type Tier = {
 const TIERS: Tier[] = [
   {
     name: "Starter",
-    price: "$99",
+    price: "$750",
     priceUnit: "/month",
-    billingNote: "Billed monthly · Cancel anytime",
-    tagline: "For solo operators + tiny teams",
-    pitchLine: "Get one AI employee + the brain. Connect 5 tools.",
+    billingNote: "Billed monthly or annually (17% off = 2 months free) · Cancel anytime",
+    guarantee: "30-day money-back guarantee",
+    tagline: "For founder-run ops (5–10 person agencies)",
+    pitchLine: "A fractional COO charges $10,000/month to do this once a quarter. We do it weekly for less than 1/10th the price.",
     includesHeader: "What's included",
     bullets: [
-      "1 seat",
-      "Up to 5 integrations connected",
-      "500 approved actions/mo included",
-      "All 28 built-in agents (Revenue, Collections, Scope, Delivery, Briefing, and 23 more)",
-      "Company brain — versioned, mirrored to your Notion, exportable any time",
+      "1 owner seat",
+      "3 integrations of your choice",
+      "Weekly agency health score",
+      "Monthly automation audit",
+      "Basic dashboard: margin, utilization, cash flow",
+      "Company Brain: 25–50 curated documents",
     ],
-    notIncluded:
-      "Custom AI employees · automations · org-chart delegation · multi-client view",
-    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
+    notIncluded: "Agentic actions · Multi-seat collaboration · Custom automations",
+    cta: { label: "Start free trial", href: "/waitlist" },
   },
   {
     name: "Growth",
     badge: "Most popular",
     badgeTone: "highlight",
-    price: "$499",
+    price: "$1,500",
     priceUnit: "/month",
-    billingNote: "Billed monthly · Cancel anytime",
-    tagline: "For 5–15 person agencies",
-    pitchLine: "Hire custom AI employees. Connect everything. Automate everything.",
+    billingNote: "Billed monthly or annually (17% off = 2 months free) · Cancel anytime",
+    guarantee: "30-day money-back guarantee",
+    tagline: "For agencies catching margin leaks (10–25 person agencies)",
+    pitchLine: "A fractional COO is $10,000/month. We're $1,500. You also get something they can't give you — live numbers, 24/7.",
     includesHeader: "What's included",
     bullets: [
-      "5 seats",
-      "Unlimited integrations",
-      "5,000 approved actions/mo included",
-      "Hire custom AI employees from the Hire chat — name them, schedule them, scope their tools",
-      "Event-triggered automations (\"when HubSpot deal closes-won, do X\")",
-      "All 28 built-in agents",
-      "Apprentice Mode — workforce learns from every rejection",
+      "3 seats (+$100/seat after)",
+      "All 10 integrations (Stripe, HubSpot, ClickUp, Harvest, Notion, etc.)",
+      "COO chat with live data context",
+      "Per-client profitability + scope creep alerts — catch the leaking client in week 2, not month 3",
+      "Peer benchmarks (industry cohorts)",
+      "Per-client profitability dashboards",
+      "Company Brain: 150–200 documents",
+      "50 approved actions/mo included · $25 per action after",
     ],
-    outcomeMeter: "$0.05 per approved action over 5,000/mo",
-    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
+    cta: { label: "Start free trial", href: "/waitlist" },
   },
   {
     name: "Pro",
-    price: "$1,499",
+    price: "$3,000",
     priceUnit: "/month",
-    billingNote: "Billed monthly · Cancel anytime",
-    tagline: "For agencies running multiple retainers",
-    pitchLine: "Org-chart delegation. Priority models. The full workforce.",
+    billingNote: "Billed monthly or annually (17% off = 2 months free) · Cancel anytime",
+    guarantee: "60-day money-back guarantee",
+    tagline: "For agencies moving faster than humans (25–50 person agencies)",
+    pitchLine: "A full-time COO is $25,000–$43,000/month. We're $3,000 — 1/3rd the cost of a fractional COO, with everything they do, 24/7, plus the data they never had.",
     includesHeader: "What's included",
     bullets: [
-      "20 seats",
+      "10 seats (+$100/seat after)",
       "Unlimited integrations",
-      "25,000 approved actions/mo included",
-      "Org-chart delegation — managers delegate to direct reports (Trigger.dev triggerAndWait)",
-      "Priority models — your queue jumps the line on GPT-5.5",
-      "Notion Brain provisioning (20 databases shipped on day 1)",
-      "Webhook outbox to your own systems",
-      "Everything from Growth",
+      "Custom alert rules (margin, delivery risk, scope creep)",
+      "Webhooks for outbound integrations",
+      "Multi-client operations dashboards",
+      "Full OpsRadar Index access (peer cohort drill-downs)",
+      "Agentic actions (auto-invoice drafts, PM nudges) with 30-minute undo + 5-evaluator safety net",
+      "Notion Brain provisioning (20 databases on day 1)",
+      "Company Brain: 500 documents (safe limit)",
+      "200 approved actions/mo included · $15 per action after",
     ],
-    outcomeMeter: "$0.05 per approved action over 25,000/mo",
-    cta: { label: "Coming soon — join waitlist", href: "/waitlist" },
+    cta: { label: "Start free trial", href: "/waitlist" },
   },
   {
     name: "Fractional Operator",
     badge: "For partners",
     badgeTone: "partner",
-    price: "$2,999",
-    priceUnit: "/month",
-    billingNote: "Billed monthly · Cancel anytime",
-    tagline: "For fractional COOs running multiple clients",
-    pitchLine: "Multi-client white-label. Your brand, our engine.",
+    price: "$1,200",
+    priceUnit: "/month + $300 per agency",
+    billingNote: "Billed monthly or annually (17% off) · Cancel anytime",
+    tagline: "For fractional COOs and consultancies (3+ agencies)",
+    pitchLine: "Cuts your manual onboarding audit time from weeks to hours. Plus earn 20% commission on every agency you bring.",
     includesHeader: "What's included",
     bullets: [
-      "Unlimited seats inside your FO org",
-      "White-label branding — your logo, your color, your domain",
-      "100,000 approved actions/mo pooled across all clients",
-      "Multi-client aggregate dashboard at /dashboard/fo",
-      "Client switcher built into every surface",
-      "Per-client audit log and margin reporting",
+      "Unlimited seats across your operator org",
+      "Multi-client dashboard (one login for every agency)",
+      "Side-by-side health scores across all clients",
+      "Optional white-label branding",
+      "20% referral commission on brought agencies",
+      "Per-client audit logs and margin reporting",
+      "Everything from Pro",
+      "100,000 actions pooled across all managed clients",
+    ],
+    cta: {
+      label: "Talk to founder",
+      href: CALENDLY_STRATEGY_CALL_URL,
+    },
+  },
+  {
+    name: "Enterprise",
+    badge: "Custom",
+    badgeTone: "partner",
+    price: "Custom",
+    priceUnit: "(starts at $5,000/mo)",
+    billingNote: "Annual contract · Locked pricing · Custom terms",
+    tagline: "For large-scale operations (50+ employees or $5M+ ARR)",
+    pitchLine: "Unlimited everything. Designated CSM. Multi-entity reporting.",
+    includesHeader: "What's included",
+    bullets: [
+      "Custom usage allowances (actions, seats, integrations)",
+      "Multi-entity reporting (parent + subsidiaries)",
+      "Designated Customer Success Manager",
+      "Priority support and custom onboarding",
+      "Company Brain: Unlimited ingestion",
+      "Price-locked annual contracts",
       "Everything from Pro",
     ],
-    outcomeMeter: "$0.05 per approved action over 100,000/mo, pooled",
     cta: {
       label: "Talk to founder",
       href: CALENDLY_STRATEGY_CALL_URL,
@@ -150,99 +179,88 @@ const TIERS: Tier[] = [
 const ANTI_LINDY_RULES = [
   {
     n: "01",
-    title: "No token billing.",
-    body: "OpenAI, Anthropic, embedding tokens — all included in your tier. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made sure that's never us.",
+    title: "Background work is free.",
+    body: "Reading Slack, synthesizing briefings, gathering data — all free. You only burn action quota when agents propose a high-stakes decision and you click Approve. Reconnaissance costs nothing.",
   },
   {
     n: "02",
-    title: "No premium-model multipliers.",
-    body: "Lindy charges 60 credits for one GPT-4 call and 2 for a \"lite\" call. We charge the same flat $0.05 whether your employee used GPT-5.5 or GPT-4.1-nano. The model is our choice, not your bill.",
+    title: "No token multipliers.",
+    body: "We never charge more because we routed a task to GPT-5.5 instead of GPT-4. One approved action = flat $15–$25, depending on tier. The model choice is ours. The price per action is yours.",
   },
   {
     n: "03",
-    title: "Outcome meter is bounded by your finger.",
-    body: "The only thing that runs the meter past your cap is an action you literally clicked Approve on in /dashboard/actions. Reject it and the meter doesn't move. We are structurally incapable of surprising you with a bill.",
+    title: "Company Brain has guardrails.",
+    body: "Each tier caps document ingestion (Starter: 50, Growth: 200, Pro: 500). Limits prevent DAG compaction and keep Notion fast. You own every document. You control what goes in.",
   },
   {
     n: "04",
     title: "Earned autonomy, never blind autonomy.",
-    body: "Every high-risk action (firing a client, sending an invoice, mass email) stays Ask-only forever. Routine actions auto-fire only after you've approved them 30+ times at a 90%+ rate. The agents earn autonomy. They don't get it on day one. Anti-11x by structure, not by marketing.",
+    body: "High-risk actions (firing clients, invoices, mass email) stay Ask-only forever. Routine actions earn autonomy after 30+ approvals at 90%+ rate. Agents work like employees, not rogue bots.",
   },
 ];
 
 const WEDGE_ROWS = [
   {
-    tool: "Notion AI",
-    cost: "$20/user × 15 = $300",
-    why: "Brain lives in your Notion, written by your AI workforce",
+    tool: "Fractional COO (10–20 hrs/week)",
+    cost: "$10,000/month",
+    why: "Weekly audits, alerts, actions 24/7. No vacation, no sleep.",
   },
   {
-    tool: "Lindy 3.0 (Business tier)",
-    cost: "$300 + overages",
-    why: "Custom AI employees + automations native, no credit anxiety",
+    tool: "In-house ops manager",
+    cost: "$6,000–$8,000/month",
+    why: "Margin reporting, scope alerts, invoice tracking, integrations.",
   },
   {
-    tool: "Zapier Pro",
-    cost: "$73/mo + tasks",
-    why: "25+ integrations native via Nango, growing to 500",
+    tool: "Bookkeeper (part-time)",
+    cost: "$1,500–$2,500/month",
+    why: "Invoice creation, overdue tracking, MRR, payment reminders.",
   },
   {
-    tool: "AI SDR (11x or similar)",
-    cost: "$1,000+/mo",
-    why: "Hire an SDR employee directly with the role you actually need",
+    tool: "Sales ops / RevOps",
+    cost: "$5,000–$7,000/month",
+    why: "Pipeline alerts, deal tracking, HubSpot automation, forecasting.",
   },
   {
-    tool: "ChatGPT Team",
-    cost: "$50 + per-seat",
-    why: "COO chat answers any business question with your live data",
+    tool: "Project manager (part-time)",
+    cost: "$3,000–$4,000/month",
+    why: "ClickUp routing, delivery health, scope tracking, reminders.",
   },
   {
-    tool: "AI bookkeeper",
-    cost: "$400/mo",
-    why: "Hire a Bookkeeper employee scoped to Stripe + QuickBooks",
+    tool: "Marketing analyst",
+    cost: "$4,000–$6,000/month",
+    why: "Analytics tracking, ad spend, conversions, reporting.",
   },
   {
-    tool: "Glean Light or search",
-    cost: "$40/user × 15 = $600",
-    why: "Brain knows everything across all 25 tools, no separate search needed",
-  },
-  {
-    tool: "AI meeting summarizer",
-    cost: "$30/user × 15 = $450",
-    why: "Calendly + Notion → briefing agent does this nightly",
-  },
-  {
-    tool: "Marketing AI writer",
-    cost: "$200/mo",
-    why: "Hire a marketing employee, scoped to Google Ads + Analytics",
-  },
-  {
-    tool: "Bardeen / productivity AI",
-    cost: "$129/mo",
-    why: "Automations + per-employee hires cover this surface",
+    tool: "Executive assistant",
+    cost: "$3,500–$5,000/month",
+    why: "Calendar sync, meeting summaries, Slack, action follow-ups.",
   },
 ];
 
 const FAQS = [
   {
     q: "What counts as \"an approved action\"?",
-    a: "Anything your AI workforce does on a connected tool: sending a Gmail draft, creating a Stripe invoice, updating a HubSpot deal, posting in Slack, creating a Notion page. Reads — fetching data, looking something up — never count. Only writes count. And only writes you clicked Approve on count toward your meter.",
+    a: "Anything your AI agents do on a connected tool when you've clicked Approve: sending Gmail drafts, creating Stripe invoices, updating HubSpot deals, posting in Slack, creating Notion pages, adjusting retainers. Reads—fetching data, looking things up—never count. Only writes you approved count toward your meter.",
   },
   {
     q: "What if I never hit my action cap?",
-    a: "Then you pay only the flat tier price. The outcome meter is opt-in upside on Pro+, not core pricing. Most agencies under 20 people stay within their tier cap forever.",
+    a: "Then you pay only the flat tier price. Growth includes 50 actions; Pro includes 200. Most agencies under 25 people stay within their tier cap forever. Background work (briefings, synthesis, Slack monitoring) costs nothing.",
   },
   {
-    q: "Can I bring my own AI keys (BYOK)?",
-    a: "Not in v1. We aggregate AI cost across all customers and that's how we hold the flat tier price. If you have a strong reason to BYOK (regulated industry, internal compliance), talk to the founder.",
+    q: "How does Company Brain capacity work?",
+    a: "Each tier has a document limit (Starter: 50, Growth: 200, Pro: 500, Enterprise: unlimited). Those are Pattern Cards, SOPs, Decision Logs—knowledge your agents read to stay context-aware. You control what goes in. When full, archive old docs or upgrade tiers.",
   },
   {
-    q: "What happens if I cancel?",
-    a: "Your workforce stops running. Your company brain stays in your Notion — it was always there, we just wrote to it. You can also download a full markdown zip of the brain from /dashboard/brain/download any time. We don't hold your data hostage.",
+    q: "What if I cancel?",
+    a: "Your agents stop running. Your company brain stays in your Notion—it was always there, we just wrote to it. Download a full markdown zip any time from /dashboard/brain/download. We don't hold your data hostage.",
   },
   {
-    q: "Can I downgrade tiers?",
-    a: "Yes. Anytime. End of month. No retention call, no friction. Click Settings → Billing → Switch plan. Custom employees from a higher tier get auto-paused if they don't fit your new tier, until you reactivate.",
+    q: "Can I downgrade or upgrade tiers?",
+    a: "Yes. Anytime. End of month. No retention call, no friction. Downgrading from Pro to Growth auto-pauses high-tier features until you reactivate or upgrade again.",
+  },
+  {
+    q: "What about the 30/60-day money-back guarantee?",
+    a: "Starter & Growth: 30 days, no questions asked. Pro: 60 days (agentic actions take longer to prove). Fractional Operator & Enterprise: Custom SLAs. If you're not seeing alerts or actions that matter, we'll refund.",
   },
 ];
 
@@ -276,12 +294,12 @@ function PageHeader() {
       <div className="mx-auto max-w-6xl px-6 pt-20 md:pt-28 pb-20 md:pb-24">
         <RevealOnScroll delay={0} offset={32}>
           <p className="text-label uppercase text-[var(--color-fg-subtle)]">
-            Pricing — flat tiers, outcome meter bounded by your approval
+            Pricing — approved actions, not API tokens
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={120} offset={48}>
           <h1
-            className="mt-7 text-[var(--color-fg)] text-balance max-w-[20ch]"
+            className="mt-7 text-[var(--color-fg)] text-balance max-w-[24ch]"
             style={{
               fontFamily: "var(--font-sans)",
               fontSize: "var(--text-hero)",
@@ -290,8 +308,8 @@ function PageHeader() {
               fontWeight: 500,
             }}
           >
-            Build the asset you exit on.{" "}
-            <span className="text-[var(--color-primary)]">Starts at $99/mo.</span>
+            Price a fractional COO{" "}
+            <span className="text-[var(--color-primary)]">by the action.</span>
           </h1>
         </RevealOnScroll>
         <RevealOnScroll delay={280} offset={48}>
@@ -303,18 +321,17 @@ function PageHeader() {
               fontWeight: 400,
             }}
           >
-            Replace $5,200/mo of scattered AI tools. Your AI workforce writes
-            the SOPs into a Notion you keep. Documented agencies sell at 8–12×
-            EBITDA vs 5–9× undocumented &mdash; that&rsquo;s $6M of extra exit
-            value on a $2M-EBITDA agency. The asset compounds. The pricing
-            doesn&rsquo;t surprise you.
+            A fractional COO costs $10,000/month. We cost $750–$3,000. You get
+            the weekly health audits, margin alerts, invoice drafts, retainer
+            adjustments — and you control every action they take. Bounded by your
+            approval. Agents earn autonomy. They never get it by default.
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={460} offset={40}>
           <div className="mt-10 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link href="/waitlist">
-                Coming soon — join waitlist
+                Start free trial
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -324,14 +341,14 @@ function PageHeader() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Or talk to the founder first &rarr;
+                Talk to founder first &rarr;
               </a>
             </Button>
           </div>
         </RevealOnScroll>
         <RevealOnScroll delay={580} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            Private beta &middot; Limited spots &middot; Brain stays in your Notion &middot; Exportable any time
+            14 days free &middot; No credit card &middot; Brain stays in your Notion &middot; 30–60 day guarantee
           </p>
         </RevealOnScroll>
       </div>
@@ -346,12 +363,12 @@ function PageHeader() {
 function TwoPromisesSection() {
   const cards = [
     {
-      headline: "We never charge you for tokens.",
-      body: "OpenAI tokens, Anthropic tokens, embedding calls — those are our problem, not yours. Whatever your AI workforce consumes inside its tier is included. You pay for outcomes, not the math behind them.",
+      headline: "Background work is free.",
+      body: "Reading Slack, synthesizing briefings, gathering data—all free. Your agents only burn quota when they propose a high-stakes decision and you click Approve. Reconnaissance costs nothing.",
     },
     {
-      headline: "You only pay above cap for actions you clicked Approve.",
-      body: "Every billable action shows up in your approval queue. You read it, see what it'll do, click yes — or click no. Reject it, you don't pay. Approve it, $0.05. Three things have to align in the same moment.",
+      headline: "Company Brain has guardrails.",
+      body: "Each tier caps document ingestion (Starter: 50, Growth: 200, Pro: 500) to prevent data leaks and DAG compaction. You own every document. You control what goes in.",
     },
   ];
 
@@ -416,7 +433,7 @@ function TiersSection() {
               fontWeight: 500,
             }}
           >
-            Four tiers. Built around the size of your team.
+            Five tiers. Built around the size and scope of your agency.
           </h2>
         </RevealOnScroll>
 
@@ -520,8 +537,16 @@ function TierCard({ tier }: { tier: Tier }) {
           ))}
         </ul>
 
-        {(tier.outcomeMeter || tier.notIncluded) && (
+        {(tier.outcomeMeter || tier.notIncluded || tier.guarantee) && (
           <div className="mt-4 pt-3 border-t border-[var(--color-border)] space-y-2">
+            {tier.guarantee && (
+              <div>
+                <p className="text-body-sm leading-[1.5] text-[var(--color-success)] font-medium flex items-center gap-2">
+                  <Check className="size-4" aria-hidden />
+                  {tier.guarantee}
+                </p>
+              </div>
+            )}
             {tier.outcomeMeter && (
               <div>
                 <p className="text-label text-[var(--color-fg-subtle)] mb-1">Outcome meter</p>

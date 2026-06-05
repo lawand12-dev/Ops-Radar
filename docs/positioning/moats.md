@@ -188,7 +188,7 @@ The numbers are stark. The public MCP server registry went from 1,200 in Q1 2025
 
 The agency PSA incumbents — Kantata, Productive.io, Scoro, Accelo, Teamwork — have not shipped MCP servers. Their hesitation is structural: their data models were never built to be exposed as agent-callable tools, their auth layers don't have OAuth 2.1 scope plumbing, and their commercial teams cannot justify investing six months of engineering into a protocol with no current customer-paid demand. By the time a customer asks, the customer is already using whoever shipped first.
 
-The horizontal company-brain plays (Hyper, Glean, Notion AI) will ship MCP servers — but generically. None of them have agency-specific tools (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`) and none have the live-fetched per-tenant adapter layer OpsRadar already has shipped. The vertical depth is the asymmetry.
+The horizontal company-brain plays (Hyper, Glean, Notion AI) will ship MCP servers, but generically. None of them have service-operations-specific tools (`get_finance`, `get_profitability`, `get_capacity`, `get_scope`) and none have the live-fetched per-tenant adapter layer OpsRadar already has shipped. Agencies are the first implementation of that vertical depth; the broader asymmetry is client-time service-business operations.
 
 **Concrete actions:**
 
@@ -321,7 +321,7 @@ If it isn't hard, it probably isn't a moat. The work that follows from these six
 The five most likely objections from YC partners and seed investors in 2026, with the provocation-grounded answer:
 
 **"Why won't OpenAI just build this?"**
-They will build a horizontal agency-AI tool that handles three of our ten integrations badly. We will own the vertical depth, the agency-specific benchmark dataset, the fractional COO distribution channel, and the compliance posture (Provocation 1). Their product will look like ours on a slide and lose on every actual deal because the procurement team asks about SOC 2 and the agency owner asks about Harvest-Stripe profitability reconciliation. (See Provocation 1 and Provocation 2.)
+They will build a horizontal service-business AI tool that handles three of our ten integrations badly. We will own the vertical depth, the service-operations benchmark dataset, the fractional COO distribution channel, and the compliance posture (Provocation 1). Their product will look like ours on a slide and lose on real deals because the buyer asks about SOC 2, approval history, and the exact Harvest-Stripe profitability reconciliation that tells them which client is bleeding margin. (See Provocation 1 and Provocation 2.)
 
 **"What stops a YC W26 batch-mate from cloning this in three months?"**
 Nothing — at the surface level. They can ship an agency-COO MVP in three months. They cannot in three months ship: AES-256-GCM customer key encryption with a public-documented threat model, a SOC 2 Type II report with AI-extended scope, the first MCP server in the agency category listed in Claude Desktop's discovery surface, an outcome-learning feedback loop trained on real owner confirmations, and a fractional COO channel with a 25%-lifetime-rev-share program already seeded into Fractionals United. The competitive game in 2026 is no longer about getting to MVP. It's about getting through the next nine months of stacked friction that everyone else postpones. (See Provocation 4 and Provocation 5.)

@@ -7,7 +7,7 @@
 - All 10 pages fetched live from production (curl + verified HTTP status).
 - Screenshots taken at desktop 1440x900 and mobile 375x812 saved to `/tmp/opsradar-audit/`. The previous Playwright session was hijacked mid-run (browser kept redirecting to ramp.com / posthog.com when given an opsradar.co URL). All visual claims below are cross-checked against (a) the saved screenshots from that session and (b) the live HTML re-fetched today. File sizes and content are byte-identical to the prior captures, so the screenshots are current.
 - Copy analysis pulled from live HTML.
-- Voice rules sourced from `opsradar/.agents/product-marketing.md`. Strategic frame sourced from `path-a-strategy-2026.md` §11.
+- Voice rules sourced from `opsradar/.agents/product-marketing.md` as it existed on 2026-05-18. Strategic frame was sourced from the then-current `path-a-strategy-2026.md` §11. Audience positioning is now superseded by the 2026-06-01 refresh: service businesses and agencies that bill for client time, with marketing agencies as a beachhead.
 
 ---
 
@@ -18,7 +18,7 @@
 3. **Confirmed: /faq has only 4 real questions** (5th item is the "Still have questions?" CTA), all collapsed by default. The Pricing / Process / Tech & tools tabs contain zero questions in the DOM.
 4. **Confirmed: /about has no founder presence.** The word "founder" appears once — in a CTA ("Book a call with founders"). No Lawand bio. No photo. No story beyond "we spent years inside agency ops".
 5. **Confirmed: copy inconsistency on call length.** FAQ says "20-min call" twice; every other page says "30 minutes / 30-min" (24 occurrences across the site).
-6. **Confirmed: the live hero is "The AI Operating System for agencies"** — does not match the AI COO category in the strategy doc.
+6. **Confirmed at audit time: the live hero was "The AI Operating System for agencies"** — it did not match the 2026-05-18 AI COO category language. As of 2026-06-01, the canonical language is AI operating system / AI COO for service businesses and agencies that bill for client time.
 7. **Bonus violation:** Homepage names `n8n` twice in the OBSERVE dashboard mock — explicit voice-rule violation ("n8n — internal tool").
 8. **Bonus violation:** Every page has a duplicated `<title>` brand suffix ("Page — OpsRadar — OpsRadar"). Template bug.
 9. **Bonus violation:** `/for/paid-media` and `/for/seo` both ship a literal placeholder testimonial in production: `"[Operator quote — to be replaced with real customer]"`.
@@ -296,7 +296,7 @@ Per `path-a-strategy-2026.md` §11.1 decision #2 and `docs/pricing-depth.md`, th
 
 ### Copy issues vs voice rules
 - The "I tailor benchmarks…" line uses first-person singular ("I"), which is on-brand for an AI-led audit but inconsistent with the rest of the site ("we"). Pick a voice.
-- "Recruiting/Staffing", "Design/Creative", "Development", "PR/Communications" options — the strategy ICP is *marketing agencies only*. The audit accepts inputs from non-ICP businesses. Either disqualify these on submission or remove them.
+- "Recruiting/Staffing", "Design/Creative", "Development", "PR/Communications" options — if `/audit` is the agency-beachhead funnel, disqualify or route these separately. If `/audit` becomes the broader service-business funnel, keep them and calibrate the math per vertical.
 - "Free · Results sent to your inbox" — would be stronger with a dollar promise ("Results include estimated annual leak in dollars").
 
 ### Conversion path
@@ -411,7 +411,7 @@ Per `path-a-strategy-2026.md` §11.1 decision #2 and `docs/pricing-depth.md`, th
 
 1. **Ship `/pricing` v0.1 with three tier cards and the Fractional Operator SKU.** Add link to nav and footer. Populate FAQ Pricing tab. Single biggest conversion unlock.
 2. **Add a founder block** (Lawand photo + name + 1 sentence + email/LinkedIn) to (a) the About page hero and (b) a slim footer block on every page. Founder-led sale demands the founder be visible.
-3. **Resolve the AIOS-vs-AI-COO category language decision and commit globally.** This audit shows 100% AIOS / 0% COO on the live site; the strategy doc commits 100% to "AI COO for marketing agencies." Whichever wins, **pick one and replace everywhere**. The current state is the worst of both worlds — the site disagrees with the email outreach, the unshipped /vs pages, and the strategy doc.
+3. **Resolve the AIOS-vs-AI-COO category language decision and commit globally.** This audit showed 100% AIOS / 0% COO on the live site while the 2026-05-18 strategy docs committed to AI COO for marketing agencies. As of 2026-06-01, the decision is broader: AI operating system / AI COO for service businesses and agencies that bill for client time. Replace stale agency-only canonical copy as pages are refreshed.
 4. **Remove the two `[Operator quote — to be replaced]` placeholders** on `/for/paid-media` and `/for/seo`. If no real quotes exist, delete the quote blocks. Placeholders in production destroy trust silently.
 5. **Add a single 2-line proof-point bar** to every page above the fold ("21.5% of agencies are losing money. The fix isn't another dashboard — it's a system that watches your margin in real time."). One template, ship once, cascades across all 10 pages.
 
@@ -434,7 +434,7 @@ Per `path-a-strategy-2026.md` §11.1 decision #2 and `docs/pricing-depth.md`, th
 **Interpretation for the strategic decision:**
 
 - The live site is fully committed to the AIOS / Operating System / four-pillar framework. Every page, every title, every section header, every meta description reinforces "AI Operating System."
-- The strategy doc, cold emails, and unshipped `/vs/*` pages are fully committed to "AI COO for marketing agencies." Same total commitment, opposite direction.
+- At audit time, the strategy doc, cold emails, and unshipped `/vs/*` pages were fully committed to AI COO for marketing agencies. That audience frame is now superseded by the 2026-06-01 service-business-and-agency positioning.
 - This is not a small inconsistency to patch — it is a hard fork between two completed positioning systems. **The decision cannot be split. Pick one.** Half-AIOS / half-COO loses to either pure system.
 - Worth noting: the OPERATE / OBSERVE / BRAIN / GUARD framework is **173 mentions** across the site — the most-installed branded vocabulary by far. If the COO category wins, you keep the pillars (they describe what the AI COO does) but they stop being the category. If AIOS wins, you must update the strategy doc, the cold emails, and the unshipped /vs pages to drop AI COO entirely.
 

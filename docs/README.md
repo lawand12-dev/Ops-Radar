@@ -1,6 +1,6 @@
 # OpsRadar Docs — Index
 
-*Last updated: 2026-05-27*
+*Last updated: 2026-06-01*
 
 > **⚠️ 2026-05-26 pivot — read before trusting older docs.** Three things changed that pre-2026-05-26 docs still describe the old way:
 > 1. **Broker: Composio → Nango.** Composio was removed after the 2026-05-21 breach (5,024 OAuth tokens compromised). The broker is now **Nango** (`src/lib/nango.ts`). See [`adr/0010-nango-broker.md`](./adr/0010-nango-broker.md). Any doc that names Composio as live is either superseded (ADRs carry a banner) or a dated historical snapshot.
@@ -81,6 +81,12 @@ Short, numbered, decided. Open these to answer "why is the system shaped this wa
 ## Research
 
 Evidence snapshots — every claim cited, no decisions inside. Read these to back up a claim or update a positioning doc. **Snapshots are dated and frozen — they are history, not current truth.**
+
+**Latest (2026-06-01 — agent/company-brain refresh):**
+
+| Document | What it answers |
+|----------|-----------------|
+| [`research/2026-06-01-agent-company-brain-ops-refresh.md`](./research/2026-06-01-agent-company-brain-ops-refresh.md) | Current 2026 read on agents, company brain, operations agents, and anti-duplication rules. Locks the language: **service businesses and agencies that bill for client time**; marketing agencies are a beachhead, not the whole company. |
 
 **Newest (2026-05-27 — post-pivot):**
 
@@ -295,6 +301,6 @@ Read [`CLAUDE.md`](../CLAUDE.md) for the technical map (routes, libs, services).
 
 ## Voice Rules (Apply to Everything in This Folder)
 
-- **Use:** AI COO, intelligence layer, ops brain, real-time, before it costs you, recommendations, what to do next, agency-specific, margin, utilization, scope creep, fractional COO replacement
-- **Avoid:** dashboard (as commodity), platform, holistic, enterprise-grade, AI assistant (generic), automation (alone), efficiency (without a $ amount), specific feature counts
+- **Use:** AI operating system, AI COO, AI employees, company brain, service businesses, agencies, client-time businesses, ops brain, real-time, before it costs you, margin, utilization, scope creep, cash, approvals, provenance, fractional COO replacement
+- **Avoid:** marketing agencies only, all businesses, dashboard (as commodity), platform (as filler), holistic, enterprise-grade, AI assistant (generic), automation (alone), efficiency (without a $ amount), specific feature counts
 - **Direct, founder-to-founder.** Dollar amounts over adjectives. Active voice. Short sentences.

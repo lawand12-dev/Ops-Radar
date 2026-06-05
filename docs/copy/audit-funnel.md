@@ -1,7 +1,7 @@
 # /audit Funnel Copy v2 — AI COO Commit
 
 *Owner: Lawand · Date: 2026-05-18 · Replaces: live `www.opsradar.co/audit` (13-step flow, mixed-vertical options, "Free · Results sent to your inbox")*
-*Category language locked: **AI COO for agencies**. Zero AIOS in this rewrite.*
+*2026-06-01 audience note: this is a dated agency-beachhead funnel draft, not the current company-wide positioning. Current canonical language is **AI operating system for service businesses and agencies that bill for client time**. Keep this funnel agency-specific only if `/audit` is intentionally the agency acquisition path.*
 *Voice anchor: peer-to-peer like "Sunday nights are for your family." Specific, dollar-anchored, founder-to-founder.*
 
 ---
@@ -130,7 +130,7 @@ Rationale:
 - `Full-service digital`
 - `Not a agency — show me what OpsRadar does anyway`
 
-*(Removes: Recruiting/Staffing, Design/Creative, Development, PR/Communications, E-commerce, "Other." The strategy ICP per §11.1 is agencies only. Keeping the non-ICP options on the page invites bad-fit completions that pollute the lead list and dilute conversion math.)*
+*(Removes: Recruiting/Staffing, Design/Creative, Development, PR/Communications, E-commerce, "Other" for this specific agency funnel. This is a lead-quality choice, not company strategy. If `/audit` becomes the broad service-business funnel, restore the adjacent vertical options and calibrate the math per vertical.)*
 
 **Validation:**
 - One option required.
@@ -346,7 +346,7 @@ Rationale:
 - Nurture sequence: **one email only**, sent when OpsRadar ships a non-marketing vertical (probably never in the first 12 months — but the option is preserved).
 - The lead is *never* routed to the main audit followup sequence, the cold email sequence, or the demo Calendly. Polite exit means polite exit.
 
-*(The disqualifier costs us some email captures vs. the current "Other → run the audit anyway" flow. That's the trade — we're explicitly choosing tier-1 conversion velocity over total list size. Per `path-a-strategy-2026.md` §11.1, the beachhead is agencies $1M–$3M. Every non-marketing email in the list dilutes the math.)*
+*(The disqualifier costs us some email captures vs. the current "Other -> run the audit anyway" flow. That's the trade for this agency-specific funnel: tier-1 conversion velocity over total list size. Current company strategy is broader, so non-agency service-business leads should route to a separate waitlist or broad audit once that funnel exists.)*
 
 ---
 

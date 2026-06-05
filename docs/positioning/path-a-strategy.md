@@ -641,7 +641,7 @@ Three sections of the master strategy get measurably sharper with May 2026 numbe
 
 ### 9.4 The competitive context YC will ask about
 
-YC's S25 batch funded Hyper ("the company brain that just works for AI-first teams") and Bravi ("AI OS for home-services businesses"). Both are horizontal/vertical analogues of OpsRadar's bet. **OpsRadar's defensible moat:** vertical agency data sources (Stripe, Harvest, HubSpot, ClickUp) + agency-specific benchmarks + pre-built COO tool definitions + fractional COO distribution channel. A general-purpose company brain has no agency context; a horizontal AI OS has no per-vertical benchmarks. OpsRadar ships with both.
+YC's S25 batch funded Hyper ("the company brain that just works for AI-first teams") and Bravi ("AI OS for home-services businesses"). Both are horizontal/vertical analogues of OpsRadar's bet. **OpsRadar's defensible moat:** service-operations data sources (Stripe, Harvest, HubSpot, ClickUp) + agency-first benchmarks + pre-built COO tool definitions + fractional COO distribution channel. A general-purpose company brain has no client-time service-business context; a horizontal AI OS has no per-vertical benchmarks. OpsRadar ships with both.
 
 ---
 
@@ -656,7 +656,7 @@ YC's S25 batch funded Hyper ("the company brain that just works for AI-first tea
 **McKinsey (direct from the data):**
 > *"The redesign of workflows has the biggest effect on an organization's ability to see EBIT impact from its use of gen AI."*
 
-OpsRadar is the company that rebuilds the operating model. For agencies. From $750/month.
+OpsRadar is the company that rebuilds the operating model for service businesses that bill for client time. Agencies first. From $750/month.
 
 ---
 

@@ -1,211 +1,255 @@
-# Pricing Page Copy v4 — Brain-led framing on the same $99/$499/$1499/$2999 tiers
+# Pricing Page Copy v5 — Hybrid Model with Approved Agentic Actions
 
-*Owner: Lawand · Date: 2026-05-26 (revised same day) · Replaces: pricing.md v3*
-*Pricing structure unchanged from v3. What changed: the hero leads with the brain-as-asset ("the agency you can sell"), and the "anti-Lindy" block adds an "earned autonomy" rule.*
-*Source: `docs/positioning/identity.md` (updated with inversions) + `docs/positioning/inversions.md`*
+*Owner: Lawand · Date: 2026-06-05 · Replaces: pricing.md v4*
+*Major restructuring: Pricing now anchored to the value of a $10,000/month human fractional COO. Moved from token-metered to approved-action-metered. Company Brain limits now explicit per tier. Agents act as employees, not just coordinators.*
+*Source: Hybrid model spec + CP-21 senior COO playbook*
 
 ---
 
 ## Meta
 
 - **Title (60 chars):** `Pricing — OpsRadar AI Operating System`
-- **Description (155 chars):** `Flat tiers from $99/mo. $0.05 per approved action over cap. No token surprises, no credit anxiety. Replaces $5,200/mo in scattered AI tools.`
-- **OG title:** `One workforce. One brain. Starts at $99/mo.`
-- **OG description:** `The 10 AI tools you're paying $5,200 a month for — replaced by one workspace. Flat tiers, outcome meter bounded by your approval. No surprises.`
+- **Description (155 chars):** `$750–$3,000/month hybrid model. Flat base + $15–$25 per approved action. Built for agencies. No token surprises. 30–60 day money-back guarantee.`
+- **OG title:** `$10,000/month fractional COO. We price at $750–$3,000.`
+- **OG description:** `Approved agentic actions, not API tokens. Company Brain limits. Your agents work like employees, not just coordinators. Full autonomy control.`
 
 ---
 
 ## Hero
 
-**H1:** `Build the asset you exit on. Starts at $99/mo.`
+**H1:** `Price a fractional COO by the action, not the guessing.`
 
-**Subhead (44 words):**
-`Replace $5,200/mo of scattered AI tools. Your AI workforce writes the SOPs into a Notion you keep. Documented agencies sell at 8-12× EBITDA vs 5-9× undocumented — that's $6M of extra exit value on a $2M-EBITDA agency. The asset compounds. The pricing doesn't surprise you.`
+**Subhead (42 words):**
+`A fractional COO costs $10,000/month. We cost $750–$3,000. You get the weekly health audits, the client margin alerts, the invoice drafts, the retainer adjustments — and you control every action they take. Bounded by your approval. Agents earn autonomy. They never get it by default.`
 
 **Trust microcopy under subhead:**
-`14 days free · No credit card · Brain stays in your Notion · Exportable any time`
+`14 days free · No credit card · Brain stays in your Notion · 30–60 day money-back guarantee`
 
 ---
 
-## The "what makes our pricing different" stripe (above the tiers)
+## The "why this model is different" stripe (above the tiers)
 
-**Section eyebrow:** `BEFORE THE TIERS — TWO PROMISES`
+**Section eyebrow:** `BEFORE THE TIERS — FOUR CRITICAL RULES`
 
-**Two side-by-side cards:**
+**Four cards:**
 
-### Card 1 — No token billing
-**Headline:** `We never charge you for tokens.`
-**Body (32 words):**
-`OpenAI tokens, Anthropic tokens, embedding calls — those are our problem, not yours. Whatever your AI workforce consumes inside its tier is included. You pay for outcomes, not the math behind them.`
-
-### Card 2 — Outcome meter bounded by approval
-**Headline:** `You only pay above cap for actions you clicked Approve.`
+### Rule 1 — Background work is free
+**Headline:** `Reading Slack. Synthesizing briefings. Gathering data. All free.`
 **Body (38 words):**
-`Every billable action shows up in your approval queue. You read it, see what it'll do, click yes — or click no. Reject it, you don't pay. Approve it, $0.05. Three things have to align in the same moment.`
+`Your agents only burn action quota when they propose a high-stakes business decision and you click Approve. Reconnaissance, learning, daily digests—those cost nothing. You only pay for outcomes you greenlight.`
+
+### Rule 2 — No token multipliers
+**Headline:** `One approved action = flat $15–$25. Always.`
+**Body (36 words):**
+`We never charge you more because the system routed a task to GPT-5.5 instead of GPT-4. The model choice is ours. The price per action is yours: consistent across your tier.`
+
+### Rule 3 — Company Brain has guardrails
+**Headline:** `Document limits prevent data leaks.`
+**Body (38 words):**
+`Starter caps at 50 docs, Growth at 200, Pro at 500. Each tier's limit is sized to prevent aggressive DAG compaction and maintain Notion performance. You own every document. You control ingestion.`
+
+### Rule 4 — Earned autonomy, never blind autonomy
+**Headline:** `High-risk actions stay Ask-only forever.`
+**Body (40 words):**
+`Firing a client, sending an invoice, mass email—Ask-only, always. Routine actions auto-fire only after 30+ approvals at 90%+ rate. Autonomy is earned, not granted. Agents work like employees, not rogue bots.`
 
 ---
 
 ## The Tiers
 
 **Section eyebrow:** `PICK A TIER · CHANGE ANYTIME`
-**Section H2:** `Four tiers. Built around the size of your team.`
+**Section H2:** `Five tiers. Built around the size and scope of your agency.`
 
 ### Tier 1 — Starter
-**Tag:** `For solo operators + tiny teams`
-**Price:** `$99/mo` *(billed monthly, cancel anytime)*
-**Pitch line:** `Get one AI employee + the brain. Connect 5 tools.`
+**Target:** `5–10 person agencies ($500K–$1.5M ARR)`
+**Tag:** `For founder-run ops`
+**Price:** `$750/mo` *(billed monthly, cancel anytime)*
+**Tagline:** `Weekly health scores. Monthly automation audits.`
+**Pitch line:** `A fractional COO charges $10,000/month to do this once a quarter. We do it weekly for less than 1/10th the price.`
 
 **What's included:**
-- `1 seat`
-- `Up to 5 integrations connected`
-- `500 approved actions/mo included`
-- `All 28 built-in agents (Revenue, Collections, Scope, Delivery, Briefing, and 23 more)`
-- `Company brain — versioned, mirrored to your Notion, exportable any time`
+- `1 owner seat`
+- `3 integrations of your choice (Stripe, HubSpot, ClickUp, Notion, Gmail, etc.)`
+- `Weekly agency health score`
+- `Monthly automation audit`
+- `Basic dashboard: margin, utilization, cash flow`
+- `Company Brain: 25–50 curated documents (Pattern Cards, SOPs, Decision Logs)`
 
-**What's NOT in Starter:** `Custom AI employees · automations · org-chart delegation · multi-client view`
-
+**Agentic Actions:** `0 included. This tier provides alerts, not actions.`
+**What's NOT included:** `Multi-seat collaboration · Custom automations · Agentic actions · Advanced AI agents`
 **CTA:** `Start free trial`
 
-### Tier 2 — Growth · ⭐ Most popular
-**Tag:** `For 5-15 person agencies`
-**Price:** `$499/mo` *(billed monthly, cancel anytime)*
-**Pitch line:** `Hire custom AI employees. Connect everything. Automate everything.`
+### Tier 2 — Growth
+**Target:** `10–25 person agencies ($1.5M–$3M ARR)` — **Most Popular**
+**Tag:** `For agencies catching margin leaks`
+**Price:** `$1,500/mo` *(billed monthly, cancel anytime)*
+**Tagline:** `Per-client profitability. Scope creep alerts. Live data.`
+**Pitch line:** `A fractional COO is $10,000/month. We're $1,500. You also get something they can't give you — live numbers, 24/7.`
 
 **What's included:**
-- `5 seats`
-- `Unlimited integrations`
-- `5,000 approved actions/mo included`
-- `Hire custom AI employees from the Hire chat — name them, schedule them, scope their tools`
-- `Event-triggered automations ("when HubSpot deal closes-won, do X")`
-- `All 28 built-in agents`
-- `Apprentice Mode — workforce learns from every rejection`
+- `3 seats (+$100/seat after)`
+- `All 10 integrations (Stripe, HubSpot, ClickUp, Harvest, Notion, etc.)`
+- `COO chat with live data context`
+- `Threshold-based alerts (scope creep, overdue invoices, margin drops)`
+- `Peer benchmarks (industry cohorts)`
+- `Company Brain: 150–200 documents`
+- `Per-client profitability dashboards`
 
-**Outcome meter:** `$0.05 per approved action over 5,000/mo`
+**Agentic Actions:** `50 included per month. Overage: $25 per action.`
+**The Upgrade Trigger:** `Per-client profitability alerts catch leaking margins in week 2 instead of month 3.`
+**What's NOT included:** `Org-chart delegation · White-label branding · Multi-client view`
 **CTA:** `Start free trial`
 
 ### Tier 3 — Pro
-**Tag:** `For agencies running multiple retainers`
-**Price:** `$1,499/mo` *(billed monthly, cancel anytime)*
-**Pitch line:** `Org-chart delegation. Priority models. The full workforce.`
+**Target:** `25–50 person agencies ($3M–$5M ARR)`
+**Tag:** `For agencies moving faster than humans`
+**Price:** `$3,000/mo` *(billed monthly, cancel anytime)*
+**Tagline:** `Custom alerts. Webhooks. Multi-client ops dashboards.`
+**Pitch line:** `A full-time COO is $25,000–$43,000/month. We're $3,000 — for the visibility, the alerts, and the actions they'd take. With the time they sleep, work, or vacation, we don't.`
 
 **What's included:**
-- `20 seats`
+- `10 seats (+$100/seat after)`
 - `Unlimited integrations`
-- `25,000 approved actions/mo included`
-- `Org-chart delegation — managers delegate to direct reports (Trigger.dev triggerAndWait)`
-- `Priority models — your queue jumps the line on GPT-5.5`
+- `Custom alert rules (margin thresholds, delivery risk, scope creep triggers)`
+- `Webhooks for outbound integrations (your own systems)`
+- `Multi-client operations dashboards (for in-house ops teams)`
+- `Full OpsRadar Index access (peer cohort drill-downs, benchmarks)`
+- `Company Brain: 500 documents (safe limit before aggressive DAG compaction)`
 - `Notion Brain provisioning (20 databases shipped on day 1)`
-- `Webhook outbox to your own systems`
-- `Everything from Growth`
 
-**Outcome meter:** `$0.05 per approved action over 25,000/mo`
+**Agentic Actions:** `200 included per month. Overage: $15 per action.`
+**The Upgrade Trigger:** `Agentic Actions. OpsRadar actively drafts invoices, sends nudges, adjusts retainers — with a 30-minute undo safety net.`
+**What's NOT included:** `White-label branding · Custom contract terms`
 **CTA:** `Start free trial`
 
 ### Tier 4 — Fractional Operator
-**Tag:** `For fractional COOs running multiple clients`
-**Price:** `$2,999/mo` *(billed monthly, cancel anytime)*
-**Pitch line:** `Multi-client white-label. Your brand, our engine.`
+**Target:** `Fractional COOs and consultancies managing 3+ agencies`
+**Tag:** `For partners and operators`
+**Price:** `$1,200/mo base + $300 per managed agency` *(billed monthly, cancel anytime)*
+**Tagline:** `Multi-client dashboard. White-label optional. Revenue share.`
+**Pitch line:** `Cuts your manual onboarding audit time from weeks to hours. And you earn 20% commission on every agency you bring on.`
 
 **What's included:**
-- `Unlimited seats inside your FO org`
-- `White-label branding — your logo, your color, your domain`
-- `100,000 approved actions/mo pooled across all clients`
-- `Multi-client aggregate dashboard at /dashboard/fo`
-- `Client switcher built into every surface`
-- `Per-client audit log and margin reporting`
+- `Unlimited seats across your operator org`
+- `Multi-client dashboard (one login for every managed agency)`
+- `Side-by-side health scores across all clients`
+- `Optional white-label branding (your logo, colors, domain)`
+- `20% referral commission on every agency you bring on`
+- `Agentic Actions: 100,000 pooled across all managed clients`
+- `Per-client audit logs and margin reporting`
 - `Everything from Pro`
 
-**Outcome meter:** `$0.05 per approved action over 100,000/mo, pooled`
+**What's NOT included:** `Custom contract terms · SLA guarantees`
+**CTA:** `Talk to founder`
+
+### Tier 5 — Enterprise
+**Target:** `Agencies over $5M ARR, 50+ employees, or holding companies`
+**Tag:** `For large-scale operations`
+**Price:** `Custom, starts at $5,000/mo` *(annual contract, locked pricing)*
+**Tagline:** `Unlimited everything. Designated CSM. Multi-entity reporting.`
+
+**What's included:**
+- `Custom usage allowances (actions, seats, integrations)`
+- `Multi-entity reporting (parent + subsidiaries side-by-side)`
+- `Designated Customer Success Manager`
+- `Priority support and custom onboarding`
+- `Company Brain: Unlimited document ingestion (advanced TimescaleDB partitioning)`
+- `Everything from Pro`
+- `Price-locked annual contracts`
+
 **CTA:** `Talk to founder`
 
 ---
 
-## The "anti-Lindy" trust block (under the tiers)
+## Critical Billing Rules for this Model
 
-**Section eyebrow:** `FOUR RULES WE'LL NEVER BREAK`
-**Section H2:** `Why your bill from us looks the same way every month — and why your agents never go rogue.`
+**Background Work is Free**
+Agents reading Slack, synthesizing the daily brief, and gathering data do not cost actions. The client only burns their action quota when the AI proposes a high-stakes external business decision and the human clicks "Approve".
 
-### Rule 1 — No token billing
-`OpenAI, Anthropic, embedding tokens — all included in your tier. The 40% of customers Gartner says abandon agentic AI because of unforeseen variable costs? We made sure that's never us.`
+**No Token Multipliers**
+You never pay more just because the system routed a task to a smarter, more expensive model (like GPT-5.5). One approved action equals one flat overage price ($15 or $25, depending on tier).
 
-### Rule 2 — No premium-model multipliers
-`Lindy charges 60 credits for one GPT-4 call and 2 for a "lite" call. We charge the same flat $0.05 whether your employee used GPT-5.5 or GPT-4.1-nano. The model is our choice, not your bill.`
+**Risk Reversal: Money-Back Guarantee**
+- Starter & Growth: 30-day "no questions asked" money-back guarantee
+- Pro: 60-day guarantee (since agentic actions take longer to build trust)
+- Fractional Operator & Enterprise: Custom terms
 
-### Rule 3 — Outcome meter is bounded by your finger
-`The only thing that runs the meter past your cap is an action you literally clicked Approve on in /dashboard/actions. Reject it and the meter doesn't move. We are structurally incapable of surprising you with a bill.`
+**Annual Incentives**
+17% discount for annual prepayments ("2 months free"), which locks customers past the initial 90-day churn cliff and secures predictable cash flow.
 
-### Rule 4 — Earned autonomy, never blind autonomy
-`Every high-risk action (firing a client, sending an invoice, mass email) stays Ask-only forever. Routine actions auto-fire only after you've approved them 30+ times at a 90%+ rate. The agents earn autonomy. They don't get it on day one. Anti-11x by structure, not by marketing.`
-
----
-
-## The "$5,200 wedge" comparison table
-
-**Section eyebrow:** `WHAT YOU REPLACE`
-**Section H2:** `A 15-person agency pays $5,200/mo for these 10 tools. OpsRadar Growth costs $499.`
-
-| Tool you cancel | Monthly cost | OpsRadar replaces it because |
-|---|---|---|
-| Notion AI | $20/user × 15 = $300 | Brain lives in your Notion, written by your AI workforce |
-| Lindy 3.0 (Business tier) | $300 + overages | Custom AI employees + automations native, no credit anxiety |
-| Zapier Pro | $73/mo + tasks | 20+ integrations native (OAuth-brokered, keys never on our servers), growing to 500 |
-| AI SDR (11x or similar) | $1,000+/mo | Hire an SDR employee directly with the role you actually need |
-| ChatGPT Team | $50 + per-seat | COO chat answers any business question with your live data |
-| AI bookkeeper | $400/mo | Hire a Bookkeeper employee scoped to Stripe + QuickBooks |
-| Glean Light or search | $40/user × 15 = $600 | Brain knows everything across all 25 tools, no separate search needed |
-| AI meeting summarizer | $30/user × 15 = $450 | Calendly + Notion → briefing agent does this nightly |
-| Marketing AI writer | $200/mo | Hire a marketing employee, scoped to Google Ads + Analytics |
-| Bardeen / productivity AI | $129/mo | Automations + per-employee hires cover this surface |
-
-**Footer:** `Total replaced: ~$3,500-$5,200/mo (varies by team size). OpsRadar Growth: $499/mo. The 7-9× difference is the math customers usually run themselves in their first meeting.`
+**How Agents Work Like Employees**
+- They read and synthesize for free (background work)
+- They propose actions; you approve or reject
+- High-risk actions stay Ask-only forever
+- Routine actions earn autonomy after 30+ approvals at 90%+ rate
+- They work inside the guardrails you set (Company Brain limits, tool autonomy toggles, approval rules)
 
 ---
 
-## Pricing FAQ (5 questions)
+## Pricing FAQ (6 questions)
 
 ### Q1: What counts as "an approved action"?
-`Anything your AI workforce does on a connected tool: sending a Gmail draft, creating a Stripe invoice, updating a HubSpot deal, posting in Slack, creating a Notion page. Reads — fetching data, looking something up — never count. Only writes count. And only writes you clicked Approve on count toward your meter.`
+Anything your AI agents do on a connected tool when you've clicked Approve: sending a Gmail draft, creating a Stripe invoice, updating a HubSpot deal, posting in Slack, creating a Notion page, adjusting a retainer, firing a client. Reads—fetching data, looking something up—never count. Only writes you approved count toward your meter.
 
 ### Q2: What if I never hit my action cap?
-`Then you pay only the flat tier price. The outcome meter is opt-in upside on Pro+, not core pricing. Most agencies under 20 people stay within their tier cap forever.`
+Then you pay only the flat tier price. Growth includes 50 actions; Pro includes 200. Most agencies under 25 people stay within their tier cap forever.
 
-### Q3: Can I bring my own AI keys (BYOK)?
-`Not in v1. We aggregate AI cost across all customers and that's how we hold the flat tier price. If you have a strong reason to BYOK (regulated industry, internal compliance), talk to the founder.`
+### Q3: How does Company Brain capacity work?
+Each tier has a document limit (Starter: 50, Growth: 200, Pro: 500, Enterprise: unlimited). Those are Pattern Cards, SOPs, Decision Logs, and other curated knowledge your agents read to stay context-aware. You control what goes in. When you hit your limit, you can archive old docs or upgrade tiers.
 
-### Q4: What happens if I cancel?
-`Your workforce stops running. Your company brain stays in your Notion — it was always there, we just wrote to it. You can also download a full markdown zip of the brain from /dashboard/brain/download any time. We don't hold your data hostage.`
+### Q4: What if I cancel?
+Your agents stop running. Your company brain stays in your Notion—it was always there, we just wrote to it. You can download a full markdown zip any time from /dashboard/brain/download. We don't hold your data hostage.
 
-### Q5: Can I downgrade tiers?
-`Yes. Anytime. End of month. No retention call, no friction. Click Settings → Billing → Switch plan. Custom employees from a higher tier get auto-paused if they don't fit your new tier, until you reactivate.`
+### Q5: Can I downgrade or upgrade tiers?
+Yes. Anytime. End of month. No retention call, no friction. Downgrading from Pro to Growth auto-pauses high-tier features until you reactivate or upgrade again.
+
+### Q6: What about the 30/60-day money-back guarantee?
+Starter & Growth: If you're not seeing margin alerts or actions that matter in 30 days, full refund, no questions. Pro: 60 days (since agentic actions compound over time). Fractional Operator & Enterprise: Custom SLAs.
+
+---
+
+## The "$10,000 wedge" comparison table
+
+**Section eyebrow:** `WHAT YOU REPLACE`
+**Section H2:** `A fractional COO costs $10,000/month. OpsRadar costs $750–$3,000.`
+
+| Role you replace | Human cost | Why OpsRadar replaces it |
+|---|---|---|
+| Fractional COO (10–20 hrs/week) | $10,000/month | Weekly health audits, alerts, and approved actions 24/7. No vacation, no sleep. |
+| In-house ops manager | $6,000–$8,000/month | Margin reporting, scope alerts, invoice tracking, integration management. |
+| Bookkeeper (part-time) | $1,500–$2,500/month | Stripe invoice creation, overdue tracking, MRR calculations, payment reminders. |
+| Sales ops / RevOps | $5,000–$7,000/month | Pipeline alerts, deal tracking, HubSpot automation, forecasting. |
+| Project manager (part-time) | $3,000–$4,000/month | ClickUp task routing, delivery health, scope tracking, milestone reminders. |
+| Marketing analyst | $4,000–$6,000/month | Google Analytics, ad spend tracking, conversion flow analysis, reporting. |
+| Executive assistant | $3,500–$5,000/month | Calendar sync, meeting summaries, Slack monitoring, action follow-ups. |
+
+**Footer:** `Total replaced: $10,000–$47,000/month (varies by agency size and scope). OpsRadar Growth: $1,500. Pro: $3,000. The 7–20× difference is what customers calculate in their first week.`
 
 ---
 
 ## Final CTA
 
-**H2:** `Replace 10 AI tools with one. Starts today.`
-**Body:** `Connect Stripe or HubSpot. Open the Hire chat. Describe your first AI employee. We do the rest. Two-week trial. No credit card.`
+**H2:** `Hire your first AI COO. Starts today.`
+**Body:** `Connect Stripe or HubSpot. Run the 2-week trial. See if we alert you to margin leaks your spreadsheet misses. If not, full refund. No credit card. No lock-in.`
 
 **Primary CTA:** `Start free trial`
-**Secondary CTA:** `See it in action — 20 min with the founder`
+**Secondary CTA:** `Or talk to the founder — 20 min, no obligation`
 
 ---
 
-## What changed in v3
+## What changed in v5
 
-- Tier floor dropped from $750 → $99 (research-anchored vs Make Core $10 and Zapier Pro Agent $33)
-- Outcome meter is new ($0.05 per approved action, bounded by your click)
-- "$5,200 wedge" comparison table is new — strongest single sales asset on the page
-- "Three pricing rules" block replaces generic trust copy with named anti-Lindy / anti-11x guarantees
-- "Fractional COO" framing moved off this page entirely — it belongs on home.md Section 5 as a use-case, not as the pricing anchor
-
-## What changed in v4 (2026-05-26 inversions update)
-
-- Hero leads with brain-as-asset (`build the asset you exit on`) instead of price-comparison
-- Subhead anchors on the agency-exit EBITDA-multiple math (8-12× documented vs 5-9× undocumented; $6M of extra exit value on a $2M-EBITDA agency)
-- Added "Rule 4 — Earned autonomy, never blind autonomy" to the anti-Lindy trust block
-- Tier structure unchanged — pricing was research-locked in v3
+- Pricing moved from $99/$499/$1,499/$2,999 → $750/$1,500/$3,000/custom
+- Anchoring changed from "replace scattered tools" to "price a fractional COO"
+- Action metering changed from "500/5000/25000 included" to "0/50/200 included" (actions only incur overage, background work is free)
+- Company Brain now has explicit document limits per tier (25-50, 150-200, 500, unlimited)
+- Added Tier 5: Enterprise ($5K+ custom)
+- Added 30–60 day money-back guarantee
+- Four pricing rules → Four rules anchored to "background work is free" and "agents act like employees"
+- "$5,200 wedge" table → "$10,000 wedge" table (replaced scattered tools with roles + human costs)
 
 ## Aligned with
 
-- `docs/positioning/identity.md` (updated 2026-05-26)
-- `docs/positioning/inversions.md` (v4 changes driven by Inversion 1 + Inversion 2)
+- Hybrid pricing model spec (June 2026)
+- CP-21 senior COO playbook (agents embedded with operator judgment)
+- docs/positioning/identity.md (anchored to fractional COO value, not plumbing)

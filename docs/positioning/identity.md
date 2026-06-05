@@ -291,7 +291,7 @@ The marketing copy in `docs/copy/pricing.md` (v3, shipped) **promises tier limit
 1. **Agencies vs home services as Tier 1 wedge.** Both defensible. Decision should be made with founder gut + Iraq-based-founder constraints (sales motion you can actually run from Iraq + your network). Research can't answer this — only you can.
 2. **Whether Notion Brain mirror should become OPTIONAL or REMAIN mandatory.** Today it's tightly coupled. Some customers may not want Notion. Worth exploring "brain in our Postgres only, no Notion" tier.
 3. **Should the customer-visible "AI workforce" sidebar entry rename from `YOUR TEAM` → `YOUR WORKFORCE`?** Wording question; matters for marketing alignment.
-4. **Marketing copy migration to the new identity.** Homepage hero, `/pricing`, `/product`, `/about`, `/how-it-works` all still carry the old "AI Chief of Staff for marketing agencies" framing. New framing (2026-05-27): AI COO for service businesses that bill for client time — build broad, but keep a sharp beachhead persona in the hero so it still converts. Migration is ~10 pages of `docs/copy/*.md` updates. Hold until Tier 1 vertical wedge is locked.
+4. **Marketing copy migration to the new identity.** Canonical framing is now reinforced by the 2026-06-01 refresh: AI operating system / AI COO for service businesses and agencies that bill for client time. Marketing agencies remain a beachhead, not the whole company. Homepage and product copy have started moving; older YC/audit docs may still preserve dated agency-only phrasing and should be treated as historical unless explicitly refreshed.
 
 ---
 

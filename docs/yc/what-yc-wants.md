@@ -151,7 +151,7 @@ The actual S26 application has ~25 questions. The five that drive the decision:
 >
 > The agent runs three loops continuously. (1) It detects margin alerts: a client whose actual hours have outrun their retainer budget, and proposes a one-click invoice for the overage. (2) It watches utilization and scope: surfaces team capacity drift before the agency over-commits to a new deal. (3) It produces a daily AI briefing for the founder: "Today, Client B is your single biggest profit leak; here are three actions you can take."
 >
-> By 2027, OpsRadar is also an MCP server — any external agent (Claude Desktop, ChatGPT, an internal agency agent) can query OpsRadar as the source-of-truth on agency operations. We're the company brain for agencies.
+> By 2027, OpsRadar is also an MCP server - any external agent (Claude Desktop, ChatGPT, an internal agency or service-business agent) can query OpsRadar as the source of truth on operations. We're the company brain for service businesses that bill for client time, with agencies first.
 
 (279 words. Specific integrations. Specific behaviors. Forward-looking but grounded.)
 

@@ -64,7 +64,7 @@ Plus 10 cron agents that run on schedule:
 |-------|---------|
 | `/` | Landing page |
 | `/product` | Product page (AI COO positioning) |
-| `/pricing` | Pricing page (4 tiers) |
+| `/pricing` | Pricing page (5 tiers: Starter $750, Growth $1,500, Pro $3,000, Fractional Operator $1,200+, Enterprise custom) |
 | `/about`, `/how-it-works`, `/faq` | Marketing pages |
 | `/for/[vertical]` | Vertical-specific landing pages |
 | `/audit` | "Coming soon: live demo" placeholder. The prospect-facing automation audit funnel was retired in CP-16 along with the chatv2 sever. URL is preserved so the ~10 marketing CTAs across the site still resolve. `/results` and `/share/[id]` are deleted. |

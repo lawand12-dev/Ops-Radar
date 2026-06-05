@@ -1,6 +1,6 @@
 # OpsRadar
 
-AI-powered operations audit tool for agencies. Users complete a multi-step questionnaire and receive a detailed automation audit with ROI calculations and implementation blueprints, powered by GPT-4o.
+AI operating system for service businesses and agencies. OpsRadar connects the tools a client-time business already uses, surfaces operational leaks, generates automation audits, and builds a company brain that AI employees can use to run approved operations.
 
 ## Stack
 

@@ -1,7 +1,7 @@
 # /for/seo Copy v2 — AI COO Commit
 
 *Owner: Lawand · Date: 2026-05-18 · Replaces: live `www.opsradar.co/for/seo` (all AIOS framing + placeholder testimonial)*
-*Category language locked: **AI COO for agencies**. Zero AIOS in this rewrite.*
+*2026-06-01 audience note: this remains a vertical landing-page draft for the SEO-agency beachhead. It is not the canonical company category. Current canonical language is **AI operating system for service businesses and agencies that bill for client time**.*
 *Wedge preserved: the page's strongest asset is its 2026-specific angle — AI Overviews stealing CTR, LLM citations displacing position one. Sharpen, don't soften.*
 *Audit findings addressed: 9× AIOS removed · placeholder testimonial removed · empty right-half hero filled with a vertical-specific visual · 30-min CTA copy moved to 20-min globally · before/after table extended and dollar-anchored.*
 

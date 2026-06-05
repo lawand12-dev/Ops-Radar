@@ -1,201 +1,205 @@
 # Product Marketing Context
 
-*Last updated: 2026-05-18*
-*Source: synthesized from path-a-strategy-2026.md + ai-market-research-2026.md*
+*Last updated: 2026-06-01*
+*Source: synthesized from `docs/positioning/path-a-strategy.md`, `docs/positioning/identity.md`, and `docs/research/2026-06-01-agent-company-brain-ops-refresh.md`*
 
 ## Product Overview
-**One-liner:** OpsRadar is the AI COO for marketing agencies — the AI-native operations brain that monitors your agency in real time, surfaces what's going wrong before it costs you, and tells you what to do next.
 
-**What it does:** Connects to an agency's existing stack (HubSpot, ClickUp, Harvest, Stripe, and 6 more) and watches utilization, project margin, scope creep, cash flow, and client health 24/7. When something starts going wrong, it alerts the owner with a specific action — what a fractional COO charges $10K/month to do, OpsRadar does at $500–3,000/month.
+**One-liner:** OpsRadar is the AI operating system for service businesses and agencies: hire AI employees, connect your existing tools, and build a company brain your business owns.
 
-**Product category:** AI COO / Agency Operations Intelligence (category is unowned — we're creating the language)
+**What it does:** OpsRadar connects to the tools an owner-led service business already uses - Stripe, HubSpot, ClickUp, Harvest, Gmail, Slack, Notion, QuickBooks, and related apps - then watches margin, cash flow, scope, utilization, delivery risk, client health, and operational drift. Its AI employees propose actions, route risky work through owner approval, and write durable findings into a versioned company brain mirrored to the customer's Notion.
 
-**Product type:** Vertical SaaS (B2B, founder-led sale)
+**Product category:** AI operating system / AI COO / company brain for service businesses and agencies.
 
-**Business model:** Subscription tiers $500 / $1,500 / $3,000 per month. Land-and-expand via integration count, agentic actions, and multi-client seats.
+**Product type:** B2B SaaS with AI employees, governed actions, and a customer-owned knowledge layer.
+
+**Business model:** Subscription tiers with a visible action meter. Current strategy docs point to $99 / $499 / $1,499 / $2,999 tiers plus $0.05 per approved action over cap. Keep live pricing synced with `docs/positioning/pricing-depth.md` before publishing.
 
 ## Target Audience
-**Target companies:** Digital marketing agencies, PPC/SEO agencies, social media agencies, full-service agencies. $500K–$5M ARR, 5–50 employees.
 
-**Decision-makers:** Founder / CEO / Managing Director (single decision-maker in 90% of cases). Secondary: COO or Head of Ops if one exists.
+**Target companies:** Service businesses and agencies that bill for client time: marketing and creative agencies, dev shops, recruiting firms, boutique consultancies, accounting/bookkeeping firms, PR firms, and content studios. Initial beachhead: $1M-$3M revenue, 10-25 person, retainer-heavy digital agencies with 4+ matching integrations.
 
-**Primary use case:** "I'm running the agency myself, I use 4–6 tools, revenue is growing but margins are going the wrong way, and I can't afford a $10K/month fractional COO."
+**Decision-makers:** Founder / CEO / managing partner / owner-operator. Secondary: COO, Head of Ops, finance lead, or fractional operator managing multiple clients.
+
+**Primary use case:** "Revenue is growing, but operations are scattered across tools. I need someone watching margin, cash, scope, and delivery before problems become expensive."
 
 **Jobs to be done:**
-- Stop losing money to overserviced clients I don't catch until quarter-end
-- Stop paying $10K/month for a human to tell me what's wrong with my agency
-- Prove to myself my AI tools are actually generating ROI (or stop paying for them)
-- Free myself from being the bottleneck on every operational decision
+- Catch unprofitable clients or projects before quarter-end.
+- Stop scope creep and unbilled work from silently eating margin.
+- Give the owner a daily operating picture without another dashboard chore.
+- Turn scattered Slack/email/tool knowledge into a company brain new hires and AI employees can use.
+- Replace or augment the missing COO/operator layer without a $10K/month fractional hire.
+- Prove AI is doing real operational work, not just producing more text.
 
 **Use cases:**
-- Per-client profitability monitoring (detect overservicing in days, not quarters)
-- Scope creep detection and billable hour recovery
-- Utilization tracking (target 75%, average is 66.4%)
-- Cash flow + late invoice alerts
-- Capacity planning for new client takes-on
-- AI ROI proof for stakeholders / partners
+- Per-client or per-project profitability monitoring.
+- Scope creep and unbilled work detection.
+- Utilization and capacity planning.
+- Cash collection and overdue invoice follow-up.
+- Client health and renewal risk.
+- Daily COO briefing.
+- Custom AI employee hiring for roles like bookkeeper, SDR, account manager, recruiter ops assistant, or delivery coordinator.
 
 ## Personas
+
 | Persona | Cares about | Challenge | Value we promise |
 |---------|-------------|-----------|------------------|
-| Agency Owner (Champion + Decision Maker + Financial Buyer) | Margin, revenue per head, sleeping at night | Running the agency from the inside; no time to build dashboards; can't afford a COO | Always-on intelligence that catches problems early, $500–3K not $10K |
-| Head of Ops / Account Director (User) | Utilization, project health, team capacity | Drowning in spreadsheets; pulling data from 6 tools weekly | One pane of glass; weekly health scores; alerts before the fire |
-| Fractional COO (Channel partner) | More agency clients per month of capacity | Manual audits take weeks; impact is hard to prove to the agency | Cuts onboarding audit from weeks to hours; makes impact legible; pays 20–25% referral |
+| Owner / Managing Partner | Margin, cash, growth, team load, fewer surprises | Runs the business through 4-10 tools and finds problems late | Always-on operator that catches leaks early and proposes the next action |
+| Head of Ops / Delivery Lead | Utilization, project health, handoffs, client delivery | Pulls status from spreadsheets, PM tools, Slack, and finance apps | One operating layer that synthesizes the work and flags what changed |
+| Finance / Admin Lead | Collections, billing accuracy, cash timing, clean records | Chases invoices manually and lacks context from delivery tools | Collections and revenue agents that draft follow-ups with evidence |
+| Fractional COO / Operator | More client leverage, proof of impact, repeatable playbooks | Manual audits and weekly reporting do not scale across clients | Multi-client operations brain plus AI employees for every client workspace |
 
 ## Problems & Pain Points
-**Core problem:** Agency owners run their business on a stack of 4–10 tools that don't talk to each other. They discover unprofitable clients, scope creep, and capacity problems 30–90 days after they happen — when it's already cost them $1K–$20K. They can't afford a fractional COO ($10K/month) and a Chief AI Officer ($400K/year) is laughable. So they bleed.
+
+**Core problem:** Owner-led service businesses are run through disconnected tools. The real operating truth sits across payment data, time tracking, CRM, project management, Slack, email, and founder memory. By the time the owner sees a low-margin client, overdue invoice pattern, overloaded team, or drifting project, the money is already gone.
 
 **Why alternatives fall short:**
-- PSA tools (Productive, Scoro, Kantata) record what happened — they don't tell you what to do
-- Project management tools (ClickUp, Asana) track tasks — no agency financial layer
-- Client reporting tools (AgencyAnalytics, Supermetrics) are client-facing — zero internal ops value
-- Fractional COOs ($5–15K/month) are part-time and knowledge leaves when they do
-- DIY EOS frameworks have no AI and no live data
-- Generic AI tools (ChatGPT, Copilot) don't know your agency, your clients, or your margins
+- PSA tools record what happened; they rarely say what to do next.
+- Project management tools track tasks; they do not own cash, margin, scope, or utilization together.
+- Client reporting tools are external-facing; they do not run the internal business.
+- Generic AI tools can draft text; they do not know the customer's operating model, tool data, approvals, or history.
+- Fractional COOs are expensive, part-time, and the knowledge often leaves with them.
+- A generic company brain is not enough; without service-operations schema and actions, it becomes search with better branding.
 
 **What it costs them:**
-- 15–30% of potential profit leaks to operational inefficiency (multiple 2026 benchmarks)
-- $1K–$20K/month lost to scope creep (57–87% of agencies)
-- Up to $500K/year lost on untracked hours (47% of agencies, Mosaic 2026)
-- 21.5% of agencies now losing money — up from 13% (Planable 2026)
-- 56 hours/week wasted on manual reporting = $30K/year for a 15-client agency
+- Professional-services benchmarks show shared pain across consulting, accounting, marketing, architecture, engineering, SaaS, and IT services: utilization, EBITDA, payment delay, on-time delivery, and scope creep all move together.
+- Agency-specific data remains the best instrumented beachhead: late scope detection, unbilled hours, manual reporting waste, and client margin leaks can each cost thousands per month.
+- The broader pattern is the same: client-time businesses lose money when work, billing, and delivery are not connected.
 
-**Emotional tension:**
-- Founders who built the agency and are watching it grow while the bank account shrinks
-- The fear of "is this the year we don't make payroll?"
-- The shame of telling the team you have to do layoffs (40% of agencies did in past 12 months — Basis 2026)
-- The doubt: "everyone says AI changes everything, but I have no idea if mine is working"
+**Emotional tension:** The owner feels the business getting heavier as it grows. More tools, more meetings, more Slack, more client promises, less confidence that the numbers are clean. They do not need a prettier dashboard. They need an operating layer that says what is wrong and what to do.
 
 ## Competitive Landscape
-**Direct competitors (PSA + ops):**
-- **Productive.io** — $6.8M ARR, PSA with reporting bolted on. Falls short: it records, it doesn't recommend. No AI intelligence layer.
-- **Scoro** — Enterprise PSA. Falls short: too expensive ($28–71/user/month, 5-seat minimum), built for consultancies, not AI-native.
-- **Kantata** — Enterprise. Falls short: enterprise-only, slow sales cycle, no AI ops brain.
-- **Accelo** — Mid-market PSA. Falls short: no AI; built around service automation, not intelligence.
 
-**Secondary competitors (different solution, same problem):**
-- **Fractional COOs** — $5–15K/month for a human to do quarterly reviews. Falls short: part-time, knowledge leaves when they do, no live data.
-- **Parakeeto / ZenPilot** — agency profitability consultants. Falls short: human services, not SaaS, $1–5K/month and your data lives in their head.
-- **Float / Resource Guru** — capacity planning tools. Falls short: one slice (capacity), no financial layer.
+**Direct competitors:**
+- Productive, Scoro, Kantata, Accelo, Teamwork - PSA and service-business management systems. They are useful systems of record, but OpsRadar is the intelligence/action layer on top.
+- Emerging AI-ops products - some will sell horizontal operations agents. Most will lack service-business operator judgment, benchmarks, and approval/provenance depth.
 
-**Indirect competitors (conflicting approach):**
-- **EOS Toolkit / Strety / Ninety.io** — frameworks for running an agency. Falls short: no AI, no live data, no intelligence — just spreadsheets disguised as software.
-- **Horizontal AI (ChatGPT, Copilot, HubSpot AI)** — generic AI. Falls short: doesn't know your clients, margins, or agency benchmarks. Can't predict scope creep.
-- **Doing nothing** — the current state for 60–70% of sub-$5M agencies. Falls short: 21.5% of them lose money in 2026.
+**Secondary competitors:**
+- Fractional COOs and operations consultants - strong human judgment, weak software leverage, expensive, and hard to scale.
+- Agency profitability consultants like Parakeeto / ZenPilot - valuable expertise but service-heavy and not a persistent AI operating layer.
+- Capacity/resource tools like Float / Resource Guru - focused slices, not full operating context.
 
-**Big tech is NOT a competitor:** Microsoft, Google, Salesforce all sell horizontal AI. None have built (or are building) an agency-vertical operations intelligence layer. The "vertical AI" thesis is that horizontal AI cannot replicate sector-specific benchmarks and workflows.
+**Indirect competitors:**
+- Notion AI, Glean, Microsoft Copilot, ChatGPT, Lindy, Zapier agents - powerful horizontal agent and company-brain primitives, but not service-operations-specific.
+- Doing nothing - spreadsheets, ad hoc Slack checks, quarterly margin reviews, and founder memory.
+
+**Big tech read:** Microsoft, OpenAI, Notion, and Glean will keep making the horizontal agent/brain layer better. That is not the fight. OpsRadar must win on service-business operating judgment, live tool integrations, customer-owned brain, approval history, and measurable actions.
 
 ## Differentiation
+
 **Key differentiators:**
-- AI-native from day 1 (not "AI features bolted on")
-- Vertical-only — every screen, alert, and benchmark is agency-shaped
-- 10 integrations already shipped — cross-stack visibility no competitor has
-- Live agency benchmarks (utilization, margin, scope creep) by team size — the data flywheel
-- Live agentic actions with 30-min undo + 5-evaluator safety net (the COO actually acts)
-- COO chat with live context (asks questions about your live data, not generic answers)
+- Service-operations-specific by design, with marketing agencies as the first sharp beachhead.
+- AI employees with stable identity, scoped tools, schedules, activity logs, and per-role memory.
+- Company brain mirrored to the customer's Notion and exportable as markdown.
+- Signed-by-agent provenance on every brain fact.
+- Git-style versioning, diff, rollback, and blame for the company brain.
+- Approval-gated actions with earned autonomy, not blind autonomy.
+- Cross-agent synthesis: one COO view reads many specialist findings.
+- Integration layer that live-fetches source systems instead of pretending stale copies are truth.
 
-**How we do it differently:** We don't tell you what happened — we tell you what to do, and increasingly, we do it for you. Productive shows you a margin chart. OpsRadar tells you "Client X is now 23% over scope this month — here are the 3 unbilled deliverables, and you can send the invoice with one click."
+**How we do it differently:** OpsRadar does not sell "chat with your docs." It connects operational systems, lets scoped AI employees inspect them, writes durable findings into a company brain, cites the source, and queues the right action for approval.
 
-**Why that's better:** Agency owners don't need more data. They need fewer decisions to make and more time back. OpsRadar is the COO that doesn't sleep, doesn't take vacation, and costs less than two hours of a fractional COO's time.
+**Why that's better:** Service-business owners do not need more places to look. They need fewer decisions to miss. The system compounds because every approved action, rejected draft, and agent-written finding improves the next run.
 
 **Why customers choose us:**
-- Already integrates with their existing stack (no rip-and-replace)
-- 10x cheaper than the fractional COO they're paying or thinking about hiring
-- Works immediately — not a 6-month implementation
-- Vertical-specific = no "configure this for your industry" tax
+- It fits the way their business already runs: client work, retainers/projects, hours, invoices, delivery, and renewals.
+- It starts with their existing stack instead of forcing rip-and-replace.
+- It offers COO-level leverage at SMB/mid-market pricing.
+- It gives them an asset they keep: the company brain.
 
 ## Objections
+
 | Objection | Response |
 |-----------|----------|
-| "We already use Productive / Scoro / Asana" | "Great — OpsRadar plugs into them. We're the intelligence layer that sits on top and tells you what those tools never could: who's about to churn, who's about to go unprofitable, and what to do about it." |
-| "We're too small / We don't need a COO" | "Right — that's exactly why this exists. 60% of sub-$5M agencies don't have a COO. They bleed margin because the owner can't see everything. OpsRadar is the COO at the price point that makes sense for a 12-person agency." |
-| "AI tools haven't worked for us before" | "Most AI tools are horizontal — they don't know your business. OpsRadar only works for agencies. Every benchmark, every alert, every recommendation is built on what works in your vertical. That's why vertical AI delivers 5x the ROI." |
-| "We can build this in a spreadsheet" | "You can — and 87% of agencies still do. Fluency's 2026 benchmark says strategists spend 39.75 hours/month on it. At $50/hour that's $2K/month per strategist. OpsRadar starts at $500." |
-| "Sounds expensive" (objection to $1.5K Growth tier) | "A fractional COO is $10K. A full-time COO is $25K. OpsRadar at $1.5K replaces 80% of what they do, runs 24/7, and gives you live data they never had." |
+| "We already use Productive / Scoro / Asana / ClickUp." | "Good. OpsRadar plugs into them. Those tools hold pieces of the truth; OpsRadar turns the pieces into operating decisions." |
+| "Are you only for marketing agencies?" | "No. Marketing agencies are the first beachhead because the benchmarks and integrations are sharpest there. The product is for service businesses and agencies that bill for client time." |
+| "AI tools have not worked for us." | "Most AI tools create more output. OpsRadar is built around live business data, approval gates, and an owned company brain so the work is inspectable and reusable." |
+| "Can I trust agents to act in my business?" | "High-risk actions ask first. Medium-risk actions earn autonomy only after repeated approvals. Every action is logged with the agent, evidence, and reason." |
+| "We can build this in spreadsheets / Notion." | "You can build a static tracker. You will not get live tool reads, scoped AI employees, approval history, provenance, or cross-agent synthesis without rebuilding the product." |
 
 **Anti-persona:**
-- Solopreneurs (under $200K revenue) — no team to manage, no margin problem yet
-- Agencies over $20M ARR — they have a real COO + analytics team, will buy Kantata or build in-house
-- Production-only studios (video, design, dev shops) — different ops shape, project-based not retainer-based
-- "Promotional products" companies / merch shops — different business model entirely
-- Agencies that don't use any of our 10 integrations — friction is too high
-- Owners who don't want operational visibility (founder-personality red flag)
+- Solo operators with no team, no client-time complexity, and no margin leakage yet.
+- Businesses that do not bill for client/project/service work.
+- Enterprises with dedicated BI, ops, and automation teams that want a custom build.
+- Owners who will not connect source systems or approve operational actions.
+- Pure ecommerce/product companies where inventory, supply chain, or product analytics dominate the operating model.
 
 ## Switching Dynamics
-**Push:** "I just discovered I lost $40K on the Acme account last quarter and I had no idea." "Our utilization is 62% and I don't know why." "I'm paying $9K/month to a fractional COO who tells me things I should already know." "We just laid off 4 people and I never saw it coming."
 
-**Pull:** "What if I knew which clients were unprofitable in week 2, not month 3?" "What if I could fire my fractional COO and put that money back into the team?" "What if I could prove our AI tools are actually generating ROI before our next investor update?"
+**Push:** "I found out too late." "We grew revenue but margin went down." "Nobody owns the operating truth." "Our tools do not talk." "I am tired of asking three people for the same number."
 
-**Habit:** Quarterly margin reviews in spreadsheets. Slack messages to ops manager to pull numbers. "I'll deal with it after this client crunch." Existing PSA contract has 9 months left.
+**Pull:** "What if I knew the bad client in week 2?" "What if my business wrote its own operating memory?" "What if AI employees handled the boring follow-up but asked before risky actions?"
 
-**Anxiety:** "Will it actually work?" "Will my team adopt another tool?" "Can I trust an AI to take action on my business?" "What if it tells me something I don't want to hear?" "What if I cancel my fractional COO and then OpsRadar misses something?"
+**Habit:** Quarterly reviews, founder intuition, Slack pings, spreadsheet exports, tool-by-tool dashboards, "we will fix ops after this client deadline."
+
+**Anxiety:** Trust, setup time, another tool, AI mistakes, security, cost surprises, whether the team will actually use it.
 
 ## Customer Language
+
 **How they describe the problem:**
-- "I'm running blind on margin"
-- "I find out clients are unprofitable too late"
-- "We're growing revenue but my bank balance keeps shrinking"
-- "I can't afford a COO but I need a COO"
-- "Everyone tells me to use AI, I have no idea what's working"
-- "We bleed time on scope creep — never fully bill it"
+- "I do not know which clients are actually profitable."
+- "The work is in one tool, the money is in another, and the decision is in Slack."
+- "We are busy, but I cannot tell if we are healthy."
+- "I need a COO, but I cannot justify the hire."
+- "AI is everywhere in the team, but none of it runs the business."
 
-**How they describe us (early customer language):**
-- "It's like having a COO in Slack"
-- "Catches things I wouldn't have seen for weeks"
-- "Pays for itself the first time it flags an overserviced account"
+**How they should describe OpsRadar:**
+- "It is like having an operator watching the business every day."
+- "It catches the thing I would have seen weeks later."
+- "The brain is the part that compounds."
 
-**Words to use:** AI COO, intelligence layer, ops brain, live, in real time, before it costs you, recommendations, what to do next, agency-specific, vertical, margin, utilization, scope creep, client health, capacity, alerts, benchmarks, payback, ROI proof, fractional COO replacement.
+**Words to use:** AI operating system, AI COO, AI employees, company brain, service businesses, agencies, client-time businesses, operations brain, live operations, margin, scope, utilization, cash, approvals, provenance, owned brain, earned autonomy, operator judgment.
 
-**Words to avoid:** Dashboard (commodity), platform (vague), reporting (boring), AI assistant (generic), ChatGPT-powered (cheapens it), automation (table stakes), efficiency (no $ amount), holistic (filler), enterprise-grade (wrong segment), n8n (internal tool), Claude (internal tool), workflow (overloaded — say "ops" or "decisions"). Also avoid: specific feature counts ("12 dashboards", "47 integrations") and specific delivery times ("48-hour audit").
+**Words to avoid:** marketing agencies only, chatbot, assistant, generic automation, platform, dashboard, all businesses, fully autonomous, magic, no-code workflow builder, credits, token pricing, ChatGPT-powered.
 
 **Glossary:**
+
 | Term | Meaning |
 |------|---------|
-| AI COO | The category we're creating — a 24/7 AI operations brain for agencies |
-| Health Score | A weekly 0–100 score per client / per team / per agency |
-| OpsRadar Index | Future benchmark product — anonymized agency operations data sliced by size/type |
-| Scope Drift | Real-time detection of out-of-scope work happening before it's invoiced |
-| Detection Lag | The 30–90 day gap between an operational problem starting and the agency noticing |
-| Agentic Action | OpsRadar taking an action (e.g., draft an invoice, message a PM) with 30-min undo |
-| Multi-Client Dashboard | The fractional-COO view: one login, all agency clients |
+| AI operating system | The operating layer that connects tools, agents, approvals, and company memory |
+| AI COO | The service-business operator role OpsRadar approximates through agents and workflows |
+| AI employee | A named, scoped, scheduled agent with role, tools, memory, and activity history |
+| Company brain | Customer-owned operating memory: decisions, patterns, risks, client facts, and playbooks |
+| Earned autonomy | Routine actions graduate only after repeated approvals and strong confidence |
+| Approval gate | The control layer for risky, customer-facing, financial, or destructive actions |
+| Provenance | Every brain fact/action is tied to source, author agent, run ID, and timestamp |
+| Beachhead | The first sharp market wedge; currently marketing agencies, not the whole company identity |
 
 ## Brand Voice
-**Tone:** Direct, confident, founder-to-founder. We talk to agency owners the way a sharp peer would — not how a SaaS marketer would.
 
-**Style:** Specific over abstract. Dollar amounts over adjectives. Active voice. Short sentences. Names a real number wherever possible.
+**Tone:** Direct, operator-grade, skeptical, useful.
 
-**Personality:** Sharp · Useful · Confident · No-BS · Built-by-an-operator
+**Style:** Specific over abstract. Business outcomes over AI hype. Dollar and time consequences where available. Plain language.
+
+**Personality:** Sharp, grounded, practical, high-trust, founder-to-founder.
 
 ## Proof Points
-**Metrics (use these in copy):**
-- 95% of AI pilots failing (MIT NANDA 2025)
-- 87% of agencies still pace ad budgets manually (Fluency 2026)
-- 21.5% of agencies now losing money (Planable 2026)
-- 76% of enterprises have a CAIO — you don't (IBM IBV 2026)
-- The redesign of workflows has the biggest effect on AI ROI (McKinsey)
-- 84% haven't redesigned (Deloitte 2026)
-- $400K/year CAIO vs $500/month OpsRadar
-- 65.3% of agencies had clients move work in-house (Basis 2026)
-- 56 hours/week wasted on manual reporting (Agorapulse 2026)
-- $30K/year reporting waste for a 15-client agency
-- Vertical AI delivers 500% ROI vs horizontal (McKinsey)
 
-**Customers:** Early customer roster (in progress). Hottest lead: Sean / SwishAd. Warm signal: Ala Obeidat.
+**Current evidence themes:**
+- YC Summer 2026 explicitly asks for company-brain and AI-operating-system companies.
+- OpenAI, Notion, Microsoft, Anthropic, and Glean show agents/brains are becoming standard primitives.
+- Bessemer's vertical AI thesis supports pricing and positioning against labor/services budgets, not only software budgets.
+- Professional-services benchmarks show shared pain across client-time businesses.
+- Agency data remains the strongest beachhead evidence for scope, margin, reporting, utilization, and collections pain.
 
-**Testimonials:** None public yet — collect from first 5 customers as a priority.
+**Customers:** Early customer roster in progress. Keep live names and traction in `docs/yc/traction-evidence.md`.
+
+**Testimonials:** None public yet. Collect from the first 5 paying customers before scaling claims.
 
 **Value themes:**
+
 | Theme | Proof |
 |-------|-------|
-| Recover what you're leaking | 15–30% margin leak benchmark + per-client profitability monitoring |
-| The COO you can afford | Fractional COO is $10K/mo, OpsRadar is $500–3K/mo |
-| Built for agencies only | 10 agency-stack integrations pre-built, vertical benchmarks |
-| Catches problems early | 30–90 day detection lag → real-time |
-| Proves your AI ROI | The 95% who can't prove ROI now have a system that does |
+| Recover margin leakage | Connect work, time, billing, and customer context before the leak compounds |
+| Operator leverage | Fractional COO value at software pricing |
+| Owned memory | Brain mirrors to customer Notion and exports as markdown |
+| Trust by design | Approval gates, logs, provenance, and reversible brain writes |
+| Built broad, sold narrow | Service-business product, agency beachhead |
 
 ## Goals
-**Business goal:** Reach $7.5K–$45K MRR by Day 90 (15–30 customers at $500–1,500 average). Reach 50+ customers and meaningful benchmarks by Month 6. Reach 108–120% NRR by Month 6.
 
-**Conversion action:** Book a 20-minute demo with the founder. (Demo-first model; demo-to-paid conversion runs 55–75% per industry benchmark.)
+**Business goal:** Win the first sharp beachhead while preserving a product architecture that generalizes across service businesses and agencies.
 
-**Current metrics (May 2026):** 250+ cold emails sent; 1 hot lead (SwishAd), 1 warm signal (Ala Obeidat); demo bookings in progress; product live and shipping weekly. Reply rate goal: lift from current to 10%+ via timeline + dollar hooks (proven 2.3x lift).
+**Conversion action:** Start trial or book a 20-minute founder call, depending on buyer intent.
+
+**Current positioning rule:** Never revert canonical docs to "marketing agencies only." Say "service businesses and agencies that bill for client time"; use marketing agencies as the first beachhead example.

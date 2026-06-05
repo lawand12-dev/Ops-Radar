@@ -33,7 +33,7 @@ The registry entry format (drop-in for the PR):
 
 ```yaml
 - name: OpsRadar
-  description: "AI COO for marketing agencies. Query live agency operations data (finance, profitability, capacity, scope), search the agency-operations knowledge base, and propose HITL-gated actions across Stripe, HubSpot, ClickUp, Harvest, and more."
+  description: "AI COO for service businesses and agencies. Query live operations data (finance, profitability, capacity, scope), search the service-operations knowledge base, and propose HITL-gated actions across Stripe, HubSpot, ClickUp, Harvest, and more."
   url: https://opsradar.co/api/mcp
   transport: http
   auth: bearer
@@ -49,6 +49,7 @@ The registry entry format (drop-in for the PR):
     - kb:read
     - actions:write
   categories:
+    - service-operations
     - vertical-agency
     - operations
     - finance
@@ -111,7 +112,7 @@ Before submitting the PR to `modelcontextprotocol/servers`:
 - [ ] Publish a public docs page at `opsradar.co/docs/mcp` (covers: what is OpsRadar, what the tools do, how to get your token, the install snippet)
 - [ ] Publish a public install page at `opsradar.co/docs/mcp/install` (paste-ready Claude Desktop config)
 - [ ] (Optional) Create a public `opsradar/mcp-server` GitHub repo with example clients in Python, TypeScript, and Claude Desktop
-- [ ] Open the PR at https://github.com/modelcontextprotocol/servers with title `Add OpsRadar — AI COO for marketing agencies`
+- [ ] Open the PR at https://github.com/modelcontextprotocol/servers with title `Add OpsRadar — AI COO for service businesses and agencies`
 - [ ] PR body uses the manifest above
 
 ---
