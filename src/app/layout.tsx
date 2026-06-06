@@ -6,6 +6,7 @@ import { SITE_URL } from "<npm>/lib/constants";
 import { Toaster } from "<npm>/components/ui/toast";
 import { ThemeSync } from "<npm>/components/theme-sync";
 import { StatsigAnalyticsProvider } from "<npm>/components/analytics/statsig-provider";
+import { ComingSoon } from "<npm>/components/coming-soon";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -85,6 +86,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeSync />
+        <ComingSoon />
         <StatsigAnalyticsProvider>
           {children}
         </StatsigAnalyticsProvider>
