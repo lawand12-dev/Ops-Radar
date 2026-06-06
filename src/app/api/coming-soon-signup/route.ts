@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServiceRoleClient } from "<npm>/lib/supabase-server";
+import { getServerSupabaseClient } from "<npm>/lib/supabase-server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Save to Supabase
-    const supabase = getServiceRoleClient();
+    const supabase = getServerSupabaseClient();
     
     const { data, error } = await supabase
       .from("coming_soon_signups")
