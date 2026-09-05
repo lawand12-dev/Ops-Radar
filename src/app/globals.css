@@ -1,0 +1,582 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   OpsRadar Design System — Phase 0
+   Source of truth: docs/superpowers/specs/2026-05-10-design-system-foundations-design.md
+   ===================================================================== */
+
+@theme {
+  /* ── Fonts ──────────────────────────────────────────────────────── */
+  /* Phase D decision: all headings use Inter Tight (sans). --font-serif resolves
+     to the same stack so every .font-serif utility class on every page
+     renders Inter Tight without needing per-element overrides or !important. */
+  --font-sans: var(--font-sans-loaded), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-sans-loaded), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-mono-loaded), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ── Type scale — locked per docs/design-language-opsradar.md §3 ── */
+  /* Hero H1: scales from 48px mobile up to 84px desktop. Locked, no clamp wider. */
+  --text-hero: clamp(3rem, 4.5vw + 1.25rem, 5.25rem);
+  --text-hero--line-height: 1.04;
+  --text-hero--letter-spacing: -0.028em;
+  --text-hero--font-weight: 500;
+
+  /* Mercury thesis billboard — single 42px H2 standing alone */
+  --text-display: clamp(2.25rem, 2vw + 1.25rem, 3.5rem);
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.025em;
+  --text-display--font-weight: 480;
+
+  /* Section H1 — drops from hero size to a still-large 48px on desktop */
+  --text-h1: clamp(2rem, 1.8vw + 1.25rem, 3rem);
+  --text-h1--line-height: 1.06;
+  --text-h1--letter-spacing: -0.022em;
+  --text-h1--font-weight: 500;
+
+  /* Section H2 — locked at 36px desktop, period-terminated complete sentences */
+  --text-h2: clamp(1.625rem, 1.2vw + 1rem, 2.25rem);
+  --text-h2--line-height: 1.14;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 500;
+
+  --text-h3: 1.5rem;            /* 24px */
+  --text-h3--line-height: 1.33;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 500;
+
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.5;
+  --text-h4--letter-spacing: -0.01em;
+  --text-h4--font-weight: 500;
+
+  /* Hero sub-paragraph at 21px (Mercury spec) */
+  --text-lead: 1.3125rem;
+  --text-lead--line-height: 1.5;
+  --text-lead--font-weight: 400;
+
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body-lg--font-weight: 400;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.625;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.55;
+  --text-body-sm--font-weight: 400;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 500;
+
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.33;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.08em;
+
+  --text-mono: 0.875rem;
+  --text-mono--line-height: 1.45;
+  --text-mono--font-weight: 400;
+
+  /* Ramp-style stat panel typography — the 64px numbers */
+  --text-stat: clamp(2.5rem, 4vw + 0.5rem, 4rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.03em;
+  --text-stat--font-weight: 480;
+
+  /* ── Radius ─────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ── Motion ─────────────────────────────────────────────────────── */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.3, 0, 0.1, 1);
+
+  /* ── Accent ladder (Radar Blue) — Phase D, per docs/design-language-opsradar.md ─ */
+  --color-accent-50:  rgba(0, 102, 255, 0.08);
+  --color-accent-100: #DBEAFE;
+  --color-accent-200: #BFDBFE;
+  --color-accent-300: #93C5FD;
+  --color-accent-400: #60A5FA;
+  --color-accent-500: #0066FF;  /* radar-500 — primary brand */
+  --color-accent-600: #0052CC;  /* radar-600 — hover */
+  --color-accent-700: #003D99;
+  --color-accent-800: #002B70;
+  --color-accent-900: #001A4D;  /* radar-900 — instrument-panel deep */
+  --color-accent-950: #000F2E;
+
+  /* ── Brand-named aliases (per design-language spec §2) ───────────── */
+  --radar-500:  #0066FF;
+  --radar-600:  #0052CC;
+  --radar-50:   rgba(0, 102, 255, 0.08);
+  --radar-900:  #001A4D;
+  --signal-400: #00D4FF;   /* cyan demoted to data-viz only */
+  --clear-500:  #10B981;   /* success */
+  --smoke-500:  #F59E0B;   /* warning */
+  --flare-500:  #EF4444;   /* error / critical alert */
+  --ink-card:   #13141A;   /* floating panel on dark surface */
+  --ink-line:   rgba(255, 255, 255, 0.08);  /* dark hairline */
+  --paper-line: rgba(0, 0, 0, 0.06);        /* light hairline */
+  --paper-1:    #F4F2EE;   /* alt section slab (warm gray) */
+  --paper-hover:#F0EDE6;
+
+  /* ── Theme-resolved tokens — bound to --* CSS vars below ───────── */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-faint: var(--fg-faint);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-hover: var(--primary-hover);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+}
+
+/* =====================================================================
+   Light theme — default
+   ===================================================================== */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Phase D — Mercury-warm cream + hairlines + Notion 5-layer shadows */
+  --bg: #FBFAF7;              /* warm cream — Mercury / Notion midway */
+  --surface: #FFFFFF;
+  --surface-sunken: #F4F2EE;  /* paper-1 — alt section slab */
+  --border: rgba(0, 0, 0, 0.06);   /* hairline divider — Vercel/Linear value */
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --fg: #0A1424;              /* near-black with warm tint — Mercury translation */
+  --fg-muted: #3D4654;
+  --fg-subtle: #6B7385;
+  --fg-faint: #9AA0AC;
+
+  --primary: var(--radar-500);   /* electric blue #0066FF — the brand */
+  --primary-fg: #FFFFFF;
+  --primary-hover: var(--radar-600);
+
+  --success: #10B981;  /* clear-500 */
+  --warn:    #F59E0B;  /* smoke-500 */
+  --danger:  #EF4444;  /* flare-500 */
+
+  /* 5-layer Notion micro-shadow — max alpha 0.05, screenshot floats without halo */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 1px 3px rgba(0,0,0,0.01),
+               0 3px 7px rgba(0,0,0,0.02),
+               0 7px 15px rgba(0,0,0,0.02),
+               0 14px 28px rgba(0,0,0,0.04),
+               0 23px 52px rgba(0,0,0,0.05);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.02),
+               0 3px 7px rgba(0,0,0,0.04),
+               0 7px 15px rgba(0,0,0,0.04),
+               0 14px 28px rgba(0,0,0,0.06),
+               0 23px 52px rgba(0,0,0,0.08);
+}
+
+/* =====================================================================
+   Dark theme — dashboard / admin / aios
+   ===================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Phase D — Linear marketing-blacker-black so product screenshots float */
+  --bg: #020203;              /* ink-0 — marketing-blacker-black */
+  --surface: #0A0B10;         /* ink-1 — app-surface in mockups, lifts off --bg */
+  --surface-sunken: #13141A;  /* ink-card — floating panel on dark */
+  --border: rgba(255, 255, 255, 0.08);   /* hairline divider — Linear value */
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --fg: #F2F4F8;              /* paper-text-inv */
+  --fg-muted: #C8CDD8;
+  --fg-subtle: #8A8F98;       /* Linear's --color-text-tertiary */
+  --fg-faint: #86848D;
+
+  --primary: var(--radar-500);   /* keep electric blue on dark too */
+  --primary-fg: #FFFFFF;
+  --primary-hover: var(--radar-600);
+
+  --success: #10B981;
+  --warn:    #F59E0B;
+  --danger:  #EF4444;
+
+  --shadow-xs: 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow:    0 4px 12px rgba(0,0,0,0.5);
+  --shadow-md: 0 12px 32px rgba(0,0,0,0.6);
+}
+
+/* =====================================================================
+   Overlay / dialog motion (hand-rolled, no tw-animate-css)
+   ===================================================================== */
+@keyframes ds-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ds-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ds-zoom-in  { from { transform: translate(-50%, -50%) scale(0.96); } to { transform: translate(-50%, -50%) scale(1); } }
+@keyframes ds-zoom-out { from { transform: translate(-50%, -50%) scale(1); }    to { transform: translate(-50%, -50%) scale(0.96); } }
+
+[data-state="open"].ds-anim-fade-in       { animation: ds-fade-in  var(--duration-base) var(--ease-out); }
+[data-state="closed"].ds-anim-fade-out    { animation: ds-fade-out var(--duration-base) var(--ease-out); }
+[data-state="open"].ds-anim-zoom-in       { animation: ds-fade-in var(--duration-base) var(--ease-out), ds-zoom-in var(--duration-base) var(--ease-out); }
+[data-state="closed"].ds-anim-zoom-out    { animation: ds-fade-out var(--duration-base) var(--ease-out), ds-zoom-out var(--duration-base) var(--ease-out); }
+
+/* =====================================================================
+   Accordion motion (hand-rolled, no tw-animate-css)
+   ===================================================================== */
+@keyframes ds-accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes ds-accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
+}
+
+[data-state="open"].ds-anim-accordion-down  { animation: ds-accordion-down var(--duration-base) var(--ease-out); }
+[data-state="closed"].ds-anim-accordion-up { animation: ds-accordion-up   var(--duration-base) var(--ease-out); }
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  *:focus-visible {
+    /* Vercel double-ring — inner ring matches page bg so it works on any surface */
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--color-bg),
+      0 0 0 4px var(--radar-500);
+  }
+  /* Phase D — sans-serif everywhere. --font-serif resolves to Inter Tight via @theme,
+     so .font-serif, .text-h1, .text-h2 all deliver the same typeface. */
+  .text-display, .text-h1, .text-h2 { font-family: var(--font-sans); letter-spacing: -0.025em; font-weight: 500; }
+  .font-serif { letter-spacing: -0.02em; }
+}
+
+@media print {
+  .no-print, nav, footer { display: none !important; }
+  body, #audit-pdf-root {
+    background-color: #FFFFFF !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  section { page-break-inside: avoid; }
+  @page { margin: 0.5in; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* =====================================================================
+   Legacy class stubs — kept until Phase 1 redesigns each surface.
+   Goal: preserve layout, drop contradictory visuals (glow/gradient/
+   particle/shader effects). Remove individual rules in Phase 1 as
+   pages are rewritten.
+   ===================================================================== */
+
+/* Section tags / titles — flatten to plain text with token colors */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-fg-subtle);
+}
+.section-title {
+  color: var(--color-fg);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.section-copy {
+  max-width: 42rem;
+  color: var(--color-fg-muted);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* Surfaces — flatten gradients/blur/shadows to plain bordered cards */
+.surface-panel,
+.surface-card,
+.surface-card-strong,
+.hardware-card,
+.glass-card,
+.glass-panel,
+.hero-partner-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.surface-divider { height: 1px; background: var(--color-border); }
+.footer-shell, .header-shell { background: var(--color-bg); border: none; backdrop-filter: none; }
+.header-nav-pill, .header-link-active, .header-cta, .header-menu-button,
+.header-mobile-link, .header-mobile-link-active, .hero-secondary-button {
+  background: transparent; box-shadow: none;
+}
+.header-link, .header-mobile-link { color: var(--color-fg-muted); }
+.header-link:hover, .header-mobile-link:hover { color: var(--color-fg); background: transparent; }
+.header-link-active { color: var(--color-fg); }
+.header-link-active::before, .header-link-active::after { display: none; }
+
+/* Hero animations & decoration — neutralize */
+.hero-bg, .mesh-gradient, .radial-fade, .grid-bg, .grid-texture,
+.dot-grid-overlay, .grid-overlay-v2, .noise-texture,
+.hero-particle, .orb-v2, .orb-v2-1, .orb-v2-2, .orb-v2-3, .orbit-dot,
+.orbit-dot-outer, .float-dot, .badge-blink, .ring-glow, .scroll-cue,
+.locked-overlay, .locked-overlay-animated {
+  background: none; animation: none; filter: none;
+  -webkit-mask-image: none; mask-image: none;
+}
+.hero-headline {
+  background: none; -webkit-text-fill-color: currentColor; color: var(--color-fg);
+}
+
+/* Gradient text → plain accent or fg */
+.gradient-text, .text-gradient-animated, .text-white-gradient, .text-blue-gradient {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--color-fg);
+}
+
+/* Glow effects → none */
+.glow-blue, .glow-hover, .cta-pulse, .btn-spring, .btn-press, .btn-main-v2,
+.btn-main-sheen {
+  box-shadow: none;
+  transform: none;
+}
+.hover-card:hover, .hover-chip:hover {
+  box-shadow: none;
+  transform: none;
+}
+.btn-main-sheen::before { display: none; }
+
+/* Reveal / fade-up — show immediately (animation cut) */
+.fade-up, .reveal { opacity: 1; transform: none; transition: none; }
+.fade-up.is-visible, .reveal.visible { opacity: 1; transform: none; }
+.hero-slide-badge, .hero-slide-h1, .hero-slide-desc,
+.hero-slide-cta, .hero-slide-social, .page-enter { opacity: 1; animation: none; }
+.animate-fade-slide-in-1, .animate-fade-slide-in-2,
+.animate-fade-slide-in-3, .animate-fade-slide-in-4 { animation: none; opacity: 1; }
+
+/* Step transitions kept but linear, no easing flourish */
+.step-forward, .step-backward { animation: none; opacity: 1; transform: none; }
+
+/* Showcase card variants → plain bordered card */
+.show-card-v2 { position: relative; }
+.show-card-v2::before { display: none; }
+.show-card-blue, .show-card-cyan, .show-card-purple, .show-card-green {
+  border: 1px solid var(--color-border);
+}
+.show-tag-t-blue, .show-tag-t-cyan, .show-tag-t-purple, .show-tag-t-green {
+  background: var(--color-surface-sunken);
+  color: var(--color-fg-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* Outfit font alias → maps to sans */
+.font-outfit { font-family: var(--font-sans); }
+
+/* Option selection ring → uses focus ring style */
+.option-selected { box-shadow: 0 0 0 2px var(--color-accent-500); }
+
+/* Waste calculator slider — keep functional, retoken */
+.waste-slider {
+  -webkit-appearance: none; appearance: none;
+  height: 6px; border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  outline: none; cursor: pointer;
+}
+.waste-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  background: var(--color-primary);
+  cursor: grab;
+}
+.waste-slider::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  background: var(--color-primary); border: none; cursor: grab;
+}
+
+/* prose-readable kept as a width/line-height helper */
+.prose-readable { line-height: 1.78; letter-spacing: 0.008em; max-width: 68ch; }
+
+/* Hero badge / partner icons — flatten to neutral chip */
+.hero-badge, .hero-partner-icon, .hero-partner-label {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-fg);
+}
+
+/* ── Additional legacy stubs not in the base list above ─────────────
+   Found via grep of TSX files during Task 5 implementation.
+   font-headline / font-body / text-on-surface are Tailwind @theme
+   utilities from the old design system; they need CSS class stubs
+   since the new @theme no longer defines those tokens.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Font utility stubs — old Tailwind @theme tokens no longer present */
+.font-headline { font-family: var(--font-serif); }
+.font-body     { font-family: var(--font-sans); }
+
+/* Semantic color utility stubs — old @theme color tokens no longer present */
+.text-on-surface         { color: var(--color-fg); }
+.text-on-surface-variant { color: var(--color-fg-muted); }
+.bg-surface-container          { background-color: var(--color-surface); }
+.bg-surface-container-low      { background-color: var(--color-surface); }
+.bg-surface-container-high     { background-color: var(--color-surface); }
+.bg-surface-container-lowest   { background-color: var(--color-surface-sunken); }
+.border-outline-variant { border-color: var(--color-border); }
+
+/* ── COO chat animations ──────────────────────────────────────────
+   Streaming-text cursor, message + tool-step enter, thinking dots.
+   ──────────────────────────────────────────────────────────────── */
+
+@keyframes coo-cursor-blink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes coo-msg-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes coo-dot-bounce {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+.coo-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--color-primary);
+  animation: coo-cursor-blink 1s steps(1) infinite;
+  font-weight: 500;
+}
+
+.coo-msg-enter {
+  animation: coo-msg-fade-up 180ms ease-out both;
+}
+
+.coo-step-enter {
+  animation: coo-msg-fade-up 160ms ease-out both;
+}
+
+.coo-thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.coo-thinking-dots .coo-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  animation: coo-dot-bounce 1.2s ease-in-out infinite both;
+}
+
+.coo-thinking-dots .coo-dot:nth-child(2) { animation-delay: 0.15s; }
+.coo-thinking-dots .coo-dot:nth-child(3) { animation-delay: 0.3s;  }
+
+@keyframes overview-section-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.overview-section {
+  animation: overview-section-enter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overview-section { animation: none; }
+}
+
+/* ── Hire chat surface (CP-38 redesign) ───────────────────────────
+   Centered ChatGPT-style hiring surface: glowing empty-state mark,
+   staggered suggestion reveal, soft input dock.
+   ──────────────────────────────────────────────────────────────── */
+
+@keyframes hire-hero-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes hire-mark-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-50), 0 8px 28px -12px rgba(0,102,255,0.55); }
+  50%      { box-shadow: 0 0 0 10px transparent, 0 10px 34px -10px rgba(0,102,255,0.7); }
+}
+
+@keyframes hire-chip-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hire-hero { animation: hire-hero-enter 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.hire-mark {
+  background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
+  animation: hire-mark-pulse 3.6s ease-in-out infinite;
+}
+
+.hire-chip {
+  animation: hire-chip-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hire-chip:nth-child(1) { animation-delay: 80ms; }
+.hire-chip:nth-child(2) { animation-delay: 150ms; }
+.hire-chip:nth-child(3) { animation-delay: 220ms; }
+.hire-chip:nth-child(4) { animation-delay: 290ms; }
+
+/* Soft fade so messages dissolve under the docked composer instead of
+   hard-clipping at the scroll edge. */
+.hire-scroll-fade {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 12px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 12px), transparent 100%);
+}
+
+.hire-composer {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.hire-composer:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-accent-50), var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hire-hero, .hire-chip { animation: none; }
+  .hire-mark { animation: none; }
+}
