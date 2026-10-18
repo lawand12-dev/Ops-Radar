@@ -1,5 +1,5 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  */
 
 export type Outcome = {
@@ -23,7 +23,7 @@ export async function enrichWithRecentWins(): Promise<string> {
 }
 
 // Legacy export used by /api/dashboard/actions to record approve/reject/edit
-// feedback. No-op during migration; rebuild on Nango.
+// feedback. No-op while no integrations layer is wired.
 export async function logOutcome(_input: Record<string, unknown>): Promise<void> {
-  console.warn('[STUB] logOutcome — nango wire-up pending')
+  console.warn('[STUB] logOutcome — integration wire-up pending')
 }

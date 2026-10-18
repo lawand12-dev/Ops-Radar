@@ -69,13 +69,10 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
         const { loadCustomEmployees, BUILT_IN_BY_SLUG } = await import(
           '<npm>/lib/employees/registry'
         )
-        const { listCustomerConnections } = await import('<npm>/lib/nango/connections')
-        // Live connected toolkits via Nango — drives which tools the compiler
-        // is allowed to scope the new employee to. If the lookup fails it
-        // returns [] (chat/brain-only draft), so a Nango blip never blocks
-        // hiring; the customer reconnects at /dashboard/integrations.
-        const connections = await listCustomerConnections(ctx.userId)
-        const connectedToolkits = connections.map((c) => c.tool_slug)
+        // Connected toolkits drive which tools the compiler is allowed to
+        // scope the new employee to. No integrations layer is wired right
+        // now, so this is [] (chat/brain-only draft).
+        const connectedToolkits: string[] = []
         const existingTeam = await loadCustomEmployees(ctx.userId)
 
         const draft = await compileCustomEmployee({
@@ -164,7 +161,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
             status: e.status,
             autonomy: e.autonomy,
             schedule_cron: e.runtime.cronSchedule,
-            scoped_toolkits: e.runtime.nangoApps,
+            scoped_toolkits: e.runtime.scopedToolkits,
             url: `/dashboard/employees/${e.slug}`,
           })),
         }
@@ -202,7 +199,7 @@ export function buildHireTools(ctx: HireContext): Record<string, Tool> {
             status: emp.status,
             autonomy: emp.autonomy,
             schedule_cron: emp.runtime.cronSchedule,
-            scoped_toolkits: emp.runtime.nangoApps,
+            scoped_toolkits: emp.runtime.scopedToolkits,
             scoped_brain_prefixes: emp.runtime.scopedBrainPrefixes,
             model: emp.runtime.model,
             max_steps: emp.runtime.maxSteps,

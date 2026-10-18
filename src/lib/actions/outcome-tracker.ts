@@ -1,13 +1,12 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
+ * return empty data and log a warning. Wire to the integration layer when ready.
  */
 
-// ─── Local type stubs (were imported from deleted modules) ──────────────
-// AgentSlug previously lived in <npm>/lib/agents/types (folder deleted).
-// ToolSlug previously lived in the previous broker module (now nango).
-// Both stay as permissive string aliases so consumer call sites still type-check.
+// ─── Local type aliases ────────────────────────────────────────────────
+// Permissive string aliases so consumer call sites still type-check while
+// no integration toolkit map exists.
 type AgentSlug = string
 type ToolSlug = string
 
@@ -46,13 +45,13 @@ export type RecentWin = {
 
 export async function trackAction(input: TrackActionInput): Promise<{ id: string }> {
   void input
-  console.warn('[STUB] trackAction — nango wire-up pending')
+  console.warn('[STUB] trackAction — integration wire-up pending')
   return { id: '' }
 }
 
 export async function checkOutcomes(userId: string): Promise<CheckOutcomesResult> {
   void userId
-  console.warn('[STUB] checkOutcomes — nango wire-up pending')
+  console.warn('[STUB] checkOutcomes — integration wire-up pending')
   return { checked: 0, detected: 0, totalValueUsd: 0 }
 }
 
@@ -62,6 +61,6 @@ export async function getRecentWins(
 ): Promise<RecentWin[]> {
   void userId
   void sinceDays
-  console.warn('[STUB] getRecentWins — nango wire-up pending')
+  console.warn('[STUB] getRecentWins — integration wire-up pending')
   return []
 }

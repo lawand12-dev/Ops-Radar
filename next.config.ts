@@ -12,10 +12,6 @@ const rootDir = dirname(fileURLToPath(import.meta.url))
 //
 // Allowed third-party origins (and why):
 //
-//   Nango (OAuth broker)
-//     - api.nango.dev               → backend SDK calls + Connect Session ingress
-//     - connect.nango.dev           → hosted Connect UI iframe + popup
-//
 //   Statsig (flags + analytics + session replay)
 //     - api.statsig.com             → Node SDK flag fetches (server)
 //     - featureassets.org           → client-side feature gate evaluation
@@ -43,7 +39,6 @@ const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
   : '*.supabase.co'
 
-const NANGO_DOMAINS = 'https://api.nango.dev https://connect.nango.dev'
 const STATSIG_DOMAINS =
   'https://api.statsig.com https://featureassets.org https://prodregistryv2.org https://statsigapi.net https://sessionreplay.statsig.com'
 const SENTRY_DOMAINS = 'https://*.ingest.us.sentry.io https://*.sentry.io'
@@ -58,8 +53,9 @@ const csp = [
   "form-action 'self'",
   // Frame ancestors stays locked — nobody embeds OpsRadar.
   "frame-ancestors 'none'",
-  // We DO embed Nango's Connect UI as a child iframe, hence frame-src below.
-  `frame-src 'self' https://connect.nango.dev https://vercel.live`,
+  // vercel.live (preview-deploy comment widget) is embedded as a child
+  // iframe in preview environments, hence frame-src below.
+  `frame-src 'self' https://vercel.live`,
   "object-src 'none'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
@@ -75,7 +71,6 @@ const csp = [
   // service we use needs its domain listed here.
   [
     "connect-src 'self'",
-    NANGO_DOMAINS,
     STATSIG_DOMAINS,
     SENTRY_DOMAINS,
     VERCEL_DOMAINS,
@@ -108,7 +103,8 @@ const nextConfig: NextConfig = {
       // /for/development deprecated — outside marketing-agency ICP.
       { source: '/for/development',                 destination: '/',                       permanent: true },
       // ── Dashboard route renames (legacy) ───────────────────────────────
-      { source: '/dashboard/settings/integrations', destination: '/dashboard/integrations', permanent: true },
+      { source: '/dashboard/settings/integrations', destination: '/dashboard',              permanent: true },
+      { source: '/dashboard/integrations',          destination: '/dashboard',              permanent: true },
       { source: '/dashboard/workflow-health',       destination: '/dashboard',              permanent: true },
       { source: '/dashboard/automations',           destination: '/dashboard',              permanent: true },
       { source: '/dashboard/automations/:id*',      destination: '/dashboard',              permanent: true },

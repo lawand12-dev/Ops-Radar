@@ -1,7 +1,7 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
+ * return empty data and log a warning. Wire to the integration layer when ready.
  */
 
 import type { BenchmarkRow } from '<npm>/lib/benchmarks/types'
@@ -39,12 +39,12 @@ export async function computeAgencyScore(opts: {
   benchmarkRows: BenchmarkRow[]
 }): Promise<AgencyScore> {
   void opts
-  console.warn('[STUB] computeAgencyScore — nango wire-up pending')
+  console.warn('[STUB] computeAgencyScore — integration wire-up pending')
   const emptyDim: ScoreDimension = {
     score: 0,
     grade: 'F',
     label: '',
-    detail: 'Stubbed during Nango migration',
+    detail: 'Stubbed during the integrations migration',
   }
   return {
     dimensions: {

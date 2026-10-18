@@ -49,8 +49,8 @@ export async function POST(
   if (!userId) return jsonError('unauthorized', 401)
 
   // Per-customer rate limit: 60 employee-chat turns/hour. Burns OpenAI
-  // tokens + Nango quota, so we'd rather throttle a runaway loop than
-  // discover the cap was blown after the fact.
+  // tokens + tool-execution quota, so we'd rather throttle a runaway loop
+  // than discover the cap was blown after the fact.
   const limited = await applyRateLimit(request, 'dashboard-employee-chat', userId)
   if (limited) return limited
 
@@ -158,7 +158,7 @@ async function resolveSpec(
     displayName: `${row.name} · ${row.role}`,
     description: row.persona_summary?.slice(0, 200) ?? row.role,
     model: row.model_slug ?? 'gpt-5.4',
-    nangoApps: row.scoped_toolkits as string[],
+    scopedToolkits: row.scoped_toolkits as string[],
     requiredTier: 'starter',
     requiredIntegrations: [],
     cronSchedule: row.schedule_cron ?? '0 0 * * *',

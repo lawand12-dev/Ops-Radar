@@ -3,19 +3,15 @@
  *
  * Architecture (Vercel AI SDK v6 production pattern):
  *
- *   1. Bind userId by closure into per-toolkit factories. The model never
- *      sees the userId — only per-call inputs.
- *   2. Build the tool object from the employee's `requiredIntegrations`
- *      via src/lib/nango/registry.ts.
- *   3. Inject the advanced-tools catalog AND the relevant brain context
- *      into the system prompt at run start.
- *   4. `load_tool` meta-tool lets the model request an advanced tool;
- *      prepareStep merges its schema into the toolset for the next step.
- *   5. Each tool call is classified via the per-toolkit Ask/Auto/Off
- *      policy. Auto fires; approval enqueues with a confidence score;
- *      Off refuses outright.
- *   6. Run history is logged at start + end via agent_runs.
- *   7. On success, commit a markdown summary to the brain for cross-run
+ *   1. Inject the relevant brain context + skills catalog into the system
+ *      prompt at run start.
+ *   2. `load_skill` meta-tool lets the model pull in an operator playbook
+ *      from the skills library on demand.
+ *   3. External tool calls (once an integrations layer is wired again)
+ *      are classified via the per-toolkit Ask/Auto/Off policy — the gate
+ *      hooks live in ./hooks.ts (classifyToolCall / enqueueAction).
+ *   4. Run history is logged at start + end via agent_runs.
+ *   5. On success, commit a markdown summary to the brain for cross-run
  *      memory.
  */
 
@@ -28,34 +24,19 @@ import * as Sentry from '@sentry/nextjs'
 
 import type { AgentSpec, AgentRunResult } from './types'
 import {
-  buildToolsForEmployee,
-  buildAdvancedToolsCatalog,
-  TOOLKITS,
-} from '<npm>/lib/nango/registry'
-import {
-  buildLoadToolMeta,
-  createLoadedToolsTracker,
-  resolveLoadedTools,
-} from '<npm>/lib/nango/load-tool'
-import {
   startRun,
   finishRun,
   loadBrainContext,
-  classifyToolCall,
-  enqueueAction,
   writeBrainSummary,
 } from './hooks'
-import { loadToolPolicies, type ToolPolicyMap } from './tool-policies'
 import { loadSkillCatalog, buildSkillsSystemBlock } from '<npm>/lib/skills'
 import { buildLoadSkillMeta } from './load-skill'
 import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse'
-import { agentLoopEnabled, resolveToolkitFlag } from '<npm>/lib/flags'
+import { agentLoopEnabled } from '<npm>/lib/flags'
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
 import type { Provider } from '<npm>/lib/usage/types'
 
 export type RunAgentOptions = {
-  /** Fallback when no per-toolkit row exists in tool_policies. */
-  globalDefault?: 'ask' | 'auto' | 'off'
   /** Brain prefixes scoped to this employee. Defaults to global signals. */
   scopedBrainPrefixes?: ReadonlyArray<string>
 }
@@ -106,7 +87,6 @@ export async function runAgent(
       prompt: defaultRunPrompt(),
       tools: ctx.tools,
       stopWhen: stepCountIs(spec.maxSteps ?? 12),
-      prepareStep: ctx.prepareStep,
       experimental_telemetry: telemetry,
     })
 
@@ -116,11 +96,10 @@ export async function runAgent(
       0,
     )
 
-    const { queued, blocked } = countGateOutcomes(result.steps)
     const tokensUsed = result.usage?.totalTokens ?? 0
 
     // Record LLM token usage against the per-customer monthly cap.
-    // Fire-and-forget — same fail-open semantics as Nango usage tracking.
+    // Fire-and-forget — a logging blip never breaks the run.
     void recordUsage({
       userId,
       provider,
@@ -130,7 +109,7 @@ export async function runAgent(
     }).catch(() => {})
 
     console.info(
-      `[runAgent] ${spec.slug} ok — ${actionsTaken} calls (${queued} queued, ${blocked} blocked), ${tokensUsed} tokens, ${elapsedMs}ms`,
+      `[runAgent] ${spec.slug} ok — ${actionsTaken} calls, ${tokensUsed} tokens, ${elapsedMs}ms`,
     )
 
     const summary = result.text || `(no narrative — ${actionsTaken} tool calls)`
@@ -230,7 +209,6 @@ export async function runAgentStream(
     prompt: defaultRunPrompt(),
     tools: ctx.tools,
     stopWhen: stepCountIs(spec.maxSteps ?? 12),
-    prepareStep: ctx.prepareStep,
     experimental_telemetry: telemetry,
     onError: ({ error }) => {
       // Stream errors don't bubble to a try/catch — they arrive via the
@@ -293,17 +271,6 @@ async function prepareRunContext(
   userId: string,
   options: RunAgentOptions,
 ) {
-  const globalDefault = options.globalDefault ?? 'ask'
-  const requestedToolkits = spec.nangoApps ?? spec.requiredIntegrations ?? []
-
-  // Per-toolkit kill switches sourced from the registry. Each toolkit
-  // entry may declare a `killSwitchFlag` (Statsig gate key); if it's
-  // OFF the toolkit gets stripped before tools are built. Resolves
-  // every flag in parallel so an N-toolkit employee adds N flag-checks
-  // worth of latency, not N sequential round-trips.
-  const allowedToolkits = await filterByKillSwitch(requestedToolkits, spec.slug)
-  const toolkitSlugs = allowedToolkits
-
   // Tier 1: log run start
   const runId = await startRun({ userId, agentSlug: spec.slug })
 
@@ -313,94 +280,28 @@ async function prepareRunContext(
     scopedPrefixes: options.scopedBrainPrefixes,
   })
 
-  // Load per-toolkit policy map (cached for the duration of this run)
-  const policies = await loadToolPolicies(userId)
-
-  // load_tool meta-tool + tracker for on-demand schema expansion
-  const tracker = createLoadedToolsTracker()
-  const loadToolMeta = buildLoadToolMeta({ userId, toolkitSlugs, tracker })
-
-  // Core tools (closure-bound to userId) wrapped with approval gate
-  const coreTools = buildToolsForEmployee(toolkitSlugs, userId)
-  const gatedCore = wrapToolsWithGate({
-    rawTools: coreTools,
-    userId,
-    agentSlug: spec.slug,
-    policies,
-    globalDefault,
-  })
-
-  // Advanced tools — registered upfront so they're addressable, but
-  // *not* exposed to the model unless it has called load_tool first.
-  // Exposure is controlled by the activeTools array from prepareStep.
-  const allAdvancedNames = new Set<string>()
-  for (const slug of toolkitSlugs) {
-    const entry = TOOLKITS[slug]
-    if (!entry) continue
-    for (const c of entry.advancedCatalog) allAdvancedNames.add(c.name)
-  }
-  const advancedTools = resolveLoadedTools({
-    userId,
-    toolkitSlugs,
-    loadedNames: allAdvancedNames,
-  })
-  const gatedAdvanced = wrapToolsWithGate({
-    rawTools: advancedTools,
-    userId,
-    agentSlug: spec.slug,
-    policies,
-    globalDefault,
-  })
-
   // Skills catalog (Anthropic Agent Skills — 46 operator playbooks)
   const skillCatalog = await loadSkillCatalog()
   const skillsBlock = buildSkillsSystemBlock(skillCatalog)
   const loadSkillMeta = buildLoadSkillMeta()
 
   const initialTools: ToolSet = {
-    ...gatedCore,
-    ...gatedAdvanced,
-    load_tool: loadToolMeta,
     load_skill: loadSkillMeta,
   }
 
-  // Names always exposed to the model: every core tool + both meta-tools
-  const baseActiveTools: string[] = [
-    ...Object.keys(gatedCore),
-    'load_tool',
-    'load_skill',
-  ]
-
   // Compose the final system prompt
-  const advancedCatalog = buildAdvancedToolsCatalog(toolkitSlugs)
   const systemPrompt = [
     spec.systemPrompt,
     brainContext,
     skillsBlock,
-    advancedCatalog
-      ? `## Advanced tools available on demand\n\n${advancedCatalog}\n\nIf you need one, call \`load_tool({ name: "<tool_name>" })\` first. The tool becomes callable on the NEXT step.`
-      : '',
   ]
     .filter(Boolean)
     .join('\n\n---\n\n')
-
-  /**
-   * prepareStep — runs before each iteration. Activates any advanced tools
-   * the model has requested via load_tool. Core tools stay always-active.
-   */
-  const prepareStep = () => {
-    if (tracker.loaded.size === 0) return {}
-    return {
-      activeTools: [...baseActiveTools, ...tracker.loaded] as Array<keyof typeof initialTools>,
-    }
-  }
 
   return {
     runId,
     systemPrompt,
     tools: initialTools,
-    prepareStep,
-    baseActiveTools,
   }
 }
 
@@ -408,132 +309,13 @@ function defaultRunPrompt(): string {
   return `It's ${new Date().toISOString()}. Run your scheduled job. Use the tools you've been given. Be deliberate — pick the highest-leverage thing to do today.`
 }
 
-function countGateOutcomes(steps: { toolResults?: Array<{ output?: unknown }> }[]) {
-  let queued = 0
-  let blocked = 0
-  for (const step of steps) {
-    for (const tr of step.toolResults ?? []) {
-      const out = JSON.stringify(tr.output ?? '')
-      if (out.includes('"_gate":"approval"')) queued++
-      if (out.includes('"_gate":"blocked"')) blocked++
-    }
-  }
-  return { queued, blocked }
-}
-
-// ─── Approval-gate wrapper ─────────────────────────────────────────────────
-
-function wrapToolsWithGate({
-  rawTools,
-  userId,
-  agentSlug,
-  policies,
-  globalDefault,
-}: {
-  rawTools: ToolSet
-  userId: string
-  agentSlug: string
-  policies: ToolPolicyMap
-  globalDefault: 'ask' | 'auto' | 'off'
-}): ToolSet {
-  const out: ToolSet = {}
-
-  for (const [name, def] of Object.entries(rawTools)) {
-    const originalExecute = def.execute
-    out[name] = {
-      ...def,
-      execute: async (args: Record<string, unknown>, opts: Parameters<NonNullable<typeof originalExecute>>[1]) => {
-        const decision = classifyToolCall({
-          userId,
-          agentSlug,
-          toolName: name,
-          args,
-          policies,
-          globalDefault,
-        })
-
-        if (decision.kind === 'blocked') {
-          return {
-            _gate: 'blocked',
-            reason: decision.reason,
-            message: 'Blocked by autonomy policy. Tell the user what you would have done instead.',
-          }
-        }
-
-        if (decision.kind === 'approval') {
-          const summary = summarizeArgs(name, args)
-          const queued = await enqueueAction({
-            userId,
-            agentSlug,
-            toolName: name,
-            args,
-            summary,
-          })
-          return {
-            _gate: 'approval',
-            reason: decision.reason,
-            actionId: queued?.actionId ?? null,
-            confidence: queued?.confidence ?? null,
-            confidenceBand: queued?.band ?? null,
-            message: 'Queued for approval at /dashboard/actions. Continue with read-only work or finish your turn.',
-          }
-        }
-
-        // 'auto' — fall through
-        if (!originalExecute) {
-          return { _gate: 'auto', error: 'No executor for this tool.' }
-        }
-        return originalExecute(args, opts)
-      },
-    } as ToolSet[string]
-  }
-
-  return out
-}
-
-function summarizeArgs(toolName: string, args: Record<string, unknown>): string {
-  if (toolName === 'gmail_send' && typeof args.to === 'string') {
-    return `Send email to ${args.to}: "${String(args.subject ?? '').slice(0, 60)}"`
-  }
-  if (toolName === 'gmail_reply' && typeof args.to === 'string') {
-    return `Reply to ${args.to}: "${String(args.subject ?? '').slice(0, 60)}"`
-  }
-  if (toolName === 'gmail_create_draft' && typeof args.to === 'string') {
-    return `Draft email to ${args.to}`
-  }
-  if (toolName === 'gmail_trash_message') {
-    return `Trash message ${String(args.messageId ?? '')}`
-  }
-  return `${toolName} (${Object.keys(args).join(', ')})`
-}
-
 /**
- * Apply per-toolkit kill-switch flags. Reads each toolkit's declared
- * `killSwitchFlag` from the registry and resolves them in parallel.
- * Stripped toolkits are logged so an operator can confirm a flip took
- * effect.
+ * NOTE: the approval-gate wrapper (`wrapToolsWithGate`), the tool-call
+ * summarizer, and the per-toolkit kill-switch filter were removed together
+ * with the integration toolkits. When toolkits return, wire their tools to
+ * `classifyToolCall` + `enqueueAction` in ./hooks.ts — same contract as
+ * before: reads auto-fire, writes queue for approval.
  */
-async function filterByKillSwitch(
-  requested: ReadonlyArray<string>,
-  agentSlug: string,
-): Promise<string[]> {
-  const checks = requested.map(async (slug) => {
-    const entry = TOOLKITS[slug]
-    if (!entry?.killSwitchFlag) return { slug, allowed: true }
-    const allowed = await resolveToolkitFlag(entry.killSwitchFlag)
-    return { slug, allowed }
-  })
-  const results = await Promise.all(checks)
-  const out: string[] = []
-  for (const r of results) {
-    if (r.allowed) {
-      out.push(r.slug)
-    } else {
-      console.warn(`[runAgent] ${agentSlug} — toolkit "${r.slug}" disabled by kill-switch flag, stripped`)
-    }
-  }
-  return out
-}
 
 /**
  * Map a model slug to the Provider key in our quota table. Today every

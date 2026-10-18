@@ -1,7 +1,7 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
+ * return empty data and log a warning. Wire to the integration layer when ready.
  */
 
 export type HealthFinding = {
@@ -23,7 +23,7 @@ export async function generateHealthReport(opts: {
   companyName: string
 }): Promise<HealthReport> {
   void opts
-  console.warn('[STUB] generateHealthReport — nango wire-up pending')
+  console.warn('[STUB] generateHealthReport — integration wire-up pending')
   return {
     findings: [],
     generated_at: new Date().toISOString(),

@@ -28,9 +28,8 @@ import { task, logger, metadata } from "@trigger.dev/sdk"
 import { runAgent } from "<npm>/lib/agents/loop"
 import { getServerSupabaseClient } from "<npm>/lib/supabase-server"
 import type { AgentSpec } from "<npm>/lib/agents/types"
-// ToolSlug was sourced from <npm>/lib/nango (deleted 2026-05-26). Aliased
-// to string during migration; reconstruct as a narrower union once the Nango
-// toolkit map stabilizes.
+// ToolSlug is a loose string alias — reconstruct as a narrower union once
+// an integrations layer is wired again.
 type ToolSlug = string
 import type { Database } from "<npm>/lib/database.types"
 
@@ -83,7 +82,7 @@ function specFromCustomEmployee(
     displayName: `${row.name} · ${row.role}`,
     description: row.persona_summary?.slice(0, 200) ?? `${row.role} (custom employee)`,
     model: (row.model_slug ?? "gpt-5.4") as AgentSpec["model"],
-    nangoApps: row.scoped_toolkits as ToolSlug[],
+    scopedToolkits: row.scoped_toolkits as ToolSlug[],
     requiredTier: "starter",
     requiredIntegrations: [],
     cronSchedule: row.schedule_cron ?? "0 0 * * *",

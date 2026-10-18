@@ -1,5 +1,5 @@
 /**
- * Confidence scoring for queued actions (CP-18 heuristic, ported to Nango).
+ * Confidence scoring for queued actions (CP-18 heuristic).
  *
  * Every action enqueued through the approval gate gets a 0–100 score that
  * appears on the action card. Customers learn over time which agents/tools
@@ -23,11 +23,10 @@
  * (approval-patterns.ts already aggregates approve/reject ratios).
  */
 
-import { allDestructiveTools } from '<npm>/lib/nango/registry'
-
-// Sourced from the toolkit registry so a new integration doesn't need
-// edits to confidence.ts — adding the destructive tool names to the
-// new toolkit module is enough.
+// Tool names that write to the customer's connected integrations. Empty
+// while no integration toolkits are registered — add names here when
+// integration toolkits return.
+export const DESTRUCTIVE_TOOLS: ReadonlySet<string> = new Set([])
 
 export type ConfidenceInput = {
   toolName: string
@@ -48,7 +47,7 @@ export function scoreActionConfidence(input: ConfidenceInput): ConfidenceResult 
   let score = 60
   factors.push({ delta: 60, reason: 'base' })
 
-  const destructive = allDestructiveTools().has(input.toolName)
+  const destructive = DESTRUCTIVE_TOOLS.has(input.toolName)
   if (destructive) {
     score -= 10
     factors.push({ delta: -10, reason: 'destructive tool' })

@@ -11,7 +11,7 @@
  *
  * Hard guarantees:
  *   - slug is kebab-case + reserved-slug check happens caller-side
- *   - scoped_toolkits ⊆ known Nango toolkit slugs (validated via catalog)
+ *   - scoped_toolkits ⊆ known toolkit slugs (validated via catalog)
  *   - scoped_brain_prefixes ⊆ BRAIN_DIRECTORIES (so brain reads/writes
  *     can never escape the customer's organized layout)
  *   - schedule_cron is either null (chat-only employee) or a real 5-field
@@ -29,7 +29,7 @@ import type { Employee } from './types'
 type ToolSlug = string
 
 // Human-readable labels for the toolkit catalog injected into the prompt.
-// Keep in sync with src/lib/nango/registry.ts TOOLKITS as integrations ship.
+// Keep in sync with the toolkit catalog as integrations ship.
 // `notion` is connectable (the brain) even though it has no agent of its own.
 const TOOLKIT_LABELS: Record<string, string> = {
   gmail: 'Gmail — read, search, label, draft, send email',
@@ -71,7 +71,7 @@ export const CustomEmployeeDraftSchema = z.object({
     .min(0)
     .max(10)
     .describe(
-      'Nango toolkit slugs this employee can call. Empty = chat/brain only. Choose from the AVAILABLE TOOLKITS list.',
+      'Toolkit slugs this employee can call. Empty = chat/brain only. Choose from the AVAILABLE TOOLKITS list.',
     ),
   scoped_brain_prefixes: z
     .array(z.string())
@@ -153,7 +153,7 @@ export async function compileCustomEmployee(
 const EMPLOYEE_COMPILER_SYSTEM = [
   "You are compiling an OpsRadar customer's request into a typed CustomEmployeeDraft.",
   '',
-  'This is the "AI employee" feature — the customer is hiring a named, persistent AI teammate who has a personality, runs on a schedule (or chat-only), can call specific SaaS tools through Nango, and writes durable notes to a versioned Postgres brain.',
+  'This is the "AI employee" feature — the customer is hiring a named, persistent AI teammate who has a personality, runs on a schedule (or chat-only), can call specific SaaS tools through connected integrations, and writes durable notes to a versioned Postgres brain.',
   '',
   'HARD RULES:',
   '1. You MAY ONLY use toolkit slugs from the AVAILABLE TOOLKITS list. Do not invent slugs.',
@@ -192,7 +192,7 @@ export function buildEmployeeCompilationPrompt(input: CompileEmployeeInput): str
     : '  (no existing custom employees)'
 
   return [
-    'AVAILABLE TOOLKITS (Nango):',
+    'AVAILABLE TOOLKITS:',
     toolkitList,
     '',
     'AVAILABLE BRAIN DIRECTORIES (path prefixes):',

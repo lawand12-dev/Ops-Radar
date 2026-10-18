@@ -24,8 +24,7 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { loadBrainDocuments, commitBrainChanges } from '<npm>/lib/brain/store'
 import { resolvePolicyForTool, type ToolPolicyMap } from './tool-policies'
-import { scoreActionConfidence } from './confidence'
-import { allDestructiveTools } from '<npm>/lib/nango/registry'
+import { scoreActionConfidence, DESTRUCTIVE_TOOLS } from './confidence'
 
 // ─── Tier 1: run history ───────────────────────────────────────────────────
 
@@ -147,14 +146,13 @@ export async function loadBrainContext({
 // ─── Tier 2: approval gate + action queue ──────────────────────────────────
 
 /**
- * Destructive tool names come from the toolkit registry — each toolkit
- * module owns its own list (see e.g. GMAIL_DESTRUCTIVE_TOOLS in
- * src/lib/nango/tools/gmail.ts). The registry takes the union across
- * every registered toolkit so this file doesn't need touching when a
- * new toolkit ships.
+ * Destructive tool names — tools that write to the customer's connected
+ * integrations. No integration toolkits are registered right now (the
+ * integrations layer was removed), so the set lives in ./confidence.ts
+ * and is empty. Add names there when integration toolkits return.
  */
 function isDestructive(toolName: string): boolean {
-  return allDestructiveTools().has(toolName)
+  return DESTRUCTIVE_TOOLS.has(toolName)
 }
 
 export type ToolGateDecision =

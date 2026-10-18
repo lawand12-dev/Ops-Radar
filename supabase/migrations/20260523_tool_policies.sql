@@ -1,6 +1,6 @@
 -- CP-14 Day 4b: per-tool autonomy policy.
 --
--- Customer can flip each connected Composio toolkit between:
+-- Customer can flip each connected toolkit between:
 --   ask  — default; write actions queue for approval (current behavior)
 --   auto — write actions execute immediately; still logged for audit
 --   off  — write actions return an error to the model ("tool disabled")

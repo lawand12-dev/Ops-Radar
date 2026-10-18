@@ -16,10 +16,10 @@ export type AgentTier = 'starter' | 'growth' | 'pro'
  * Runtime spec for one employee (built-in or restored from custom_employees).
  *
  *   - `requiredIntegrations`: hard requirement — fail the run if any are
- *     missing from the customer's Nango connections.
- *   - `nangoApps`: the toolkit slugs the runAgent loop will load tools for.
- *     Usually a superset of (or equal to) `requiredIntegrations`. Optional
- *     so chat-only employees with no toolkits still satisfy the type.
+ *     missing from the customer's connected integrations. Empty while no
+ *     integrations layer is wired.
+ *   - `scopedToolkits`: the toolkit slugs the employee is scoped to.
+ *     Optional so chat/brain-only employees still satisfy the type.
  */
 export type AgentSpec = {
   slug: AgentSpecSlug
@@ -31,7 +31,7 @@ export type AgentSpec = {
   cronSchedule: string
   maxSteps: number
   systemPrompt: string
-  nangoApps?: string[]
+  scopedToolkits?: string[]
 }
 
 export type AgentRunResult = {

@@ -5,8 +5,8 @@
  * `vercel.json`. For each request we:
  *   1. Verify the bearer token against `CRON_SECRET` (if set).
  *   2. Resolve the agent slug against the central registry.
- *   3. Find every user who currently has at least one active Nango
- *      connection — those are the only users who can actually run an agent.
+ *   3. Enumerate candidates. (This previously came from active integration
+ *      connections; empty until an integrations layer is wired again.)
  *   4. Filter out users who explicitly disabled this agent in `agent_config`
  *      (missing rows are treated as enabled by default).
  *   5. Invoke the shared agent runner (`runAgent`) sequentially for each user.
@@ -23,7 +23,6 @@ import {
   hasServerSupabaseClient,
 } from '<npm>/lib/supabase-server'
 import { serverErrorResponse } from '<npm>/lib/security'
-import { listAllConnections } from '<npm>/lib/nango/connections'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -62,12 +61,11 @@ export async function GET(
   if (!hasServerSupabaseClient()) return serverErrorResponse()
   const supabase = getServerSupabaseClient()
 
-  // 3. Find every user with at least one active Nango connection. Without a
-  // connection, the agent has no tools to call — skip those users entirely.
-  const allConnections = await listAllConnections()
-  const candidateUserIds = [
-    ...new Set(allConnections.map((r) => r.user_id)),
-  ]
+  // 3. Candidate users previously came from active integration connections.
+  // With no integrations layer wired there is no source of runnable users,
+  // so this is an empty list and the cron is a healthy no-op (200, 0
+  // processed) until integrations return.
+  const candidateUserIds: string[] = []
 
   // 4. Filter by agent_config.is_enabled. Missing rows default to enabled.
   const { data: configRows, error: configErr } = await supabase

@@ -594,39 +594,6 @@ export type Database = {
         }
         Relationships: []
       }
-      composio_connections: {
-        Row: {
-          connection_id: string
-          connected_at: string
-          id: string
-          is_active: boolean
-          last_used_at: string | null
-          metadata: Json
-          tool_slug: string
-          user_id: string
-        }
-        Insert: {
-          connection_id: string
-          connected_at?: string
-          id?: string
-          is_active?: boolean
-          last_used_at?: string | null
-          metadata?: Json
-          tool_slug: string
-          user_id: string
-        }
-        Update: {
-          connection_id?: string
-          connected_at?: string
-          id?: string
-          is_active?: boolean
-          last_used_at?: string | null
-          metadata?: Json
-          tool_slug?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       coo_chat_messages: {
         Row: {
           action_card: Json | null

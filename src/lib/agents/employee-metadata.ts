@@ -1,7 +1,7 @@
 /**
  * Display metadata for built-in AI employees.
  *
- * The shipping catalog grows one entry at a time as new Nango toolkits
+ * The shipping catalog grows one entry at a time as new integrations
  * land + are verified end-to-end. Today: Gmail Specialist only. Every
  * future toolkit adds ONE flagship pre-built employee here.
  *

@@ -45,9 +45,11 @@ export function BrainOwnershipDoors({ notionUrl }: Props) {
           icon={<ExternalLink size={16} />}
           title="Open in Notion"
           body="Daily-driver UI. The 20 DBs + 7 strategic pages live in your workspace."
-          cta={notionUrl ? 'Open ↗' : 'Connect Notion'}
-          href={notionUrl ?? '/dashboard/integrations'}
+          cta={notionUrl ? 'Open ↗' : 'Not connected'}
+          href={notionUrl ?? undefined}
           external={!!notionUrl}
+          ctaMuted={!notionUrl}
+          disabled={!notionUrl}
         />
         <Door
           icon={<Download size={16} />}

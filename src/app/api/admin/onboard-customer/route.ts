@@ -2,8 +2,8 @@
 //
 // CP-15: stripped of all n8n / client_n8n_config provisioning.
 // Customer onboarding is now: invite the user via Supabase, send the
-// magic-link email. Tool credentials live in Nango (OAuth), not in
-// our DB — the customer connects them themselves at /dashboard/integrations.
+// magic-link email. Tool credentials live with the customer's own
+// connected integrations (OAuth) — never in our DB.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';

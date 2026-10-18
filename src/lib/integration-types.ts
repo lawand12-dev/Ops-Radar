@@ -2,7 +2,7 @@
  * Type definitions for integration data shapes.
  *
  * History: these used to live alongside the legacy Model C adapters in
- * src/lib/integrations/{tool}/adapter.ts. After the Nango migration
+ * src/lib/integrations/{tool}/adapter.ts. In the migration that followed
  * (commits 6610d1f → da1bf98 → a2052f8...), those adapter implementations
  * were deleted. The TYPE definitions remain because dashboard widgets +
  * COO chat + agent loop all reshape vendor responses back into these

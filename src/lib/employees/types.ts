@@ -42,7 +42,7 @@ export type EmployeeDisplay = {
  */
 export type EmployeeRuntime = {
   systemPrompt: string
-  nangoApps: string[]          // toolkit slugs the employee can call
+  scopedToolkits: string[]        // toolkit slugs the employee is scoped to
   model: string                   // gpt-5.4 etc.
   maxSteps: number
   cronSchedule: string | null     // null for chat-only employees
@@ -85,7 +85,7 @@ export function builtInToEmployee(
     display,
     runtime: {
       systemPrompt: spec.systemPrompt,
-      nangoApps: spec.nangoApps as string[],
+      scopedToolkits: spec.scopedToolkits ?? [],
       model: spec.model,
       maxSteps: spec.maxSteps,
       cronSchedule: spec.cronSchedule,
@@ -116,7 +116,7 @@ export function customRowToEmployee(row: CustomEmployeeRow): Employee {
     },
     runtime: {
       systemPrompt: row.system_prompt,
-      nangoApps: row.scoped_toolkits,
+      scopedToolkits: row.scoped_toolkits,
       model: row.model_slug ?? 'gpt-5.4',
       maxSteps: row.max_steps ?? 10,
       cronSchedule: row.schedule_cron,

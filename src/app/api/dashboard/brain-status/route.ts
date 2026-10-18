@@ -18,7 +18,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
-import { listCustomerConnections } from '<npm>/lib/nango/connections';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,23 +34,6 @@ export async function GET() {
 
   const supabase = getServerSupabaseClient();
 
-  // Is Notion connected at all? Look it up via Nango (the source of truth
-  // for OAuth status post-migration).
-  const customerConnections = await listCustomerConnections(userId);
-  const notionConn = customerConnections.find((c) => c.tool_slug === 'notion');
-
-  if (!notionConn) {
-    return NextResponse.json({
-      status: 'not_started' as BrainStatus,
-      databases_created: 0,
-      brain_home_ready: false,
-      parent_page_id: null,
-      workspace_name: null,
-      error: null,
-      connected_at: null,
-    });
-  }
-
   // Has the Brain row been created (webhook fired provisionBrain)?
   const { data: workspace } = await supabase
     .from('notion_workspaces')
@@ -62,15 +44,15 @@ export async function GET() {
     .maybeSingle();
 
   if (!workspace) {
-    // Connection exists but no workspace row yet — provision in flight or webhook failed.
+    // No workspace row — Notion hasn't been connected + provisioned yet.
     return NextResponse.json({
-      status: 'provisioning' as BrainStatus,
+      status: 'not_started' as BrainStatus,
       databases_created: 0,
       brain_home_ready: false,
       parent_page_id: null,
       workspace_name: null,
       error: null,
-      connected_at: notionConn.created_at,
+      connected_at: null,
     });
   }
 
@@ -98,7 +80,7 @@ export async function GET() {
     parent_page_id: workspace.parent_page_id,
     workspace_name: workspace.workspace_name,
     error: backfillError,
-    connected_at: workspace.connected_at ?? notionConn.created_at,
+    connected_at: workspace.connected_at,
     backfill_status: backfillStatus,
   });
 }

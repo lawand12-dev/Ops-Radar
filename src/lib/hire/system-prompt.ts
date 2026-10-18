@@ -27,7 +27,7 @@ export const PROMPT_VERSION = 'hire-system-v1'
 
 export function buildHireSystemPrompt(input: {
   companyName: string
-  /** List of toolkits the customer has connected via Nango. Lets us narrow the proposed scoped_toolkits. */
+  /** List of toolkits the customer has connected. Lets us narrow the proposed scoped_toolkits. */
   connectedToolkits: string[]
   /** Existing roster — name + role + slug — so we don't propose duplicates. */
   existingTeam: Array<{ slug: string; name: string; role: string; status: string }>
@@ -38,7 +38,7 @@ export function buildHireSystemPrompt(input: {
 
   const connectedBlock = connectedToolkits.length > 0
     ? `Connected tools the new employee can be scoped to: ${connectedToolkits.join(', ')}.`
-    : 'No tools are connected yet. You can still propose an employee, but flag that the customer should connect the relevant integrations at /dashboard/integrations for the employee to actually work.'
+    : 'No tools are connected yet. You can still propose an employee — note that it will run chat/brain-only until integrations are connected.'
 
   const teamBlock = existingTeam.length > 0
     ? `Existing hires (do NOT propose duplicates — if the customer wants something similar, suggest editing the existing one instead):\n${existingTeam.map((e) => `  - ${e.name} (${e.role}) — slug: ${e.slug} · status: ${e.status}`).join('\n')}`
@@ -81,7 +81,7 @@ If any of those are missing AND obvious from context, fill them in yourself rath
 
 1. **Never propose a duplicate slug.** If the customer wants a Bookkeeper and Sarah-the-Bookkeeper already exists, suggest editing Sarah's spec instead. Reserved slugs (the 28 built-in agents — revenue, collections, scope, delivery, briefing, profitability, team, growth, renewal, stack, tool-gmail, tool-hubspot, ... evaluator) can NEVER be reused for custom employees — the compiler will reject them.
 
-2. **Never propose an employee scoped to a toolkit the customer hasn't connected.** If they want a "Stripe reconciliation employee" but Stripe isn't in the connected list, the proposal is fine — but tell them they need to connect Stripe at /dashboard/integrations first for the employee to actually run.
+2. **Never propose an employee scoped to a toolkit the customer hasn't connected.** If they want a "Stripe reconciliation employee" but Stripe isn't in the connected list, the proposal is fine — but flag that Stripe must be connected before the employee can actually run.
 
 3. **Never invent capabilities the SDK doesn't have.** No "this employee will text you" or "this employee will draft videos." The employee can do: read from connected SaaS tools, write back to those tools (approval-gated), write structured notes to the customer's brain, and run on a schedule. That's it.
 

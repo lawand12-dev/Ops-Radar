@@ -64,15 +64,15 @@ const STEPS: Step[] = [
     tag: "Connect",
     duration: "~5 minutes",
     headline: "Connect the tools you already use.",
-    body: "Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Nango handles every OAuth handshake. We never see your API keys.",
+    body: "Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Every OAuth handshake is brokered for you. We never see your API keys.",
     yourSide: [
       "Click the integrations you use. Stripe + HubSpot + ClickUp + Harvest + Gmail + Notion + Slack is the common starter set.",
       "Approve each OAuth scope as it pops up — read scopes by default, write scopes per tool.",
     ],
     ourSide: [
-      "Nango brokers the OAuth and holds the token. OpsRadar never stores customer API keys.",
+      "OAuth is brokered and tokens are held outside OpsRadar. We never store customer API keys.",
       "Every read live-fetches from source — your client business data never lands in our database.",
-      "25 integrations live today, growing toward Nango's full 500+ catalog.",
+      "25 integrations live today, growing toward a 500+ integration catalog.",
     ],
     youGet:
       "Your AI workforce now has the live data it needs to start working. No CSV uploads, no nightly ETL jobs, no syncing.",
@@ -373,7 +373,7 @@ function ArchitectureSection() {
                     streamText loop
                            │
                            ▼
-                  Nango tool call
+                  Tool call
                            │
                            ▼
                    Approval gate

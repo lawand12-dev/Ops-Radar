@@ -1,7 +1,7 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  * Lindy-style automations were trigger-coupled and will be rebuilt
- * on Nango per CP-45. Types preserved as loose aliases so consumers compile.
+ * per CP-45. Types preserved as loose aliases so consumers compile.
  */
 
 export type AutomationStatus = 'active' | 'paused' | 'archived'

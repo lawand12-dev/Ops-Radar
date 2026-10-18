@@ -3,8 +3,8 @@
  * ship out of the box on day one.
  *
  * Pre-demolition this held 28 agents (10 domain + 17 tool + 1 evaluator).
- * Post-demolition we're rebuilding them one at a time on Nango, starting
- * with Gmail. As each tool agent is verified end-to-end we add it here.
+ * Post-demolition we're rebuilding them one at a time, starting with
+ * Gmail. As each agent is verified end-to-end we add it here.
  *
  * New tool/domain agents slot in via one `git restore` of their spec file
  * plus one line in the registry below.

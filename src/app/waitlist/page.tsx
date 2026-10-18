@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 const REALITY: Array<{ label: string; body: string }> = [
   {
     label: "What's built",
-    body: "28 named AI employees running on Vercel + Supabase + Nango (25 live integrations). Versioned company brain mirrored to your Notion. Approval-gated execution. Earned-autonomy. Org-chart delegation. Customer-built automations.",
+    body: "28 named AI employees running on Vercel + Supabase (25 live integrations). Versioned company brain mirrored to your Notion. Approval-gated execution. Earned-autonomy. Org-chart delegation. Customer-built automations.",
   },
   {
     label: "What's next",

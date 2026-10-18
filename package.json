@@ -23,8 +23,6 @@
     "@ai-sdk/openai": "^3.0.65",
     "@anthropic-ai/sdk": "^0.92.0",
     "@hubspot/api-client": "^13.5.0",
-    "@nangohq/frontend": "^0.70.4",
-    "@nangohq/node": "^0.70.4",
     "@notionhq/client": "^5.22.0",
     "@sentry/nextjs": "^10.53.1",
     "@statsig/react-bindings": "^3.33.1",

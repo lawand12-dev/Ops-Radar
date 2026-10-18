@@ -12,7 +12,7 @@ import { Check, FolderTree, Cpu, Workflow, Clock } from 'lucide-react'
 import type { Employee } from '<npm>/lib/employees/types'
 
 export function SkillsTab({ employee }: { employee: Employee }) {
-  const toolkits = employee.runtime.nangoApps ?? []
+  const toolkits = employee.runtime.scopedToolkits ?? []
   const prefixes = employee.runtime.scopedBrainPrefixes ?? []
   const isBuiltIn = employee.origin === 'built_in'
 

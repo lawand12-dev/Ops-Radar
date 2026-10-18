@@ -1,11 +1,13 @@
 /**
  * Hourly outcome detection cron.
  *
- * For each user with at least one active Nango connection, run
- * `checkOutcomes(userId)` — which re-fetches every pending tracked entity, sees
- * whether the expected outcome has materialized (invoice paid, deal closed,
- * contract renewed, etc.), and flips `action_tracking.outcome_detected` for
- * the rows that match.
+ * For each eligible user, run `checkOutcomes(userId)` — which re-fetches
+ * every pending tracked entity, sees whether the expected outcome has
+ * materialized (invoice paid, deal closed, contract renewed, etc.), and
+ * flips `action_tracking.outcome_detected` for the rows that match.
+ *
+ * NOTE: eligibility previously came from active integration connections —
+ * with no integrations layer wired this cron is a healthy no-op.
  *
  * Schedule: `0 * * * *` (hourly) — registered in vercel.json.
  * Auth:     Bearer token must match CRON_SECRET.
@@ -14,7 +16,6 @@
 import { checkOutcomes } from '<npm>/lib/actions/outcome-tracker'
 import { hasServerSupabaseClient } from '<npm>/lib/supabase-server'
 import { serverErrorResponse } from '<npm>/lib/security'
-import { listAllConnections } from '<npm>/lib/nango/connections'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -43,12 +44,10 @@ export async function GET(request: Request): Promise<Response> {
 
   if (!hasServerSupabaseClient()) return serverErrorResponse()
 
-  // Only users with at least one live Nango connection are eligible — others
-  // have nothing we can re-fetch.
-  const allConnections = await listAllConnections()
-  const userIds = [
-    ...new Set(allConnections.map((r) => r.user_id)),
-  ]
+  // Eligible users previously came from active integration connections —
+  // with no integrations layer wired there is nothing we can re-fetch, so
+  // this is an empty list and the cron is a healthy no-op.
+  const userIds: string[] = []
 
   const results: PerUserResult[] = []
   let totalChecked = 0

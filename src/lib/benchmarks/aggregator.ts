@@ -1,5 +1,4 @@
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { listAllConnections } from '<npm>/lib/nango/connections'
 import { bucketForServiceMix, bucketForTeamSize } from './buckets'
 import { collectUserMetrics, type UserMetrics } from './collect'
 import { p25, p50, p75 } from './percentile'
@@ -31,16 +30,10 @@ const key = (team: TeamSizeBucket, mix: ServiceMixBucket): SampleKey => `${team}
 export async function runBenchmarkAggregation(): Promise<AggregateStats> {
   const supabase = getServerSupabaseClient()
 
-  // Find users with any active Nango connection — these are the
-  // candidates whose metrics can be sampled into benchmark cohorts.
-  const allConnections = await listAllConnections()
-  const connectionsByUser = new Map<string, Set<string>>()
-  for (const row of allConnections) {
-    const set = connectionsByUser.get(row.user_id) ?? new Set<string>()
-    set.add(row.tool_slug)
-    connectionsByUser.set(row.user_id, set)
-  }
-  const userIds = [...connectionsByUser.keys()]
+  // Candidate users previously came from active integration connections.
+  // With no integrations layer wired there is no source of sampled users,
+  // so aggregation runs over an empty set until integrations return.
+  const userIds: string[] = []
 
   // Sample sets keyed by (team_size, service_mix).
   // We always also accumulate into (team_size, 'all') to keep the pooled cohort.
@@ -67,7 +60,9 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
 
     const mixBucket = bucketForServiceMix(meta.service_mix as string | undefined) ?? null
 
-    const userConnections = connectionsByUser.get(userId) ?? new Set<string>()
+    // Connection info previously came from the integrations layer — none
+    // is wired, so the user is treated as having no connected tools.
+    const userConnections = new Set<string>()
 
     let metrics: UserMetrics
     try {

@@ -1,7 +1,7 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  * Type exports preserved so consumers still compile. Function bodies
- * return empty data and log a warning. Wire to Nango per the Gmail-first plan when ready.
+ * return empty data and log a warning. Wire to the integration layer when ready.
  */
 
 import type { BenchmarkMetric } from './types'
@@ -15,6 +15,6 @@ export async function collectUserMetrics(args: {
   blendedRate: number | null
 }): Promise<UserMetrics> {
   void args
-  console.warn('[STUB] collectUserMetrics — nango wire-up pending')
+  console.warn('[STUB] collectUserMetrics — integration wire-up pending')
   return {}
 }

@@ -131,7 +131,7 @@ const RECEIPTS: Array<{ n: string; title: string; body: string }> = [
 ];
 
 const AUTOMATION_RECEIPTS: string[] = [
-  "Built on Nango Triggers — 20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more",
+  "Built on event triggers — 20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more",
   "Executed durably on Trigger.dev — retries 5 times with exponential backoff if something fails",
   "Every action still routes through the approval gate by default — automation doesn't mean autonomy",
 ];
@@ -149,7 +149,7 @@ const STACK: Array<{ label: string; value: string }> = [
   { label: "Durable workflows", value: "Trigger.dev v3 (per-employee execution, delegation, automation runner)" },
   { label: "Scheduled cron", value: "Vercel Cron (28 built-in agents)" },
   { label: "AI models", value: "OpenAI GPT-5.5 / 5.4 / 4o / 4.1-nano · text-embedding-3-small · Anthropic Claude (scaffolded)" },
-  { label: "Tool brokerage", value: "Nango (25 live integrations, growing to 500+)" },
+  { label: "Tool brokerage", value: "OAuth-brokered (25 live integrations, growing to 500+)" },
   { label: "Web search", value: "Tavily" },
   { label: "Knowledge layer", value: "Anthropic Agent Skills (46 SKILL.md files across 9 domains)" },
   { label: "Observability", value: "Sentry · Statsig · Langfuse" },

@@ -3,9 +3,9 @@
 --
 -- Four tables:
 --   1. customer_automations       — the definition (what the customer wired up)
---   2. automation_trigger_instances — maps OpsRadar automations to Composio ti_* IDs
+--   2. automation_trigger_instances — maps OpsRadar automations to broker trigger IDs
 --   3. automation_runs            — one row per fired execution
---   4. automation_event_idempotency — dedupe Composio webhook retries
+--   4. automation_event_idempotency — dedupe broker webhook retries
 
 -- ─── 1. customer_automations ──────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ create table if not exists customer_automations (
     check (status in ('active', 'paused', 'archived')),
   -- Trigger config (denormalized for fast routing)
   trigger_kind    text not null
-    check (trigger_kind in ('composio_event', 'schedule', 'manual', 'webhook', 'chat')),
+    check (trigger_kind in ('event', 'schedule', 'manual', 'webhook', 'chat')),
   trigger_toolkit text,                                -- 'hubspot', null for non-event
   trigger_slug    text,                                -- e.g. 'HUBSPOT_DEAL_STAGE_UPDATED_TRIGGER'
   trigger_filter  jsonb not null default '{}'::jsonb,  -- {"deal_stage": "closedwon", "amount_gte": 5000}
@@ -77,12 +77,12 @@ create table if not exists automation_trigger_instances (
   id                    uuid primary key default gen_random_uuid(),
   automation_id         uuid not null references customer_automations(id) on delete cascade,
   user_id               uuid not null references auth.users(id) on delete cascade,
-  composio_trigger_id   text not null,                  -- 'ti_xxxxx' from Composio
+  trigger_id            text not null,                  -- broker trigger id
   trigger_slug          text not null,
   connected_account_id  text not null,
   is_active             boolean not null default true,
   created_at            timestamptz not null default now(),
-  unique(composio_trigger_id)
+  unique(trigger_id)
 );
 
 create index if not exists automation_trigger_instances_user_slug_idx
@@ -102,7 +102,7 @@ create table if not exists automation_runs (
   id                uuid primary key default gen_random_uuid(),
   automation_id     uuid not null references customer_automations(id) on delete cascade,
   user_id           uuid not null references auth.users(id) on delete cascade,
-  trigger_event     jsonb not null,                       -- the Composio payload or schedule ctx
+  trigger_event     jsonb not null,                       -- the event payload or schedule ctx
   status            text not null default 'running'
     check (status in ('running', 'succeeded', 'failed', 'awaiting_approval')),
   result            jsonb,
@@ -128,8 +128,8 @@ create policy "users read own automation runs"
 
 -- ─── 4. automation_event_idempotency ──────────────────────────────────────
 
--- Dedupe Composio webhook retries (Composio retries on non-2xx; we get the
--- same webhook-id multiple times). TTL prune > 7 days via a periodic job.
+-- Dedupe broker webhook retries (the integrations broker retries on non-2xx;
+-- we get the same webhook-id multiple times). TTL prune > 7 days via a periodic job.
 create table if not exists automation_event_idempotency (
   webhook_id      text primary key,
   received_at     timestamptz not null default now(),

@@ -1,10 +1,9 @@
 /**
  * `load_skill` — meta-tool for on-demand Anthropic Agent Skills.
  *
- * Parallel to `load_tool` (in src/lib/nango/load-tool.ts), but for the
- * 46-skill operator playbook library at knowledge-base/skills/. Mirrors
- * the CP-17 / 17b / 17c pattern from before the demolition — restored
- * post-demolition so the new Nango-based agents have the same skill access.
+ * The 46-skill operator playbook library lives at knowledge-base/skills/.
+ * Mirrors the CP-17 / 17b / 17c pattern from before the demolition —
+ * restored post-demolition so the agents keep the same skill access.
  *
  * Three-tier progressive disclosure:
  *   Tier 1 — Boot: catalog ("- name: description") injected into system prompt

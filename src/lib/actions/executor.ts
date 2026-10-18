@@ -4,20 +4,24 @@
  *
  * Two paths in / one path out:
  *
- *   - cron-agent path: runAgent → wrapToolsWithGate enqueues a row →
- *     customer clicks Approve → this executor runs the Nango call the
- *     gate originally intercepted.
+ *   - cron-agent path: runAgent's approval gate enqueues a row →
+ *     customer clicks Approve → this executor runs the call the gate
+ *     originally intercepted.
  *
  *   - coo-chat path: COO chat decides to call a tool → same flow.
  *
  * The executor reads the row's `payload.action_slug` (= tool name like
- * 'gmail_send') and `payload.arguments`, looks up the tool in the Nango
- * registry, and dispatches its `execute()` directly. The approval gate is
- * NOT re-checked — by this point the customer has explicitly OK'd it.
+ * 'gmail_send') and `payload.arguments` and dispatches the tool's
+ * `execute()` directly. The approval gate is NOT re-checked — by this
+ * point the customer has explicitly OK'd it.
+ *
+ * NOTE: no integration toolkits are registered right now (the integrations
+ * layer was removed), so there is no dispatcher to run — executeAction
+ * logs a warning and returns. When toolkits return, restore the lookup:
+ * map `action_slug` → the owning toolkit's `execute()` and run it here.
  */
 
 import type { AgentAction } from './types'
-import { TOOLKITS } from '<npm>/lib/nango/registry'
 
 type ToolActionPayload = {
   toolkit?: string
@@ -26,41 +30,16 @@ type ToolActionPayload = {
   agent_slug?: string
 }
 
-type ToolDispatch = (args: Record<string, unknown>) => Promise<unknown>
-
-function findDispatch(toolName: string, userId: string): ToolDispatch | null {
-  for (const [, entry] of Object.entries(TOOLKITS)) {
-    const core = entry.buildCore(userId)
-    if (toolName in core) {
-      const t = core[toolName]
-      if (t && typeof t.execute === 'function') {
-        const fn = t.execute as (a: unknown, o: unknown) => Promise<unknown>
-        return (a) => fn(a, {})
-      }
-    }
-    const advanced = entry.buildAdvanced(userId)
-    if (toolName in advanced) {
-      const t = advanced[toolName]
-      if (t && typeof t.execute === 'function') {
-        const fn = t.execute as (a: unknown, o: unknown) => Promise<unknown>
-        return (a) => fn(a, {})
-      }
-    }
-  }
-  return null
-}
-
 export async function executeAction(action: AgentAction): Promise<void> {
   if (action.action_type !== 'tool_action') {
     console.warn(
-      `[executeAction] Unsupported action_type "${action.action_type}". Only tool_action is wired on Nango today.`,
+      `[executeAction] Unsupported action_type "${action.action_type}". Only tool_action is supported.`,
     )
     return
   }
 
   const payload = action.payload as unknown as ToolActionPayload
   const toolName = payload.action_slug
-  const args = payload.arguments ?? {}
   const userId = action.user_id
 
   if (!userId || !toolName) {
@@ -68,23 +47,9 @@ export async function executeAction(action: AgentAction): Promise<void> {
     return
   }
 
-  const dispatch = findDispatch(toolName, userId)
-  if (!dispatch) {
-    console.warn(`[executeAction] No dispatcher found for tool "${toolName}"`)
-    return
-  }
-
-  try {
-    const result = await dispatch(args)
-    console.info(
-      `[executeAction] ${toolName} dispatched for user ${userId} — agent: ${payload.agent_slug ?? 'unknown'}`,
-    )
-    void result
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error(`[executeAction] ${toolName} failed:`, msg)
-    throw err
-  }
+  console.warn(
+    `[executeAction] No tool dispatcher is wired — "${toolName}" for user ${userId} was approved but not executed (agent: ${payload.agent_slug ?? 'unknown'})`,
+  )
 }
 
 /**

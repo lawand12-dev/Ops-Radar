@@ -66,7 +66,7 @@ export function stripeAuthErrorRule(input: {
     severity: 'needs-you',
     label: severityLabel('needs-you'),
     message: 'Stripe re-auth required — your API key was rejected.',
-    href: '/dashboard/integrations?tool=stripe',
+    href: '/dashboard',
   };
 }
 

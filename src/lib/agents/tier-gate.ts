@@ -1,5 +1,5 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  */
 import type { AgentSpec, AgentTier } from './types'
 

@@ -15,18 +15,6 @@ const STEPS: Array<{
   href: string;
 }> = [
   {
-    key: 'time_tracking',
-    label: 'Connect time tracking',
-    description: 'Harvest or Toggl — so we can track hours per client',
-    href: '/dashboard/integrations',
-  },
-  {
-    key: 'billing',
-    label: 'Connect billing',
-    description: 'Stripe — so we can match revenue to clients',
-    href: '/dashboard/integrations',
-  },
-  {
     key: 'blended_rate',
     label: 'Set your blended hourly rate',
     description: 'Your average cost per hour — used for margin calculations',

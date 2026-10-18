@@ -12,10 +12,9 @@ type ToolRow = {
   policy: Policy;
 };
 
-type Connection = { tool_slug: string; is_active: boolean };
 type StoredPolicy = { tool_slug: string; policy: string };
 
-// Display labels — mirrors the NANGO_TOOLS map in src/lib/nango.ts.
+// Toolkit display labels for the autonomy policy rows.
 const TOOLKITS: Array<{ slug: string; display: string }> = [
   { slug: 'stripe',            display: 'Stripe' },
   { slug: 'quickbooks',        display: 'QuickBooks' },
@@ -59,22 +58,16 @@ export function AutomationSettings() {
     let cancelled = false;
     void (async () => {
       try {
-        const [connRes, polRes] = await Promise.all([
-          fetch('/api/nango/connections'),
-          fetch('/api/dashboard/tool-policies'),
-        ]);
-        const connectionsResp = connRes.ok
-          ? ((await connRes.json()) as { connections?: Connection[] })
-          : { connections: [] as Connection[] };
+        const polRes = await fetch('/api/dashboard/tool-policies');
         const policiesResp = polRes.ok
           ? ((await polRes.json()) as { policies?: StoredPolicy[] })
           : { policies: [] as StoredPolicy[] };
 
         if (cancelled) return;
 
-        const connectedSet = new Set<string>(
-          (connectionsResp.connections ?? []).filter((c) => c.is_active).map((c) => c.tool_slug),
-        );
+        // Connections previously came from the integrations API — no
+        // integrations layer is wired, so every toolkit shows as not-connected.
+        const connectedSet = new Set<string>();
         const policyMap = new Map<string, Policy>();
         for (const p of policiesResp.policies ?? []) {
           if (p.policy === 'ask' || p.policy === 'auto' || p.policy === 'off') {
@@ -140,7 +133,7 @@ export function AutomationSettings() {
         </h2>
         {connectedRows.length === 0 ? (
           <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-5 text-[12.5px] text-[var(--color-fg-muted)]">
-            No tools connected yet. Connect one at <a href="/dashboard/integrations" className="text-[var(--color-primary)] hover:underline">/dashboard/integrations</a>.
+            No tools connected yet.
           </div>
         ) : (
           <ul className="space-y-2">

@@ -1,8 +1,8 @@
 'use client';
 
-// CP-15: simplified to a plain magic-link invite. Tool credentials now
-// live in Nango (OAuth) — the customer connects them themselves at
-// /dashboard/integrations after sign-in. No more n8n config provisioning.
+// CP-15: simplified to a plain magic-link invite. Tool credentials live
+// with the customer's own connected integrations (OAuth) — never in our
+// DB. No more n8n config provisioning.
 
 import { useState } from 'react';
 import { Button } from '<npm>/components/ui/button';
@@ -114,7 +114,7 @@ export default function OnboardCustomerPage() {
           <ol className="list-decimal pl-4 space-y-1.5">
             <li>Creates a Supabase <code className="font-mono">auth.users</code> row for the email.</li>
             <li>Sends a magic-link email so the customer can set a password.</li>
-            <li>On first sign-in, they land on <code className="font-mono">/dashboard/integrations</code> to connect their tools via Nango OAuth.</li>
+            <li>On first sign-in, they land on their dashboard to set up the workspace.</li>
           </ol>
         </div>
       </div>

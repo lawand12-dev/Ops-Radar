@@ -1,5 +1,5 @@
 /**
- * STUB — Nango wire-up pending (engine demolished 2026-05-26)
+ * STUB — integration wire-up pending (engine demolished 2026-05-26)
  */
 
 export type ExecutorContext = {
@@ -22,7 +22,7 @@ export async function executeCooTool(
   _args: Record<string, unknown>,
   _ctx: ExecutorContext,
 ): Promise<ExecutorResult> {
-  console.warn('[STUB] executeCooTool — nango wire-up pending')
+  console.warn('[STUB] executeCooTool — integration wire-up pending')
   return { ok: false, error: 'migration_in_progress' }
 }
 

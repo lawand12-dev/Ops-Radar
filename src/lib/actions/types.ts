@@ -196,7 +196,7 @@ export type IntegrationExpiredPayload = {
   tool_slug: string                           // 'hubspot', 'stripe', 'gmail', etc.
   connection_id: string
   reason?: string                             // whatever the broker supplied
-  reconnect_url: string                       // '/dashboard/integrations'
+  reconnect_url: string                       // re-auth deep link supplied by the broker
 }
 
 // The broker platform-disabled a trigger (auth dead, repeated webhook failures, etc.).

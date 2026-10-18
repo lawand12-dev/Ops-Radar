@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Plug,
   Settings,
   ChevronRight,
   Zap,
@@ -77,7 +76,6 @@ const navSections: NavSection[] = [
   {
     tag: 'WORKSPACE',
     items: [
-      { label: 'Integrations',  href: '/dashboard/integrations',         icon: Plug    },
       { label: 'Tool Autonomy', href: '/dashboard/settings/automation',  icon: Bot     },
       { label: 'MCP',           href: '/dashboard/settings/mcp',         icon: Network },
       { label: 'Team',          href: '/dashboard/settings/team',        icon: Users   },

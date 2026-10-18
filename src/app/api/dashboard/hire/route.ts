@@ -165,7 +165,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   })
 
   // An install turn short-circuits the model entirely (see the stream below),
-  // so skip the Nango lookup + prompt/tools assembly it doesn't need.
+  // so skip the integrations lookup + prompt/tools assembly it doesn't need.
   const isInstall = !!body?.install_draft && typeof body.install_draft === 'object'
 
   let systemPrompt = ''
@@ -173,19 +173,14 @@ export async function POST(request: NextRequest): Promise<Response> {
   let history: ModelMessage[] = []
 
   if (!isInstall) {
-    // Build the system prompt with live context (connected toolkits + roster).
-    const [{ listCustomerConnections }, { loadCustomEmployees }] = await Promise.all([
-      import('<npm>/lib/nango/connections'),
-      import('<npm>/lib/employees/registry'),
-    ])
-    const [connections, team] = await Promise.all([
-      listCustomerConnections(userId),
-      loadCustomEmployees(userId),
-    ])
+    // Build the system prompt with live context (roster). Connected toolkits
+    // require an integrations layer — none is wired, so pass [].
+    const { loadCustomEmployees } = await import('<npm>/lib/employees/registry')
+    const team = await loadCustomEmployees(userId)
     isFirstHire = team.length === 0
     systemPrompt = buildHireSystemPrompt({
       companyName: 'your company',
-      connectedToolkits: connections.map((c) => c.tool_slug),
+      connectedToolkits: [],
       existingTeam: team.map((e) => ({
         slug: e.slug,
         name: e.display.name,

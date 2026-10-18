@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
 
 type SalesData = {
@@ -73,14 +72,8 @@ export function SalesLiveCard() {
       {resp?.status === 'not_connected' && (
         <div className="flex flex-col items-start gap-2 py-2">
           <div className="text-body-sm text-[var(--color-fg-muted)]">
-            Connect HubSpot to see pipeline, leads, and won deals.
+            HubSpot is not connected yet.
           </div>
-          <Link
-            href="/dashboard/integrations"
-            className="text-[12.5px] font-medium text-[var(--color-primary)] no-underline hover:underline"
-          >
-            Go to integrations →
-          </Link>
         </div>
       )}
 
@@ -89,12 +82,6 @@ export function SalesLiveCard() {
           <div className="text-body-sm text-[var(--color-warn)]">
             HubSpot rejected the token — reconnect required.
           </div>
-          <Link
-            href="/dashboard/integrations"
-            className="text-[12.5px] font-medium text-[var(--color-warn)] no-underline hover:underline"
-          >
-            Reconnect HubSpot →
-          </Link>
         </div>
       )}
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
 
 type FinanceData = {
@@ -71,14 +70,8 @@ export function FinanceCard() {
       {resp?.status === 'not_connected' && (
         <div className="flex flex-col items-start gap-2 py-2">
           <div className="text-body-sm text-[var(--color-fg-muted)]">
-            Connect Stripe to see invoiced, paid, and overdue.
+            Stripe is not connected yet.
           </div>
-          <Link
-            href="/dashboard/integrations"
-            className="text-[12.5px] font-medium text-[var(--color-primary)] no-underline hover:underline"
-          >
-            Go to integrations →
-          </Link>
         </div>
       )}
 
@@ -87,12 +80,6 @@ export function FinanceCard() {
           <div className="text-body-sm text-[var(--color-warn)]">
             Stripe rejected the key — reconnect required.
           </div>
-          <Link
-            href="/dashboard/integrations"
-            className="text-[12.5px] font-medium text-[var(--color-warn)] no-underline hover:underline"
-          >
-            Reconnect Stripe →
-          </Link>
         </div>
       )}
 

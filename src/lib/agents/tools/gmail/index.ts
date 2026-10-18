@@ -5,7 +5,7 @@ export const GMAIL_AGENT: AgentSpec = {
   displayName: 'Gmail Agent',
   description: 'Daily scan of client email threads — flags unanswered messages, sentiment shifts, and scope-change signals.',
   model: 'gpt-5.4-mini',
-  nangoApps: ['gmail', 'notion'],
+  scopedToolkits: ['gmail', 'notion'],
   requiredTier: 'starter',
   requiredIntegrations: ['gmail'],
   cronSchedule: '0 8 * * *',

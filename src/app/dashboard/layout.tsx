@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const branding = user && plan === 'fo' ? await getFoBranding(user.id) : null;
 
   // Load custom employees for the sidebar YOUR TEAM section (CP-34c).
-  // Built-in employees aren't loaded here yet — they'll join the YOUR TEAM list once Nango wire-up lands.
+  // Built-in employees aren't loaded here yet — they'll join the YOUR TEAM list once an integrations layer lands.
   const customEmployees: CustomEmployeeNavItem[] = user
     ? (await loadCustomEmployees(user.id))
         .filter((e) => e.origin === 'custom')
