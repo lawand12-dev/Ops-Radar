@@ -12,7 +12,7 @@
 //   4. Upsert pattern_cards; mark stale ones (no breadcrumb in last
 //      45 days) as is_active=false
 
-import { openai } from '<npm>/lib/openai';
+import { generateTextWithFallback } from '<npm>/lib/ai/model-provider';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 import type { PatternCardInput } from './types';
 
@@ -88,20 +88,14 @@ export async function detectPatternsForUser(userId: string): Promise<{
     cluster.forEach((b) => (b.tags ?? []).forEach((t) => tagSet.add(t)));
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await generateTextWithFallback({
         model: PATTERN_MODEL,
-        messages: [
-          { role: 'system', content: PATTERN_SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: `Cluster size: ${cluster.length}\nShared tags: ${[...tagSet].join(', ')}\n\nBreadcrumbs:\n${clusterText}`,
-          },
-        ],
-        response_format: { type: 'json_object' },
+        system: PATTERN_SYSTEM_PROMPT,
+        prompt: `Cluster size: ${cluster.length}\nShared tags: ${[...tagSet].join(', ')}\n\nBreadcrumbs:\n${clusterText}`,
         temperature: 0.2,
-        max_tokens: 400,
+        maxOutputTokens: 400,
       });
-      const raw_json = completion.choices[0]?.message.content ?? '{}';
+      const raw_json = completion.text ?? '{}';
       const parsed = JSON.parse(raw_json) as {
         is_pattern?: boolean;
         pattern_type?: string;

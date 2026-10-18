@@ -11,7 +11,8 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import OpenAI from 'openai';
+import { embed } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { createClient } from '@supabase/supabase-js';
 
 // Tiny frontmatter parser — matches the convention used by
@@ -81,7 +82,8 @@ async function main(): Promise<void> {
   if (!openaiKey) throw new Error('Missing OPENAI_API_KEY');
 
   const supabase = createClient(url, key);
-  const openai = new OpenAI({ apiKey: openaiKey });
+  const openaiProvider = createOpenAI({ apiKey: openaiKey });
+  const embedModel = openaiProvider.textEmbeddingModel(EMBED_MODEL);
 
   console.log(`[embed-kb] scanning ${KB_ROOT} ...`);
   const files = await walkMarkdownFiles(KB_ROOT);
@@ -111,11 +113,10 @@ async function main(): Promise<void> {
     // match against the file's stated purpose, not just its body.
     const embedText = [chunk.title, chunk.summary, chunk.content].filter(Boolean).join('\n\n').slice(0, 8000);
 
-    const response = await openai.embeddings.create({
-      model: EMBED_MODEL,
-      input: embedText,
+    const { embedding } = await embed({
+      model: embedModel,
+      value: embedText,
     });
-    const embedding = response.data[0]?.embedding;
     if (!embedding || embedding.length !== EMBED_DIM) {
       console.error(`[embed-kb] unexpected embedding shape for ${file}`);
       continue;

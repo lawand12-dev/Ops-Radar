@@ -4,7 +4,7 @@
 // document the COO agent always has loaded. Generated monthly from
 // the active pattern cards + last 30 days of breadcrumbs.
 
-import { openai } from '<npm>/lib/openai';
+import { generateTextWithFallback } from '<npm>/lib/ai/model-provider';
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server';
 
 const BRIEF_MODEL = 'gpt-4o';
@@ -78,16 +78,14 @@ ${breadcrumbsBlock || '(none)'}`;
 
   let briefContent = '';
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await generateTextWithFallback({
       model: BRIEF_MODEL,
-      messages: [
-        { role: 'system', content: BRIEF_SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
+      system: BRIEF_SYSTEM_PROMPT,
+      prompt: userPrompt,
       temperature: 0.3,
-      max_tokens: 4000,
+      maxOutputTokens: 4000,
     });
-    briefContent = completion.choices[0]?.message.content ?? '';
+    briefContent = completion.text ?? '';
   } catch (err) {
     console.error('[living-brief] LLM failed:', err);
     return null;

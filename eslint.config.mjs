@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     "n8n-mcp-main/**",
     "design-libraries/**",
     "scripts/**",
+    "superpowers/**",
   ]),
 ]);
 

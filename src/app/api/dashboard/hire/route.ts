@@ -18,7 +18,7 @@
  *   - Pre-flight OpenAI quota check (429 with reset date if blown).
  *   - Resolve/create the hire_chat_sessions row + persist the user turn.
  *   - Build the 9 hire tools (compile/install/lifecycle + web_search/list_skills).
- *   - streamText with the versioned hire system prompt + Langfuse telemetry.
+ *   - streamText with the versioned hire system prompt.
  *   - Bridge the AI SDK fullStream → our SSE protocol, sniffing tool results
  *     for draft + hire cards.
  *   - Persist the assistant turn (content + tool_steps + draft_card) and bump
@@ -38,7 +38,6 @@ import { applyRateLimit } from '<npm>/lib/rate-limit'
 import { buildHireTools } from '<npm>/lib/hire/ai-sdk-tools'
 import { buildHireSystemPrompt } from '<npm>/lib/hire/system-prompt'
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
-import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse'
 import type { Json } from '<npm>/lib/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -255,7 +254,6 @@ export async function POST(request: NextRequest): Promise<Response> {
           )
           send({ type: 'error', message: 'The hire could not be saved. Try clicking Hire again.' })
         } finally {
-          await flushLangfuse().catch(() => {})
           controller.close()
         }
         return
@@ -274,11 +272,6 @@ export async function POST(request: NextRequest): Promise<Response> {
           // a draft is produced we abort the stream immediately so no loop can
           // form regardless of the model's discipline.
           stopWhen: stepCountIs(3),
-          experimental_telemetry: makeTelemetry({
-            userId,
-            sessionId: resolvedSessionId,
-            source: 'hire-chat',
-          }),
         })
 
         // Once propose/install produces its card, the turn's job is done. We
@@ -390,7 +383,6 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.error('[api/dashboard/hire] stream failed:', msg)
         send({ type: 'error', message: 'Something went wrong on our side. Try again in a moment.' })
       } finally {
-        await flushLangfuse().catch(() => {})
         controller.close()
       }
     },

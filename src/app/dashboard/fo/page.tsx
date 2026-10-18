@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { AlertCircle, Plus, ScrollText } from 'lucide-react';
 import { FoClientCard } from './_components/fo-client-card';
 import { PlanGate } from '../_components/plan-gate';
-import type { FoClientHealth, FoDashboardResponse } from '<npm>/lib/fo';
+import type { FoClient, FoClientHealth } from '<npm>/lib/fo';
 
+// The unified alerts feed (/api/fo/alerts) was removed with the stub
+// endpoints; the alerts section below renders nothing until a data source
+// returns. Keeping the render path so it lights up again later.
 type FoAlert = {
   id: string;
   fo_client_id: string;
@@ -16,16 +19,6 @@ type FoAlert = {
   entity_name: string;
   detail: string;
 };
-
-type FoAlertsResp = {
-  alerts?: FoAlert[];
-  counts?: { critical: number; warning: number; info: number };
-};
-
-type ApiResp =
-  | FoDashboardResponse
-  | { status: 'upgrade_required'; required_plan: string; required_plan_label: string; required_plan_price: string }
-  | { error: string };
 
 type PageState =
   | { kind: 'loading' }
@@ -42,47 +35,47 @@ export default function FoDashboardPage() {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTeamSize, setNewTeamSize] = useState('');
-  const [alerts, setAlerts] = useState<FoAlert[]>([]);
-  const [alertCounts, setAlertCounts] = useState({ critical: 0, warning: 0, info: 0 });
+  const alerts: FoAlert[] = [];
+  const alertCounts = { critical: 0, warning: 0, info: 0 };
 
   async function load() {
     setState({ kind: 'loading' });
     try {
-      const r = await fetch('/api/fo/dashboard');
-      const resp = (await r.json()) as ApiResp;
-      if ('clients' in resp) {
-        setState({
-          kind: 'ok',
-          clients: resp.clients,
-          totalRevenue: resp.total_revenue_mtd,
-          totalAtRisk: resp.total_at_risk,
-        });
-      } else if ('status' in resp && resp.status === 'upgrade_required') {
-        setState({ kind: 'upgrade_required' });
-      } else {
+      const r = await fetch('/api/fo/clients');
+      if (r.status === 402) {
+        const resp = (await r.json()) as { status: 'upgrade_required' } | { error: string };
+        if ('status' in resp) {
+          setState({ kind: 'upgrade_required' });
+          return;
+        }
         setState({ kind: 'error' });
+        return;
       }
+      if (!r.ok) {
+        setState({ kind: 'error' });
+        return;
+      }
+      const resp = (await r.json()) as { clients?: FoClient[] };
+      // The margin/revenue stats live in the per-client detail view; the list
+      // endpoint returns raw rows, so totals render as zero here, matching
+      // the demolished integration-engine stub behavior.
+      const clients = (resp.clients ?? []).map((row): FoClientHealth => ({
+        client: row,
+        margin_pct: null,
+        total_revenue_mtd: null,
+        total_cost_mtd: null,
+        at_risk_projects: 0,
+        integrations_connected: [],
+        computed_at: '',
+        fetch_errors: [],
+      }));
+      setState({ kind: 'ok', clients, totalRevenue: 0, totalAtRisk: 0 });
     } catch {
       setState({ kind: 'error' });
     }
   }
 
   useEffect(() => { void load(); }, []);
-
-  useEffect(() => {
-    // Load the unified alerts feed in parallel with the dashboard.
-    void (async () => {
-      try {
-        const r = await fetch('/api/fo/alerts');
-        if (!r.ok) return;
-        const data = (await r.json()) as FoAlertsResp;
-        if (data.alerts) setAlerts(data.alerts);
-        if (data.counts) setAlertCounts(data.counts);
-      } catch {
-        // best-effort; missing alerts shouldn't break the dashboard
-      }
-    })();
-  }, []);
 
   async function handleAddClient(e: React.FormEvent) {
     e.preventDefault();

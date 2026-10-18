@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
-import { openai } from '<npm>/lib/openai';
+import { generateTextWithFallback } from '<npm>/lib/ai/model-provider';
 import { Redis } from '@upstash/redis';
 
 type Persona = 'ceo' | 'coo' | 'both';
@@ -97,16 +97,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<NarrativeR
 
   let parsed: { hero: string; sections: { business: string } };
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await generateTextWithFallback({
       model: 'gpt-4o',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'You are an executive briefing assistant. Output strict JSON only.' },
-        { role: 'user',   content: buildPrompt(persona, snapshot) },
-      ],
+      system: 'You are an executive briefing assistant. Output strict JSON only.',
+      prompt: buildPrompt(persona, snapshot),
       temperature: 0.3,
     });
-    const raw = completion.choices[0]?.message?.content ?? '{}';
+    const raw = completion.text ?? '{}';
     parsed = JSON.parse(raw);
     if (!parsed?.hero || !parsed.sections?.business) {
       throw new Error('malformed narrative shape');

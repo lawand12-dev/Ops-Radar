@@ -13,7 +13,7 @@ import { getUserTier } from '<npm>/lib/agents/tier-gate'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const PROVIDERS: Provider[] = ['openai', 'tavily', 'anthropic']
+const PROVIDERS: Provider[] = ['openai', 'anthropic']
 
 export async function GET() {
   const userId = await getCurrentUserId()

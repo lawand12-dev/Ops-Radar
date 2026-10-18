@@ -31,8 +31,6 @@ import {
 } from './hooks'
 import { loadSkillCatalog, buildSkillsSystemBlock } from '<npm>/lib/skills'
 import { buildLoadSkillMeta } from './load-skill'
-import { makeTelemetry, flushLangfuse } from '<npm>/lib/observability/langfuse'
-import { agentLoopEnabled } from '<npm>/lib/flags'
 import { checkQuota, recordUsage } from '<npm>/lib/usage/track'
 import type { Provider } from '<npm>/lib/usage/types'
 
@@ -48,11 +46,6 @@ export async function runAgent(
   userId: string,
   options: RunAgentOptions = {},
 ): Promise<AgentRunResult> {
-  if (!(await agentLoopEnabled())) {
-    console.warn(`[runAgent] ${spec.slug} skipped — agent-loop-enabled flag is OFF`)
-    return { status: 'skipped', reason: 'agent-loop-disabled-by-flag' }
-  }
-
   // Pre-flight quota check: if the customer is over their monthly LLM cap,
   // skip the run entirely. Recording the eventual usage after the run is
   // too late — we'd have already burned the tokens. Fails open if the
@@ -73,12 +66,6 @@ export async function runAgent(
 
   const ctx = await prepareRunContext(spec, userId, options)
   const startedAt = Date.now()
-  const telemetry = makeTelemetry({
-    userId,
-    agentSlug: spec.slug,
-    agentRunId: ctx.runId ?? undefined,
-    source: 'cron-agent',
-  })
 
   try {
     const result = await generateTextWithFallback({
@@ -87,7 +74,6 @@ export async function runAgent(
       prompt: defaultRunPrompt(),
       tools: ctx.tools,
       stopWhen: stepCountIs(spec.maxSteps ?? 12),
-      experimental_telemetry: telemetry,
     })
 
     const elapsedMs = Date.now() - startedAt
@@ -130,8 +116,6 @@ export async function runAgent(
       actionsTaken,
     })
 
-    await flushLangfuse()
-
     return {
       status: 'success',
       summary,
@@ -158,7 +142,6 @@ export async function runAgent(
       },
     })
     await finishRun({ runId: ctx.runId, status: 'failed', errorMessage: message })
-    await flushLangfuse()
     return { status: 'failed', errorMessage: message }
   }
 }
@@ -178,10 +161,6 @@ export async function runAgentStream(
   userId: string,
   options: RunAgentOptions = {},
 ): Promise<ReturnType<typeof streamText>> {
-  if (!(await agentLoopEnabled())) {
-    throw new Error('Agent loop is disabled by the agent-loop-enabled flag. Re-enable in Statsig to resume.')
-  }
-
   // Same pre-flight quota check as runAgent. We throw here instead of
   // returning a {status: 'skipped'} object because streamText expects to
   // produce a stream — the caller (employee chat route, run-now button)
@@ -196,12 +175,6 @@ export async function runAgentStream(
   }
 
   const ctx = await prepareRunContext(spec, userId, options)
-  const telemetry = makeTelemetry({
-    userId,
-    agentSlug: spec.slug,
-    agentRunId: ctx.runId ?? undefined,
-    source: 'employee-chat',
-  })
 
   return await streamTextWithFallback({
     model: spec.model || 'gpt-5.5',
@@ -209,7 +182,6 @@ export async function runAgentStream(
     prompt: defaultRunPrompt(),
     tools: ctx.tools,
     stopWhen: stepCountIs(spec.maxSteps ?? 12),
-    experimental_telemetry: telemetry,
     onError: ({ error }) => {
       // Stream errors don't bubble to a try/catch — they arrive via the
       // onError callback. Capture in Sentry with the same agent context
@@ -259,7 +231,6 @@ export async function runAgentStream(
         summary,
         actionsTaken,
       })
-      await flushLangfuse()
     },
   })
 }

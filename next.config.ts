@@ -12,13 +12,6 @@ const rootDir = dirname(fileURLToPath(import.meta.url))
 //
 // Allowed third-party origins (and why):
 //
-//   Statsig (flags + analytics + session replay)
-//     - api.statsig.com             → Node SDK flag fetches (server)
-//     - featureassets.org           → client-side feature gate evaluation
-//     - prodregistryv2.org          → client event logging
-//     - statsigapi.net              → exception + telemetry stream
-//     - sessionreplay.statsig.com   → session-replay event stream (just in case)
-//
 //   Sentry (error tracking)
 //     - *.ingest.us.sentry.io       → error event ingestion
 //     - *.sentry.io                 → telemetry
@@ -28,10 +21,6 @@ const rootDir = dirname(fileURLToPath(import.meta.url))
 //     - vercel.live                 → preview-deploy comment widget (preview only)
 //     - va.vercel-scripts.com       → analytics script CDN
 //
-//   Langfuse (agent observability — server-side, but the SDK may also be
-//   bundled into client routes if we ever stream traces from the browser)
-//     - cloud.langfuse.com
-//
 //   Supabase (auth + database, browser SDK)
 //     - *.supabase.co               → REST + Realtime websockets
 //
@@ -39,12 +28,9 @@ const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
   : '*.supabase.co'
 
-const STATSIG_DOMAINS =
-  'https://api.statsig.com https://featureassets.org https://prodregistryv2.org https://statsigapi.net https://sessionreplay.statsig.com'
 const SENTRY_DOMAINS = 'https://*.ingest.us.sentry.io https://*.sentry.io'
 const VERCEL_DOMAINS =
   'https://vitals.vercel-insights.com https://vercel.live https://va.vercel-scripts.com'
-const LANGFUSE_DOMAINS = 'https://cloud.langfuse.com'
 const SUPABASE_DOMAINS = `https://${SUPABASE_HOST} wss://${SUPABASE_HOST}`
 
 const csp = [
@@ -63,21 +49,16 @@ const csp = [
   // script-src: 'unsafe-eval' only in dev (Next.js fast refresh needs it).
   // vercel.live is the preview comment widget; va.vercel-scripts.com is analytics.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"} https://vercel.live https://va.vercel-scripts.com`,
-  // Workers: blob: required for Statsig session-replay (which compiles its
-  // worker from a blob URL at runtime).
+  // Workers/blobs: no third-party workers run on the site today.
   "worker-src 'self' blob:",
   // connect-src: where the browser is allowed to make fetch/WebSocket calls.
   // This is the directive that was blocking everything — every third-party
   // service we use needs its domain listed here.
   [
     "connect-src 'self'",
-    STATSIG_DOMAINS,
     SENTRY_DOMAINS,
     VERCEL_DOMAINS,
-    LANGFUSE_DOMAINS,
     SUPABASE_DOMAINS,
-    // Statsig also probes cloudflare-dns.com for DNS-over-HTTPS fallback.
-    'https://cloudflare-dns.com',
   ].join(' '),
 ].join('; ')
 

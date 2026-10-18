@@ -60,3 +60,5 @@ n8n-workflows-main/
 .trigger
 # Playwright MCP screenshot/snapshot artifacts
 .playwright-mcp/
+.docs
+.knowledge-base

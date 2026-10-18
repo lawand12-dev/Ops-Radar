@@ -13,16 +13,12 @@ type KpiState =
 type FetchResult = Omit<Extract<KpiState, { kind: 'value' }>, 'kind' | 'label'> | { error: 'not_connected' | 'no_data' | 'failed' };
 
 /**
- * Composes 3 KPI cards from independent Layer-2 fetches.
+ * Composes 3 KPI cards.
  *
- * Each card owns its own fetch and state. The strip is just layout.
- * KPI sources (in order):
- *   1. Active pipeline · current  — /api/dashboard/sales-live
- *   2. New prospects · 7d         — /api/dashboard/marketing (proxy: emails_sent)
- *   3. Booked calls · 7d          — /api/dashboard/marketing
- *
- * The n8n "Time saved" and "Workflow success" tiles were removed in CP-15
- * (chatv2 sever). Future tiles should pull from agent_runs / agent_actions.
+ * The cards are connect-CTA surfaces — Layer-2 data endpoints were removed
+ * with the demolished integration engine, so each card currently renders
+ * its no-data state ("No activity yet") exactly as the old stub endpoints
+ * did. Future tiles should pull from agent_runs / agent_actions.
  */
 export function CockpitKpiStrip() {
   return (
@@ -114,119 +110,22 @@ function Sparkline({ values, up }: { values: number[]; up: boolean }) {
 }
 
 // ============================================================
-// Loaders — one per KPI. Each maps an upstream response to FetchResult.
-// Keep these defensive: any missing field returns { error: 'no_data' }.
-// HTTP 503 / status:'not_connected' / status:'not_enrolled' returns
-// { error: 'not_connected' } so the card switches to the connect-CTA.
+// Loaders — one per KPI. The upstream Layer-2 endpoints were stubs
+// (2026-06 demolition) and are gone now; each loader resolves to
+// 'no_data' so the card keeps rendering its "No activity yet" state.
 // ============================================================
 
-/**
- * Active pipeline
- * Upstream: /api/dashboard/sales-live
- * Shape: { status: 'ok' | 'not_connected' | 'requires_reconnect' | 'unavailable',
- *          data: HubspotSalesData }
- * HubspotSalesData: { pipeline_value, open_deals_count, new_leads,
- *                     deals_won_this_month, sparkline: {date,deals_created}[], ... }
- *
- * NOTE: Field is `pipeline_value` (not `pipeline_value_usd`).
- *       Deal count field is `open_deals_count` (not `open_deals` / `deals_open`).
- */
+/** Active pipeline — shows "No activity yet". */
 async function loadPipeline(): Promise<FetchResult> {
-  let res: Response;
-  try {
-    res = await fetch('/api/dashboard/sales-live');
-  } catch {
-    return { error: 'failed' };
-  }
-  if (res.status === 503) return { error: 'not_connected' };
-  let r: {
-    status?: string;
-    data?: {
-      pipeline_value?: number;
-      open_deals_count?: number;
-    };
-  };
-  try {
-    r = await res.json();
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'not_connected' || r?.status === 'requires_reconnect') return { error: 'not_connected' };
-  if (r?.status === 'unavailable') return { error: 'failed' };
-  const total = r?.data?.pipeline_value;
-  if (typeof total !== 'number') return { error: 'no_data' };
-  const open = r?.data?.open_deals_count;
-  const delta = typeof open === 'number' ? `${open} deals open` : undefined;
-  return { value: fmtCurrency(total), delta, deltaUp: true };
+  return { error: 'no_data' };
 }
 
-/**
- * New prospects · 7d (proxy: emails_sent MTD)
- * Upstream: /api/dashboard/marketing
- * Shape: WidgetFetchResult<MarketingWidgetData>
- *   → { status: 'ok' | 'error', data: MarketingWidgetData }
- * MarketingWidgetData: { emails_sent, meetings_booked, apollo_connected,
- *                        calendly_connected, open_rate_pct, reply_rate_pct,
- *                        reply_sparkline, period_label }
- *
- * NOTE: The marketing widget has no prospect-count field for Apollo.
- * `apollo_connected` is a boolean flag, not a metric. The closest available
- * proxy is `emails_sent`. If Apollo is not connected, we show not-connected.
- */
+/** New prospects · 7d — shows "No activity yet". */
 async function loadProspects(): Promise<FetchResult> {
-  let r: {
-    status?: string;
-    data?: {
-      emails_sent?: number | null;
-      apollo_connected?: boolean;
-      reply_sparkline?: number[] | null;
-    };
-  };
-  try {
-    r = await fetch('/api/dashboard/marketing').then((res) => res.json());
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'error') return { error: 'failed' };
-  if (r?.data?.apollo_connected === false) return { error: 'not_connected' };
-  const n = r?.data?.emails_sent;
-  if (typeof n !== 'number' || n === null) return { error: 'no_data' };
-  const spark: number[] | undefined = Array.isArray(r?.data?.reply_sparkline) && r.data!.reply_sparkline!.length > 0
-    ? (r.data!.reply_sparkline as number[])
-    : undefined;
-  return { value: String(n), deltaUp: true, spark };
+  return { error: 'no_data' };
 }
 
-/**
- * Booked calls · 7d
- * Upstream: /api/dashboard/marketing
- * Shape: WidgetFetchResult<MarketingWidgetData>
- * MarketingWidgetData: { meetings_booked, calendly_connected, ... }
- *
- * NOTE: `meetings_booked` covers the period returned by n8n (period_label),
- * not strictly 7d — but it is the only bookings count the upstream exposes.
- */
+/** Booked calls · 7d — shows "No activity yet". */
 async function loadBookings(): Promise<FetchResult> {
-  let r: {
-    status?: string;
-    data?: {
-      meetings_booked?: number | null;
-      calendly_connected?: boolean;
-    };
-  };
-  try {
-    r = await fetch('/api/dashboard/marketing').then((res) => res.json());
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'error') return { error: 'failed' };
-  if (r?.data?.calendly_connected === false) return { error: 'not_connected' };
-  const n = r?.data?.meetings_booked;
-  if (typeof n !== 'number' || n === null) return { error: 'no_data' };
-  return { value: String(n), deltaUp: true };
-}
-
-function fmtCurrency(n: number): string {
-  if (Math.abs(n) >= 1000) return `$${(n / 1000).toFixed(1)}k`;
-  return `$${Math.round(n).toLocaleString()}`;
+  return { error: 'no_data' };
 }

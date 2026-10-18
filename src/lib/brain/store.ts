@@ -25,7 +25,8 @@
 
 import crypto from 'node:crypto'
 import { getServerSupabaseClient } from '<npm>/lib/supabase-server'
-import { openai } from '<npm>/lib/openai'
+import { embed } from 'ai'
+import { openai } from '@ai-sdk/openai'
 import type {
   BrainDocument,
   CommitBrainChangesInput,
@@ -77,11 +78,10 @@ async function maybeEmbed(
   try {
     const trimmed = content.slice(0, 8000)
     if (!trimmed.trim()) return null
-    const r = await openai.embeddings.create({
-      model: EMBED_MODEL,
-      input: trimmed,
+    const { embedding: vec } = await embed({
+      model: openai.textEmbeddingModel(EMBED_MODEL),
+      value: trimmed,
     })
-    const vec = r.data[0]?.embedding
     if (!vec || vec.length !== 1536) return null
     return { embedding: vec, model: EMBED_MODEL }
   } catch (err) {

@@ -43,8 +43,7 @@ function monthResetAt(now: Date = new Date()): Date {
 }
 
 /**
- * Provider-specific count column. Tavily counts credits (one execution per
- * row), OpenAI/Anthropic count tokens.
+ * Provider-specific count column. OpenAI/Anthropic count tokens.
  */
 function countColumnFor(provider: Provider): 'credits_used' | 'tokens_used' {
   return provider === 'openai' || provider === 'anthropic' ? 'tokens_used' : 'credits_used'

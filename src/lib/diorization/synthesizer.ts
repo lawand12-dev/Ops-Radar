@@ -5,7 +5,9 @@
 // body does NOT enter our DB. Customer-owned raw content stays in the
 // source system or in a customer-encrypted archive.
 
-import { openai } from '<npm>/lib/openai';
+import { embed } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { generateTextWithFallback } from '<npm>/lib/ai/model-provider';
 import type { RawConversation, BreadcrumbInput } from './types';
 
 const SYNTH_MODEL = 'gpt-4o-mini';
@@ -47,20 +49,14 @@ export async function synthesise(
   let summary = '(empty)';
   let tags: string[] = [];
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await generateTextWithFallback({
       model: SYNTH_MODEL,
-      messages: [
-        { role: 'system', content: SYNTH_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Participants: ${raw.participants.join(', ')}\nOccurred at: ${raw.occurred_at}\nSource: ${raw.source_type}\n\nConversation body:\n${raw.body.slice(0, 12000)}`,
-        },
-      ],
-      response_format: { type: 'json_object' },
+      system: SYNTH_SYSTEM_PROMPT,
+      prompt: `Participants: ${raw.participants.join(', ')}\nOccurred at: ${raw.occurred_at}\nSource: ${raw.source_type}\n\nConversation body:\n${raw.body.slice(0, 12000)}`,
       temperature: 0.2,
-      max_tokens: 300,
+      maxOutputTokens: 300,
     });
-    const raw_json = completion.choices[0]?.message.content ?? '{}';
+    const raw_json = completion.text ?? '{}';
     const parsed = JSON.parse(raw_json) as { summary?: string; tags?: string[] };
     summary = typeof parsed.summary === 'string' ? parsed.summary : '(empty)';
     tags = Array.isArray(parsed.tags) ? parsed.tags.filter((t) => typeof t === 'string').slice(0, 12) : [];
@@ -83,11 +79,11 @@ export async function synthesise(
   // 2. Embed the summary (not the body — privacy + cost)
   let embedding: number[] | null = null;
   try {
-    const e = await openai.embeddings.create({
-      model: EMBED_MODEL,
-      input: summary.slice(0, 4000),
+    const e = await embed({
+      model: openai.textEmbeddingModel(EMBED_MODEL),
+      value: summary.slice(0, 4000),
     });
-    embedding = e.data[0]?.embedding ?? null;
+    embedding = e.embedding;
   } catch (err) {
     console.error('[diorize/synthesise] embedding failed:', err);
   }

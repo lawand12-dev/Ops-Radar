@@ -8,7 +8,7 @@
 
 import type { Plan } from '<npm>/lib/tier'
 
-export type Provider = 'openai' | 'tavily' | 'anthropic'
+export type Provider = 'openai' | 'anthropic'
 
 /** Operation names — keep this loose, free-form. Used as the `operation` tag. */
 export type Operation =
@@ -38,7 +38,6 @@ export type Operation =
  * complaint of "I hit the cap" is signal to either raise the cap or talk
  * about an enterprise tier.
  *
- * Tavily: count = credits (basic search = 1, advanced search = 2)
  * OpenAI: count = total tokens (input + output)
  * Anthropic: same as OpenAI
  */
@@ -46,23 +45,19 @@ export type TierCaps = Record<Provider, number>
 
 export const TIER_CAPS: Record<Plan, TierCaps> = {
   starter: {
-    tavily: 100,             // ~50 advanced searches / ~10 competitor briefs
     openai: 5_000_000,       // ~5M tokens/month — covers daily briefings + light chat
     anthropic: 5_000_000,
   },
   growth: {
-    tavily: 500,
     openai: 25_000_000,
     anthropic: 25_000_000,
   },
   pro: {
-    tavily: 2_500,
     openai: 100_000_000,
     anthropic: 100_000_000,
   },
   fo: {
     // Fractional Operator tier — multi-client; needs higher caps
-    tavily: 5_000,
     openai: 200_000_000,
     anthropic: 200_000_000,
   },

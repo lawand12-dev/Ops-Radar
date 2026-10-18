@@ -143,16 +143,15 @@ const ORG_RECEIPTS: string[] = [
 ];
 
 const STACK: Array<{ label: string; value: string }> = [
-  { label: "Frontend", value: "Next.js 16 · React 19 · Tailwind v4 · shadcn/Radix · Framer Motion" },
+  { label: "Frontend", value: "Next.js 16 · React 19 · Tailwind v4 · shadcn/Radix" },
   { label: "Backend", value: "Vercel Fluid Compute · Vercel AI SDK v6 · Vercel AI Gateway" },
   { label: "Database", value: "Supabase Postgres · pgvector · row-level security · multi-tenant" },
   { label: "Durable workflows", value: "Trigger.dev v3 (per-employee execution, delegation, automation runner)" },
-  { label: "Scheduled cron", value: "Vercel Cron (28 built-in agents)" },
+  { label: "Scheduled cron", value: "Vercel Cron (built-in employees)" },
   { label: "AI models", value: "OpenAI GPT-5.5 / 5.4 / 4o / 4.1-nano · text-embedding-3-small · Anthropic Claude (scaffolded)" },
-  { label: "Tool brokerage", value: "OAuth-brokered (25 live integrations, growing to 500+)" },
-  { label: "Web search", value: "Tavily" },
+  { label: "Tool brokerage", value: "OAuth-brokered (in active rebuild)" },
   { label: "Knowledge layer", value: "Anthropic Agent Skills (46 SKILL.md files across 9 domains)" },
-  { label: "Observability", value: "Sentry · Statsig · Langfuse" },
+  { label: "Observability", value: "Sentry" },
   { label: "Rate limiting + cache", value: "Upstash Redis" },
   { label: "Email", value: "Resend" },
   { label: "MCP server", value: "OpsRadar's own brain is queryable as MCP by external agents" },
