@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
             <p className="text-body leading-[1.6]">
               We collect the minimum data needed to run the service. Your client
               business data — everything read from HubSpot, ClickUp, Harvest,
-              Stripe, and every other tool you connect — is never stored in
+              and every other tool you connect — is never stored in
               OpsRadar&apos;s database. It is read live, used to answer your
               question or generate your briefing, and discarded. We do not sell
               your data. We do not share it with advertisers. Email us to delete
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
             <ul className="space-y-2 list-disc pl-6 text-body leading-[1.6]">
               <li>Name, work email, and company name</li>
               <li>Password (hashed — we never see the plaintext)</li>
-              <li>Subscription plan and billing status (not payment card details — those stay with Stripe)</li>
+              <li>Subscription plan and billing status (not payment card details — those stay with our payment processor)</li>
               <li>Audit answers and your generated audit report</li>
               <li>Your website URL if you provide one</li>
               <li>IP address (standard logs, used for rate limiting and abuse prevention)</li>
@@ -70,7 +70,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-h2 font-serif tracking-[-0.02em] text-[var(--color-fg)] mb-4">Your connected tools — the critical rule</h2>
             <p className="text-body leading-[1.6] mb-3">
               The AI COO connects to tools your agency already uses: HubSpot,
-              Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Stripe,
+              Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl,
               Calendly, Apollo, and others. When you connect a tool, we store
               the OAuth token or the encrypted API key you provide. That
               credential is the only thing we persist.
@@ -127,7 +127,7 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-body leading-[1.6]">
               Our full subprocessor list: Supabase, Vercel, Resend, Upstash,
-              Anthropic, Stripe (payment processing). We do not sell your data
+              Anthropic, and our payment processor. We do not sell your data
               to any third party.
             </p>
           </section>

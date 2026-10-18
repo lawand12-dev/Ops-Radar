@@ -64,9 +64,9 @@ const STEPS: Step[] = [
     tag: "Connect",
     duration: "~5 minutes",
     headline: "Connect the tools you already use.",
-    body: "Sign in. You see the integrations page. Click Stripe → OAuth in 4 clicks. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Every OAuth handshake is brokered for you. We never see your API keys.",
+    body: "Sign in. You see the integrations page. Click HubSpot → OAuth in 4 clicks. Click ClickUp, Harvest, Gmail, Notion, Slack — whatever stack your business runs on. Every OAuth handshake is brokered for you. We never see your API keys.",
     yourSide: [
-      "Click the integrations you use. Stripe + HubSpot + ClickUp + Harvest + Gmail + Notion + Slack is the common starter set.",
+      "Click the integrations you use. HubSpot + ClickUp + Harvest + Gmail + Notion + Slack is the common starter set.",
       "Approve each OAuth scope as it pops up — read scopes by default, write scopes per tool.",
     ],
     ourSide: [
@@ -76,7 +76,7 @@ const STEPS: Step[] = [
     ],
     youGet:
       "Your AI workforce now has the live data it needs to start working. No CSV uploads, no nightly ETL jobs, no syncing.",
-    note: "Stripe, HubSpot, ClickUp, Harvest, Gmail, Notion, Slack, Calendly, Pipedrive, Apollo, QuickBooks, Google Calendar / Analytics / Ads, LinkedIn, Asana, Monday, Toggl, BambooHR, Gusto, Typeform, Intercom, Zendesk are live now.",
+    note: "HubSpot, ClickUp, Harvest, Gmail, Notion, Slack, Calendly, Pipedrive, Apollo, QuickBooks, Google Calendar / Analytics / Ads, LinkedIn, Asana, Monday, Toggl, BambooHR, Gusto, Typeform, Intercom, Zendesk are live now.",
   },
   {
     id: "workforce",
@@ -85,7 +85,7 @@ const STEPS: Step[] = [
     duration: "Instant",
     headline:
       "28 named AI employees already work for you. They started the moment you signed in.",
-    body: "💰 Riley already has access to your Stripe. 📐 Scott already has access to your Harvest. 📨 Cole already has access to your overdue invoices. None of them have done anything yet — they ship daily and weekly schedules. You can also run any of them on demand from the COO chat. Each has their own emoji, their own bio, their own page.",
+    body: "💰 Riley already has access to your revenue data. 📐 Scott already has access to your Harvest. 📨 Cole already has access to your overdue invoices. None of them have done anything yet — they ship daily and weekly schedules. You can also run any of them on demand from the COO chat. Each has their own emoji, their own bio, their own page.",
     yourSide: [
       "Each of the 28 named employees appears in the YOUR TEAM section of the sidebar from day one.",
       "Click any one to read their bio, schedule, and which tools they're scoped to.",
@@ -93,7 +93,7 @@ const STEPS: Step[] = [
     ],
     ourSide: [
       "11 named domain agents — Riley (Revenue), Cole (Collections), Scott (Scope), Devon (Delivery), Brian (Briefing), Penny (Profitability), Tia (Team), Grace (Growth), Renee (Renewals), Sam (Stack), Evan (Evaluator).",
-      "17 toolkit specialists underneath them — Stripe Specialist, HubSpot Specialist, Harvest Specialist, and so on. They feed findings up to the named domain agents (orchestrator-worker pattern).",
+      "17 toolkit specialists underneath them — HubSpot Specialist, Harvest Specialist, and so on. They feed findings up to the named domain agents (orchestrator-worker pattern).",
       "Senior-COO operator judgment baked into every prompt — signals, thresholds, decision trees, verbatim conversation scripts.",
     ],
     youGet:
@@ -107,7 +107,7 @@ const STEPS: Step[] = [
     tag: "Hire",
     duration: "~4 minutes",
     headline: "Describe a role. Sign the offer. They start tomorrow.",
-    body: 'Open the Hire chat at /dashboard/hire. Tell us who you want: "I want a Bookkeeper named Sarah, every day at 8 AM, she pulls yesterday\'s Stripe charges and flags anything over $5,000 for my approval." We compile the spec — name, role, schedule, scoped tools, system prompt, first task on hire. You read it as an inline card. Click Hire. Sarah starts tomorrow at 8 AM.',
+    body: 'Open the Hire chat at /dashboard/hire. Tell us who you want: "I want a Bookkeeper named Sarah, every day at 8 AM, she pulls yesterday\'s payments and flags anything over $5,000 for my approval." We compile the spec — name, role, schedule, scoped tools, system prompt, first task on hire. You read it as an inline card. Click Hire. Sarah starts tomorrow at 8 AM.',
     yourSide: [
       'Describe the role in plain English. No JSON, no templates, no nodes.',
       "Read the spec card. Edit anything you want (system prompt, tools, schedule) before clicking Hire.",
@@ -169,7 +169,7 @@ const CONCERNS: Concern[] = [
     id: "data",
     question: "Where does our client business data live?",
     answer:
-      "In your connected tools — Stripe, HubSpot, ClickUp, Harvest. Every dashboard view live-fetches from source on every load. OpsRadar never persists your customer business data in its own database. Only computed metadata — agent actions, alert rules, briefings, learned rules, approval history — lives in OpsRadar's Postgres. This is a hard architectural rule, not a marketing promise.",
+      "In your connected tools — HubSpot, ClickUp, Harvest. Every dashboard view live-fetches from source on every load. OpsRadar never persists your customer business data in its own database. Only computed metadata — agent actions, alert rules, briefings, learned rules, approval history — lives in OpsRadar's Postgres. This is a hard architectural rule, not a marketing promise.",
   },
   {
     id: "custom",
@@ -382,7 +382,7 @@ function ArchitectureSection() {
                            ▼
                    ┌───────┴───────┐
                    │               │
-                Stripe        HubSpot   (and 23 more)
+                Notion        HubSpot   (and 23 more)
                   │               │
                   ▼               ▼
               [response]      [response]
@@ -446,7 +446,7 @@ function ArchitectureSection() {
 function FourMinutePath() {
   const path: Array<{ n: string; what: string; time: string }> = [
     { n: "01", what: "Sign up — email + password. No credit card.", time: "15 sec" },
-    { n: "02", what: "Connect Stripe — OAuth, 4 clicks.", time: "45 sec" },
+    { n: "02", what: "Connect Harvest — OAuth, 4 clicks.", time: "45 sec" },
     { n: "03", what: "Connect HubSpot — OAuth, 4 clicks.", time: "45 sec" },
     {
       n: "04",

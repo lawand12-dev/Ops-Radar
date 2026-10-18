@@ -11,7 +11,7 @@
  *     `firing-a-client` skill if asked").
  *
  * Intentionally OMITTED (the COO chat has these — Hire does not):
- *   - get_finance / get_sales / get_profitability / get_capacity / etc.
+ *   - get_sales / get_profitability / get_capacity / etc.
  *   - search_brain / query_historical / write_brain_document
  *   - queue_action / record_decision / run_agent_now
  *   - analyze_document / research_competitor

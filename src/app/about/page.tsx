@@ -41,14 +41,14 @@ const CREDIBILITY_MARKERS = [
     label: 'Your data, your tools',
     value: 'We never store it.',
     detail:
-      'The AI COO reads live from HubSpot, ClickUp, Harvest, Stripe, and the rest. Your client business data stays in the tools you already pay for. Revoke access in one click any time.',
+      'The AI COO reads live from HubSpot, ClickUp, Harvest, and the rest. Your client business data stays in the tools you already pay for. Revoke access in one click any time.',
   },
   {
     n: '03',
     label: 'Stack depth',
     value: '10 integrations live.',
     detail:
-      'HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Stripe, Calendly, Apollo. Most agencies are already running 4–6 of them. We add roughly one new integration every two weeks.',
+      'HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Calendly, Apollo. Most agencies are already running 4–6 of them. We add roughly one new integration every two weeks.',
   },
   {
     n: '04',
@@ -210,7 +210,7 @@ function ShortVersion() {
           <RevealOnScroll delay={100} offset={40}>
             <div className="space-y-6 text-body-lg leading-[1.55] text-[var(--color-fg-muted)]">
               <p>
-                The AI COO is the intelligence layer for marketing agencies. It reads live from the tools you already pay for — HubSpot, ClickUp, Harvest, Stripe — watches margin, scope, and utilization every minute, and tells you what to do next. It does the four loops every functioning ops leader runs every week: OPERATE the work, OBSERVE the agency, BRAIN your live data, GUARD the stack overnight.
+                The AI COO is the intelligence layer for marketing agencies. It reads live from the tools you already pay for — HubSpot, ClickUp, Harvest — watches margin, scope, and utilization every minute, and tells you what to do next. It does the four loops every functioning ops leader runs every week: OPERATE the work, OBSERVE the agency, BRAIN your live data, GUARD the stack overnight.
               </p>
               <p>
                 A fractional COO is $7K–$15K/month. A full-time COO is $25K. A Chief AI Officer is $400K/year. We charge $750–$3,000/month for software that runs 24/7 and never quits. Sub-$5M agencies finally have a real COO.
@@ -292,7 +292,7 @@ function OriginNote() {
 
           <div className="space-y-5 text-body-lg leading-[1.65] text-[var(--color-fg-muted)]">
             <p>
-              In 2023 I sat with the founder of a $2M agency at her Q3 books review. One client had cost her $40,000 that quarter. The data was in six places — Productive, Harvest, Stripe, two ad accounts, a Slack thread. By the time anyone added it up, the quarter was over. She didn&rsquo;t have a margin problem. She had a visibility problem.
+              In 2023 I sat with the founder of a $2M agency at her Q3 books review. One client had cost her $40,000 that quarter. The data was in five places — Productive, Harvest, two ad accounts, a Slack thread. By the time anyone added it up, the quarter was over. She didn&rsquo;t have a margin problem. She had a visibility problem.
             </p>
             <p>
               The fractional COO market is $7K–$15K/month. Sub-$5M agencies — 60% of the industry — can&rsquo;t afford one. A full-time COO is $25K. A Chief AI Officer is $400K. The agencies that need an ops leader most are the ones priced out of having one.

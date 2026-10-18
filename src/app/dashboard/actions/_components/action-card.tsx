@@ -8,7 +8,6 @@ import type {
   MarginAlertPayload,
   HoursBudgetPayload,
   WorkflowFailurePayload,
-  HubSpotHarvestPayload,
 } from '<npm>/lib/actions/types';
 import { ACTION_LABELS } from '<npm>/lib/actions/types';
 
@@ -40,10 +39,6 @@ function Summary({ action }: { action: AgentAction }) {
     case 'workflow_failure': {
       const pp = p as WorkflowFailurePayload;
       return <span>&ldquo;{pp.workflow_name}&rdquo; failed {pp.failure_count}× in 24h</span>;
-    }
-    case 'hubspot_harvest_sync': {
-      const pp = p as HubSpotHarvestPayload;
-      return <span>{pp.hubspot_company_name} → Harvest</span>;
     }
     default:
       return null;

@@ -10,7 +10,6 @@ export type UserMetrics = Partial<Record<BenchmarkMetric, number>>
 
 export async function collectUserMetrics(args: {
   userId: string
-  stripeConnected: boolean
   harvestConnected: boolean
   blendedRate: number | null
 }): Promise<UserMetrics> {

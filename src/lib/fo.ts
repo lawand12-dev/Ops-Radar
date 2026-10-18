@@ -50,7 +50,6 @@ export type FoDashboardResponse = {
  * Mirrors the main app's supported integrations.
  */
 export const FO_SUPPORTED_TOOLS = [
-  'stripe',
   'harvest',
   'clickup',
   'hubspot',

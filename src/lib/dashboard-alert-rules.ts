@@ -52,24 +52,6 @@ export function severityLabel(severity: AlertSeverity): string {
 // Keep these pure: no fetching, no logging, no side effects.
 // ============================================================
 
-/** Stripe integration returned an auth/permission error. */
-export function stripeAuthErrorRule(input: {
-  hasError: boolean;
-  errorCode?: string | null;
-}): DashboardAlert | null {
-  if (!input.hasError) return null;
-  const isAuthError = !input.errorCode
-    || ['unauthorized', 'permission_denied', 'api_key_invalid'].includes(input.errorCode);
-  if (!isAuthError) return null;
-  return {
-    id: 'stripe-auth',
-    severity: 'needs-you',
-    label: severityLabel('needs-you'),
-    message: 'Stripe re-auth required — your API key was rejected.',
-    href: '/dashboard',
-  };
-}
-
 /** Any integration with elevated error rate (>5 errors in 24h). */
 export function elevatedErrorRateRule(input: {
   tool: string;

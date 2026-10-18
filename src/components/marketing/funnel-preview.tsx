@@ -193,7 +193,7 @@ function CallMini() {
 
 const CALL_ITEMS = [
   "Team: 14 · 4 ops · 6 delivery",
-  "Stack: HubSpot · Stripe · Meta",
+  "Stack: HubSpot · Slack · Meta",
   "Signal: hired 2nd ops in Q1",
 ];
 
@@ -228,7 +228,7 @@ function DiscoveryMini() {
 }
 
 const DISCOVERY_FIELDS_MINI: Array<[string, string]> = [
-  ["Tools you use", "HubSpot · Stripe · Slack · Meta"],
+  ["Tools you use", "HubSpot · Notion · Slack · Meta"],
   ["Team size", "14 people"],
   ["Top friction", "Reporting takes 3 days"],
 ];
@@ -358,7 +358,7 @@ const DASHBOARD_KPIS_MINI: Array<{
   trend: string;
   kind: "up" | "flat";
 }> = [
-  { label: "Revenue · 30d", source: "Stripe", value: "$240k", trend: "+12%", kind: "up" },
+  { label: "Revenue · 30d", source: "QuickBooks", value: "$240k", trend: "+12%", kind: "up" },
   { label: "Ad spend · 30d", source: "Meta+G", value: "$48k", trend: "MER 5.0", kind: "flat" },
   { label: "Leads · 7d", source: "HubSpot", value: "162", trend: "+24", kind: "up" },
   { label: "Hours · 30d", source: "OPERATE", value: "2,431", trend: "+18%", kind: "up" },

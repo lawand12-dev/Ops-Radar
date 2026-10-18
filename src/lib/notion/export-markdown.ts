@@ -369,7 +369,7 @@ function buildReadme(input: {
     '',
     '1. Your Notion workspace (always — it lives in your Notion account)',
     '2. This weekly markdown snapshot (portable to any tool that reads markdown)',
-    '3. The data in your original tools (Stripe, HubSpot, etc.) — we never touched those',
+    '3. The data in your original tools (HubSpot, ClickUp, etc.) — we never touched those',
     '',
     'This export is automated every Sunday. You can leave OpsRadar at any time and take everything with you.',
     '',

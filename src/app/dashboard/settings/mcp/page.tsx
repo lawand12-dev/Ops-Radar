@@ -13,7 +13,6 @@ import { McpTokenView } from './_components/mcp-token-view';
 export const dynamic = 'force-dynamic';
 
 const MCP_TOOLS = [
-  { name: 'opsradar.get_finance', scope: 'finance:read', description: 'Stripe finance snapshot' },
   { name: 'opsradar.get_sales', scope: 'sales:read', description: 'HubSpot/Pipedrive pipeline' },
   { name: 'opsradar.get_profitability', scope: 'profitability:read', description: 'Per-client margins' },
   { name: 'opsradar.get_capacity', scope: 'capacity:read', description: 'Team utilization' },

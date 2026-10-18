@@ -3,7 +3,7 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export type WidgetFallbackProps = {
-  /** Tool/source label — e.g. "Stripe". Used in the message. */
+  /** Tool/source label — e.g. "HubSpot". Used in the message. */
   source: string;
   /** Optional retry handler. If omitted, the retry button is hidden. */
   onRetry?: () => void;

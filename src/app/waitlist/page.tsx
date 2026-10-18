@@ -45,7 +45,7 @@ const REALITY: Array<{ label: string; body: string }> = [
   },
   {
     label: "What's next",
-    body: "Self-serve onboarding (Stripe checkout → Notion brain provisioning → first AI employee hired in 4 minutes). Tier enforcement across the 4 plans. Then we open the front door.",
+    body: "Self-serve onboarding (checkout → Notion brain provisioning → first AI employee hired in 4 minutes). Tier enforcement across the 4 plans. Then we open the front door.",
   },
   {
     label: "Today",

@@ -82,10 +82,10 @@ const SUGGESTIONS: Array<{ title: string; sub: string; prompt: string; icon: Luc
   },
   {
     title: 'A bookkeeper',
-    sub: 'Pulls Stripe activity and flags big charges',
+    sub: 'Pulls payment activity and flags big charges',
     icon: Calculator,
     prompt:
-      'I want a Bookkeeper named Sarah who pulls yesterday\'s Stripe charges every day at 8am and flags anything over $5,000.',
+      'I want a Bookkeeper named Sarah who pulls yesterday\'s payments every day at 8am and flags anything over $5,000.',
   },
   {
     title: 'An SDR',

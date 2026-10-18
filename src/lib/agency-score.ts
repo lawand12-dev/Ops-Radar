@@ -31,7 +31,6 @@ export type AgencyScore = {
 
 export async function computeAgencyScore(opts: {
   userId: string
-  stripeConnected: boolean
   harvestConnected: boolean
   blendedRate: number
   teamSizeRaw: string

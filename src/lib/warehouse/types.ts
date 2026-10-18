@@ -1,7 +1,7 @@
 /**
  * Three-tier memory architecture — Tier 2 (raw event warehouse) types (CP-25).
  *
- * Every source (Stripe, HubSpot, Harvest, etc.) ingests events into the
+ * Every source (HubSpot, Harvest, etc.) ingests events into the
  * `external_events` table via recordEvent / recordEvents. The AI agents
  * query history via queryEvents / aggregateByMonth.
  *
@@ -12,7 +12,6 @@ import type { Json } from '<npm>/lib/database.types'
 
 /** Canonical source names — must match what the tool agents emit. */
 export type EventSource =
-  | 'stripe'
   | 'hubspot'
   | 'pipedrive'
   | 'apollo'

@@ -6,7 +6,7 @@ import { cn } from "<npm>/lib/utils"
 
 /**
  * Phase D — pill CTAs site-wide per docs/design-language-opsradar.md §5.1.
- * Mercury/Vercel/Stripe converge on this exact shape:
+ * Mercury/Vercel converge on this exact shape:
  *   border-radius: 9999px, 48px height (lg), weight 500
  *   transition: 300ms cubic-bezier(0,0,0.2,1) on background-color ONLY
  *   hover: shift fill color only — no transform, no shadow, no scale (Mercury rule)

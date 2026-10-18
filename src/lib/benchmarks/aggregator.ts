@@ -68,7 +68,6 @@ export async function runBenchmarkAggregation(): Promise<AggregateStats> {
     try {
       metrics = await collectUserMetrics({
         userId,
-        stripeConnected:  userConnections.has('stripe'),
         harvestConnected: userConnections.has('harvest'),
         blendedRate:      typeof meta.blended_hourly_rate_usd === 'number'
           ? meta.blended_hourly_rate_usd

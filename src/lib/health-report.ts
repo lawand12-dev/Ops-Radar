@@ -17,7 +17,6 @@ export type HealthReport = {
 
 export async function generateHealthReport(opts: {
   userId: string
-  stripeConnected: boolean
   harvestConnected: boolean
   blendedRate: number
   companyName: string

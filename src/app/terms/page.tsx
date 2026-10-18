@@ -117,7 +117,7 @@ export default function TermsOfService() {
             <h2 className="text-h2 font-serif tracking-[-0.02em] text-[var(--color-fg)] mb-4">Connected tools and your data</h2>
             <p className="text-body leading-[1.6] mb-3">
               OpsRadar connects to third-party tools — HubSpot, Pipedrive,
-              ClickUp, Asana, Monday, Harvest, Toggl, Stripe, Calendly, Apollo,
+              ClickUp, Asana, Monday, Harvest, Toggl, Calendly, Apollo,
               and others — through OAuth or API keys you provide. By connecting
               a tool, you confirm you have the right to grant OpsRadar read
               access to that tool on behalf of your agency.

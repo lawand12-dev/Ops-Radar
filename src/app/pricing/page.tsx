@@ -92,7 +92,7 @@ const TIERS: Tier[] = [
     includesHeader: "What's included",
     bullets: [
       "3 seats (+$100/seat after)",
-      "All 10 integrations (Stripe, HubSpot, ClickUp, Harvest, Notion, etc.)",
+      "All 10 integrations (HubSpot, ClickUp, Harvest, Notion, etc.)",
       "COO chat with live data context",
       "Per-client profitability + scope creep alerts — catch the leaking client in week 2, not month 3",
       "Peer benchmarks (industry cohorts)",
@@ -240,7 +240,7 @@ const WEDGE_ROWS = [
 const FAQS = [
   {
     q: "What counts as \"an approved action\"?",
-    a: "Anything your AI agents do on a connected tool when you've clicked Approve: sending Gmail drafts, creating Stripe invoices, updating HubSpot deals, posting in Slack, creating Notion pages, adjusting retainers. Reads—fetching data, looking things up—never count. Only writes you approved count toward your meter.",
+    a: "Anything your AI agents do on a connected tool when you've clicked Approve: sending Gmail drafts, creating invoices, updating HubSpot deals, posting in Slack, creating Notion pages, adjusting retainers. Reads—fetching data, looking things up—never count. Only writes you approved count toward your meter.",
   },
   {
     q: "What if I never hit my action cap?",
@@ -357,7 +357,7 @@ function PageHeader() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/*  Two promises stripe (above the tiers)                                      */
+/*  Two promises band (above the tiers)                                        */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function TwoPromisesSection() {

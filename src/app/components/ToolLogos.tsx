@@ -62,25 +62,12 @@ function AirtableIcon() {
   )
 }
 
-function StripeIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="Stripe">
-      <rect width="32" height="32" rx="6" fill="#635BFF" />
-      <path
-        d="M15.2 12.8c0-1.06.87-1.47 2.3-1.47 2.06 0 4.67.62 6.73 1.73V8.4a17.9 17.9 0 0 0-6.73-1.24c-5.5 0-9.2 2.88-9.2 7.68 0 7.49 10.32 6.29 10.32 9.52 0 1.25-1.09 1.65-2.6 1.65-2.25 0-5.13-.93-7.4-2.17v5.72c2.52 1.09 5.07 1.54 7.4 1.54 5.64 0 9.5-2.8 9.5-7.64-.03-8.09-10.32-6.65-10.32-9.66z"
-        fill="white"
-      />
-    </svg>
-  )
-}
-
 const logos = [
   { name: 'Slack',             Icon: SlackIcon },
   { name: 'HubSpot',           Icon: HubSpotIcon },
   { name: 'Google Workspace',  Icon: GoogleWorkspaceIcon },
   { name: 'Notion',            Icon: NotionIcon },
   { name: 'Airtable',         Icon: AirtableIcon },
-  { name: 'Stripe',            Icon: StripeIcon },
 ]
 
 export default function ToolLogos() {

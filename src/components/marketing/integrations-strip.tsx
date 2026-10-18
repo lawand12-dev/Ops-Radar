@@ -21,7 +21,6 @@ export function IntegrationsStrip() {
 }
 
 const TOOLS = [
-  "Stripe",
   "HubSpot",
   "Slack",
   "Meta Ads",

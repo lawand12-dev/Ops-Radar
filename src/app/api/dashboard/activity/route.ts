@@ -6,7 +6,6 @@ const CACHE_TTL_SECONDS = 60;
 const MAX_EVENTS = 10;
 
 type ActivityEventType =
-  | 'stripe_charge'
   | 'hubspot_deal'
   | 'calendly_booking'
   | 'integration_incident';
@@ -16,7 +15,7 @@ type ActivityEvent = {
   icon: string;          // single-char hint for the UI
   entity_label: string;  // bold-able real name
   message: string;       // single sentence
-  source: 'stripe' | 'hubspot' | 'calendly' | 'opsradar';
+  source: 'hubspot' | 'calendly' | 'opsradar';
   timestamp: string;     // ISO8601
 };
 
@@ -44,25 +43,6 @@ async function fetchUpstream(
 // Each adapter reads upstream shape and emits 0–5 events.
 // Adapters MUST be defensive — any missing field is silently skipped.
 //
-// Stripe finance response: { status, data: { ..., recent_charges: [{ id, customer_name, amount, timestamp }] } }
-function adaptStripe(data: unknown): ActivityEvent[] {
-  const charges = (data as { data?: { recent_charges?: Array<{ id?: string; customer_name?: string | null; amount?: number; timestamp?: string }> } } | null)
-    ?.data?.recent_charges ?? [];
-  return charges.flatMap((ch) => {
-    if (!ch.timestamp) return [];
-    const label = ch.customer_name ?? 'Customer';
-    const amount = ch.amount != null ? `$${ch.amount.toFixed(2)}` : '';
-    return [{
-      type: 'stripe_charge' as const,
-      icon: '$',
-      entity_label: label,
-      message: `Payment received${amount ? ` · ${amount}` : ''}`,
-      source: 'stripe' as const,
-      timestamp: ch.timestamp,
-    }];
-  });
-}
-
 // HubSpot sales-live response: { status, data: { ..., recent_deals_won: [{ id, name, amount, closed_at }] } }
 function adaptHubspot(data: unknown): ActivityEvent[] {
   const deals = (data as { data?: { recent_deals_won?: Array<{ id?: string; name?: string; amount?: number; closed_at?: string }> } } | null)
@@ -103,7 +83,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<ActivityRe
   }
 
   const settled = await Promise.allSettled([
-    fetchUpstream(request, 'finance').then(adaptStripe),
     fetchUpstream(request, 'sales-live').then(adaptHubspot),
     fetchUpstream(request, 'marketing').then(adaptMarketing),
   ]);

@@ -11,7 +11,6 @@
 //
 // Tool surface (v1):
 //   READ TOOLS (load the tenant's integration keys + call the existing executor)
-//   - opsradar.get_finance         (scope: finance:read)
 //   - opsradar.get_sales           (scope: sales:read)
 //   - opsradar.get_profitability   (scope: profitability:read)
 //   - opsradar.get_capacity        (scope: capacity:read)
@@ -66,14 +65,6 @@ type McpTool = {
 
 const TOOLS: McpTool[] = [
   // ─── Read tools ────────────────────────────────────────────────────────
-  {
-    name: 'opsradar.get_finance',
-    description:
-      'Fetch live Stripe financial data for the authenticated agency: invoiced MTD, paid MTD, overdue invoices, open invoice total, cash due in 30 days. Returns a snapshot — no historical series.',
-    scope: 'finance:read',
-    executorName: 'get_finance',
-    inputSchema: { type: 'object', properties: {}, required: [] },
-  },
   {
     name: 'opsradar.get_sales',
     description:

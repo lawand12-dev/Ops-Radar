@@ -17,46 +17,6 @@ export type AdapterValidation =
   | { ok: true; externalAccountId: string }
   | { ok: false; reason: 'invalid_key' | 'permission' | 'network'; message: string };
 
-// ===== Stripe =====
-export type StripeInvoiceRow = {
-  id: string;
-  customer_name: string;
-  amount: number; // USD
-  due_date: string; // YYYY-MM-DD
-  days_overdue: number;
-};
-
-export type StripeRecentCharge = {
-  id: string;
-  customer_name: string | null;
-  amount: number; // USD
-  timestamp: string; // ISO8601
-};
-
-export type StripeFinanceData = {
-  invoiced: number; // USD, this month-to-date (sum of invoice amount_due)
-  paid: number; // USD, this month-to-date (sum of paid invoice amount_paid)
-  overdue: number; // USD, currently outstanding past due
-  sparkline: Array<{ date: string; amount: number }>; // last 30 days, daily charge totals
-  currency: 'USD';
-  rows: StripeInvoiceRow[];
-  recent_charges: StripeRecentCharge[]; // last 5 succeeded charges for activity feed
-};
-
-export type StripeClientRevenue = {
-  id: string;
-  name: string;
-  revenue_current: number;   // USD paid invoices, current month-to-date
-  revenue_prior: number;     // USD paid invoices, prior full month
-  payment_status: 'on_time' | 'overdue' | 'unknown';
-  days_overdue: number | null;
-};
-
-export type StripePerClientData = {
-  clients: StripeClientRevenue[];
-  currency: 'USD';
-};
-
 // ===== HubSpot =====
 export type HubspotDealRow = {
   id: string;

@@ -4,7 +4,7 @@
  * - recordEvent: single-row insert, idempotent via the (user, source,
  *   external_id) unique index. If the same event hits us twice (webhook
  *   retry, backfill re-run), the second insert is a no-op.
- * - recordEvents: batch insert for backfill jobs (Stripe 12mo history, etc.).
+ * - recordEvents: batch insert for backfill jobs (12 months of history, etc.).
  *   Splits into chunks of 500 to stay under Postgres parameter limits.
  *
  * Both fire-and-forget — a write failure logs and continues. The agents'

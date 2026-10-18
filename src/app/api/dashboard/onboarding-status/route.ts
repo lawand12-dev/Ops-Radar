@@ -43,7 +43,7 @@ export async function GET(): Promise<NextResponse<OnboardingStatus | { error: st
 
   const steps = {
     time_tracking: connectedTools.has('harvest') || connectedTools.has('toggl'),
-    billing: connectedTools.has('stripe'),
+    billing: false, // payment-provider integration removed
     blended_rate:
       typeof meta.blended_hourly_rate_usd === 'number' && meta.blended_hourly_rate_usd > 0,
     first_briefing: (briefingCount ?? 0) > 0,

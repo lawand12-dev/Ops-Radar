@@ -75,7 +75,7 @@ function buildReadme(input: { docCount: number; generatedAt: string }): string {
     '',
     'Your brain belongs to you. Even if OpsRadar disappears tomorrow:',
     '',
-    '1. Your tools (Stripe, HubSpot, etc.) still have your raw data.',
+    '1. Your tools (HubSpot, ClickUp, etc.) still have your raw data.',
     '2. Your Notion workspace stays in your Notion account.',
     '3. You have this markdown snapshot — readable in any tool, forever.',
     '',

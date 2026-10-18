@@ -16,7 +16,7 @@ import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 export const metadata: Metadata = {
   title: "Hire an AI workforce. Keep the brain it builds — OpsRadar",
   description:
-    "28 named AI employees run your agency across Stripe, HubSpot, ClickUp, Gmail. They write everything they learn into a Notion you own. $499/mo.",
+    "28 named AI employees run your agency across HubSpot, ClickUp, Harvest, Gmail. They write everything they learn into a Notion you own. $499/mo.",
   openGraph: {
     title: "Hire an AI workforce. Keep the brain it builds.",
     description:
@@ -101,7 +101,7 @@ function Hero() {
               fontWeight: 400,
             }}
           >
-            OpsRadar gives every agency 28 named AI employees that run your operations across Stripe, HubSpot, Harvest, ClickUp, Gmail and 20 more &mdash; and writes everything they learn into a Notion you own forever.
+            OpsRadar gives every agency 28 named AI employees that run your operations across HubSpot, Harvest, ClickUp, Gmail and 20 more &mdash; and writes everything they learn into a Notion you own forever.
           </p>
         </RevealOnScroll>
 
@@ -425,7 +425,7 @@ function HowItWorksSection() {
               Hire your first AI employee in 4 minutes.
             </h2>
             <p className="mt-5 text-body-lg text-[var(--color-fg-muted)] max-w-xl">
-              Connect Stripe. Open the Hire chat. Describe who you want — &ldquo;Bookkeeper named Sarah, every morning at 8, watching Stripe.&rdquo; We compile the spec. You click Hire. She starts tomorrow at 8 AM. No setup calls. No implementation team. The product is the demo.
+              Connect your tools. Open the Hire chat. Describe who you want — &ldquo;Bookkeeper named Sarah, every morning at 8, watching the books.&rdquo; We compile the spec. You click Hire. She starts tomorrow at 8 AM. No setup calls. No implementation team. The product is the demo.
             </p>
           </div>
         </RevealOnScroll>

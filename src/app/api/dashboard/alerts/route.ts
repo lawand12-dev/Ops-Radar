@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUserId } from '<npm>/lib/supabase-ssr';
 import { Redis } from '@upstash/redis';
 import {
-  stripeAuthErrorRule,
   elevatedErrorRateRule,
   stuckDealRule,
   emptyCalendarRule,
@@ -41,30 +40,18 @@ export async function GET(request: NextRequest): Promise<NextResponse<AlertsResp
   }
 
   const settled = await Promise.allSettled([
-    fetchJson(request, 'finance'),
     fetchJson(request, 'sales-live'),
     fetchJson(request, 'marketing'),
     fetchJson(request, 'scope'),
   ]);
-  const [finance, sales, marketing, scope] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
+  const [sales, marketing, scope] = settled.map((s) => (s.status === 'fulfilled' ? s.value : null));
 
   const candidates: (DashboardAlert | null)[] = [];
 
-  // ── Stripe auth ──────────────────────────────────────────────────────────────
-  // finance returns { status: 'requires_reconnect' } on auth failures; it never
-  // returns status: 'error' with an error_code. Pass hasError=true when status
-  // is 'requires_reconnect' so the rule can fire. errorCode is null (the rule
-  // treats null as a likely auth error).
-  const financeStatus = (finance as { status?: string } | null)?.status;
-  candidates.push(stripeAuthErrorRule({
-    hasError: financeStatus === 'requires_reconnect',
-    errorCode: null,
-  }));
-
   // ── Elevated error rates ──────────────────────────────────────────────────────
-  // Neither finance nor sales-live nor marketing expose an errors_24h field.
+  // None of the data routes expose an errors_24h field.
   // The rule threshold is > 5, so passing 0 means no alert fires — correct.
-  for (const [tool, data] of [['Stripe', finance], ['HubSpot', sales], ['Apollo', marketing], ['Calendly', marketing]] as [string, unknown][]) {
+  for (const [tool, data] of [['HubSpot', sales], ['Apollo', marketing], ['Calendly', marketing]] as [string, unknown][]) {
     const errors24h = (data as { data?: { errors_24h?: number } } | null)?.data?.errors_24h ?? 0;
     candidates.push(elevatedErrorRateRule({ tool, errors24h }));
   }

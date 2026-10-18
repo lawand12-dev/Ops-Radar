@@ -4,9 +4,7 @@ export type ActionType =
   | 'hours_budget_exceeded'
   | 'scope_approaching'
   | 'workflow_failure'
-  | 'hubspot_harvest_sync'
   | 'retainer_overage'
-  | 'retainer_invoice_draft'
   | 'cash_flow_alert'
   | 'capacity_drift'
   | 'pattern_alert'
@@ -29,9 +27,7 @@ export const ACTION_RISK: Record<ActionType, ActionRisk> = {
   hours_budget_exceeded: 'approval',
   scope_approaching:     'approval',
   workflow_failure:      'auto',
-  hubspot_harvest_sync:  'auto',
   retainer_overage:      'approval',
-  retainer_invoice_draft: 'approval',
   cash_flow_alert:       'approval',
   capacity_drift:        'approval',
   pattern_alert:         'approval',
@@ -46,9 +42,7 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   hours_budget_exceeded: 'Scope conversation ready',
   scope_approaching:     'Scope warning — approaching budget',
   workflow_failure:      'Workflow failure alert sent',
-  hubspot_harvest_sync:  'New client synced to Harvest',
   retainer_overage:      'Retainer overage — billing conversation ready',
-  retainer_invoice_draft: 'Retainer invoice — Stripe draft ready',
   cash_flow_alert:       'Cash flow risk — advisory ready',
   capacity_drift:        'Capacity drift — staffing advisory ready',
   pattern_alert:         'New pattern detected — recommendation ready',
@@ -60,7 +54,6 @@ export const ACTION_LABELS: Record<ActionType, string> = {
 // ─── Payload types ────────────────────────────────────────────────────────────
 
 export type InvoiceReminderPayload = {
-  stripe_customer_id: string
   invoice_id: string
   client_name: string
   amount_due: number
@@ -72,7 +65,6 @@ export type InvoiceReminderPayload = {
 }
 
 export type MarginAlertPayload = {
-  stripe_customer_id: string
   client_name: string
   margin_pct: number
   margin_prior_pct: number | null
@@ -113,13 +105,6 @@ export type WorkflowFailurePayload = {
   resend_email_id?: string
 }
 
-export type HubSpotHarvestPayload = {
-  hubspot_contact_id: string
-  hubspot_company_name: string
-  client_email: string | null
-  harvest_client_id?: string
-}
-
 export type RetainerOveragePayload = {
   client_name: string
   client_name_norm: string
@@ -131,16 +116,6 @@ export type RetainerOveragePayload = {
   implied_hourly_rate: number
   draft_subject: string
   draft_body: string
-}
-
-export type RetainerInvoiceDraftPayload = {
-  client_name: string
-  client_name_norm: string
-  stripe_customer_id: string
-  amount_usd: number
-  retainer_period: string // YYYY-MM
-  description: string
-  stripe_invoice_id?: string // populated after successful execute
 }
 
 export type CashFlowAlertPayload = {
@@ -193,7 +168,7 @@ export type ToolActionPayload = {
 // failed, etc.). We mark it inactive in the legacy OAuth-connections table and queue this so
 // the customer sees it in /dashboard/actions with a re-auth link.
 export type IntegrationExpiredPayload = {
-  tool_slug: string                           // 'hubspot', 'stripe', 'gmail', etc.
+  tool_slug: string                           // 'hubspot', 'gmail', 'clickup', etc.
   connection_id: string
   reason?: string                             // whatever the broker supplied
   reconnect_url: string                       // re-auth deep link supplied by the broker
@@ -216,9 +191,7 @@ export type ActionPayload =
   | HoursBudgetPayload
   | ScopeApproachingPayload
   | WorkflowFailurePayload
-  | HubSpotHarvestPayload
   | RetainerOveragePayload
-  | RetainerInvoiceDraftPayload
   | CashFlowAlertPayload
   | CapacityDriftPayload
   | PatternAlertPayload

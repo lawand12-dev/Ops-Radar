@@ -54,7 +54,7 @@ const CATEGORIES = [
       },
       {
         q: "Why does \"you own it\" matter?",
-        a: "Your data was never trapped in OpsRadar — it lives in HubSpot, ClickUp, Harvest, Stripe, and the rest. We were only reading from them. If OpsRadar ever disappeared, every tool you already pay for keeps working unchanged.",
+        a: "Your data was never trapped in OpsRadar — it lives in HubSpot, ClickUp, Harvest, and the rest. We were only reading from them. If OpsRadar ever disappeared, every tool you already pay for keeps working unchanged.",
       },
     ],
   },
@@ -94,7 +94,7 @@ const CATEGORIES = [
       },
       {
         q: "What's required from me during onboarding?",
-        a: "Mostly access. You connect the tools you already use — HubSpot, ClickUp, Harvest, Stripe — review the first weekly health score, and tell us which alerts you want first. The AI COO does the heavy lifting; you verify it fits your agency.",
+        a: "Mostly access. You connect the tools you already use — HubSpot, ClickUp, Harvest — review the first weekly health score, and tell us which alerts you want first. The AI COO does the heavy lifting; you verify it fits your agency.",
       },
       {
         q: "What if something breaks after the AI COO is live?",
@@ -108,7 +108,7 @@ const CATEGORIES = [
     items: [
       {
         q: "What tools does the AI COO connect to?",
-        a: "Ten integrations live today: HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Stripe, Calendly, Apollo. Anything else with an API can be added — note it in the audit and we'll prioritize it.",
+        a: "Nine integrations live today: HubSpot, Pipedrive, ClickUp, Asana, Monday, Harvest, Toggl, Calendly, Apollo. Anything else with an API can be added — note it in the audit and we'll prioritize it.",
       },
       {
         q: "How is this different from Productive, Scoro, or other PSAs?",
@@ -116,7 +116,7 @@ const CATEGORIES = [
       },
       {
         q: "Is my data secure?",
-        a: "Your data stays in HubSpot, ClickUp, Harvest, Stripe, and the rest. OpsRadar never writes your client business data to its own database. We read live through OAuth and encrypted API keys you control. Revoke access in one click any time.",
+        a: "Your data stays in HubSpot, ClickUp, Harvest, and the rest. OpsRadar never writes your client business data to its own database. We read live through OAuth and encrypted API keys you control. Revoke access in one click any time.",
       },
       {
         q: "Will my data train your models?",

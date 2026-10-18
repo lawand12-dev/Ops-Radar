@@ -1,7 +1,7 @@
 import { Plug } from 'lucide-react';
 
 export type EmptyStateConnectProps = {
-  tool: string;                 // e.g. "Stripe", "HubSpot"
+  tool: string;                 // e.g. "HubSpot", "ClickUp"
   toolSlug?: string;            // legacy deep-link param — unused while no integrations layer is wired
   description?: string;         // override default copy
   className?: string;

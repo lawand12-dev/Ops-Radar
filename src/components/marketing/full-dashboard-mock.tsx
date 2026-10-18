@@ -208,7 +208,7 @@ function ChartAndBrain() {
             Revenue · 30d
           </p>
           <p className="text-caption font-mono text-[var(--color-fg-subtle)]">
-            Stripe · live
+            QuickBooks · live
           </p>
         </div>
         <div className="mt-4">
@@ -346,7 +346,7 @@ const PILLARS: Array<{ label: string; active: boolean; count?: string }> = [
   { label: "GUARD", active: false, count: "1" },
 ];
 
-const SOURCES = ["Stripe", "HubSpot", "ClickUp", "Meta Ads", "Google Ads", "Harvest"];
+const SOURCES = ["QuickBooks", "HubSpot", "ClickUp", "Meta Ads", "Google Ads", "Harvest"];
 
 const KPIS: Array<{
   label: string;
@@ -355,7 +355,7 @@ const KPIS: Array<{
   trend: string;
   kind: "up" | "down" | "flat";
 }> = [
-  { label: "Revenue · 30d", source: "Stripe", value: "$240k", trend: "+12%", kind: "up" },
+  { label: "Revenue · 30d", source: "QuickBooks", value: "$240k", trend: "+12%", kind: "up" },
   { label: "Ad spend · 30d", source: "Meta+G", value: "$48k", trend: "flat", kind: "flat" },
   { label: "MER", source: "OBSERVE", value: "5.0", trend: "flat", kind: "flat" },
   { label: "Leads · 7d", source: "HubSpot", value: "162", trend: "+24", kind: "up" },

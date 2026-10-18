@@ -128,7 +128,7 @@ function ObserveViz() {
 }
 
 const OBSERVE_SOURCES = [
-  "Stripe",
+  "QuickBooks",
   "HubSpot",
   "ClickUp",
   "Meta Ads",

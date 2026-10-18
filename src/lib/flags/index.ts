@@ -257,14 +257,6 @@ export const clickupToolkitEnabled = flag<boolean>({
   identify: identifyUser,
 })
 
-export const stripeToolkitEnabled = flag<boolean>({
-  key: 'stripe-toolkit-enabled',
-  adapter: statsigAdapter<boolean>(),
-  defaultValue: true,
-  description: 'Whether the Stripe toolkit is available to employees.',
-  identify: identifyUser,
-})
-
 export const notionToolkitEnabled = flag<boolean>({
   key: 'notion-toolkit-enabled',
   adapter: statsigAdapter<boolean>(),
@@ -278,7 +270,6 @@ const TOOLKIT_FLAG_REGISTRY: Record<string, () => Promise<boolean>> = {
   'slack-toolkit-enabled': slackToolkitEnabled,
   'hubspot-toolkit-enabled': hubspotToolkitEnabled,
   'clickup-toolkit-enabled': clickupToolkitEnabled,
-  'stripe-toolkit-enabled': stripeToolkitEnabled,
   'notion-toolkit-enabled': notionToolkitEnabled,
 }
 

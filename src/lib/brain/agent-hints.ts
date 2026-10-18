@@ -94,7 +94,7 @@ const TOOL_AGENT_HINTS: Hint[] = [
 ]
 
 export function getBrainPathHints(agentSlug: AgentSlug | string): Hint[] {
-  // Tool agents — slug shape is 'tool-stripe', 'tool-hubspot', etc.
+  // Tool agents — slug shape is 'tool-<toolkit>' (e.g. 'tool-hubspot').
   if (typeof agentSlug === 'string' && agentSlug.startsWith('tool-')) {
     return TOOL_AGENT_HINTS
   }

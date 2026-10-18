@@ -13,22 +13,20 @@ type KpiState =
 type FetchResult = Omit<Extract<KpiState, { kind: 'value' }>, 'kind' | 'label'> | { error: 'not_connected' | 'no_data' | 'failed' };
 
 /**
- * Composes 4 KPI cards from independent Layer-2 fetches.
+ * Composes 3 KPI cards from independent Layer-2 fetches.
  *
  * Each card owns its own fetch and state. The strip is just layout.
  * KPI sources (in order):
- *   1. MRR · current              — /api/dashboard/finance (proxy: paid MTD)
- *   2. Active pipeline · current  — /api/dashboard/sales-live
- *   3. New prospects · 7d         — /api/dashboard/marketing (proxy: emails_sent)
- *   4. Booked calls · 7d          — /api/dashboard/marketing
+ *   1. Active pipeline · current  — /api/dashboard/sales-live
+ *   2. New prospects · 7d         — /api/dashboard/marketing (proxy: emails_sent)
+ *   3. Booked calls · 7d          — /api/dashboard/marketing
  *
  * The n8n "Time saved" and "Workflow success" tiles were removed in CP-15
  * (chatv2 sever). Future tiles should pull from agent_runs / agent_actions.
  */
 export function CockpitKpiStrip() {
   return (
-    <div className="grid grid-cols-4 gap-2.5">
-      <KpiCard label="MRR"                 loader={loadMrr}         tool="Stripe"      toolSlug="stripe" />
+    <div className="grid grid-cols-3 gap-2.5">
       <KpiCard label="Active pipeline"     loader={loadPipeline}    tool="HubSpot"     toolSlug="hubspot" />
       <KpiCard label="New prospects · 7d"  loader={loadProspects}   tool="Apollo"      toolSlug="apollo" />
       <KpiCard label="Booked calls · 7d"   loader={loadBookings}    tool="Calendly"    toolSlug="calendly" />
@@ -121,51 +119,6 @@ function Sparkline({ values, up }: { values: number[]; up: boolean }) {
 // HTTP 503 / status:'not_connected' / status:'not_enrolled' returns
 // { error: 'not_connected' } so the card switches to the connect-CTA.
 // ============================================================
-
-/**
- * MRR (proxy: paid MTD)
- * Upstream: /api/dashboard/finance
- * Shape: { status: 'ok' | 'not_connected' | 'requires_reconnect' | 'unavailable',
- *          data: StripeFinanceData }
- * StripeFinanceData: { invoiced, paid, overdue, sparkline: {date,amount}[], currency }
- *
- * NOTE: Stripe does not expose a recurring-revenue metric directly.
- * We proxy MRR as `paid` (month-to-date invoices paid). The sparkline
- * is flattened to a number[] from the {date,amount}[] object array.
- */
-async function loadMrr(): Promise<FetchResult> {
-  let res: Response;
-  try {
-    res = await fetch('/api/dashboard/finance');
-  } catch {
-    return { error: 'failed' };
-  }
-  if (res.status === 503) return { error: 'not_connected' };
-  let r: {
-    status?: string;
-    data?: {
-      paid?: number;
-      invoiced?: number;
-      overdue?: number;
-      sparkline?: Array<{ date: string; amount: number }>;
-    };
-  };
-  try {
-    r = await res.json();
-  } catch {
-    return { error: 'failed' };
-  }
-  if (r?.status === 'not_connected' || r?.status === 'requires_reconnect') return { error: 'not_connected' };
-  if (r?.status === 'unavailable') return { error: 'failed' };
-  const paid = r?.data?.paid;
-  if (typeof paid !== 'number') return { error: 'no_data' };
-  // Flatten sparkline from object array to number[] for the inline SVG
-  const rawSpark = r?.data?.sparkline;
-  const spark: number[] | undefined = Array.isArray(rawSpark) && rawSpark.length > 0
-    ? rawSpark.map((s) => s.amount)
-    : undefined;
-  return { value: fmtCurrency(paid), deltaUp: true, spark };
-}
 
 /**
  * Active pipeline

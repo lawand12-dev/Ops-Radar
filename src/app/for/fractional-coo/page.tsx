@@ -412,7 +412,7 @@ function HowItWorksSection() {
           </h2>
           <p className="mt-6 max-w-3xl text-body leading-[1.65] text-[var(--color-fg-muted)]">
             Each client agency you onboard gets their own OAuth connections
-            (their Stripe, their HubSpot, their ClickUp). Every credential is
+            (their HubSpot, their ClickUp, their Harvest). Every credential is
             brokered via OAuth — you never see the API keys. Each client gets their own
             company brain mirrored to their own Notion workspace. The 28
             built-in agents run independently per client. If you add a custom AI

@@ -16,7 +16,6 @@ type StoredPolicy = { tool_slug: string; policy: string };
 
 // Toolkit display labels for the autonomy policy rows.
 const TOOLKITS: Array<{ slug: string; display: string }> = [
-  { slug: 'stripe',            display: 'Stripe' },
   { slug: 'quickbooks',        display: 'QuickBooks' },
   { slug: 'xero',              display: 'Xero' },
   { slug: 'hubspot',           display: 'HubSpot' },

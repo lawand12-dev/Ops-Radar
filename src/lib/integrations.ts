@@ -2,6 +2,6 @@
 // in Supabase enforces this at the DB level. Update both when adding a tool.
 
 export type ToolName =
-  | 'stripe' | 'hubspot' | 'clickup' | 'asana' | 'toggl' | 'harvest'
+  | 'hubspot' | 'clickup' | 'asana' | 'toggl' | 'harvest'
   | 'google_ads' | 'meta_ads' | 'calendly' | 'quickbooks' | 'pipedrive'
   | 'salesforce' | 'monday' | 'apollo';

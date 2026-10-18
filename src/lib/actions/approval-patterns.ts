@@ -43,7 +43,6 @@ const AGENT_DISPLAY_NAME: Record<AgentSlug, string> = {
   'tool-toggl': 'Toggl Agent',
   'tool-notion': 'Notion Agent',
   'tool-slack': 'Slack Agent',
-  'tool-stripe': 'Stripe Agent',
   'tool-quickbooks': 'QuickBooks Agent',
   'tool-google-calendar': 'Google Calendar Agent',
   'tool-google-analytics': 'Google Analytics Agent',

@@ -74,7 +74,7 @@ const HIRE_STEPS: Array<{ n: string; body: string }> = [
 ];
 
 const BRAIN_KNOWS: string[] = [
-  "Every Stripe transaction Riley has looked at, with the margin context she derived",
+  "Every invoice transaction Riley has looked at, with the margin context she derived",
   "Every overdue invoice and Cole's notes on the customer payment pattern",
   "Every scope risk Scott flagged, with the Harvest hours that triggered it",
   "Every decision YOU made in the COO chat — recorded as a Decision Log entry, signed by you",
@@ -94,8 +94,8 @@ const DIFFERENTIATORS: Array<{
     pitch: "Your AI workforce gets smarter every time you say \"no.\"",
     body: "Every time you reject an action, OpsRadar derives a generalizable rule from your reason and writes it to that employee's permanent learned-rules brain prefix. The next time Sarah is about to do the thing you didn't want, she reads the rule and doesn't.",
     example: {
-      day1: "Day 1: Sarah drafts a follow-up email to an international Stripe customer. You reject it: \"We don't auto-follow-up international customers — they're on a different cadence.\"",
-      rest: "Day 2 onwards: Sarah never drafts a follow-up to an international Stripe customer again. The rule is in her brain, signed by you, dated, reversible if you ever change your mind.",
+      day1: "Day 1: Sarah drafts a follow-up email to an international customer. You reject it: \"We don't auto-follow-up international customers — they're on a different cadence.\"",
+      rest: "Day 2 onwards: Sarah never drafts a follow-up to an international customer again. The rule is in her brain, signed by you, dated, reversible if you ever change your mind.",
     },
   },
   {
@@ -131,7 +131,7 @@ const RECEIPTS: Array<{ n: string; title: string; body: string }> = [
 ];
 
 const AUTOMATION_RECEIPTS: string[] = [
-  "Built on event triggers — 20+ webhook events across HubSpot, Stripe, ClickUp, Gmail, Calendly, and more",
+  "Built on event triggers — 20+ webhook events across HubSpot, ClickUp, Gmail, Calendly, and more",
   "Executed durably on Trigger.dev — retries 5 times with exponential backoff if something fails",
   "Every action still routes through the approval gate by default — automation doesn't mean autonomy",
 ];
@@ -412,7 +412,7 @@ function PillarWorkforce() {
             ))}
           </div>
           <p className="mt-4 text-caption text-[var(--color-fg-subtle)]">
-            Plus 17 toolkit specialists (Stripe Specialist, HubSpot
+            Plus 17 toolkit specialists (HubSpot
             Specialist, Harvest Specialist, ClickUp Specialist, &amp; more).
           </p>
         </div>
@@ -527,7 +527,7 @@ function CrossSynthesisSection() {
                 Tool specialists (17)
               </p>
               <p className="mt-4 text-body leading-[1.65] text-[var(--color-fg-muted)]">
-                Watch one app each &mdash; Stripe Specialist, HubSpot
+                Watch one app each &mdash; HubSpot
                 Specialist, Harvest Specialist, ClickUp Specialist, and so
                 on. They go deep on their toolkit.
               </p>
@@ -539,7 +539,7 @@ function CrossSynthesisSection() {
               <p className="mt-4 text-body leading-[1.65] text-[var(--color-fg-muted)]">
                 Read what the tool agents wrote &mdash; Revenue, Collections,
                 Scope, Delivery, Briefing &mdash; and synthesize across
-                multiple tools. Riley reads what Stripe + HubSpot +
+                multiple tools. Riley reads what HubSpot +
                 QuickBooks specialists wrote and produces the actual
                 revenue health summary.
               </p>
@@ -783,7 +783,7 @@ function OrgChartSection() {
               </h2>
               <p className="mt-6 text-body leading-[1.65] text-[var(--color-fg-muted)] max-w-md">
                 Custom AI employees can have managers and direct reports.
-                When Marcus the Account Manager needs a Stripe lookup, he
+                When Marcus the Account Manager needs an invoice lookup, he
                 delegates to Sarah the Bookkeeper &mdash; pauses his run,
                 waits for her to finish, reads her summary, and continues.
                 Real hierarchy, real delegation, real durable wait.
