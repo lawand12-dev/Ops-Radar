@@ -11,13 +11,12 @@ import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: "Product — OpsRadar AI Operating System",
+  title: "Product concepts — OpsRadar",
   description:
-    "AI employees + company brain in your Notion + every integration you use. One workspace replaces 10 AI tools. Apprentice Mode learns from every \"no\".",
+    "An informational overview of OpsRadar's earlier product concept. Product access is currently unavailable.",
   openGraph: {
-    title: "Your AI workforce builds the company brain you exit on.",
-    description:
-      "28 named specialists run on your stack. They write what they learn into a versioned brain mirrored to your Notion. Approval-gated by default, earned-autonomy as trust accumulates.",
+    title: "OpsRadar product concepts",
+    description: "This page describes an earlier product concept; the service is not currently available.",
     url: "https://www.opsradar.co/product",
     siteName: "OpsRadar",
     images: [
@@ -28,9 +27,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Your AI workforce builds the company brain you exit on.",
-    description:
-      "28 named AI employees. Versioned company brain mirrored to your Notion. Earned autonomy, no token billing.",
+    title: "OpsRadar product concepts",
+    description: "Product access is currently unavailable.",
     images: ["/og-image.png"],
   },
 };
@@ -131,30 +129,22 @@ const RECEIPTS: Array<{ n: string; title: string; body: string }> = [
 ];
 
 const AUTOMATION_RECEIPTS: string[] = [
-  "Built on event triggers — 20+ webhook events across HubSpot, ClickUp, Gmail, Calendly, and more",
-  "Executed durably on Trigger.dev — retries 5 times with exponential backoff if something fails",
-  "Every action still routes through the approval gate by default — automation doesn't mean autonomy",
+  "Automation and integration features described on this page are not currently available",
+  "This static website does not run background jobs or process connected-tool events",
+  "The examples are retained as descriptions of an earlier product concept",
 ];
 
 const ORG_RECEIPTS: string[] = [
-  "Built on Trigger.dev's tasks.triggerAndWait pattern — the manager pauses, the report runs, the manager resumes with the result",
-  "Cycle-detection prevents infinite loops (managers can't report up the chain to themselves)",
-  "Each employee appears in the YOUR TEAM sidebar with their own chat page",
+  "Agent and employee features are not currently available",
+  "No customer dashboard, employee registry, or delegation workflow is running",
+  "The diagrams and examples are informational mockups only",
 ];
 
 const STACK: Array<{ label: string; value: string }> = [
-  { label: "Frontend", value: "Next.js 16 · React 19 · Tailwind v4 · shadcn/Radix" },
-  { label: "Backend", value: "Vercel Fluid Compute · Vercel AI SDK v6 · Vercel AI Gateway" },
-  { label: "Database", value: "Supabase Postgres · pgvector · row-level security · multi-tenant" },
-  { label: "Durable workflows", value: "Trigger.dev v3 (per-employee execution, delegation, automation runner)" },
-  { label: "Scheduled cron", value: "Vercel Cron (built-in employees)" },
-  { label: "AI models", value: "OpenAI GPT-5.5 / 5.4 / 4o / 4.1-nano · text-embedding-3-small · Anthropic Claude (scaffolded)" },
-  { label: "Tool brokerage", value: "OAuth-brokered (in active rebuild)" },
-  { label: "Knowledge layer", value: "Anthropic Agent Skills (46 SKILL.md files across 9 domains)" },
-  { label: "Observability", value: "Sentry" },
-  { label: "Rate limiting + cache", value: "Upstash Redis" },
-  { label: "Email", value: "Resend" },
-  { label: "MCP server", value: "OpsRadar's own brain is queryable as MCP by external agents" },
+  { label: "Frontend", value: "Next.js 16 · React 19 · Tailwind CSS v4" },
+  { label: "Build output", value: "Static HTML, CSS, JavaScript, and metadata files" },
+  { label: "Hosting", value: "Vercel; the custom domain is managed in the Vercel project settings" },
+  { label: "Database and APIs", value: "None; the website does not require a backend or environment variables" },
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -834,7 +824,7 @@ function StackSection() {
               fontWeight: 500,
             }}
           >
-            Built on what 2026 actually ships.
+            Current website stack.
           </h2>
         </RevealOnScroll>
 

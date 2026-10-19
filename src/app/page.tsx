@@ -14,19 +14,17 @@ import { Button } from "<npm>/components/ui/button";
 import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Hire an AI workforce. Keep the brain it builds — OpsRadar",
+  title: "OpsRadar — Operations Intelligence",
   description:
-    "28 named AI employees run your agency across HubSpot, ClickUp, Harvest, Gmail. They write everything they learn into a Notion you own. $499/mo.",
+    "OpsRadar's public website. Product access is currently unavailable.",
   openGraph: {
-    title: "Hire an AI workforce. Keep the brain it builds.",
-    description:
-      "28 named AI employees that run your agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.",
+    title: "OpsRadar — Operations Intelligence",
+    description: "The public OpsRadar website. Product access is currently unavailable.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "OpsRadar" }],
   },
   twitter: {
-    title: "Hire an AI workforce. Keep the brain it builds.",
-    description:
-      "28 named AI employees that run your agency across 25+ tools — and write what they learn into a Notion you own forever. $499/mo.",
+    title: "OpsRadar — Operations Intelligence",
+    description: "The public OpsRadar website. Product access is currently unavailable.",
     images: ["/og-image.png"],
   },
 };
@@ -85,9 +83,9 @@ function Hero() {
               fontWeight: 500,
             }}
           >
-            Hire an AI workforce.{" "}
-            <span className="text-[var(--color-primary)]">Keep the brain</span>{" "}
-            it&nbsp;builds.
+            Operations intelligence{" "}
+            <span className="text-[var(--color-primary)]">for client-service</span>{" "}
+            businesses.
           </h1>
         </RevealOnScroll>
 
@@ -101,7 +99,8 @@ function Hero() {
               fontWeight: 400,
             }}
           >
-            OpsRadar gives every agency 28 named AI employees that run your operations across HubSpot, Harvest, ClickUp, Gmail and 20 more &mdash; and writes everything they learn into a Notion you own forever.
+            OpsRadar is currently an informational website. The hosted product,
+            customer accounts, integrations, and AI features are unavailable.
           </p>
         </RevealOnScroll>
 
@@ -110,10 +109,8 @@ function Hero() {
           <p
             className="mt-5 max-w-[44rem] text-body text-[var(--color-fg-muted)] leading-[1.65]"
           >
-            <span className="text-[var(--color-fg)]">Riley</span> watches your revenue.{" "}
-            <span className="text-[var(--color-fg)]">Cole</span> drafts collections.{" "}
-            <span className="text-[var(--color-fg)]">Scott</span> catches scope creep.{" "}
-            <span className="text-[var(--color-fg)]">Brian</span> writes your morning brief. The other 24 are listed below.
+            Other pages describe the product direction and mockups, not a
+            currently operating service.
           </p>
         </RevealOnScroll>
 
@@ -122,13 +119,13 @@ function Hero() {
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
               <Link href="/waitlist">
-                Coming soon — join waitlist
+                Product currently unavailable
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
               <Link href="/how-it-works">
-                See how the workforce + brain works &rarr;
+                Read the product overview &rarr;
               </Link>
             </Button>
           </div>
@@ -136,7 +133,7 @@ function Hero() {
 
         <RevealOnScroll delay={640} offset={32}>
           <p className="mt-6 text-caption text-[var(--color-fg-subtle)]">
-            $499/mo Growth tier &middot; Private beta &middot; Brain stays in your Notion &middot; Exportable any time
+            This site does not accept registrations or payments.
           </p>
         </RevealOnScroll>
 
@@ -452,7 +449,7 @@ function SegmentSection() {
         <RevealOnScroll delay={0} offset={40}>
           <div className="max-w-2xl mb-14 md:mb-16">
             <p className="text-label text-[var(--color-fg-subtle)] uppercase">
-              Who it's built for
+              Who it&apos;s built for
             </p>
             <h2
               className="mt-5 text-[var(--color-fg)] text-balance"

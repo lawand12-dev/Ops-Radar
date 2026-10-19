@@ -9,13 +9,11 @@ import { CALENDLY_STRATEGY_CALL_URL } from "<npm>/lib/constants";
 import { RevealOnScroll } from "<npm>/components/marketing/reveal-on-scroll";
 
 export const metadata: Metadata = {
-  title: "Waitlist — OpsRadar AI Operating System",
-  description:
-    "OpsRadar is in private beta. The product is real. The brain is real. Self-serve onboarding ships next. Talk to the founder to get a spot.",
+  title: "Product status — OpsRadar",
+  description: "Current availability and status of the OpsRadar product.",
   openGraph: {
-    title: "OpsRadar — private beta",
-    description:
-      "AI workforce + company brain in your Notion. Onboarding the first agencies by hand. Talk to the founder to get a spot.",
+    title: "OpsRadar product status",
+    description: "The OpsRadar website is online; product access is currently unavailable.",
     url: "https://www.opsradar.co/waitlist",
     siteName: "OpsRadar",
     images: [
@@ -23,7 +21,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "OpsRadar — Waitlist",
+        alt: "OpsRadar product status",
       },
     ],
     locale: "en_US",
@@ -31,25 +29,24 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpsRadar — private beta",
-    description:
-      "AI workforce + company brain. Onboarding by hand. Talk to the founder.",
+    title: "OpsRadar product status",
+    description: "Product access is currently unavailable.",
     images: ["/og-image.png"],
   },
 };
 
 const REALITY: Array<{ label: string; body: string }> = [
   {
-    label: "What's built",
-    body: "28 named AI employees running on Vercel + Supabase (25 live integrations). Versioned company brain mirrored to your Notion. Approval-gated execution. Earned-autonomy. Org-chart delegation. Customer-built automations.",
+    label: "What's online",
+    body: "A static informational website hosted on Vercel. No customer accounts, dashboard, integrations, or AI product features are available.",
   },
   {
-    label: "What's next",
-    body: "Self-serve onboarding (checkout → Notion brain provisioning → first AI employee hired in 4 minutes). Tier enforcement across the 4 plans. Then we open the front door.",
+    label: "Product status",
+    body: "The hosted OpsRadar product is unavailable. There is no signup, waitlist form, or published relaunch date.",
   },
   {
-    label: "Today",
-    body: "Founder-led onboarding. We connect your tools with you on a call, run the workforce on your stack the same day, and iterate on what works for your agency in week one.",
+    label: "Website content",
+    body: "Other pages preserve product concepts and mockups for reference. They do not represent a live service or an offer to purchase.",
   },
 ];
 
@@ -77,7 +74,7 @@ function Hero() {
               aria-hidden
               className="mr-2 inline-block size-1.5 rounded-full align-middle bg-[var(--color-success)]"
             />
-            Private beta · onboarding by hand
+            Current availability
           </p>
         </RevealOnScroll>
 
@@ -92,7 +89,7 @@ function Hero() {
               fontWeight: 500,
             }}
           >
-            The product is real. The front door isn&rsquo;t open yet.
+            OpsRadar product access is currently unavailable.
           </h1>
         </RevealOnScroll>
 
@@ -105,10 +102,9 @@ function Hero() {
               fontWeight: 400,
             }}
           >
-            OpsRadar is in private beta. Self-serve signup ships next.
-            We&rsquo;re onboarding the first agencies by hand so the workforce
-            + brain works the same way for everyone when the door opens.
-            Talk to the founder to get a spot.
+            This website remains online as a static information site. It does
+            not provide accounts, product access, integrations, or a way to
+            join a waitlist.
           </p>
         </RevealOnScroll>
 
@@ -227,7 +223,7 @@ function FinalCTA() {
           </div>
 
           <p className="mt-10 text-caption text-[var(--color-fg-subtle)] max-w-md mx-auto">
-            Private beta &middot; Founder-led onboarding &middot; Brain stays in your Notion
+            Product access unavailable &middot; No waitlist or subscription signup
           </p>
         </RevealOnScroll>
       </div>

@@ -1,11 +1,28 @@
 {
-  "crons": [
-    { "path": "/api/cron/followups",              "schedule": "0 10 * * *"  },
-    { "path": "/api/cron/actions",                "schedule": "0 9 * * *"   },
-    { "path": "/api/cron/benchmarks",             "schedule": "0 23 * * 0"  },
-    { "path": "/api/cron/diorize",                "schedule": "0 3 * * *"   },
-    { "path": "/api/cron/check-outcomes",         "schedule": "0 10 * * *"  },
-
-    { "path": "/api/cron/agents/tool-gmail",      "schedule": "0 8 * * *"   }
+  "redirects": [
+    { "source": "/login", "destination": "/", "permanent": true },
+    { "source": "/forgot-password", "destination": "/", "permanent": true },
+    { "source": "/dashboard", "destination": "/", "permanent": true },
+    { "source": "/dashboard/:path*", "destination": "/", "permanent": true },
+    { "source": "/admin", "destination": "/", "permanent": true },
+    { "source": "/admin/:path*", "destination": "/", "permanent": true },
+    { "source": "/aios", "destination": "/product", "permanent": true },
+    { "source": "/services", "destination": "/product", "permanent": true },
+    { "source": "/for/development", "destination": "/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:"
+        },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
   ]
 }

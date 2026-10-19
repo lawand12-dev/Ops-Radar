@@ -8,7 +8,6 @@ import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { RevealOnScroll } from '<npm>/components/marketing/reveal-on-scroll'
-import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'AI COO for Full-Service Digital Agencies',
@@ -98,7 +97,6 @@ export default function ForFullServicePage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
       <SiteNav activeHref="/for/full-service" />
-      <SegmentPageAnalytics segment="full-service" />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">

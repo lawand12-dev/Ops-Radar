@@ -40,7 +40,7 @@ const STEPS = [
 export function ProcessStepper() {
   return (
     <ol className="divide-y divide-[var(--color-border)]">
-      {STEPS.map((s, i) => (
+      {STEPS.map((s) => (
         <li
           key={s.n}
           className="grid md:grid-cols-12 gap-6 md:gap-10 py-12 md:py-16 first:pt-0"

@@ -58,6 +58,9 @@ n8n-workflows-main/
 .env.sentry-build-plugin
 
 .trigger
+# Markdown files created locally (tracked Markdown files remain tracked)
+*.md
+*.mdx
 # Playwright MCP screenshot/snapshot artifacts
 .playwright-mcp/
 .docs

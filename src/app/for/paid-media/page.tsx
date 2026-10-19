@@ -8,7 +8,6 @@ import { Badge } from '<npm>/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '<npm>/components/ui/card'
 import { CALENDLY_STRATEGY_CALL_URL } from '<npm>/lib/constants'
 import { RevealOnScroll } from '<npm>/components/marketing/reveal-on-scroll'
-import SegmentPageAnalytics from '../SegmentPageAnalytics'
 
 export const metadata: Metadata = {
   title: 'AI COO for Paid-Media Agencies',
@@ -98,7 +97,6 @@ export default function ForPaidMediaPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)]">
       <SiteNav activeHref="/for/paid-media" />
-      <SegmentPageAnalytics segment="paid-media" />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="border-b border-[var(--color-border)]">

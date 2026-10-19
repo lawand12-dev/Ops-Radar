@@ -153,12 +153,6 @@ export function SiteNav({
 
         {/* Desktop right actions */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-body-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] transition-colors"
-          >
-            Sign in
-          </Link>
           <Button asChild size="sm">
             <Link href={ctaHref}>{ctaLabel}</Link>
           </Button>
@@ -207,11 +201,8 @@ export function SiteNav({
                 {l.label}
               </Link>
             ))}
-            <div className="flex items-center gap-2 pt-3 border-t border-[var(--color-border)] mt-2">
-              <Button asChild variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
-                <Link href="/login">Sign in</Link>
-              </Button>
-              <Button asChild className="flex-1" onClick={() => setOpen(false)}>
+            <div className="pt-3 border-t border-[var(--color-border)] mt-2">
+              <Button asChild className="w-full" onClick={() => setOpen(false)}>
                 <Link href={ctaHref}>{ctaLabel}</Link>
               </Button>
             </div>
